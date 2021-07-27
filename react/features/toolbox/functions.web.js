@@ -104,12 +104,12 @@ export function isToolboxVisible(state: Object) {
     const { iAmSipGateway } = state['features/base/config'];
     const {
         alwaysVisible,
-        timeoutID,
+        timer,
         visible
     } = state['features/toolbox'];
     const { audioSettingsVisible, videoSettingsVisible } = state['features/settings'];
 
-    return Boolean(!iAmSipGateway && (timeoutID || visible || alwaysVisible
+    return Boolean(!iAmSipGateway && (timer || visible || alwaysVisible
                                       || audioSettingsVisible || videoSettingsVisible));
 }
 

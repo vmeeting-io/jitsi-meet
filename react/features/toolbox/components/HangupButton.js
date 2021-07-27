@@ -80,19 +80,6 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     }
     
     /**
-     * Implements React Component's componentDidUpdate.
-     *
-     * @inheritdoc
-     */
-    componentDidUpdate(prevProps) {
-        const found = find(this.props._participants, { local: false });
-        if (!this.state.selected && found) {
-            this.setState({ selected: found.id });
-            console.log('componentDidUpdate:', found);
-        }
-    }
-
-    /**
      * Helper function to perform the actual hangup action.
      *
      * @override
@@ -134,8 +121,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     }
 
     _renderModeratorSelectionItem(props) {
-        const { accessibilityLabel, disabled, elementAfter, id, key, text } = props;
-        const selected = id === this.state.selected;
+        const { accessibilityLabel, disabled, elementAfter, id, key, text, selected } = props;
 
         let className = selected ? s.menuItemSelected : s.menuItem;
         className += disabled ? ' disabled' : '';
@@ -164,16 +150,18 @@ class HangupButton extends AbstractHangupButton<Props, *> {
         if (_participants.length <= 1)
             return [];
 
-        const List = ({participants}) => (
+        const items = _participants.filter(p => !p.local && !p.isFakeParticipant);
+        const moderators = items.filter(p => p.role === PARTICIPANT_ROLE.MODERATOR);
+        this.selected = moderators.length === 0 ? items[0].id : moderators[0].id;
+        const List = ({participants, selected}) => (
             <ul className={s.particpantList}>
-                {
-                    participants.map((item, i) => !item.local && this._renderModeratorSelectionItem({
-                        key: item.id,
-                        accessibilityLabel: t('toolbar.accessibilityLabel.moderatorSelectionList'),
-                        text: item.name,
-                        ...item
-                    }))
-                }
+                { participants.map((item, i) => this._renderModeratorSelectionItem({
+                    key: item.id,
+                    accessibilityLabel: t('toolbar.accessibilityLabel.moderatorSelectionList'),
+                    text: item.name,
+                    selected: item.id === selected,
+                    ...item
+                })) }
             </ul>    
         );
 
@@ -192,7 +180,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
         );
 
         let return_groups = [
-            <List participants={_participants} />,
+            <List participants={items} selected={this.selected} />,
             <hr className = {s.hangupMenuHr} key = 'hr' />,
             ...last_item
         ];
@@ -203,7 +191,14 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     _onHangupMe: () => void;
 
     _onHangupMe(e) {
-        this.setState({ showSelectModerator: true });
+        const moderators = this.props._participants.filter(
+            p => !p.local && p.role === PARTICIPANT_ROLE.MODERATOR);
+
+        if (moderators.length >= 1) {
+            this._hangup();
+        } else {
+            this.setState({ showSelectModerator: true });
+        }
     }
 
     _onHangupAll: () => void;
@@ -232,7 +227,8 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     _onSubmitModeratorSelection: () => void;
 
     _onSubmitModeratorSelection() {
-        this.props.dispatch(grantModerator(this.state.selected));
+        const selected = this.state.selected || this.selected;
+        this.props.dispatch(grantModerator(this.selected));
 
         // FIXME: these should be unified.
         if (navigator.product === 'ReactNative') {

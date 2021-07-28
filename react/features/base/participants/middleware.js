@@ -22,6 +22,7 @@ import { getTrackByJitsiTrack, TRACK_ADDED, TRACK_REMOVED, TRACK_UPDATED } from 
 import {
     DOMINANT_SPEAKER_CHANGED,
     GRANT_MODERATOR,
+    REVOKE_MODERATOR,
     KICK_PARTICIPANT,
     DISABLE_CHAT_PARTICIPANT,
     DISABLE_CHAT_FOR_ALL,
@@ -147,6 +148,14 @@ MiddlewareRegistry.register(store => next => action => {
     case GRANT_MODERATOR: {
         const { conference } = store.getState()['features/base/conference'];
         conference.grantOwner(action.id);
+        break;
+    }
+
+    case REVOKE_MODERATOR: {
+        console.log("Reached base/participants/middleware.js @ case REVOKE_MODERATOR");
+        console.log("Action is: ", action);
+        const { conference } = store.getState()['features/base/conference'];
+        conference.revokeModeratorRights(action.id);
         break;
     }
 

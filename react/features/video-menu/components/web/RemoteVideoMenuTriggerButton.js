@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 
 import { translate } from '../../../base/i18n';
 import { Icon, IconMenuThumb } from '../../../base/icons';
-import { getLocalParticipant, getParticipantById, PARTICIPANT_ROLE } from '../../../base/participants';
+import { getLocalParticipant, getParticipantById, isParticipantModerator, PARTICIPANT_ROLE } from '../../../base/participants';
 import { Popover } from '../../../base/popover';
 import { connect } from '../../../base/redux';
 import { requestRemoteControl, stopController } from '../../../remote-control';
@@ -15,6 +15,7 @@ import MuteEveryoneElsesVideoButton from './MuteEveryoneElsesVideoButton';
 import { REMOTE_CONTROL_MENU_STATES } from './RemoteControlButton';
 
 import {
+    RevokeModeratorButton,
     GrantModeratorButton,
     MuteButton,
     MuteVideoButton,
@@ -184,9 +185,11 @@ class RemoteVideoMenuTriggerButton extends Component<Props> {
             isLast,
             onVolumeChange,
             participantID,
+            _participant
         } = this.props;
 
         const buttons = [];
+        const isRemoteParticipantModerator = isParticipantModerator(_participant);
 
         if (_isModerator) {
             if (!_disableRemoteMute) {
@@ -216,6 +219,14 @@ class RemoteVideoMenuTriggerButton extends Component<Props> {
                 buttons.push(
                     <GrantModeratorButton
                         key = 'grant-moderator'
+                        participantID = { participantID } />
+                );
+            }
+
+            if (isRemoteParticipantModerator) {
+                buttons.push(
+                    <RevokeModeratorButton
+                        key = 'revoke-moderator'
                         participantID = { participantID } />
                 );
             }
@@ -349,6 +360,7 @@ function _mapStateToProps(state, ownProps) {
         _remoteControlState,
         _menuPosition,
         _overflowDrawer: overflowDrawer,
+        _participant: participant,
         _participantDisplayName,
         _disableGrantModerator: Boolean(disableGrantModerator),
         _shouldDisplayTileView: shouldDisplayTileView(state),

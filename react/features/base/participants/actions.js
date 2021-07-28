@@ -10,6 +10,7 @@ import {
     HIDDEN_PARTICIPANT_JOINED,
     HIDDEN_PARTICIPANT_LEFT,
     GRANT_MODERATOR,
+    REVOKE_MODERATOR,
     KICK_PARTICIPANT,
     DISABLE_CHAT_FOR_ALL,
     DISABLE_CHAT_PARTICIPANT,
@@ -77,6 +78,22 @@ export function dominantSpeakerChanged(id, conference) {
 export function grantModerator(id) {
     return {
         type: GRANT_MODERATOR,
+        id
+    };
+}
+
+/**
+ * Create an action for revoking moderator to a participant
+ * @param {string} id 
+ * @returns {{
+ *      type: REVOKE_MODERATOR,
+ *      id: string
+ * }}
+ */
+export function revokeModerator(id) {
+    console.log("Reached features/base/participants/actions.js @ revokeModerator");
+    return {
+        type: REVOKE_MODERATOR,
         id
     };
 }

@@ -17,7 +17,9 @@ import { isLocalParticipantModerator, isParticipantModerator } from '../../base/
 import { getIsParticipantVideoMuted } from '../../base/tracks';
 import { openChat } from '../../chat/actions';
 import { 
-    GrantModeratorDialog, 
+    GrantModeratorDialog,
+    RevokeModeratorDialog,
+    UnableToChangeChatStatusDialog,
     KickRemoteParticipantDialog, 
     MuteEveryoneDialog, 
     DisableChatForRemoteParticipantDialog, 
@@ -103,11 +105,25 @@ export const MeetingParticipantContextMenu = ({
         }));
     }, [ dispatch, participant ]);
 
-    // callback function when disable chat option is clicked
-    const disableChat = useCallback(() => {
-        dispatch(openDialog(DisableChatForRemoteParticipantDialog, {
+    // callback function when revoke moderator option is clicked
+    const revokeModerator = useCallback(() => {
+        dispatch(openDialog(RevokeModeratorDialog, {
             participantID: participant.id
         }));
+    }, [ dispatch, participant]);
+
+    // callback function when disable chat option is clicked
+    const disableChat = useCallback(() => {
+        if(participant.role === "moderator") {
+            dispatch(openDialog(UnableToChangeChatStatusDialog, { 
+                participantID: participant.id
+            }));
+        }
+        else {
+            dispatch(openDialog(DisableChatForRemoteParticipantDialog, {
+                participantID: participant.id
+            }));
+        }
     }, [ dispatch, participant ]);
 
     // callback function when enable chat option is clicked
@@ -173,15 +189,24 @@ export const MeetingParticipantContextMenu = ({
                     </ContextMenuItem>
                 )}
 
-                {/* Code block to display disable chat option menu */}
+                {/* Code block to revoke moderator rights of an existing moderator, the second operand of the && operator confirms the 
+                    selected participant to be moderator */}
+                {isLocalModerator && isParticipantModerator(participant) && (
+                    <ContextMenuItem onClick = { revokeModerator }>
+                        <ContextMenuIcon src = { IconCrown } />
+                        <span>{t('toolbar.accessibilityLabel.revokeModerator')}</span>
+                    </ContextMenuItem>
+                )}
+
+                {/* Code block to display enable chat option menu */}
                 {isLocalModerator && !isParticipantModerator(participant) && (participant.role === "visitor") && (
                     <ContextMenuItem onClick = { enableChat }>
                         <ContextMenuIcon src = { IconMessage } />
                         <span>{t('toolbar.accessibilityLabel.enableChatForParticipant')}</span>
                     </ContextMenuItem>
                 )}
-                {/* Code block to display enable chat option menu */}
-                {isLocalModerator && !isParticipantModerator(participant) && (participant.role !== "visitor") &&  (
+                {/* Code block to display disable chat option menu */}
+                {isLocalModerator && (participant.role !== "visitor") &&  (
                     <ContextMenuItem onClick = { disableChat }>
                         <ContextMenuIcon src = { IconMessage } />
                         <span>{t('toolbar.accessibilityLabel.disableChatForParticipant')}</span>

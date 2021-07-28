@@ -8,7 +8,7 @@ import { translate } from '../../../base/i18n';
 import { Linkify } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { MESSAGE_TYPE_LOCAL } from '../../constants';
-// import BanRemoteParticipantDialog from '../../../video-menu/components/web/BanRemoteParticipantDialog';
+import RevokeModeratorDialog from '../../../video-menu/components/web/RevokeModeratorDialog';
 import KickRemoteParticipantDialog from '../../../video-menu/components/web/KickRemoteParticipantDialog';
 
 import AbstractChatMessage, {
@@ -21,6 +21,7 @@ import { openDialog } from '../../../base/dialog';
 import EnableChatForRemoteParticipantDialog from '../../../video-menu/components/web/EnableChatForRemoteParticipantDialog';
 import DisableChatForRemoteParticipantDialog from '../../../video-menu/components/web/DisableChatForRemoteParticipantDialog';
 import { setPrivateMessageRecipient } from '../../actions'
+import UnableToChangeChatStatusDialog from '../../../video-menu/components/web/UnableToChangeChatStatusDialog';
 
 declare var APP: Object;
 
@@ -41,6 +42,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
         this._onToggleChatState = this._onToggleChatState.bind(this);
         this._onKickUser = this._onKickUser.bind(this);
         this._onPrivateMessage = this._onPrivateMessage.bind(this);
+        this._onRemoveModeratorRights = this._onRemoveModeratorRights.bind(this);
     }
 
     render() {
@@ -114,28 +116,41 @@ class ChatMessage extends AbstractChatMessage<Props> {
         dispatch(setPrivateMessageRecipient(_participant));
     }
 
+    _onRemoveModeratorRights: () => void;
+
+    _onRemoveModeratorRights() {
+        const { dispatch, message } = this.props;
+        console.log("Should dispatch an event to remove moderator rights");
+        dispatch(openDialog(RevokeModeratorDialog, { participantID: message.id }));
+    }
+
     _onToggleChatState: () => void;
 
     _onToggleChatState() {
-        const { _isChatMessageDisabled, dispatch, message } = this.props;
+        const { _isChatMessageDisabled, dispatch, message, _isSelectedParticipantAModerator } = this.props;
         
         // get the participantID for whom the action is to be dispatched
         const participantID = message.id;
 
-        //let predefinedRole = getParticipantById(APP.store.getState(), participantID).role;
+        if(_isSelectedParticipantAModerator) {
+            dispatch(openDialog(UnableToChangeChatStatusDialog, { participantID }))
 
-        // based on what role the current participant is occupying, we can identify whether chat is enabled or disabled
-        // when the role of participant is a visitor, he has 'no voice', so when the the popup menu item is clicked
-        // it should open the enable chat dialog
-        if(_isChatMessageDisabled) {
-            // dispatch necessary actions via a dialog box for the participant
-            dispatch(openDialog(EnableChatForRemoteParticipantDialog, { participantID }));
         }
-        // otherwise, it should open the disable chat dialog
-        else {   
-            // dispatch necessary actions via a dialog box for the participant
-            dispatch(openDialog(DisableChatForRemoteParticipantDialog, { participantID }));
+        else {
+            // based on what role the current participant is occupying, we can identify whether chat is enabled or disabled
+            // when the role of participant is a visitor, he has 'no voice', so when the the popup menu item is clicked
+            // it should open the enable chat dialog
+            if(_isChatMessageDisabled) {
+                // dispatch necessary actions via a dialog box for the participant
+                dispatch(openDialog(EnableChatForRemoteParticipantDialog, { participantID }));
+            }
+            // otherwise, it should open the disable chat dialog
+            else {   
+                // dispatch necessary actions via a dialog box for the participant
+                dispatch(openDialog(DisableChatForRemoteParticipantDialog, { participantID }));
+            }
         }
+        
     }
 
     /**
@@ -160,7 +175,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
      * @returns {Icon} 
      */
     _renderUserControlIcon = () => {
-        const { _isChatMessageDisabled, _participant, t } = this.props;
+        const { _isChatMessageDisabled, _participant, t, _isSelectedParticipantAModerator } = this.props;
 
         const localParticipant = getLocalParticipant(APP.store.getState());  
         let isLocalParticipantAModerator = (localParticipant.role === "moderator");
@@ -174,6 +189,11 @@ class ChatMessage extends AbstractChatMessage<Props> {
                         triggerButtonProps = {{ iconBefore: <Icon size = { 16 } src = { IconMenuThumb } /> }}
                         triggerType = 'button'>
                         <DropdownItemGroup>
+                            { _isSelectedParticipantAModerator && 
+                            <DropdownItem onClick = { this._onRemoveModeratorRights }>
+                                { t('dialog.removeModeratorRights') }
+                            </DropdownItem>
+                            }
                             <DropdownItem onClick = { this._onPrivateMessage }>
                                 { t('dialog.privateMessage') }
                             </DropdownItem>
@@ -229,6 +249,7 @@ function _mapStateToProps(state, ownProps) {
 
     return {
         _isChatMessageDisabled: Boolean(userRole === "visitor"),
+        _isSelectedParticipantAModerator: Boolean(userRole === "moderator"),
         _participant: participant,
     };
 }

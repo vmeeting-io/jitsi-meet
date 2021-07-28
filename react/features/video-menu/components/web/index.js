@@ -1,7 +1,10 @@
 // @flow
 
 export { default as GrantModeratorButton } from './GrantModeratorButton';
+export { default as RevokeModeratorButton } from './RevokeModeratorButton';
 export { default as GrantModeratorDialog } from './GrantModeratorDialog';
+export { default as RevokeModeratorDialog } from './RevokeModeratorDialog';
+export { default as UnableToChangeChatStatusDialog } from './UnableToChangeChatStatusDialog';
 export { default as KickButton } from './KickButton';
 export { default as KickRemoteParticipantDialog } from './KickRemoteParticipantDialog';
 export { default as DisableChatForRemoteParticipantDialog } from './DisableChatForRemoteParticipantDialog';

@@ -229,7 +229,7 @@ class ChatInput extends Component<Props, State> {
      * @returns {void}
      */
     _onDetectSubmit(event) {
-        if (event.key === 'Enter'
+        if (event.keyCode === 13
             && event.shiftKey === false
             && event.ctrlKey === false) {
             event.preventDefault();

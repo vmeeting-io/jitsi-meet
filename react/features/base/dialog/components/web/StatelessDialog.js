@@ -134,6 +134,7 @@ class StatelessDialog extends Component<Props> {
         const {
             customHeader,
             children,
+            className,
             hideCloseIconButton,
             t /* The following fixes a flow error: */ = _.identity,
             titleString,
@@ -159,7 +160,7 @@ class StatelessDialog extends Component<Props> {
                 shouldCloseOnEscapePress = { true }
                 width = { width || 'medium' }>
                 <div
-                    className = 'modal-dialog-content'
+                    className = { `modal-dialog-content ${className || ''}` }
                     onKeyPress = { this._onKeyPress }
                     ref = { this._setDialogElement }>
                     <form
@@ -326,6 +327,7 @@ class StatelessDialog extends Component<Props> {
      */
     _setDialogElement(element: ?HTMLElement) {
         this._dialogElement = element;
+        this.props.onRef && this.props.onRef(element);
     }
 
     _onKeyPress: (Object) => void;

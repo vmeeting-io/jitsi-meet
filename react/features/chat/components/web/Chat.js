@@ -33,7 +33,6 @@ import EnableChatForAllParticipantsDialog from '../../../video-menu/components/w
 import DisableChatForAllParticipantsDialog from '../../../video-menu/components/web/DisableChatForAllParticipantsDialog';
 
 import { showToast } from '../../../notifications';
-import TouchmoveHack from './TouchmoveHack';
 
 import Mark from 'mark.js';
 

@@ -247,7 +247,7 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
      * @returns {boolean} - True (to note that the modal should be closed).
      */
     _onSubmit() {
-        const { _autoCaptionOnRecord, _conference, _isDropboxEnabled, _token, dispatch } = this.props;
+        const { _autoCaptionOnRecord, _conference, _isDropboxEnabled, _jwt, _token, dispatch } = this.props;
         let appData;
         const attributes = {};
 
@@ -265,7 +265,7 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
             });
             attributes.type = RECORDING_TYPES.DROPBOX;
         } else {
-            let recorder_user = APP.store.getState()['features/base/jwt'].user;
+            let recorder_user = _jwt.user;
             const meetingId = _conference.room.meetingId;
             appData = JSON.stringify({
                 'file_recording_metadata': {
@@ -336,6 +336,7 @@ export function mapStateToProps(state: Object) {
         _fileRecordingsServiceEnabled: fileRecordingsServiceEnabled,
         _fileRecordingsServiceSharingEnabled: fileRecordingsServiceSharingEnabled,
         _isDropboxEnabled: isDropboxEnabled(state),
+        _jwt: state['features/base/jwt'],
         _token: state['features/dropbox'].token
     };
 }

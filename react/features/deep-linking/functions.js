@@ -24,7 +24,7 @@ export function generateDeepLinkingURL() {
     // appears to be a link with an app-specific scheme, not a Universal
     // Link.
 
-    const appScheme = interfaceConfig.APP_SCHEME || 'org.jitsi.meet';
+    const appScheme = interfaceConfig.APP_SCHEME || 'org.postech.vmeeting';
     const { SSO_AUTH_KEYS } = interfaceConfig;
     let { origin, pathname, search } = window.location;
     const params = new URLSearchParams(search);
@@ -46,7 +46,7 @@ export function generateDeepLinkingURL() {
     if (Platform.OS === 'android') {
         // https://meet.jit.si/foo -> meet.jit.si/foo
         const url = href.replace(regex, '').substr(2);
-        const pkg = interfaceConfig.ANDROID_APP_PACKAGE || 'org.jitsi.meet';
+        const pkg = interfaceConfig.ANDROID_APP_PACKAGE || 'org.postech.vmeeting';
 
         return `intent://${url}#Intent;scheme=${pkg};package=${pkg};end`;
     }

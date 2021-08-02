@@ -4,11 +4,10 @@ import React from 'react';
 
 import { connect } from '../../../base/redux';
 import { setPagination } from '../../../video-layout';
-import AbstractPageButton, {
-    _abstractMapStateToProps as _mapStateToProps,
-} from '../AbstractPageButton';
+import { _abstractMapStateToProps as _mapStateToProps } from '../AbstractPageButton';
+import PageButton from './PageButton';
 
-class PagePrevButton extends AbstractPageButton {
+class PagePrevButton extends PageButton {
     className = 'prev';
 
     /**

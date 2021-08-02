@@ -90,12 +90,12 @@ import {
 } from '../../actions';
 import { getToolbarAdditionalButtons, isToolboxVisible } from '../../functions';
 import DownloadButton from '../DownloadButton';
-import HangupButton from '../HangupButton';
 import HelpButton from '../HelpButton';
 import MuteEveryoneButton from '../MuteEveryoneButton';
 import MuteEveryonesVideoButton from '../MuteEveryonesVideoButton';
 
 import AudioSettingsButton from './AudioSettingsButton';
+import HangupButton from './HangupButton';
 import OverflowMenuButton from './OverflowMenuButton';
 import OverflowMenuProfileItem from './OverflowMenuProfileItem';
 import ToggleCameraButton from './ToggleCameraButton';
@@ -1401,7 +1401,6 @@ class Toolbox extends Component<Props> {
                             </ul>
                         </OverflowMenuButton>}
                         <HangupButton
-                            customClass = 'hangup-button'
                             visible = { this._shouldShowButton('hangup') } />
                     </div>
                 </div>

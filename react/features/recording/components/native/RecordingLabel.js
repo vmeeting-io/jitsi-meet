@@ -48,7 +48,7 @@ class RecordingLabel extends AbstractRecordingLabel {
             break;
         case JitsiRecordingConstants.status.OFF:
             status = 'off';
-            break;
+            return null;
         }
 
         return (

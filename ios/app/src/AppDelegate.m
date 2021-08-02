@@ -31,14 +31,14 @@
 
     jitsiMeet.conferenceActivityType = JitsiMeetConferenceActivityType;
     jitsiMeet.customUrlScheme = @"org.postech.vmeeting";
-    jitsiMeet.universalLinkDomains = @[@"vmeeting.io", @"devmeet.postech.ac.kr"];
+    jitsiMeet.universalLinkDomains = @[@"vmeeting.io", @"devmeet.vmeeting.kr"];
 
     jitsiMeet.defaultConferenceOptions = [JitsiMeetConferenceOptions fromBuilder:^(JitsiMeetConferenceOptionsBuilder *builder) {
         [builder setFeatureFlag:@"resolution" withValue:@(360)];
         [builder setFeatureFlag:@"ios.screensharing.enabled" withBoolean:YES];
         builder.serverURL = [NSURL URLWithString:@"https://vmeeting.io"];
 #if DEBUG
-        builder.serverURL = [NSURL URLWithString:@"https://devmeet.postech.ac.kr"];
+        builder.serverURL = [NSURL URLWithString:@"https://devmeet.vmeeting.kr"];
 #endif
         builder.welcomePageEnabled = YES;
 

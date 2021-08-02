@@ -529,14 +529,14 @@ export function participantMutedUs(participant, track) {
 
         const isAudio = track.isAudioTrack();
 
-        const title = isAudio
-            ? 'notify.mutedRemotelyTitle' : 'notify.videoMutedRemotelyTitle';
-        showToast({
-            title: i18next.t(title, {
+        dispatch(showNotification({
+            descriptionKey: isAudio ? 'notify.mutedRemotelyDescription' : 'notify.videoMutedRemotelyDescription',
+            titleKey: isAudio ? 'notify.mutedRemotelyTitle' : 'notify.videoMutedRemotelyTitle',
+            titleArguments: {
                 participantDisplayName:
                     getParticipantDisplayName(getState, participant.getId())
-            })
-        });
+            }
+        }));
     };
 }
 
@@ -556,14 +556,15 @@ export function participantKicked(kicker, kicked) {
             kicker: kicker.getId()
         });
 
-        showToast({
-            title: i18next.t('notify.kickParticipant', {
+        dispatch(showNotification({
+            titleKey: 'notify.kickParticipant',
+            titleArguments: {
                 kicked:
                     getParticipantDisplayName(getState, kicked.getId()),
                 kicker:
                     getParticipantDisplayName(getState, kicker.getId())
-            }),
-            timeout: NOTIFICATION_TIMEOUT * 2 });
+            }
+        }, NOTIFICATION_TIMEOUT * 2));
     };
 }
 

@@ -436,7 +436,6 @@ function _maybePlaySounds({ getState, dispatch }, action) {
     // The intention there was to not play user joined notification in big
     // conferences where 100th person is joining.
     if (!action.participant.local
-            && !interfaceConfig.DISABLE_JOIN_LEAVE_NOTIFICATION_SOUND
             && (!startAudioMuted
                 || getParticipantCount(state) < startAudioMuted)) {
         if (action.type === PARTICIPANT_JOINED) {

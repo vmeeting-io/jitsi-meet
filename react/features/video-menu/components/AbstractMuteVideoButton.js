@@ -9,8 +9,7 @@ import { MEDIA_TYPE } from '../../base/media';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
 import { isRemoteTrackMuted } from '../../base/tracks';
 
-import { showConfirmDialog } from '../../notifications';
-import { muteRemote } from '../actions.any';
+import { MuteRemoteParticipantsVideoDialog } from '.';
 
 export type Props = AbstractButtonProps & {
 
@@ -61,18 +60,8 @@ export default class AbstractMuteVideoButton extends AbstractButton<Props, *> {
                 'participant_id': participantID
             }));
 
-        showConfirmDialog({
-            cancelButtonText: t('dialog.Cancel'),
-            confirmButtonText: t(`videothumbnail.domuteVideo`),
-            showCancelButton: true,
-            text: t(`dialog.muteVideoParticipantTitle`)
-        }).then(result => {
-            if (result.isConfirmed) {
-                dispatch(muteRemote(participantID, MEDIA_TYPE.VIDEO));
-            }
-        });
-        // dispatch(openDialog(MuteRemoteParticipantDialog, { participantID }));
-    }
+            dispatch(openDialog(MuteRemoteParticipantsVideoDialog, { participantID }));
+        }
 
     /**
      * Renders the item disabled if the participant is muted.

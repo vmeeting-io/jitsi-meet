@@ -184,7 +184,15 @@ ColorSchemeRegistry.register('BottomSheet', {
         /**
          * Additional style that is not directly used as a style object.
          */
-        underlayColor: ColorPalette.overflowMenuItemUnderlay
+        underlayColor: ColorPalette.overflowMenuItemUnderlay,
+
+        checkStyle: {
+            color: schemeColor('text'),
+            fontSize: 14,
+            fontWeight: '100',
+            marginLeft: 'auto',
+            paddingRight: 16,
+        }
     },
 
     /**

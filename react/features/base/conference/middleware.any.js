@@ -1,7 +1,6 @@
 // @flow
 
 import axios from 'axios';
-import { debounce } from 'lodash';
 
 import {
     ACTION_PINNED,
@@ -16,7 +15,7 @@ import { openDisplayNamePrompt } from '../../display-name';
 import { saveErrorNotification, showErrorNotification } from '../../notifications';
 import { CONNECTION_ESTABLISHED, CONNECTION_FAILED, connectionDisconnected } from '../connection';
 import { validateJwt } from '../jwt';
-import { JitsiConferenceErrors } from '../lib-jitsi-meet';
+import { browser, JitsiConferenceErrors } from '../lib-jitsi-meet';
 import { MEDIA_TYPE } from '../media';
 import {
     getLocalParticipant,
@@ -164,16 +163,14 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
         sendAnalytics(createToolbarEvent('hangup'));
 
         // FIXME: these should be unified.
-        if (navigator.product === 'ReactNative') {
+        if (browser.isReactNative()) {
             dispatch(appNavigate(undefined));
         } else {
             dispatch(disconnect(false));
         }
-
         // connection.disconnect();
         // APP.UI.notifyMaxUsersLimitReached();
 
-        console.error('_conferenceFailed:', error);
         const [ reason ] = error.params;
 
         dispatch(saveErrorNotification({

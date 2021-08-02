@@ -2,10 +2,14 @@
 
 export { default as IconAdd } from './add.svg';
 export { default as IconAddPeople } from './link.svg';
+export { default as IconAngleDoubleDown } from './angle-double-down-solid.svg';
 export { default as IconAngleDoubleLeft } from './angle-double-left-solid.svg';
 export { default as IconAngleDoubleRight } from './angle-double-right-solid.svg';
+export { default as IconAngleDoubleUp } from './angle-double-up-solid.svg';
+export { default as IconAngleDown } from './angle-down-solid.svg';
 export { default as IconAngleLeft } from './angle-left-solid.svg';
 export { default as IconAngleRight } from './angle-right-solid.svg';
+export { default as IconAngleUp } from './angle-up-solid.svg';
 export { default as IconArrowBack } from './arrow_back.svg';
 export { default as IconArrowDown } from './arrow_down.svg';
 export { default as IconArrowDownLarge } from './arrow_down_large.svg';

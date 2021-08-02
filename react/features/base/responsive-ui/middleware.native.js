@@ -4,6 +4,7 @@ import { MiddlewareRegistry } from '../../base/redux';
 
 import { CLIENT_RESIZED } from './actionTypes';
 import { setAspectRatio, setReducedUI } from './actions';
+import { setPagination } from '../../video-layout';
 
 
 /**
@@ -22,6 +23,7 @@ MiddlewareRegistry.register(({ dispatch }) => next => action => {
 
         dispatch(setAspectRatio(width, height));
         dispatch(setReducedUI(width, height));
+        dispatch(setPagination());
         break;
     }
 

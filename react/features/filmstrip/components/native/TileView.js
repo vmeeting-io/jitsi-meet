@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import {
     ScrollView,
+    Text,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -14,6 +15,11 @@ import { setTileViewDimensions } from '../../actions.native';
 
 import Thumbnail from './Thumbnail';
 import styles from './styles';
+import { getCurrentPage } from '../../../video-layout';
+import debounce from 'lodash.debounce';
+import PageNextButton from '../../../conference/components/native/PageNextButton';
+import PagePrevButton from '../../../conference/components/native/PagePrevButton';
+import { isToolboxVisible } from '../../../toolbox/functions.native';
 
 /**
  * The type of the React {@link Component} props of {@link TileView}.
@@ -31,9 +37,9 @@ type Props = {
     _height: number,
 
     /**
-     * The participants in the conference.
+     * The number of participants in the conference.
      */
-    _participants: Array<Object>,
+    _participantCount: number,
 
     /**
      * Application's viewport height.
@@ -58,7 +64,7 @@ type Props = {
  * @private
  * @type {number}
  */
-const MARGIN = 10;
+const MARGIN = 0;
 
 /**
  * The aspect ratio the tiles should display in.
@@ -100,7 +106,7 @@ class TileView extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { _height, _width, onClick } = this.props;
+        const { _currentPage, _height, _pageButtonVisible, _totalPages, _width, onClick } = this.props;
         const rowElements = this._groupIntoRows(this._renderThumbnails(), this._getColumnCount());
 
         return (
@@ -120,6 +126,27 @@ class TileView extends Component<Props> {
                         { rowElements }
                     </View>
                 </TouchableWithoutFeedback>
+                { _pageButtonVisible && (
+                    <View style = {{
+                        ...styles.paginationContainerNarrow,
+                        alignSelf: 'center',
+                        position: 'absolute',
+                        overflow: 'hidden',
+                        bottom: 70
+                    }}>
+                        <PagePrevButton layout = 'horizontal' />
+                        <Text numberOfLines = { 1 } style = { styles.paginationLabel }>
+                            { _currentPage }
+                        </Text>
+                        <Text numberOfLines = { 1 } style = { styles.paginationLabel }>
+                            /
+                        </Text>
+                        <Text numberOfLines = { 1 } style = { styles.paginationLabel }>
+                            { _totalPages }
+                        </Text>
+                        <PageNextButton layout = 'horizontal' />
+                    </View>
+                )}
             </ScrollView>
         );
     }
@@ -131,7 +158,7 @@ class TileView extends Component<Props> {
      * @private
      */
     _getColumnCount() {
-        const participantCount = this.props._participants.length;
+        const participantCount = this.props._participantCount;
 
         // For narrow view, tiles should stack on top of each other for a lonely
         // call and a 1:1 call. Otherwise tiles should be grouped into rows of
@@ -149,45 +176,21 @@ class TileView extends Component<Props> {
     }
 
     /**
-     * Returns all participants with the local participant at the end.
-     *
-     * @private
-     * @returns {Participant[]}
-     */
-    _getSortedParticipants() {
-        const participants = [];
-        let localParticipant;
-
-        for (const participant of this.props._participants) {
-            if (participant.local) {
-                localParticipant = participant;
-            } else {
-                participants.push(participant);
-            }
-        }
-
-        localParticipant && participants.push(localParticipant);
-
-        return participants;
-    }
-
-    /**
      * Calculate the height and width for the tiles.
      *
      * @private
      * @returns {Object}
      */
     _getTileDimensions() {
-        const { _height, _participants, _width } = this.props;
+        const { _height, _participantCount, _width } = this.props;
         const columns = this._getColumnCount();
-        const participantCount = _participants.length;
         const heightToUse = _height - (MARGIN * 2);
         const widthToUse = _width - (MARGIN * 2);
         let tileWidth;
 
         // If there is going to be at least two rows, ensure that at least two
         // rows display fully on screen.
-        if (participantCount / columns > 1) {
+        if (_participantCount / columns > 1) {
             tileWidth = Math.min(widthToUse / columns, heightToUse / 2);
         } else {
             tileWidth = Math.min(widthToUse / columns, heightToUse);
@@ -246,7 +249,7 @@ class TileView extends Component<Props> {
             width: null
         };
 
-        return this._getSortedParticipants()
+        return this.props._participants
             .map(participant => (
                 <Thumbnail
                     disableTint = { true }
@@ -265,7 +268,7 @@ class TileView extends Component<Props> {
      * @private
      * @returns {void}
      */
-    _updateReceiverQuality() {
+    _updateReceiverQuality = debounce(() => {
         const { height, width } = this._getTileDimensions();
 
         this.props.dispatch(setTileViewDimensions({
@@ -274,7 +277,7 @@ class TileView extends Component<Props> {
                 width
             }
         }));
-    }
+    }, 300);
 }
 
 /**
@@ -286,11 +289,17 @@ class TileView extends Component<Props> {
  */
 function _mapStateToProps(state) {
     const responsiveUi = state['features/base/responsive-ui'];
+    const { pagination } = state['features/video-layout'] || {};
+    const toolboxVisible = isToolboxVisible(state);
 
     return {
         _aspectRatio: responsiveUi.aspectRatio,
+        _pageButtonVisible: toolboxVisible && pagination?.totalPages > 1,
+        _participants: getCurrentPage(state),
+        _currentPage: pagination?.current || 1,
+        _totalPages: pagination?.totalPages || 1,
         _height: responsiveUi.clientHeight,
-        _participants: state['features/base/participants'],
+        _participantCount: state['features/base/participants'].length,
         _width: responsiveUi.clientWidth
     };
 }

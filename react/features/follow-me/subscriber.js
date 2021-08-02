@@ -164,6 +164,6 @@ export function getFollowMeState(state) {
     //     followMeState.sendToRecorder = true;
     // }
 
-    console.error('getFollowMeState:', followMeState);
+    // console.error('getFollowMeState:', followMeState);
     return followMeState;
 }

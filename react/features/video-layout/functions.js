@@ -1,13 +1,14 @@
 // @flow
 import type { Dispatch } from 'redux';
 
-import { filter } from 'lodash';
 import { getFeatureFlag, TILE_VIEW_ENABLED } from '../base/flags';
+import { browser } from '../base/lib-jitsi-meet';
 import {
     getPinnedParticipant,
     getParticipantCount,
     pinParticipant,
 } from '../base/participants';
+import { ASPECT_RATIO_NARROW } from '../base/responsive-ui';
 import {
     ASPECT_RATIO_BREAKPOINT,
     DEFAULT_MAX_COLUMNS,
@@ -61,10 +62,17 @@ export function getCurrentLayout(state: Object) {
  * @returns {number}
  */
 export function getMaxColumnCount(state: Object) {
-    const configuredMax = interfaceConfig.TILE_VIEW_MAX_COLUMNS || DEFAULT_MAX_COLUMNS;
+    let configuredMax;
     const { disableResponsiveTiles } = state['features/base/config'];
+    const { aspectRatio, clientWidth } = state['features/base/responsive-ui'];
 
-    if (!disableResponsiveTiles) {
+    if (browser.isReactNative()) {
+        configuredMax = aspectRatio === ASPECT_RATIO_NARROW ? 2 : 3;
+    } else {
+        configuredMax = interfaceConfig.TILE_VIEW_MAX_COLUMNS || DEFAULT_MAX_COLUMNS;
+    }
+
+    if (!browser.isReactNative() && !disableResponsiveTiles) {
         const { clientWidth } = state['features/base/responsive-ui'];
         const participantCount = getParticipantCount(state);
 
@@ -87,6 +95,19 @@ export function getMaxColumnCount(state: Object) {
     return Math.min(Math.max(configuredMax, 1), ABSOLUTE_MAX_COLUMNS);
 }
 
+export function getMaxRowCount(state: Object) {
+    let configuredMax;
+    const { aspectRatio } = state['features/base/responsive-ui'];
+
+    if (browser.isReactNative()) {
+        configuredMax = aspectRatio === ASPECT_RATIO_NARROW ? 3 : 2;
+    } else {
+        configuredMax = interfaceConfig.TILE_VIEW_MAX_COLUMNS || DEFAULT_MAX_COLUMNS;
+    }
+
+    return configuredMax;
+}
+
 /**
  * Returns participants of in the current page.
  *
@@ -96,7 +117,7 @@ export function getMaxColumnCount(state: Object) {
 export function getCurrentPage(state) {
     const { current = 1, pageSize } = state['features/video-layout'].pagination || {};
     const participants = state['features/base/participants'];
-    const currentLayout = getCurrentLayout(state);
+    const isTileViewActive = shouldDisplayTileView(state);
     const pageStart = (current - 1) * pageSize;
     const pageEnd = current * pageSize;
     const page = [];
@@ -104,10 +125,10 @@ export function getCurrentPage(state) {
 
     for (let cursor = 0; pageSize > page.length && cursor < participants.length; cursor += 1) {
         const p = participants[cursor];
-        if (currentLayout === LAYOUTS.TILE_VIEW) {
-            if (p.isFakeParticipant) continue;
-        } else {
-            if (p.isFakeParticipant || p.local) continue;
+        if (p.isFakeParticipant) {
+            continue;
+        } else if (p.local && !browser.isReactNative() && !isTileViewActive) {
+            continue;
         }
         if (index >= pageStart && index < pageEnd) {
             page.push(p);

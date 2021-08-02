@@ -871,4 +871,15 @@ export function createWelcomePageEvent(action, actionSubject, attributes = {}) {
         source: 'welcomePage'
     };
 }
- 
+
+/**
+ * Indicates that we received a remote command to mute.
+ */
+ export const createRemotelyMutedEvent = function(mediaType) {
+    return {
+        action: 'remotely.muted',
+        attributes: {
+            'media_type': mediaType,
+        }
+    };
+};

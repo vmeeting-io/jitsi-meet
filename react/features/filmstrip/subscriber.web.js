@@ -1,6 +1,5 @@
 // @flow
 
-import { filter, map } from 'lodash';
 import { StateListenerRegistry, equals } from '../base/redux';
 import { clientResized } from '../base/responsive-ui';
 import { setFilmstripVisible } from '../filmstrip/actions';

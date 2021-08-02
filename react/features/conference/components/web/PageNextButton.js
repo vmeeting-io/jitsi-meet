@@ -7,8 +7,9 @@ import { setPagination } from '../../../video-layout';
 import AbstractPageButton, {
     _abstractMapStateToProps as _mapStateToProps,
 } from '../AbstractPageButton';
+import PageButton from './PageButton';
 
-class PageNextButton extends AbstractPageButton {
+class PageNextButton extends PageButton {
     className = 'next';
 
     /**

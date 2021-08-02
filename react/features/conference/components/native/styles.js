@@ -137,7 +137,25 @@ export default {
 
     insecureRoomNameLabel: {
         backgroundColor: INSECURE_ROOM_NAME_LABEL_COLOR
-    }
+    },
+
+    pageButton: {
+        underlayColor: ColorPalette.buttonUnderlay,
+        text: {
+            color: '#B8C7E0',
+        },
+        icon: {
+            alignSelf: 'center',
+            color: ColorPalette.white,
+            fontSize: 24
+        },
+        button: {
+            display: 'flex',
+            padding: 10,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+    },
 };
 
 ColorSchemeRegistry.register('Conference', {

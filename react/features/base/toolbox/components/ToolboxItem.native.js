@@ -21,11 +21,11 @@ export default class ToolboxItem extends AbstractToolboxItem<Props> {
     _renderIcon() {
         const { styles } = this.props;
 
-        return (
+        return this.props.icon ? (
             <Icon
                 src = { this.props.icon }
                 style = { styles && styles.iconStyle } />
-        );
+        ) : null;
     }
 
     /**

@@ -3,12 +3,16 @@
 import type { Dispatch } from 'redux';
 
 import {
+    createRemotelyMutedEvent,
     createStartMutedConfigurationEvent,
     sendAnalytics
 } from '../../analytics';
 import { getName } from '../../app/functions';
+import { showNotification } from '../../notifications';
 import { endpointMessageReceived } from '../../subtitles';
+import { ConfirmUnmuteDialog } from '../../video-menu/components';
 import { JITSI_CONNECTION_CONFERENCE_KEY } from '../connection';
+import { openDialog } from '../dialog';
 import { JitsiConferenceEvents } from '../lib-jitsi-meet';
 import { MEDIA_TYPE, setAudioMuted, setVideoMuted } from '../media';
 import {
@@ -22,7 +26,7 @@ import {
     participantRoleChanged,
     participantUpdated
 } from '../participants';
-import { getLocalTracks, replaceLocalTrack, trackAdded, trackRemoved } from '../tracks';
+import { getLocalTracks, isLocalTrackMuted, replaceLocalTrack, trackAdded, trackRemoved } from '../tracks';
 import {
     getBackendSafePath,
     getBackendSafeRoomName,
@@ -70,8 +74,6 @@ import {
     sendLocalParticipant
 } from './functions';
 import logger from './logger';
-
-declare var APP: Object;
 
 /**
  * Adds conference (event) listeners.
@@ -241,6 +243,127 @@ function _addConferenceListeners(conference, dispatch, state) {
             id,
             email: data.value
         })));
+
+    conference.on(
+        JitsiConferenceEvents.AUDIO_MUTED_BY_FOCUS,
+        (actor, mute) => {
+        if (mute === isLocalTrackMuted(state['features/base/tracks'], MEDIA_TYPE.AUDIO)) {
+            return;
+        }
+
+        const doMute = (mute) => {
+            // TODO: Add a way to differentiate between commands which caused
+            // us to mute and those that did not change our state (i.e. we were
+            // already muted).
+            sendAnalytics(createRemotelyMutedEvent(MEDIA_TYPE.AUDIO));
+
+            conference.mutedByFocusActor = actor;
+
+            // set isMutedByFocus when setAudioMute Promise ends
+            conference.rtc.setAudioMute(mute).then(
+                () => {
+                    conference.isMutedByFocus = true;
+                    conference.mutedByFocusActor = null;
+                })
+                .catch(
+                    error => {
+                        conference.mutedByFocusActor = null;
+                        logger.warn(
+                            'Error while audio muting due to focus request', error);
+                    });
+        };
+
+        if (mute) {
+            doMute(mute);
+        } else {
+            // ask unmute for privacy
+            dispatch(openDialog(ConfirmUnmuteDialog, {
+                cancelKey: 'dialog.Cancel',
+                okKey: 'videothumbnail.dounmute',
+                contentKey: 'notify.unmuteByHost',
+                onSubmit: () => {
+                    doMute(mute);
+                    conference.ackMuteParticipant(actor, true);
+                },
+                onCancel: () => {
+                    conference.ackMuteParticipant(actor, false);
+                }
+            }));
+        }
+    });
+
+    conference.on(JitsiConferenceEvents.ACK_AUDIO_MUTED_BY_FOCUS, (id, ack) => {
+        if (!ack) {
+            const participant = conference.getParticipantById(id);
+
+            dispatch(showNotification({
+                titleArguments: {
+                    participantDisplayName: participant._displayName
+                },
+                titleKey: 'notify.refusedUnmute'
+            }));
+        }
+    });
+
+    conference.on(
+        JitsiConferenceEvents.VIDEO_MUTED_BY_FOCUS,
+        (actor, mute) => {
+        if (mute === isLocalTrackMuted(state['features/base/tracks'], MEDIA_TYPE.VIDEO)) {
+            return;
+        }
+        const doMute = mute => {
+            // TODO: Add a way to differentiate between commands which caused
+            // us to mute and those that did not change our state (i.e. we were
+            // already muted).
+            sendAnalytics(createRemotelyMutedEvent(MEDIA_TYPE.VIDEO));
+
+            conference.mutedVideoByFocusActor = actor;
+
+            // set isVideoMutedByFocus when setVideoMute Promise ends
+            conference.rtc.setVideoMute(mute).then(
+                () => {
+                    conference.isVideoMutedByFocus = true;
+                    conference.mutedVideoByFocusActor = null;
+                })
+                .catch(
+                    error => {
+                        conference.mutedVideoByFocusActor = null;
+                        logger.warn(
+                            'Error while video muting due to focus request', error);
+                    });
+        };
+
+        if (mute) {
+            doMute(mute);
+        } else {
+            // ask unmute for privacy
+            dispatch(openDialog(ConfirmUnmuteDialog, {
+                cancelKey: 'dialog.Cancel',
+                okKey: 'videothumbnail.dounmuteVideo',
+                contentKey: 'notify.unmuteVideoByHost',
+                onSubmit: () => {
+                    doMute(mute);
+                    conference.ackMuteParticipantVideo(actor, true);
+                },
+                onCancel: () => {
+                    conference.ackMuteParticipantVideo(actor, false);
+                }
+            }));
+        }
+    });
+
+    conference.on(JitsiConferenceEvents.ACK_VIDEO_MUTED_BY_FOCUS, (id, ack) => {
+        if (!ack) {
+            const participant = conference.getParticipantById(id);
+
+            dispatch(showNotification({
+                titleKey: 'notify.refusedUnmuteVideo',
+                titleArguments: {
+                    participantDisplayName: participant._displayName
+                }
+            }));
+        }
+    });
 }
 
 /**
@@ -506,8 +629,10 @@ export function checkIfCanJoin() {
         const { authRequired, password }
             = getState()['features/base/conference'];
 
+        const replaceParticipant = getReplaceParticipant(getState());
+
         authRequired && dispatch(_conferenceWillJoin(authRequired));
-        authRequired && authRequired.join(password);
+        authRequired && authRequired.join(password, replaceParticipant);
     };
 }
 

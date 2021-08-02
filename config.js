@@ -5,6 +5,19 @@ var config = {
     // Connection
     //
 
+    //Capatcha Configs
+    captcha: {
+        enabled: true,           // flag to enable/disable captcha.
+        gRecaptcha: false,       // flag to choose captcha amoung self hosted and google recaptcha {true: google recaptcha, false: self hosted captcha.}
+        google:{
+            SiteKey: '',//Site key form google.
+        },
+        selfHosted:{
+		   timeout:2       //Captcha expiry time for self hosted captcha in minutes.
+        },
+        noOfFailedLoginAttemptsAllowed: 5  //no of failed login attempt allowed with captcha disabled.
+    },	
+
     hosts: {
         // XMPP domain.
         domain: 'jitsi-meet.example.com',
@@ -39,6 +52,7 @@ var config = {
 
     // Testing / experimental features.
     //
+    newTestVar : true,
 
     testing: {
         // Disables the End to End Encryption feature. Useful for debugging
@@ -55,8 +69,7 @@ var config = {
         },
 
         // Enables the test specific features consumed by jitsi-meet-torture
-        // testMode: false
-
+        testMode: true,
         // Disables the auto-play behavior of *all* newly created video element.
         // This is useful when the client runs on a host with limited resources.
         // noAutoPlayVideo: false

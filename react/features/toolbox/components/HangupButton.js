@@ -146,8 +146,8 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     }
 
     _renderModeratorSelectionContent() {
-        const { _participants, _selected, t } = this.props;
-        const selected = this.state.selected || _selected;
+        const { _participants, t } = this.props;
+        const selected = this.state.selected || this.props._selected;
 
         if (_participants.length <= 1)
             return [];

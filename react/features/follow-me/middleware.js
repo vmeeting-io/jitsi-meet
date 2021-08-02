@@ -153,11 +153,6 @@ function _onFollowMeCommand(attributes = {}, value, id, store) {
         store.dispatch(setFollowMeModerator(id));
     }
 
-    const documentManager = APP.UI.getSharedDocumentManager();
-    if (!documentManager) {
-        return;
-    }
-
     const { state: oldState, value: oldValue } = state['features/follow-me'] || {};
 
     store.dispatch(setFollowMeState(attributes, value));
@@ -177,7 +172,8 @@ function _onFollowMeCommand(attributes = {}, value, id, store) {
     if (typeof APP !== 'undefined'
         && oldState?.sharedDocumentVisible !== attributes.sharedDocumentVisible) {
         const isEtherpadVisible = attributes.sharedDocumentVisible === 'true';
-
+        const documentManager = APP.UI.getSharedDocumentManager();
+    
         if (documentManager
                 && isEtherpadVisible !== state['features/etherpad'].editing) {
             documentManager.toggleEtherpad();
@@ -211,7 +207,7 @@ function _onFollowMeCommand(attributes = {}, value, id, store) {
         // force repagination
         store.dispatch(setPagination({ order: pagination.order }, true));
     }
-    console.error('onFollowMeCommand:', attributes, value, id);
+    // console.error('onFollowMeCommand:', attributes, value, id);
 }
 
 /**

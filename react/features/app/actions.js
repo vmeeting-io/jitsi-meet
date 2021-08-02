@@ -5,7 +5,7 @@
 
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import axios from 'axios';
-import { has, isEmpty, omit, size } from 'lodash';
+import { has, omit, size } from 'lodash';
 import qs from 'query-string';
 import type { Dispatch } from 'redux';
 
@@ -23,9 +23,8 @@ import {
     storeConfig
 } from '../base/config';
 import { connect, disconnect, setLocationURL } from '../base/connection';
-import { i18next } from '../base/i18n';
 import { setJWT } from '../base/jwt';
-import { loadConfig } from '../base/lib-jitsi-meet';
+import { browser, loadConfig } from '../base/lib-jitsi-meet';
 import { MEDIA_TYPE } from '../base/media';
 import { toState } from '../base/redux';
 import { createDesiredLocalTracks, isLocalCameraTrackMuted, isLocalTrackMuted } from '../base/tracks';
@@ -39,7 +38,7 @@ import {
 import { setLicenseError } from '../billing-counter/actions';
 import { LICENSE_ERROR_INVALID_LICENSE, LICENSE_ERROR_MAXED_LICENSE } from '../billing-counter/constants';
 import { isVpaasMeeting } from '../billing-counter/functions';
-import { clearNotifications, showToast } from '../notifications';
+import { clearNotifications, showNotification } from '../notifications';
 import { setFatalError } from '../overlay';
 
 import {
@@ -104,7 +103,7 @@ export function appNavigate(uri: ?string) {
 
         // Disconnect from any current conference.
         // FIXME: unify with web.
-        if (navigator.product === 'ReactNative') {
+        if (browser.isReactNative()) {
             dispatch(disconnect());
         }
 
@@ -245,7 +244,7 @@ export function appNavigate(uri: ?string) {
         // host가 지정된 경우, host 값이 true인 경우만 방장으로 참석한다.
         if (room &&
             pathname !== '/' &&
-            window.location.pathname === pathname &&
+            (browser.isReactNative() || window.location.pathname === pathname) &&
             (!has(params, 'host') || params.host === 'true')
         ) {
             let apiUrl;
@@ -497,13 +496,10 @@ export function maybeRedirectToWelcomePage(options: Object = {}) {
 
         // else: show thankYou dialog only if there is no feedback
         if (options.showThankYou) {
-            showToast({
-                title: i18next.t('dialog.thankYou', { appName: getName() })
-            });
-            // dispatch(showNotification({
-            //     titleArguments: { appName: getName() },
-            //     titleKey: 'dialog.thankYou'
-            // }));
+            dispatch(showNotification({
+                titleArguments: { appName: getName() },
+                titleKey: 'dialog.thankYou'
+            }));
         }
 
         // if Welcome page is enabled redirect to welcome page after 3 sec, if

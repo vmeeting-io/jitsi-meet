@@ -30,9 +30,9 @@ import android.view.KeyEvent;
 
 import androidx.annotation.Nullable;
 
-import org.jitsi.meet.sdk.JitsiMeet;
-import org.jitsi.meet.sdk.JitsiMeetActivity;
-import org.jitsi.meet.sdk.JitsiMeetConferenceOptions;
+import org.postech.vmeeting.sdk.JitsiMeet;
+import org.postech.vmeeting.sdk.JitsiMeetActivity;
+import org.postech.vmeeting.sdk.JitsiMeetConferenceOptions;
 
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -92,7 +92,7 @@ public class MainActivity extends JitsiMeetActivity {
         // Setup Crashlytics and Firebase Dynamic Links
         // Here we are using reflection since it may have been disabled at compile time.
         try {
-            Class<?> cls = Class.forName("org.jitsi.meet.GoogleServicesHelper");
+            Class<?> cls = Class.forName("org.postech.vmeeting.GoogleServicesHelper");
             Method m = cls.getMethod("initialize", JitsiMeetActivity.class);
             m.invoke(null, this);
         } catch (Exception e) {

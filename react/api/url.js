@@ -11,9 +11,9 @@ export function getAuthServerURL(stateful) {
 
 export function getLocationURL(stateful) {
     const state = toState(stateful);
-    const locationURL = state['features/base/connection'].locationURL;
+    const { _host, host } = state['features/base/connection'].locationURL;
 
-    return `https://${locationURL._host}`;
+    return `https://${_host || host}`;
 }
 
 export function getAuthUrl(stateful) {

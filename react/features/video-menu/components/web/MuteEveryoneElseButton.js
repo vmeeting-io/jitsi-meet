@@ -7,7 +7,7 @@ import { translate } from '../../../base/i18n';
 import { IconMicDisabled, IconMicrophone } from '../../../base/icons';
 import { MEDIA_TYPE } from '../../../base/media';
 import { connect } from '../../../base/redux';
-import { showConfirmDialog } from '../../../notifications';
+import { showConfirmDialog } from '../../../notifications/functions.web';
 import { muteAllParticipants } from '../../actions';
 import AbstractMuteEveryoneElseButton, {
     type Props

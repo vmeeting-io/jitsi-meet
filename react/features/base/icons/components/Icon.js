@@ -173,6 +173,7 @@ export default function Icon(props: Props) {
             tabIndex = { tabIndex }>
             <IconComponent
                 fill = { calculatedColor }
+                color = { calculatedColor }
                 height = { calculatedSize }
                 id = { id }
                 width = { calculatedSize } />

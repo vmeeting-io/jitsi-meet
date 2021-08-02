@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="org.jitsi.meet.sdk">
+    package="org.postech.vmeeting.sdk">
     <!-- XXX ACCESS_NETWORK_STATE is required by WebRTC. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -47,7 +47,7 @@
         </service>
 
         <service
-            android:name="org.jitsi.meet.sdk.JitsiMeetOngoingConferenceService"
+            android:name="org.postech.vmeeting.sdk.JitsiMeetOngoingConferenceService"
             android:foregroundServiceType="mediaProjection" />
 
         <provider

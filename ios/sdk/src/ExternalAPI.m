@@ -18,15 +18,15 @@
 #import "JitsiMeetView+Private.h"
 
 // Events
-static NSString * const hangUpAction = @"org.jitsi.meet.HANG_UP";
-static NSString * const setAudioMutedAction = @"org.jitsi.meet.SET_AUDIO_MUTED";
-static NSString * const sendEndpointTextMessageAction = @"org.jitsi.meet.SEND_ENDPOINT_TEXT_MESSAGE";
-static NSString * const toggleScreenShareAction = @"org.jitsi.meet.TOGGLE_SCREEN_SHARE";
-static NSString * const retrieveParticipantsInfoAction = @"org.jitsi.meet.RETRIEVE_PARTICIPANTS_INFO";
-static NSString * const openChatAction = @"org.jitsi.meet.OPEN_CHAT";
-static NSString * const closeChatAction = @"org.jitsi.meet.CLOSE_CHAT";
-static NSString * const sendChatMessageAction = @"org.jitsi.meet.SEND_CHAT_MESSAGE";
-static NSString * const setVideoMutedAction = @"org.jitsi.meet.SET_VIDEO_MUTED";
+static NSString * const hangUpAction = @"org.postech.vmeeting.HANG_UP";
+static NSString * const setAudioMutedAction = @"org.postech.vmeeting.SET_AUDIO_MUTED";
+static NSString * const sendEndpointTextMessageAction = @"org.postech.vmeeting.SEND_ENDPOINT_TEXT_MESSAGE";
+static NSString * const toggleScreenShareAction = @"org.postech.vmeeting.TOGGLE_SCREEN_SHARE";
+static NSString * const retrieveParticipantsInfoAction = @"org.postech.vmeeting.RETRIEVE_PARTICIPANTS_INFO";
+static NSString * const openChatAction = @"org.postech.vmeeting.OPEN_CHAT";
+static NSString * const closeChatAction = @"org.postech.vmeeting.CLOSE_CHAT";
+static NSString * const sendChatMessageAction = @"org.postech.vmeeting.SEND_CHAT_MESSAGE";
+static NSString * const setVideoMutedAction = @"org.postech.vmeeting.SET_VIDEO_MUTED";
 
 @implementation ExternalAPI
 

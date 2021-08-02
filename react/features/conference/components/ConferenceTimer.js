@@ -7,8 +7,6 @@ import { getConferenceTimestamp, getConferenceTimeRemained } from '../../base/co
 import { getLocalizedDurationFormatter, translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
 
-import s from './ConferenceTimer.module.scss';
-
 /**
  * The type of the React {@code Component} props of {@link ConferenceTimer}.
  */
@@ -113,7 +111,7 @@ class ConferenceTimer extends Component<Props, State> {
 
         if (_timeRemained) {
             return (
-                <div className = { s.timeRemainedContainer }>
+                <div className = 'time-remained-container'>
                     { t('dialog.conferenceTimeRemaining', {
                         seconds: getLocalizedDurationFormatter(timerValue * 1000)
                     }) }

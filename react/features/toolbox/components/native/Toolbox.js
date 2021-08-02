@@ -11,9 +11,9 @@ import { InviteButton } from '../../../invite';
 import { TileViewButton } from '../../../video-layout';
 import { isToolboxVisible, getMovableButtons } from '../../functions.native';
 import AudioMuteButton from '../AudioMuteButton';
-import HangupButton from '../HangupButton';
 import VideoMuteButton from '../VideoMuteButton';
 
+import HangupButton from './HangupButton';
 import OverflowMenuButton from './OverflowMenuButton';
 import RaiseHandButton from './RaiseHandButton';
 import ToggleCameraButton from './ToggleCameraButton';

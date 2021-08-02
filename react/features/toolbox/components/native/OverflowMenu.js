@@ -146,8 +146,8 @@ class OverflowMenu extends PureComponent<Props, State> {
                     {!toolbarButtons.has('togglecamera') && <ToggleCameraButton { ...buttonProps } />}
                     {!toolbarButtons.has('tileview') && <TileViewButton { ...buttonProps } />}
                     <RecordButton { ...buttonProps } />
-                    <LiveStreamButton { ...buttonProps } />
-                    <SharedVideoButton { ...buttonProps } />
+                    {/* <LiveStreamButton { ...buttonProps } /> */}
+                    {/* <SharedVideoButton { ...buttonProps } /> */}
                     <ClosedCaptionButton { ...buttonProps } />
                     <SharedDocumentButton { ...buttonProps } />
                     <MuteEveryoneButton { ...buttonProps } />

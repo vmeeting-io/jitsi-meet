@@ -1,7 +1,6 @@
 /* @flow */
 
 import { getCurrentConference } from '../base/conference';
-import { i18next } from '../base/i18n';
 import {
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
@@ -18,7 +17,7 @@ import {
     showParticipantJoinedNotification
 } from './actions';
 import { NOTIFICATION_TIMEOUT } from './constants';
-import { joinLeaveNotificationsDisabled, showToast } from './functions';
+import { joinLeaveNotificationsDisabled } from './functions';
 
 declare var interfaceConfig: Object;
 
@@ -94,11 +93,13 @@ MiddlewareRegistry.register(store => next => action => {
         if (oldRole && oldRole !== role && role === PARTICIPANT_ROLE.MODERATOR) {
             const displayName = getParticipantDisplayName(state, id);
 
-            showToast({
-                title: i18next.t('notify.grantedTo', {
-                    to: displayName || i18next.t('notify.somebody')
-                }),
-                timeout: NOTIFICATION_TIMEOUT });
+            store.dispatch(showNotification({
+                descriptionArguments: { to: displayName || '$t(notify.somebody)' },
+                descriptionKey: 'notify.grantedTo',
+                titleKey: 'notify.somebody',
+                title: displayName
+            },
+            NOTIFICATION_TIMEOUT));
         }
 
         return next(action);

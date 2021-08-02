@@ -23,7 +23,7 @@ import ParticipantsCount from './ParticipantsCount';
 import { InsecureRoomNameLabel } from '.';
 
 import { setSubject } from '../../../base/conference';
-import { showConfirmDialog } from '../../../notifications';
+import { showConfirmDialog } from '../../../notifications/functions.web';
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
 
 /**

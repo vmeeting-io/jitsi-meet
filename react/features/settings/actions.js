@@ -12,7 +12,6 @@ import {
 } from './actionTypes';
 import { LogoutDialog, SettingsDialog } from './components';
 import { getMoreTabProps, getProfileTabProps } from './functions';
-import { showToast } from '../notifications';
 
 declare var APP: Object;
 
@@ -123,11 +122,9 @@ export function submitProfileTab(newState: Object): Function {
         // check if there is a value for displayName i.e. participant's name
         // if it is not set, show a toast message
         if(newState.displayName === "" || newState.displayName === undefined || newState.displayName.trim() === "") {
-            showToast({
-                title: i18next.t('notify.noNameInsertedInProfileTab'),
-                timeout: NOTIFICATION_TIMEOUT,
-                icon: 'info',
-                animation: false });
+            dispatch(showNotification({
+                titleKey: 'notify.noNameInsertedInProfileTab'
+            }));
         }
 
         // else, proceed to updating profile information

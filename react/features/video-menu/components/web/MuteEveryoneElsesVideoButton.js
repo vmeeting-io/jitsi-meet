@@ -7,7 +7,7 @@ import { translate } from '../../../base/i18n';
 import { IconMuteVideoEveryoneElse } from '../../../base/icons';
 import { MEDIA_TYPE } from '../../../base/media';
 import { connect } from '../../../base/redux';
-import { showConfirmDialog } from '../../../notifications';
+import { showConfirmDialog } from '../../../notifications/functions.web';
 import { muteAllParticipants } from '../../actions.any';
 import AbstractMuteEveryoneElsesVideoButton, {
     type Props

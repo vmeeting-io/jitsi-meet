@@ -20,8 +20,8 @@ import { getCurrentLayout, getCurrentPage, LAYOUTS } from '../../../video-layout
 import { setFilmstripVisible } from '../../actions';
 import { shouldRemoteVideosBeVisible } from '../../functions';
 
-import PagePrevButton from '../../../conference/components/web/PagePrevButton';
-import PageNextButton from '../../../conference/components/web/PageNextButton';
+import PagePrevButton from '../../../conference/components/PagePrevButton';
+import PageNextButton from '../../../conference/components/PageNextButton';
 
 import Thumbnail from './Thumbnail';
 

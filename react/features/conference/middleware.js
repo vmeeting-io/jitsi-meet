@@ -1,4 +1,5 @@
 // @flow
+import { appNavigate } from '../app/actions';
 import {
     CONFERENCE_JOINED,
     KICKED_OUT,
@@ -8,6 +9,7 @@ import {
 } from '../base/conference';
 import { disconnect } from '../base/connection';
 import { hideDialog, isDialogOpen } from '../base/dialog';
+import { browser } from '../base/lib-jitsi-meet';
 import { setActiveModalId } from '../base/modal';
 import { getParticipantById, getParticipantDisplayName, participantUpdated, pinParticipant } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
@@ -51,7 +53,11 @@ MiddlewareRegistry.register(store => next => action => {
             titleKey: 'dialog.sessTerminated',
         }));
 
-        dispatch(disconnect(false));
+        if (browser.isReactNative()) {
+            dispatch(appNavigate(undefined));
+        } else {
+            dispatch(disconnect(false));
+        }
         break;
     }
 

@@ -2,7 +2,10 @@
 
 import { debounce, findIndex, keyBy, map, sortBy } from 'lodash';
 import type { Dispatch } from 'redux';
+import { browser } from '../base/lib-jitsi-meet';
 import { getParticipantCount, getParticipants, moveParticipant, setParticipants } from '../base/participants';
+import { ASPECT_RATIO_NARROW } from '../base/responsive-ui';
+import { SMALL_THUMBNAIL_SIZE } from '../filmstrip';
 
 import {
     SCREEN_SHARE_REMOTE_PARTICIPANTS_UPDATED,
@@ -10,8 +13,7 @@ import {
     SET_PAGINATION,
     SET_TILE_VIEW
 } from './actionTypes';
-import { LAYOUTS } from './constants';
-import { getCurrentLayout, getMaxColumnCount, shouldDisplayTileView } from './functions';
+import { getMaxColumnCount, shouldDisplayTileView } from './functions';
 
 declare var interfaceConfig;
 
@@ -75,34 +77,44 @@ export function setPagination(pagination: Object, force: Boolean) {
 
 const debouncedSetPagination = debounce(function (dispatch, state) {
     const newState = state['features/video-layout'].pagination;
+    const { aspectRatio, clientHeight, clientWidth } = state['features/base/responsive-ui'];
     const beforeState = JSON.stringify(newState);
     const participants = getParticipants(state);
 
     // reset pagination.
-    const currentLayout = getCurrentLayout(state);
+    const isTileViewActive = shouldDisplayTileView(state);
     const participantCount = participants.length;
 
-    if (currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW) {
-        const { clientHeight } = state['features/base/responsive-ui'];
+    if (isTileViewActive) {
+        if (browser.isReactNative()) {
+            newState.pageSize = getMaxColumnCount(state) *
+                (aspectRatio === ASPECT_RATIO_NARROW ? 3 : 2);
+        } else {
+            newState.pageSize = getMaxColumnCount(state) * getMaxColumnCount(state);
+        }
+        newState.totalPages = Math.max(Math.ceil(participantCount / newState.pageSize), 1);
+        // data = participants;
+    } else {
         // padding(30)
         // localVideo(124)
         // pageButton(24 * 2)
         // toolButton(24)
-        const thumbHeight = 124;    // 120 + topBottomMargin(4)
-        const pageHeight = clientHeight - 30 - thumbHeight - 24;
 
-        newState.pageSize = Math.floor(pageHeight < (participantCount-1) * thumbHeight
-            ? (pageHeight - (24 * 2)) / thumbHeight
-            : pageHeight / thumbHeight);
-        newState.totalPages = Math.max(Math.ceil((participantCount-1) / newState.pageSize), 1);
-        // data = participants.filter(p => !p.local);
-    } else if (currentLayout === LAYOUTS.TILE_VIEW) {
-        newState.pageSize = getMaxColumnCount(state) * getMaxColumnCount(state);
-        newState.totalPages = Math.max(Math.ceil(participantCount / newState.pageSize), 1);
-        // data = participants;
-    } else {
-        console.error('ERROR: (updateParticipants) Unexpected layout!', currentLayout);
-        return;
+        if (browser.isReactNative()) {
+            const thumbWidth = SMALL_THUMBNAIL_SIZE + 4;
+            const boundWidth = aspectRatio === ASPECT_RATIO_NARROW ? clientWidth : clientHeight;
+
+            newState.pageSize = Math.floor(boundWidth / thumbWidth);
+            newState.totalPages = Math.max(Math.ceil(participantCount / newState.pageSize), 1);
+        } else {
+            const thumbHeight = 124;    // 120 + topBottomMargin(4)
+            const pageHeight = clientHeight - 30 - thumbHeight - 24;
+    
+            newState.pageSize = Math.floor(pageHeight < (participantCount-1) * thumbHeight
+                ? (pageHeight - (24 * 2)) / thumbHeight
+                : pageHeight / thumbHeight);
+            newState.totalPages = Math.max(Math.ceil((participantCount-1) / newState.pageSize), 1);
+        }
     }
 
     if (newState.totalPages < newState.current) {
@@ -290,12 +302,16 @@ export function changePageOrder(ids) {
 export function updateParticipants() {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const state = getState();
-        const currentLayout = getCurrentLayout(state);
+        const isTileViewActive = shouldDisplayTileView(state);
         const participantCount = getParticipantCount(state);
         const { current = 1 } = state['features/video-layout'].pagination || {};
         let pageSize = 1, totalPages = 1;
 
-        if (currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW) {
+        if (isTileViewActive) {
+            pageSize = getMaxColumnCount(state) * getMaxColumnCount(state);
+            totalPages = Math.ceil(participantCount / pageSize);
+            // data = participants;
+        } else {
             const { clientHeight } = state['features/base/responsive-ui'];
             // padding(30)
             // localVideo(124)
@@ -309,13 +325,6 @@ export function updateParticipants() {
                 : pageHeight / thumbHeight);
             totalPages = Math.ceil((participantCount-1) / pageSize);
             // data = participants.filter(p => !p.local);
-        } else if (currentLayout === LAYOUTS.TILE_VIEW) {
-            pageSize = getMaxColumnCount(state) * getMaxColumnCount(state);
-            totalPages = Math.ceil(participantCount / pageSize);
-            // data = participants;
-        } else {
-            console.error('ERROR: (updateParticipants) Unexpected layout!', currentLayout);
-            return;
         }
 
         // const conference = getCurrentConference(state);

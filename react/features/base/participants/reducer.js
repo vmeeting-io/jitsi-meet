@@ -74,7 +74,7 @@ ReducerRegistry.register('features/base/participants', (state = [], action) => {
         return state.map(p => _participant(p, action));
 
     case PARTICIPANT_JOINED:
-        return [ ...state, _participantJoined(action) ];
+        return _participantUpsert(state, action);
 
     case PARTICIPANT_LEFT: {
         // XXX A remote participant is uniquely identified by their id in a
@@ -233,4 +233,19 @@ function _participantJoined({ participant }) {
         presence,
         role: role || PARTICIPANT_ROLE.NONE
     };
+}
+
+function _participantUpsert(state, action) {
+    let found = false;
+    let newState = state.map(p => {
+        if (p.id === action.id) {
+            found = true;
+            return _participantJoined(action);
+        }
+        return p;
+    });
+    if (!found) {
+        newState.push(_participantJoined(action));
+    }
+    return newState;
 }

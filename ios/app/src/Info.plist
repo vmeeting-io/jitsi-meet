@@ -44,7 +44,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>FirebaseCrashlyticsCollectionEnabled</key>
 	<string>false</string>
 	<key>FirebaseScreenReportingEnabled</key>
@@ -74,12 +74,12 @@
 	<string>Participate in meetings with voice.</string>
 	<key>NSUserActivityTypes</key>
 	<array>
-		<string>org.jitsi.JitsiMeet.ios.conference</string>
+		<string>org.postech.Vmeeting.ios.conference</string>
 	</array>
 	<key>RTCAppGroupIdentifier</key>
-	<string>group.org.jitsi.meet.appgroup</string>
+	<string>group.org.vmeeting.appgroup</string>
 	<key>RTCScreenSharingExtension</key>
-	<string>org.jitsi.meet.broadcast.extension</string>
+	<string>org.postech.vmeeting.broadcast-extension</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

@@ -1,11 +1,11 @@
-package org.jitsi.meet.sdk;
+package org.postech.vmeeting.sdk;
 
 import android.content.Intent;
 import android.os.Bundle;
 
 import com.facebook.react.bridge.ReadableMap;
 
-import org.jitsi.meet.sdk.log.JitsiMeetLogger;
+import org.postech.vmeeting.sdk.log.JitsiMeetLogger;
 
 import java.util.HashMap;
 
@@ -75,18 +75,18 @@ public class BroadcastEvent {
     }
 
     public enum Type {
-        CONFERENCE_JOINED("org.jitsi.meet.CONFERENCE_JOINED"),
-        CONFERENCE_TERMINATED("org.jitsi.meet.CONFERENCE_TERMINATED"),
-        CONFERENCE_WILL_JOIN("org.jitsi.meet.CONFERENCE_WILL_JOIN"),
-        AUDIO_MUTED_CHANGED("org.jitsi.meet.AUDIO_MUTED_CHANGED"),
-        PARTICIPANT_JOINED("org.jitsi.meet.PARTICIPANT_JOINED"),
-        PARTICIPANT_LEFT("org.jitsi.meet.PARTICIPANT_LEFT"),
-        ENDPOINT_TEXT_MESSAGE_RECEIVED("org.jitsi.meet.ENDPOINT_TEXT_MESSAGE_RECEIVED"),
-        SCREEN_SHARE_TOGGLED("org.jitsi.meet.SCREEN_SHARE_TOGGLED"),
-        PARTICIPANTS_INFO_RETRIEVED("org.jitsi.meet.PARTICIPANTS_INFO_RETRIEVED"),
-        CHAT_MESSAGE_RECEIVED("org.jitsi.meet.CHAT_MESSAGE_RECEIVED"),
-        CHAT_TOGGLED("org.jitsi.meet.CHAT_TOGGLED"),
-        VIDEO_MUTED_CHANGED("org.jitsi.meet.VIDEO_MUTED_CHANGED");
+        CONFERENCE_JOINED("org.postech.vmeeting.CONFERENCE_JOINED"),
+        CONFERENCE_TERMINATED("org.postech.vmeeting.CONFERENCE_TERMINATED"),
+        CONFERENCE_WILL_JOIN("org.postech.vmeeting.CONFERENCE_WILL_JOIN"),
+        AUDIO_MUTED_CHANGED("org.postech.vmeeting.AUDIO_MUTED_CHANGED"),
+        PARTICIPANT_JOINED("org.postech.vmeeting.PARTICIPANT_JOINED"),
+        PARTICIPANT_LEFT("org.postech.vmeeting.PARTICIPANT_LEFT"),
+        ENDPOINT_TEXT_MESSAGE_RECEIVED("org.postech.vmeeting.ENDPOINT_TEXT_MESSAGE_RECEIVED"),
+        SCREEN_SHARE_TOGGLED("org.postech.vmeeting.SCREEN_SHARE_TOGGLED"),
+        PARTICIPANTS_INFO_RETRIEVED("org.postech.vmeeting.PARTICIPANTS_INFO_RETRIEVED"),
+        CHAT_MESSAGE_RECEIVED("org.postech.vmeeting.CHAT_MESSAGE_RECEIVED"),
+        CHAT_TOGGLED("org.postech.vmeeting.CHAT_TOGGLED"),
+        VIDEO_MUTED_CHANGED("org.postech.vmeeting.VIDEO_MUTED_CHANGED");
 
 
         private static final String CONFERENCE_WILL_JOIN_NAME = "CONFERENCE_WILL_JOIN";

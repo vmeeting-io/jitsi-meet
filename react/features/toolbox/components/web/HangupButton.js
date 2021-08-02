@@ -21,9 +21,6 @@ import { connect } from '../../base/redux';
 import { AbstractHangupButton, HangupMenuItem } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
 
-import s from './HangupButton.module.scss';
-import { isHost } from '../../base/jwt';
-
 /**
  * The type of the React {@code Component} props of {@link HangupButton}.
  */
@@ -120,14 +117,14 @@ class HangupButton extends AbstractHangupButton<Props, *> {
                 accessibilityLabel = { t('toolbar.accessibilityLabel.hangupAll') }
                 icon = { IconPresentation }
                 key = 'hangupAll'
-                className = { s.menuItemWarning }
+                className = 'menu-item-warning'
                 onClick = { this._onHangupAll }
                 text = { t('toolbar.hangupAll') } />,
             <HangupMenuItem
                 accessibilityLabel = { t('toolbar.accessibilityLabel.hangup') }
                 icon = { IconOpenInNew }
                 key = 'hangup'
-                className = { s.menuItem }
+                className = 'menu-item'
                 onClick = { this._onHangupMe }
                 text = { t('toolbar.hangup') } />
         ];
@@ -137,7 +134,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
         const { accessibilityLabel, disabled, elementAfter, id, key, text } = props;
         const selected = id === this.state.selected;
 
-        let className = selected ? s.menuItemSelected : s.menuItem;
+        let className = selected ? 'menu-item-selected' : 'menu-item';
         className += disabled ? ' disabled' : '';
 
         return (
@@ -146,11 +143,11 @@ class HangupButton extends AbstractHangupButton<Props, *> {
                 className = { className }
                 onClick = { disabled ? null : () => this._onModeratorSelection(id) }
                 key = { key } >
-                <div className = { s.avatar }>
+                <div className = 'avatar'>
                     <Avatar participantId = { id } size = { 24 } />
                 </div>
-                <div className = { s.text }>{ text }</div>
-                <div className = { s.icon }>
+                <div className = 'text'>{ text }</div>
+                <div className = 'icon'>
                 { selected && <Icon src = { IconCheck } /> }
                 </div>
                 { elementAfter || null }
@@ -165,7 +162,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
             return [];
 
         const List = ({participants}) => (
-            <ul className={s.particpantList}>
+            <ul className = 'particpant-list'>
                 {
                     participants.map((item, i) => !item.local && this._renderModeratorSelectionItem({
                         key: item.id,
@@ -182,7 +179,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
         last_item.push(
             <li
                 aria-label = { t('toolbar.accessibilityLabel.grantModerator') }
-                className = { s.menuItemWarning }
+                className = 'menu-item-warning'
                 onClick =  { this._onSubmitModeratorSelection }
                 key = 'close'>
                 <div className = 'text'>
@@ -193,7 +190,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
 
         let return_groups = [
             <List participants={_participants} />,
-            <hr className = {s.hangupMenuHr} key = 'hr' />,
+            <hr className = 'hangup-menu-hr' key = 'hr' />,
             ...last_item
         ];
 
@@ -252,13 +249,13 @@ class HangupButton extends AbstractHangupButton<Props, *> {
         const { isOpen, showSelectModerator } = this.state;
         const children = (
             <ul
-                className = { showSelectModerator ? s.moderatorSelectionMenu : s.hangupMenu }>
+                className = { showSelectModerator ? 'moderator-selection-menu' : 'hangup-menu' }>
                 { this._renderHangupOptionsMenuContent() }
             </ul>
         );
 
         return (
-            <div className = { s.hangupButton }>
+            <div className = 'hangup-button'>
                 <InlineDialog
                     content = { children }
                     isOpen = { isOpen }
@@ -281,7 +278,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
      */
     _onCloseDialog(e) {
         if (this.state.showSelectModerator) {
-            const inHangupMenu = e.event.target.closest(`.${s.hangupButton}`);
+            const inHangupMenu = e.event.target.closest('.hangup-button');
             const isGhost = !Boolean(e.event.target.closest('body'));
             if (isGhost || inHangupMenu) return;
         }

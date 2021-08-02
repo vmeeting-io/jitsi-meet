@@ -244,7 +244,7 @@ var interfaceConfig = {
      * Specify Firebase dynamic link properties for the mobile apps.
      */
     // MOBILE_DYNAMIC_LINK: {
-    //    APN: 'org.jitsi.meet',
+    //    APN: 'org.postech.vmeeting',
     //    APP_CODE: 'w2atb',
     //    CUSTOM_DOMAIN: undefined,
     //    IBI: 'com.atlassian.JitsiMeet.ios',

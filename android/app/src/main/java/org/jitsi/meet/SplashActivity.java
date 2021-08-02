@@ -3,7 +3,7 @@ package org.postech.vmeeting;
 import android.content.Intent;
 import android.os.Bundle;
 
-import org.jitsi.meet.sdk.JitsiMeetActivity;
+import org.postech.vmeeting.sdk.JitsiMeetActivity;
 
 public class SplashActivity extends JitsiMeetActivity {
 

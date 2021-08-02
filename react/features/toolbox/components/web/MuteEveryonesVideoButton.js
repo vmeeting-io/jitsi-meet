@@ -7,7 +7,7 @@ import { MEDIA_TYPE } from '../../../base/media';
 import { getLocalParticipant, PARTICIPANT_ROLE } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { showConfirmDialog } from '../../../notifications';
+import { showConfirmDialog } from '../../../notifications/functions.web';
 import { muteAllParticipants } from '../../../video-menu/actions.any';
 
 type Props = AbstractButtonProps & {

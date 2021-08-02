@@ -60,7 +60,7 @@
         "today": "Bugün"
     },
     "chat": {
-        "error": "Hata: mesajınız gönderilmedi. Gerekçe: {{error}}",
+        "error": "Hata: Mesajınız gönderilmedi. Neden: {{error}}",
         "fieldPlaceHolder": "Mesajınızı buraya yazın",
         "messagebox": "Bir mesaj yazın",
         "messageTo": "{{recipient}} adlı kişiye özel mesaj",
@@ -225,6 +225,17 @@
         "micNotSendingDataTitle": "Mikrofona erişilemiyor.",
         "micPermissionDeniedError": "Mikrofon kullanımına izin vermediniz. Yine de toplantıya katılabilirsiniz, ancak diğerleri sizi duyamaz. Bunu düzeltmek için mikrofon butonunu kullanın.",
         "micUnknownError": "Bilinmeyen bir nedenden dolayı mikrofon kullanılamıyor.",
+        "muteEveryoneElseDialog" : "Susturulduğunda, mikrofonlarını sessizden çıkaramayacaksınız ancak onlar diledikleri zaman kendilerini sessizden çıkarabilirler.",
+        "muteEveryoneElseTitle" : "{{whom}} hariç herkesi sustur?",
+        "muteEveryoneDialog" : "Herkesi susturmak istediğinizden emin misiniz? Onları sessizden çıkaramayacaksınız ancak onlar kendilerini her zaman sessizden çıkarabilirler.",
+        "muteEveryoneTitle" : "Herkesi sustur?",
+        "muteEveryoneElsesVideoDialog" : "Kameraları devre dışı bırakıldığında geri açamayacaksınız, ancak onlar kameralarını her zaman açabilirler.",
+        "muteEveryoneElsesVideoTitle" : "{{whom}} hariç herkesin kamerasını devre dışı bırak?",
+        "muteEveryonesVideoDialog" : "Herkesin kamerasını devre dışı bırakmak istediğinizden emin misiniz? Kameralar devre dışı bırakıldığında geri açamayacaksınız, ancak onlar kameralarını her zaman açabilirler.",
+        "muteEveryonesVideoDialogOk" : "Kameraları Kapat",
+        "muteEveryonesVideoTitle" : "Herkesin kamerasını devre dışı bırak?",
+        "muteEveryoneSelf" : "Kendiniz",
+        "muteEveryoneStartMuted" : "Şu andan itibaren herkes sessizde başlayacak",
         "muteParticipantBody": "Sesi açamazsınız, ancak istedikleri zaman kendileri seslerini açabilirler.",
         "muteParticipantButton": "Sustur",
         "muteParticipantDialog": "Bu katılımcının sesini kapatmak istediğinizden emin misiniz? Sesini açamazsınız, ancak istedikleri zaman kendileri seslerini açabilirler.",
@@ -404,7 +415,7 @@
         "invalidStreamKey": "Canlı akış anahtarı yanlış olabilir.",
         "off": "Canlı Akış durduruldu",
         "offBy": "{{name}} canlı akışı durdurdu",
-        "on": "Canlı Akış",
+        "on": "Canlı Akış başlatıldı",
         "onBy": "{{name}} canlı akışı başlattı",
         "pending": "Canlı Akış başlatılıyor...",
         "serviceName": "Canlı Akış hizmeti",
@@ -564,7 +575,7 @@
         "live": "CANLI",
         "loggedIn": "{{userName}} olarak giriş yapıldı",
         "off": "Kayıt durdu",
-        "on": "Kaydediliyor",
+        "on": "Kayıt başladı",
         "pending": "Toplantıyı kaydetmeye hazırlanıyor ...",
         "rec": "KAYIT",
         "serviceDescription": "Kaydınız kayıt hizmeti tarafından kaydedilecektir",
@@ -579,7 +590,7 @@
     },
 
     "security": {
-        "about": "Toplantınıza bir şifre ekleyebilirsiniz. Katılımcıların toplantıya katılmasına izin verilmeden önce şifreyi girmeleri gerekecektir.",
+        "about": "Toplantınıza bir parola ekleyebilirsiniz. Katılımcıların toplantıya katılmasına izin verilmeden önce parolayı girmeleri gerekecektir.",
         "insecureRoomNameWarning": "Toplantı odası güvenli değil. Konferansınıza istenmeyen katılımcılar katılabilir.",
         "securityOptions": "Güvenlik Seçenekleri"
     },
@@ -688,7 +699,7 @@
             "show": "Sahnede göster",
             "speakerStats": "Konuşmacı istatistiklerini aç/kapat",
             "tileView": "Döşeme görünümünü aç/kapat",
-            "toggleCamera": "Kamerayı aç/kapat",
+            "toggleCamera": "Kamerayı değiştir",
             "videomute": "Sessiz videoyu aç/kapat",
             "videoblur": ""
         },
@@ -720,7 +731,7 @@
         "moreActions": "Daha fazla işlem",
         "moreOptions": "Daha fazla seçenek",
         "mute": "Sessiz / Sesli",
-        "muteEveryone": "Mute everyone",
+        "muteEveryone": "Herkesi sustur",
         "noAudioSignalTitle": "Mikrofonunuzdan hiçbir giriş gelmiyor!",
         "noAudioSignalDesc": "Sistem ayarlarından veya donanımdan sesi kapatmadıysanız, cihazınızı değiştirin.",
         "noAudioSignalDescSuggestion": "Sistem ayarlarından veya donanımdan kasıtlı olarak kapatmadıysanız, önerilen aygıta geçmeyi düşünün.",
@@ -730,7 +741,7 @@
         "noisyAudioInputDesc": "Mikrofonunuz gürültü yapıyor gibi görünüyor, lütfen cihazı kapatmayı veya değiştirmeyi düşünün.",
         "openChat": "Mesajlaşmayı aç",
         "pip": "Resim içinde Resim moduna gir",
-        "privateMessage": "Özel mesajgönder",
+        "privateMessage": "Özel mesaj gönder",
         "profile": "Profilinizi düzenleyin",
         "raiseHand": "Elinizi kaldırın/indirin",
         "raiseYourHand": "Elinizi kaldırın",
@@ -746,7 +757,7 @@
         "stopSharedVideo": "Youtube videosunu durdur",
         "talkWhileMutedPopup": "Bir şey mi dediniz? Mikrofonunuz kapalı.",
         "tileViewToggle": "Döşeme görünümünü aç/kapat",
-        "toggleCamera": "Kamerayı aç/kapat",
+        "toggleCamera": "Kamerayı değiştir",
         "videomute": "Kamera başlat / durdur",
         "startvideoblur": "",
         "stopvideoblur": ""
@@ -806,7 +817,7 @@
         "domute": "Sustur",
         "domuteOthers": "Diğer herkesi sustur",
         "flip": "Döndür",
-        "kick": "Çıkarıldı",
+        "kick": "Çıkar",
         "moderator": "Yönetici",
         "mute": "Katılımcı sessiz",
         "muted": "Sessiz",
@@ -819,7 +830,7 @@
             "join": "Katılmak için dokunun",
             "roomname": "Oda adı girin"
         },
-        "appDescription": "Durma ve tüm ekiple görüntülü sohbet et. Hatta tanıdığın herkesi davet et. {{app}} tüm gün, her gün ücretsiz olarak kullanabileceğiniz, hesap gerektirmeden kullanbilieceğiniz tamamen şifrelenmiş, % 100 özgür bir video konferans çözümüdür.",
+        "appDescription": "Durma ve tüm ekiple görüntülü sohbet et. Hatta tanıdığın herkesi davet et. {{app}} tüm gün, her gün ücretsiz olarak ve hesap gerektirmeden kullanabileceğiniz tamamen şifrelenmiş, % 100 özgür bir video konferans çözümüdür.",
         "audioVideoSwitch": {
             "audio": "Ses",
             "video": "Görüntü"
@@ -844,7 +855,7 @@
         "sendFeedback": "Geri bildirim gönder",
         "terms": "Kurallar",
         "title": "Güvenli, tüm özelliklere erişimli ve tamamen ücretsiz görüntülü arama"
-       
+
     },
 
     "lonelyMeetingExperience": {
@@ -865,27 +876,27 @@
 
     "lobby": {
         "allow": "İzin ver",
-        "backToKnockModeButton": "Şifre yok, bunun yerine katılmayı isteyin",
+        "backToKnockModeButton": "Parola yok, bunun yerine katılmayı isteyin",
         "dialogTitle": "Lobi modu",
         "disableDialogContent": "Lobi modu şu anda etkin. Bu özellik, istenmeyen katılımcıların toplantınıza katılamamasını sağlar. Devre dışı bırakmak istiyor musunuz?",
         "disableDialogSubmit": "Devre Dışı",
         "emailField": "E-posta adresinizi giriniz",
-        "enableDialogPasswordField": "Şifre belirleyin (isteğe bağlı)",
+        "enableDialogPasswordField": "Parola belirleyin (isteğe bağlı)",
         "enableDialogSubmit": "Etkin",
         "enableDialogText": "Lobi modu, toplantınızı yalnızca kişilerin bir moderatör tarafından resmi olarak onaylandıktan sonra girmelerine izin vererek korumanıza izin verir.",
-        "enterPasswordButton": "Toplantı şifresini girin",
-        "enterPasswordTitle": "Toplantıya katılmak için şifre girin",
-        "invalidPassword": "Geçersiz şifre",
+        "enterPasswordButton": "Toplantı parolasını girin",
+        "enterPasswordTitle": "Toplantıya katılmak için parola girin",
+        "invalidPassword": "Geçersiz parola",
         "joiningMessage": "Birisi isteğinizi kabul eder etmez toplantıya katılacaksınız",
-        "joinWithPasswordMessage": "Şifre ile katılmaya çalışıyorsunuz lütfen bekleyin...",
+        "joinWithPasswordMessage": "Parola ile katılmaya çalışıyorsunuz lütfen bekleyin...",
         "joinRejectedMessage": "Katılma isteğiniz bir moderatör tarafından reddedildi.",
         "joinTitle": "Toplantıya katıl",
         "joiningTitle": "Toplantıya katılma isteniyor...",
-        "joiningWithPasswordTitle": "Şifre ile katılıyor...",
+        "joiningWithPasswordTitle": "Parola ile katılıyor...",
         "knockButton": "Katılmak için sor",
         "knockTitle": "Birisi toplantıya katılmak istiyor",
         "nameField": "Adınızı giriniz",
-        "passwordField": "Toplantı şifresini giriniz",
+        "passwordField": "Toplantı parolasını giriniz",
         "passwordJoinButton": "Katıl",
         "reject": "Reddet",
         "toggleLabel": "Lobiyi etkinleştir"

@@ -192,14 +192,23 @@ class HangupButton extends AbstractHangupButton<Props, *> {
 
     _onHangupAll: () => void;
 
-    _onHangupAll() {
-        const { _apiBase, _roomInfo } = this.props;
+    async _onHangupAll() {
+        const { _apiBase, _roomInfo, _meetingId } = this.props;
         if (_roomInfo) {
             const apiUrl = `${_apiBase}/conferences/${_roomInfo._id}`;
             axios.delete(apiUrl);
+            this._hangup();
+        } else if (_meetingId) {
+            try {
+                const resp = await axios.get(`${_apiBase}/conferences?meeting_id=${_meetingId}`);
+                const conf = resp.data?.docs[0];
+                console.log(resp, conf);
+                axios.delete(`${_apiBase}/conferences/${conf._id}`);
+                this._hangup();
+            } catch (err) {
+                console.error('_onHangupAll: failed!', err);
+            }
         }
-
-        this._hangup();
     }
 
     _onModeratorSelection: () => void;
@@ -278,7 +287,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
  */
  function _mapStateToProps(state) {
     const participants = state['features/base/participants'];
-    const { roomInfo } = state['features/base/conference'];
+    const { conference, roomInfo } = state['features/base/conference'];
     const isModerator = getLocalParticipant(state).role === PARTICIPANT_ROLE.MODERATOR;
 
     let moderator = 0;
@@ -295,6 +304,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     return {
         _apiBase: getAuthUrl(state),
         _moderator: moderator,
+        _meetingId: conference?.room?.meetingId,
         _participants: items,
         _selected: !moderator && items[0]?.id,
         _showHangupMenu: isModerator && participants.length > 1,

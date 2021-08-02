@@ -174,7 +174,7 @@ function initJWTTokenListener(room) {
 function authenticate(room: Object, lockPassword: string) {
     const config = APP.store.getState()['features/base/config'];
 
-    if (isTokenAuthEnabled(config) || room.isExternalAuthEnabled()) {
+    if (isTokenAuthEnabled(config)) {
         doExternalAuth(room, lockPassword);
     } else {
         window.location.href = `${AUTH_PAGE_BASE}/login?next=${encodeURIComponent(`/${room.getName()}`)}`;

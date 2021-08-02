@@ -147,6 +147,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
 
     _renderModeratorSelectionContent() {
         const { _participants, _selected, t } = this.props;
+        const selected = this.state.selected || _selected;
 
         if (_participants.length <= 1)
             return [];
@@ -157,7 +158,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
                     key: item.id,
                     accessibilityLabel: t('toolbar.accessibilityLabel.moderatorSelectionList'),
                     text: item.name,
-                    selected: item.id === _selected,
+                    selected: item.id === selected,
                     ...item
                 })) }
             </ul>,

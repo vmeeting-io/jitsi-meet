@@ -11,7 +11,9 @@ import {
     IconCrown,
     IconMessage,
     IconMuteEveryoneElse,
-    IconVideoOff
+    IconVideoOff,
+    IconChatDisabled,
+    IconChatEnabled
 } from '../../base/icons';
 import { isLocalParticipantModerator, isParticipantModerator } from '../../base/participants';
 import { getIsParticipantVideoMuted } from '../../base/tracks';
@@ -173,17 +175,17 @@ export const MeetingParticipantContextMenu = ({
                     </ContextMenuItem>
                 )}
 
-                {/* Code block to display disable chat option menu */}
+                {/* Code block to display enable chat option menu */}
                 {isLocalModerator && !isParticipantModerator(participant) && (participant.role === "visitor") && (
                     <ContextMenuItem onClick = { enableChat }>
-                        <ContextMenuIcon src = { IconMessage } />
+                        <ContextMenuIcon src = { IconChatEnabled } />
                         <span>{t('toolbar.accessibilityLabel.enableChatForParticipant')}</span>
                     </ContextMenuItem>
                 )}
-                {/* Code block to display enable chat option menu */}
+                {/* Code block to display disable chat option menu */}
                 {isLocalModerator && !isParticipantModerator(participant) && (participant.role !== "visitor") &&  (
                     <ContextMenuItem onClick = { disableChat }>
-                        <ContextMenuIcon src = { IconMessage } />
+                        <ContextMenuIcon src = { IconChatDisabled } />
                         <span>{t('toolbar.accessibilityLabel.disableChatForParticipant')}</span>
                     </ContextMenuItem>
                 )}

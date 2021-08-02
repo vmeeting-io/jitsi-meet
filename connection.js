@@ -101,7 +101,6 @@ function getUserCredentials(state) {
  */
 export function connect(id, password, roomName) {
     const connectionConfig = Object.assign({}, config);
-    const { jwt } = APP.store.getState()['features/base/jwt'];
 
     // Use Websocket URL for the web app if configured. Note that there is no 'isWeb' check, because there's assumption
     // that this code executes only on web browsers/electron. This needs to be changed when mobile and web are unified.
@@ -119,7 +118,7 @@ export function connect(id, password, roomName) {
 
     const connection = new JitsiMeetJS.JitsiConnection(
         'vmeeting_app_id',
-        jwt,
+        getUserCredentials(APP.store.getState()),
         connectionConfig);
 
     if (config.iAmRecorder) {

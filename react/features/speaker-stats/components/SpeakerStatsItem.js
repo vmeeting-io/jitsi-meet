@@ -8,7 +8,8 @@ import { BaseIndicator } from '../../base/react';
 import {
     IconCamera,
     IconCameraDisabled,
-    IconChat,
+    IconChatDisabled,
+    IconChatEnabled,
     IconCrown,
     IconMicDisabled,
     IconMicrophone,
@@ -218,9 +219,9 @@ class SpeakerStatsItem extends Component<Props> {
         return (
             <BaseIndicator
                 className = { chatEnabled ? '' : s.disabled }
-                icon = { IconChat }
+                icon = { chatEnabled ? IconChatEnabled : IconChatDisabled }
                 iconId = 'chat'
-                iconSize = { 16 }
+                iconSize = { chatEnabled ? 14 : 16}
                 tooltipKey = { toolTipMessage }
                 tooltipPosition = 'top' />
         );

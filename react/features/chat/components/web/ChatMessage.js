@@ -8,7 +8,8 @@ import { translate } from '../../../base/i18n';
 import { Linkify } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { MESSAGE_TYPE_LOCAL } from '../../constants';
-import BanRemoteParticipantDialog from '../../../video-menu/components/web/BanRemoteParticipantDialog';
+// import BanRemoteParticipantDialog from '../../../video-menu/components/web/BanRemoteParticipantDialog';
+import KickRemoteParticipantDialog from '../../../video-menu/components/web/KickRemoteParticipantDialog';
 
 import AbstractChatMessage, {
     type Props
@@ -38,7 +39,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
         super(props);
 
         this._onToggleChatState = this._onToggleChatState.bind(this);
-        this._onBanUser = this._onBanUser.bind(this);
+        this._onKickUser = this._onKickUser.bind(this);
         this._onPrivateMessage = this._onPrivateMessage.bind(this);
     }
 
@@ -99,11 +100,11 @@ class ChatMessage extends AbstractChatMessage<Props> {
 
     _getPrivateNoticeMessage: () => string;
 
-    _onBanUser: () => void;
+    _onKickUser: () => void;
 
-    _onBanUser() {
+    _onKickUser() {
         const { dispatch, message } = this.props;
-        dispatch(openDialog(BanRemoteParticipantDialog, { participantID: message.id }));
+        dispatch(openDialog(KickRemoteParticipantDialog, { participantID: message.id }));
     }
 
     _onPrivateMessage: () => void;
@@ -179,8 +180,8 @@ class ChatMessage extends AbstractChatMessage<Props> {
                             <DropdownItem onClick = { this._onToggleChatState }>
                                 { _isChatMessageDisabled ? t('dialog.enableChat') : t('dialog.disableChat') }
                             </DropdownItem>
-                            <DropdownItem onClick = { this._onBanUser }>
-                                { t('dialog.banUser') }
+                            <DropdownItem onClick = { this._onKickUser }>
+                                { t('dialog.kickOut') }
                             </DropdownItem>
                         </DropdownItemGroup>
                     </DropdownMenu>

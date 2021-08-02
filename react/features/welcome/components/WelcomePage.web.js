@@ -20,7 +20,7 @@ import { NotificationsContainer } from '../../notifications/components';
 import { RecentList } from '../../recent-list';
 import { SETTINGS_TABS } from '../../settings';
 import { openSettingsDialog } from '../../settings/actions';
-import { VirtualBackgroundDialog } from '../../virtual-background';
+import { checkBlurSupport, VirtualBackgroundDialog } from '../../virtual-background';
 
 import { AbstractWelcomePage, _mapStateToProps } from './AbstractWelcomePage';
 import Tabs from './Tabs';
@@ -148,6 +148,7 @@ class WelcomePage extends AbstractWelcomePage {
         this._onTabSelected = this._onTabSelected.bind(this);
         this._onVirtualBackground = this._onVirtualBackground.bind(this);
         this._onLogout = this._onLogout.bind(this);
+        this._onOpenChange = this._onOpenChange.bind(this);
         this._onOpenSettings = this._onOpenSettings.bind(this);
         this._handleKeyPress = this._handleKeyPress.bind(this);
     }
@@ -247,6 +248,10 @@ class WelcomePage extends AbstractWelcomePage {
         dispatch(openDialog(VirtualBackgroundDialog));
     }
 
+    _onOpenChange() {
+        document.activeElement.blur();
+    }
+
     /**
      * Settings handler.
      *
@@ -290,7 +295,8 @@ class WelcomePage extends AbstractWelcomePage {
             }
             buttons.push(
                 <DropdownMenu
-                    position="bottom right"
+                    onOpenChange = { this._onOpenChange }
+                    position = "bottom right"
                     isLoading = { submitting }
                     key = 'userMenu'
                     trigger = {
@@ -338,11 +344,13 @@ class WelcomePage extends AbstractWelcomePage {
                                 </div>
                             )}
                         </DropdownItem>
-                        <DropdownItem
-                            className = {s.menuItem}
-                            onClick = { this._onVirtualBackground }>
-                            { t('toolbar.selectBackground') }
-                        </DropdownItem>
+                        { checkBlurSupport() && (
+                            <DropdownItem
+                                className = {s.menuItem}
+                                onClick = { this._onVirtualBackground }>
+                                { t('toolbar.selectBackground') }
+                            </DropdownItem>
+                        )}
                         <DropdownItem
                             className = {s.menuItem}
                             onClick = { this._onLogout }>

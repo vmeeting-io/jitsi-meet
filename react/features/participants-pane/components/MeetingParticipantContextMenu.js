@@ -11,12 +11,20 @@ import {
     IconCrown,
     IconMessage,
     IconMuteEveryoneElse,
-    IconVideoOff
+    IconVideoOff,
+    IconChatDisabled,
+    IconChatEnabled
 } from '../../base/icons';
 import { isLocalParticipantModerator, isParticipantModerator } from '../../base/participants';
 import { getIsParticipantVideoMuted } from '../../base/tracks';
 import { openChat } from '../../chat/actions';
-import { GrantModeratorDialog, KickRemoteParticipantDialog, MuteEveryoneDialog } from '../../video-menu';
+import { 
+    GrantModeratorDialog, 
+    KickRemoteParticipantDialog, 
+    MuteEveryoneDialog, 
+    DisableChatForRemoteParticipantDialog, 
+    EnableChatForRemoteParticipantDialog 
+} from '../../video-menu';
 import MuteRemoteParticipantsVideoDialog from '../../video-menu/components/web/MuteRemoteParticipantsVideoDialog';
 import { getComputedOuterHeight } from '../functions';
 
@@ -97,6 +105,20 @@ export const MeetingParticipantContextMenu = ({
         }));
     }, [ dispatch, participant ]);
 
+    // callback function when disable chat option is clicked
+    const disableChat = useCallback(() => {
+        dispatch(openDialog(DisableChatForRemoteParticipantDialog, {
+            participantID: participant.id
+        }));
+    }, [ dispatch, participant ]);
+
+    // callback function when enable chat option is clicked
+    const enableChat = useCallback(() => {
+        dispatch(openDialog(EnableChatForRemoteParticipantDialog, {
+            participantID: participant.id
+        }));
+    }, [ dispatch, participant ]);
+
     const kick = useCallback(() => {
         dispatch(openDialog(KickRemoteParticipantDialog, {
             participantID: participant.id
@@ -152,6 +174,22 @@ export const MeetingParticipantContextMenu = ({
                         <span>{t('toolbar.accessibilityLabel.grantModerator')}</span>
                     </ContextMenuItem>
                 )}
+
+                {/* Code block to display enable chat option menu */}
+                {isLocalModerator && !isParticipantModerator(participant) && (participant.role === "visitor") && (
+                    <ContextMenuItem onClick = { enableChat }>
+                        <ContextMenuIcon src = { IconChatEnabled } />
+                        <span>{t('toolbar.accessibilityLabel.enableChatForParticipant')}</span>
+                    </ContextMenuItem>
+                )}
+                {/* Code block to display disable chat option menu */}
+                {isLocalModerator && !isParticipantModerator(participant) && (participant.role !== "visitor") &&  (
+                    <ContextMenuItem onClick = { disableChat }>
+                        <ContextMenuIcon src = { IconChatDisabled } />
+                        <span>{t('toolbar.accessibilityLabel.disableChatForParticipant')}</span>
+                    </ContextMenuItem>
+                )}
+
                 {isLocalModerator && (
                     <ContextMenuItem onClick = { kick }>
                         <ContextMenuIcon src = { IconCloseCircle } />

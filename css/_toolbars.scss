@@ -338,8 +338,8 @@
     }
 }
 
-.hangup-button {
-    display: inline-block;
+.toolbox-button {
+    // display: inline-block;
 
     .button {
         background-color: $hangupColor !important;
@@ -384,6 +384,7 @@
      */
     // margin: -16px -10px 0px;
     padding: 0;
+    line-height: 1.5;
 
     .menu-item {
         align-items: center;

@@ -1,6 +1,6 @@
 // @flow
 
-import { getYoutubeParticipant } from '../base/participants';
+import { getFakeParticipants } from '../base/participants';
 
 import { VIDEO_PLAYER_PARTICIPANT_NAME, YOUTUBE_PLAYER_PARTICIPANT_NAME } from './constants';
 
@@ -41,26 +41,15 @@ export function isSharingStatus(status: string) {
  * @returns {boolean}
  */
 export function isVideoPlaying(stateful: Object | Function): boolean {
-    const { name } = getYoutubeParticipant(stateful) || {};
+    let videoPlaying = false;
 
-    return Boolean(name === VIDEO_PLAYER_PARTICIPANT_NAME || name === YOUTUBE_PLAYER_PARTICIPANT_NAME);
-}
-
-/**
- * Returns true if the link is from youtube.
- *
- * @param {string} urlToParse - The link to be checked if it is from youtube.
- * @returns {boolean}
- */
- export function validateYouTubeUrl(urlToParse: string) {
-    if (urlToParse) {
-        const regExp = /^(?:https?:\/\/)?(?:m\.|www\.)?(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$/;// eslint-disable-line max-len
-
-        if (urlToParse.match(regExp)) {
-
-            return true;
+    // eslint-disable-next-line no-unused-vars
+    for (const [ id, p ] of getFakeParticipants(stateful)) {
+        if (p.name === VIDEO_PLAYER_PARTICIPANT_NAME || p.name === YOUTUBE_PLAYER_PARTICIPANT_NAME) {
+            videoPlaying = true;
+            break;
         }
     }
 
-    return false;
+    return videoPlaying;
 }

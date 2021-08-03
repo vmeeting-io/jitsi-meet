@@ -12,6 +12,7 @@ import { Avatar } from '../../../base/avatar';
 import { disconnect } from '../../../base/connection';
 import { translate } from '../../../base/i18n';
 import { Icon, IconCheck, IconOpenInNew, IconPresentation } from '../../../base/icons';
+import { browser } from '../../../base/lib-jitsi-meet';
 import {
     grantModerator,
     getLocalParticipant,
@@ -63,7 +64,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
             sendAnalytics(createToolbarEvent('hangup'));
 
             // FIXME: these should be unified.
-            if (navigator.product === 'ReactNative') {
+            if (browser.isReactNative()) {
                 this.props.dispatch(appNavigate(undefined));
             } else {
                 this.props.dispatch(disconnect(true));
@@ -77,19 +78,6 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     }
     
     /**
-     * Implements React Component's componentDidUpdate.
-     *
-     * @inheritdoc
-     */
-    componentDidUpdate(prevProps) {
-        const found = find(this.props._participants, { local: false });
-        if (!this.state.selected && found) {
-            this.setState({ selected: found.id });
-            console.log('componentDidUpdate:', found);
-        }
-    }
-
-    /**
      * Helper function to perform the actual hangup action.
      *
      * @override
@@ -97,9 +85,10 @@ class HangupButton extends AbstractHangupButton<Props, *> {
      * @returns {void}
      */
     _doHangup() {
-        if (this.props._showHangupMenu) {
+        const { _showHangupMenu, _timer } = this.props;
+        if (_showHangupMenu) {
             this.setState({ isOpen: true });
-            this.props._timer?.pause();
+            _timer?.pause();
         } else {
             this._hangup();
         }
@@ -131,8 +120,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     }
 
     _renderModeratorSelectionItem(props) {
-        const { accessibilityLabel, disabled, elementAfter, id, key, text } = props;
-        const selected = id === this.state.selected;
+        const { accessibilityLabel, disabled, elementAfter, id, key, text, selected } = props;
 
         let className = selected ? 'menu-item-selected' : 'menu-item';
         className += disabled ? ' disabled' : '';
@@ -157,66 +145,67 @@ class HangupButton extends AbstractHangupButton<Props, *> {
 
     _renderModeratorSelectionContent() {
         const { _participants, t } = this.props;
+        const selected = this.state.selected || this.props._selected;
 
         if (_participants.length <= 1)
             return [];
 
-        const List = ({participants}) => (
-            <ul className = 'particpant-list'>
-                {
-                    participants.map((item, i) => !item.local && this._renderModeratorSelectionItem({
-                        key: item.id,
-                        accessibilityLabel: t('toolbar.accessibilityLabel.moderatorSelectionList'),
-                        text: item.name,
-                        ...item
-                    }))
-                }
-            </ul>    
-        );
-
-        let last_item = [];
-
-        last_item.push(
+        return [
+            <ul className={s.particpantList}>
+                { _participants.map((item, i) => this._renderModeratorSelectionItem({
+                    key: item.id,
+                    accessibilityLabel: t('toolbar.accessibilityLabel.moderatorSelectionList'),
+                    text: item.name,
+                    selected: item.id === selected,
+                    ...item
+                })) }
+            </ul>,
+            <hr className = {s.hangupMenuHr} key = 'hr' />,
             <li
                 aria-label = { t('toolbar.accessibilityLabel.grantModerator') }
-                className = 'menu-item-warning'
+                className = { s.menuItemWarning }
                 onClick =  { this._onSubmitModeratorSelection }
                 key = 'close'>
                 <div className = 'text'>
                     { t('toolbar.selectModeratorAndLeave') }
                 </div>
             </li>
-        );
-
-        let return_groups = [
-            <List participants={_participants} />,
-            <hr className = 'hangup-menu-hr' key = 'hr' />,
-            ...last_item
         ];
-
-        return return_groups;
     }
 
     _onHangupMe: () => void;
 
     _onHangupMe(e) {
-        this.setState({ showSelectModerator: true });
+        const { _moderator, _participants } = this.props;
+
+        if (_moderator || _participants.length === 1) {
+            if (!_moderator) {
+                this.props.dispatch(grantModerator(_participants[0].id));
+            }
+            this._hangup();
+        } else {
+            this.setState({ showSelectModerator: true });
+        }
     }
 
     _onHangupAll: () => void;
 
-    _onHangupAll() {
-        const { _apiBase, _roomInfo } = this.props;
+    async _onHangupAll() {
+        const { _apiBase, _roomInfo, _meetingId } = this.props;
         if (_roomInfo) {
             const apiUrl = `${_apiBase}/conferences/${_roomInfo._id}`;
             axios.delete(apiUrl);
-        }
-
-        // FIXME: these should be unified.
-        if (navigator.product === 'ReactNative') {
-            this.props.dispatch(appNavigate(undefined));
-        } else {
-            this.props.dispatch(disconnect(true));
+            this._hangup();
+        } else if (_meetingId) {
+            try {
+                const resp = await axios.get(`${_apiBase}/conferences?meeting_id=${_meetingId}`);
+                const conf = resp.data?.docs[0];
+                console.log(resp, conf);
+                axios.delete(`${_apiBase}/conferences/${conf._id}`);
+                this._hangup();
+            } catch (err) {
+                console.error('_onHangupAll: failed!', err);
+            }
         }
     }
 
@@ -229,14 +218,9 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     _onSubmitModeratorSelection: () => void;
 
     _onSubmitModeratorSelection() {
-        this.props.dispatch(grantModerator(this.state.selected));
-
-        // FIXME: these should be unified.
-        if (navigator.product === 'ReactNative') {
-            this.props.dispatch(appNavigate(undefined));
-        } else {
-            this.props.dispatch(disconnect(true));
-        }
+        const selected = this.state.selected || this.props._selected;
+        this.props.dispatch(grantModerator(selected));
+        this._hangup();
     }
 
     /**
@@ -255,7 +239,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
         );
 
         return (
-            <div className = 'hangup-button'>
+            <div className = 'toolbox-button'>
                 <InlineDialog
                     content = { children }
                     isOpen = { isOpen }
@@ -301,12 +285,26 @@ class HangupButton extends AbstractHangupButton<Props, *> {
  */
  function _mapStateToProps(state) {
     const participants = state['features/base/participants'];
-    const { roomInfo } = state['features/base/conference'];
+    const { conference, roomInfo } = state['features/base/conference'];
     const isModerator = getLocalParticipant(state).role === PARTICIPANT_ROLE.MODERATOR;
+
+    let moderator = 0;
+    const items = participants.filter(p => {
+        if (!p.local && !p.isFakeParticipant) {
+            if (!moderator && p.role === PARTICIPANT_ROLE.MODERATOR) {
+                moderator = p.id;
+            }
+            return true;
+        }
+        return false;
+    });
 
     return {
         _apiBase: getAuthUrl(state),
-        _participants: participants,
+        _moderator: moderator,
+        _meetingId: conference?.room?.meetingId,
+        _participants: items,
+        _selected: !moderator && items[0]?.id,
         _showHangupMenu: isModerator && participants.length > 1,
         _roomInfo: roomInfo,
         _timer: state['features/toolbox'].timer,

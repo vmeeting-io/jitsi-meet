@@ -1,6 +1,7 @@
 // @flow
 
 import axios from 'axios';
+import { once } from 'lodash';
 import { type Dispatch } from 'redux';
 import { getAuthUrl } from '../../../../api/url';
 import { createToolbarEvent, sendAnalytics } from '../../../analytics';
@@ -30,6 +31,11 @@ class HangupAllButton extends AbstractButton<Props, *> {
     icon = IconClose;
     label = 'toolbar.hangupAll';
 
+    _hangup = once(() => {
+        sendAnalytics(createToolbarEvent('hangup'));
+        this.props.dispatch(appNavigate(undefined));
+    });
+
     /**
      * Handles clicking / pressing the button.
      *
@@ -37,15 +43,24 @@ class HangupAllButton extends AbstractButton<Props, *> {
      * @protected
      * @returns {void}
      */
-    _handleClick() {
-        const { _apiBase, _roomInfo } = this.props;
+    async _handleClick() {
+        const { _apiBase, _roomInfo, _meetingId } = this.props;
+
         if (_roomInfo) {
             const apiUrl = `${_apiBase}/conferences/${_roomInfo._id}`;
             axios.delete(apiUrl);
+            this._hangup();
+        } else if (_meetingId) {
+            try {
+                const resp = await axios.get(`${_apiBase}/conferences?meeting_id=${_meetingId}`);
+                const conf = resp.data?.docs[0];
+                console.log(resp, conf);
+                axios.delete(`${_apiBase}/conferences/${conf._id}`);
+                this._hangup();
+            } catch (err) {
+                console.error('_onHangupAll: failed!', err);
+            }
         }
-
-        sendAnalytics(createToolbarEvent('hangup'));
-        this.props.dispatch(appNavigate(undefined));
     }
 }
 
@@ -58,10 +73,11 @@ class HangupAllButton extends AbstractButton<Props, *> {
  * @returns {Props}
  */
 function _mapStateToProps(state, ownProps): Object {
-    const { roomInfo } = state['features/base/conference'];
+    const { conference, roomInfo } = state['features/base/conference'];
 
     return {
         _apiBase: getAuthUrl(state),
+        _meetingId: conference?.room?.meetingId,
         _roomInfo: roomInfo,
     };
 }

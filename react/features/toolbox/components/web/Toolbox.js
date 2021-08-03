@@ -1401,6 +1401,7 @@ class Toolbox extends Component<Props> {
                             </ul>
                         </OverflowMenuButton>}
                         <HangupButton
+                            customClass = 'hangup-button'
                             visible = { this._shouldShowButton('hangup') } />
                     </div>
                 </div>

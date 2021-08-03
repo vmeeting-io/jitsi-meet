@@ -124,11 +124,10 @@ class Filmstrip extends Component<Props> {
                         showsHorizontalScrollIndicator = { false }
                         showsVerticalScrollIndicator = { false }
                         style = { styles.scrollView } >
+                        <LocalThumbnail />
                         {
-                            _participants.map(p => (
-                                p.local
-                                ? <LocalThumbnail key = { p.id } />
-                                : <Thumbnail key = { p.id } participant = { p } />
+                            _participants.map(id => (
+                                <Thumbnail key = { id } participantID = { id } />
                             ))
                         }
                     </ScrollView>
@@ -175,14 +174,15 @@ class Filmstrip extends Component<Props> {
  * @returns {Props}
  */
 function _mapStateToProps(state) {
-    const { enabled } = state['features/filmstrip'];
+    const { enabled, remoteParticipants } = state['features/filmstrip'];
     const { pagination } = state['features/video-layout'] || {};
     const toolboxVisible = isToolboxVisible(state);
 
     return {
         _aspectRatio: state['features/base/responsive-ui'].aspectRatio,
         _pageButtonVisible: toolboxVisible && pagination?.totalPages > 1,
-        _participants: getCurrentPage(state),
+        _participants: remoteParticipants,
+        // _participants: getCurrentPage(state),
         _currentPage: pagination?.current || 1,
         _totalPages: pagination?.totalPages || 1,
         _visible: enabled && isFilmstripVisible(state)

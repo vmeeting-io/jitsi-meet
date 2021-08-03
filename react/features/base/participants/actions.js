@@ -11,6 +11,7 @@ import {
     HIDDEN_PARTICIPANT_LEFT,
     GRANT_MODERATOR,
     KICK_PARTICIPANT,
+    LOCAL_PARTICIPANT_RAISE_HAND,
     DISABLE_CHAT_FOR_ALL,
     DISABLE_CHAT_PARTICIPANT,
     ENABLE_CHAT_PARTICIPANT,
@@ -627,5 +628,21 @@ export function moveParticipant(from, to) {
             from, to);
         dispatch(setParticipants(participants));
         dispatch(setPagination({ order: null }));
+    };
+}
+
+/**
+ * Raise hand for the local participant.
+ *
+ * @param {boolean} enabled - Raise or lower hand.
+ * @returns {{
+ *     type: LOCAL_PARTICIPANT_RAISE_HAND,
+ *     enabled: boolean
+ * }}
+ */
+export function raiseHand(enabled) {
+    return {
+        type: LOCAL_PARTICIPANT_RAISE_HAND,
+        enabled
     };
 }

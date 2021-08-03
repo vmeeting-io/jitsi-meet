@@ -589,6 +589,7 @@
         "focus": "컨퍼런스 포커스",
         "focusFail": "{{component}}을 사용할 수 없음 - {{ms}} 초 후에 다시 시도하십시오",
         "grantedTo": "{{to}}에게 방장 권한이 부여되었습니다!",
+        "hostAskedUnmute": "호스트가 음소거 해제를 원합니다",
         "invitedOneMember": "{{name}}님이 초대되었습니다",
         "invitedThreePlusMembers": "{{name}}님과 그외 {{count}}명이 초대되었습니다",
         "invitedTwoMembers": "{{first}}님과 {{second}}님이 초대되었습니다",
@@ -628,7 +629,20 @@
         "OldElectronAPPTitle": "보안 취약점!",
         "oldElectronClientDescription1": "보안 취약점이 알려진 이전 버전의 클라이언트를 사용하고있는 것 같습니다. 지금 업데이트하십시오",
         "oldElectronClientDescription2": "최근 빌드",
-        "oldElectronClientDescription3": " 지금!"
+        "oldElectronClientDescription3": " 지금!",
+        "moderationInEffectDescription": "말하고 싶으면 손을 들어주세요",
+        "moderationInEffectCSDescription": "비디오 공유를 하려면 손을 들어주세요",
+        "moderationInEffectVideoDescription": "카메라를 켜려면 손을 들어주세요",
+        "moderationInEffectTitle": "호스트에 의해 음소거가 됩니다",
+        "moderationInEffectCSTitle": "호스트에 의해 화면 공유가 비활성화 됩니다",
+        "moderationInEffectVideoTitle": "비디오가 호스트에 의해 꺼집니다",
+        "moderationRequestFromModerator": "호스트가 음소거 해제를 원합니다",
+        "moderationRequestFromParticipant": "말하기 요청",
+        "moderationStartedTitle": "방장 시작",
+        "moderationStoppedTitle": "방장 해제",
+        "moderationToggleDescription": "{{participantDisplayName}}님에 의해",
+        "raiseHandAction": "손들기",
+        "groupTitle": "알림"
     },
     "participantsPane": {
         "headings": {
@@ -636,8 +650,12 @@
             "participantsList": "참석자 ({{count}})"
         },
         "actions": {
+            "allow": "Allow attendees to:",
             "invite": "초대하기",
+            "askUnmute": "음소거 해제 요청",
             "muteAll": "모두 음소거",
+            "startModeration": "Unmute themselves or start video",
+            "stopEveryonesVideo": "모든 카메라 끄기",
             "stopVideo": "카메라 끄기"
         }
     },

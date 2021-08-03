@@ -1,6 +1,6 @@
 // @flow
 
-import { getLocalParticipant, pinParticipant } from '../base/participants';
+import { getLocalParticipant, getRemoteParticipants, pinParticipant } from '../base/participants';
 import { toState } from '../base/redux';
 import { getCurrentLayout, LAYOUTS } from '../video-layout';
 
@@ -71,7 +71,8 @@ export function setHorizontalViewDimensions(clientHeight: number = 0) {
  */
 export function clickOnVideo(n: number) {
     return (dispatch: Function, getState: Function) => {
-        const participants = getState()['features/base/participants'];
+        const state = getState();
+        const participants = [ getLocalParticipant(state), ...getRemoteParticipants(state).values() ];
         const currentLayout = getCurrentLayout(getState());
         let nThParticipant;
         let index = 0;

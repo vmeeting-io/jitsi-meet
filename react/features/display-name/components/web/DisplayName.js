@@ -290,8 +290,7 @@ function _mapStateToProps(state, ownProps) {
 
     return {
         _configuredDisplayName: participant && participant.name,
-        _nameToDisplay: getParticipantDisplayName(
-            state, participantID)
+        _nameToDisplay: getParticipantDisplayName(state, participantID)
     };
 }
 

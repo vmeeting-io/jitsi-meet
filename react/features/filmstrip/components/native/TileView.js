@@ -9,12 +9,14 @@ import {
 } from 'react-native';
 import type { Dispatch } from 'redux';
 
+import { getLocalParticipant, getParticipantCountWithFake } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
 import { setTileViewDimensions } from '../../actions.native';
 
 import Thumbnail from './Thumbnail';
 import styles from './styles';
+
 import { getCurrentPage } from '../../../video-layout';
 import debounce from 'lodash.debounce';
 import PageNextButton from '../../../conference/components/native/PageNextButton';
@@ -37,9 +39,19 @@ type Props = {
     _height: number,
 
     /**
+     * The local participant.
+     */
+    _localParticipant: Object,
+
+    /**
      * The number of participants in the conference.
      */
     _participantCount: number,
+
+    /**
+     * An array with IDs of the remote participants in the conference.
+     */
+    _remoteParticipants: Array<string>,
 
     /**
      * Application's viewport height.
@@ -254,7 +266,7 @@ class TileView extends Component<Props> {
                 <Thumbnail
                     disableTint = { true }
                     key = { participant.id }
-                    participant = { participant }
+                    participantID = { participant.id }
                     renderDisplayName = { true }
                     styleOverrides = { styleOverrides }
                     tileView = { true } />
@@ -289,6 +301,7 @@ class TileView extends Component<Props> {
  */
 function _mapStateToProps(state) {
     const responsiveUi = state['features/base/responsive-ui'];
+    const { remoteParticipants } = state['features/filmstrip'];
     const { pagination } = state['features/video-layout'] || {};
     const toolboxVisible = isToolboxVisible(state);
 
@@ -296,6 +309,8 @@ function _mapStateToProps(state) {
         _aspectRatio: responsiveUi.aspectRatio,
         _pageButtonVisible: toolboxVisible && pagination?.totalPages > 1,
         _participants: getCurrentPage(state),
+        _localParticipant: getLocalParticipant(state),
+        _remoteParticipants: remoteParticipants,
         _currentPage: pagination?.current || 1,
         _totalPages: pagination?.totalPages || 1,
         _height: responsiveUi.clientHeight,

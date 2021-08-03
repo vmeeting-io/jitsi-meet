@@ -21,7 +21,9 @@ import {
     getParticipantById,
     participantUpdated,
     pinParticipant,
-    kickParticipant
+    kickParticipant,
+    raiseHand,
+    isParticipantModerator
 } from '../../react/features/base/participants';
 import { updateSettings } from '../../react/features/base/settings';
 import { isToggleCameraEnabled, toggleCamera } from '../../react/features/base/tracks';
@@ -97,13 +99,14 @@ function initCommands() {
             const muteMediaType = mediaType ? mediaType : MEDIA_TYPE.AUDIO;
 
             sendAnalytics(createApiEvent('muted-everyone'));
-            const participants = APP.store.getState()['features/base/participants'];
-            const localIds = participants
-                .filter(participant => participant.local)
-                .filter(participant => participant.role === 'moderator')
-                .map(participant => participant.id);
+            const localParticipant = getLocalParticipant(APP.store.getState());
+            const exclude = [];
 
-            APP.store.dispatch(muteAllParticipants(localIds, muteMediaType));
+            if (localParticipant && isParticipantModerator(localParticipant)) {
+                exclude.push(localParticipant.id);
+            }
+
+            APP.store.dispatch(muteAllParticipants(exclude, muteMediaType));
         },
         'toggle-lobby': isLobbyEnabled => {
             APP.store.dispatch(toggleLobbyMode(isLobbyEnabled));
@@ -201,13 +204,7 @@ function initCommands() {
             const { raisedHand } = localParticipant;
 
             sendAnalytics(createApiEvent('raise-hand.toggled'));
-            APP.store.dispatch(
-                participantUpdated({
-                    id: APP.conference.getMyUserId(),
-                    local: true,
-                    raisedHand: !raisedHand
-                })
-            );
+            APP.store.dispatch(raiseHand(!raisedHand));
         },
 
         /**

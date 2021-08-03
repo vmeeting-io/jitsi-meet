@@ -307,7 +307,11 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
 
     const cancelVirtualBackground = useCallback(async () => {
         await dispatch(backgroundEnabled(origin.backgroundEffectEnabled));
-        await dispatch(setVirtualBackground(origin));
+        const origin_fixed = {
+            ...origin,
+            url: origin.virtualSource
+        }
+        await dispatch(setVirtualBackground(origin_fixed));
     }, [ dispatch, origin ]);
 
     const onDialogRef = useCallback(el => {
@@ -324,7 +328,7 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
         const rows = Math.min(
             Math.floor((dialogElement.clientHeight - previewStyle.height) / ROW_HEIGHT),
             Math.ceil((images.length + remoteImages.length + 4) / cols));
-        console.log(cols, dialogElement.clientWidth, dialogElement.clientHeight);
+        //console.log(cols, dialogElement.clientWidth, dialogElement.clientHeight);
         backgroundStyle = { height: ROW_HEIGHT * rows };
     }
 

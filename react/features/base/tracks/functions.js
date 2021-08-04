@@ -22,13 +22,13 @@ export const getTrackState = state => state['features/base/tracks'];
 
 /**
  * Checks if the passed media type is muted for the participant.
- * 
+ *
  * @param {Object} participant - Participant reference.
  * @param {MEDIA_TYPE} mediaType - Media type.
  * @param {Object} state - Global state.
  * @returns {boolean} - Is the media type muted for the participant.
  */
- export function isParticipantMediaMuted(participant, mediaType, state) {
+export function isParticipantMediaMuted(participant, mediaType, state) {
     if (!participant) {
         return false;
     }

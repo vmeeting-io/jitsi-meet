@@ -5,13 +5,11 @@ import React, { Component } from 'react';
 import { translate } from '../../../base/i18n';
 import { IconMessage } from '../../../base/icons';
 import { connect } from '../../../base/redux';
-import { getParticipants, isLocalParticipantModerator } from '../../../base/participants'
+import { isEveryoneModerator, isLocalParticipantModerator } from '../../../base/participants'
 
 import RemoteVideoMenuButton from './RemoteVideoMenuButton';
 import { openDialog } from '../../../base/dialog';
 import { DisableChatForAllParticipantsDialog, EnableChatForAllParticipantsDialog } from '.';
-
-declare var interfaceConfig: Object;
 
 
 export type Props = {
@@ -115,17 +113,8 @@ class AllChatDisableButton extends Component<Props> {
     const isModerator = isLocalParticipantModerator(state);
     visible = isModerator;
     
-    const allParticipants = getParticipants(APP.store.getState());
-    const allParticipantsRole = allParticipants.map(participant => participant.role);
-    let participantCount = 0;
-    allParticipantsRole.forEach((participantRole => {
-        if(participantRole === "participant") {
-            participantCount = participantCount + 1;
-        }
-    }));
-
     return {
-        _isChatForAllDisabled: Boolean(participantCount == 0),
+        _isChatForAllDisabled: isEveryoneModerator(state),
         visible
     };
 }

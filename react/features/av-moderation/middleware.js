@@ -135,7 +135,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                     && dispatch(participantPendingAudio(participant));
             } else {
                 // if participant lowers hand hide notification
-                isParticipantPending(participant.id, MEDIA_TYPE.AUDIO)(state)
+                isParticipantPending(participant, MEDIA_TYPE.AUDIO)(state)
                     && dispatch(dismissPendingAudioParticipant(participant));
             }
         }

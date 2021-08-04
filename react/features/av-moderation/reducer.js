@@ -195,7 +195,7 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
         if (mediaType === MEDIA_TYPE.VIDEO) {
             return {
                 ...state,
-                pendingAudio: state.pendingVideo.filter(pending => pending.id !== participant.id)
+                pendingVideo: state.pendingVideo.filter(pending => pending.id !== participant.id)
             };
         }
 

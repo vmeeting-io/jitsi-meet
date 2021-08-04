@@ -2,6 +2,7 @@
 
 import { getAuthUrl } from '../../api/url';
 import { JitsiTrackEvents } from '../base/lib-jitsi-meet';
+import { updateSettings } from '../base/settings';
 
 import { toggleBackgroundEffect } from './actions';
 let filterSupport;
@@ -113,6 +114,11 @@ export function localTrackStopped(dispatch: Function, desktopTrack: Object, curr
     desktopTrack
     && desktopTrack.on(JitsiTrackEvents.LOCAL_TRACK_STOPPED, () => {
         dispatch(toggleBackgroundEffect(noneOptions, currentLocalTrack));
+
+        // Set x scale to default value.
+        dispatch(updateSettings({
+            localFlipX: true
+        }));
     });
 }
 

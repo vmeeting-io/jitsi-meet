@@ -7,7 +7,7 @@ import type { Dispatch } from 'redux';
 
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
-import { getLocalParticipant, getParticipants, getParticipantCount } from '../../../base/participants';
+import { getLocalParticipant, getParticipants, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
 import { Icon, IconPlane, IconSmile } from '../../../base/icons';
 import { connect } from '../../../base/redux';
 
@@ -293,14 +293,11 @@ class ChatInput extends Component<Props, State> {
         const lastChar = this.state.message.slice(-1);
 
         // get participant count, localParticipant and allParticipants from props
-        const { _participantCount, _allParticipants, _localParticipant } = this.props;
-
-        // remove local participant from all participants list and store it in a variable called otherParticipants
-        const otherParticipants = _allParticipants.filter(participant => participant.id !== _localParticipant.id);
+        const { _participantCount, _remoteParticipants } = this.props;
 
         // filter participants dynamically with typed filter text (input message) from otherParticipants
         // we use trimEnd here, so that it still shows the list even when pressing space char
-        const filteredParticipants = otherParticipants.filter(participant => participant.name?.startsWith(filterText.trimEnd()));
+        const filteredParticipants = _remoteParticipants.filter(participant => participant.name?.startsWith(filterText.trimEnd()));
 
         // in case filtered text matches that of a participant's name, it will replace the current message to private message type
         if(filterText !== '') {                
@@ -450,15 +447,10 @@ class ChatInput extends Component<Props, State> {
  * @returns {Props}
  */
 export function _mapStateToProps(state) {
-
-    const _participantCount = getParticipantCount(state);
-    const _allParticipants = getParticipants(state);
-    const _localParticipant = getLocalParticipant(state);
-
     return {
-        _participantCount,
-        _allParticipants,
-        _localParticipant
+        _participantCount: getParticipantCount(state),
+        _remoteParticipants: getRemoteParticipants(state),
+        _localParticipant: getLocalParticipant(state)
     };
 }
 

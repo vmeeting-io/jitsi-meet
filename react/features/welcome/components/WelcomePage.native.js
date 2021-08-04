@@ -24,7 +24,7 @@ import {
 } from '../../base/tracks';
 import { HelpView } from '../../help';
 import { DialInSummary } from '../../invite';
-import { SettingsView } from '../../settings';
+import { SettingsView } from '../../settings/components';
 import { setSideBarVisible } from '../actions';
 
 import {
@@ -77,7 +77,7 @@ class WelcomePage extends AbstractWelcomePage {
 
         this._updateRoomname();
 
-        const { dispatch } = this.props;
+        const { dispatch, tReady } = this.props;
 
         if (this.props._settings.startAudioOnly) {
             dispatch(destroyLocalTracks());
@@ -91,6 +91,21 @@ class WelcomePage extends AbstractWelcomePage {
                 response === 'granted'
                     && dispatch(createDesiredLocalTracks(MEDIA_TYPE.VIDEO));
             });
+        }
+
+        const { savedNotification } = this.state;
+
+        if (savedNotification && tReady) {
+            this.setState({ savedNotification: null });
+            jitsiLocalStorage.removeItem('saved_notification');
+
+            try {
+                const notification = JSON.parse(savedNotification);
+                const { timeout, ...props } = notification.props;
+                dispatch(showNotification(props, timeout));
+            } catch (err) {
+                console.error(err);
+            }
         }
     }
 

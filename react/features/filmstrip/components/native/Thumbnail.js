@@ -49,9 +49,9 @@ type Props = {
     _largeVideo: Object,
 
     /**
-     * The Redux representation of participant to display.
+     * The Redux representation of the participant to display.
      */
-    _participant: Object,
+     _participant: Object,
 
     /**
      * Whether to show the dominant speaker indicator or not.
@@ -225,16 +225,17 @@ function _mapStateToProps(state, ownProps) {
     const largeVideo = state['features/large-video'];
     const tracks = state['features/base/tracks'];
     const { participantID } = ownProps;
+    const participant = getParticipantByIdOrUndefined(state, participantID);
     const id = participant?.id;
     const audioTrack
         = getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.AUDIO, id);
     const videoTrack
         = getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.VIDEO, id);
     const participantCount = getParticipantCount(state);
-    const renderDominantSpeakerIndicator = participant?.dominantSpeaker && participantCount > 2;
+    const renderDominantSpeakerIndicator = participant && participant.dominantSpeaker && participantCount > 2;
     const _isEveryoneModerator = isEveryoneModerator(state);
     const renderModeratorIndicator = !_isEveryoneModerator
-        && participant?.role === PARTICIPANT_ROLE.MODERATOR;
+        && participant && participant.role === PARTICIPANT_ROLE.MODERATOR;
 
     return {
         _audioMuted: audioTrack?.muted ?? true,

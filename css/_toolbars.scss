@@ -105,16 +105,23 @@
     margin: 0 auto;
     max-width: 100%;
     pointer-events: all;
+    border-radius: 6px;
+}
+
+.toolbox-content-wrapper::after {
+    content: '';
+    background: $newToolbarBackgroundColor;
+    padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .toolbox-content-items {
     background: $newToolbarBackgroundColor;
-    box-shadow: 0px 2px 8px 4px rgba(0, 0, 0, 0.25), 0px 0px 0px 1px rgba(0, 0, 0, 0.15);
     border-radius: 6px;
     margin: 0 auto;
     padding: 6px;
     text-align: center;
     pointer-events: all;
+    box-shadow: 0px 2px 8px 4px rgba(0, 0, 0, 0.25), 0px 0px 0px 1px rgba(0, 0, 0, 0.15);
 
     >div {
         margin-left: 8px;
@@ -279,6 +286,10 @@
     }
 }
 
+.profile-button-avatar {
+    align-items: center;
+}
+
 /**
  * START of fade in animation for main toolbar
  */
@@ -366,12 +377,6 @@
     border-top: 1px solid #4C4D50 !important;
     border-bottom: 0;
     margin: 8px 0;
-}
-
-.particpant-list {
-    padding-left: 0;
-    height: 200px;
-    overflow-y: auto;
 }
 
 .hangup-menu {
@@ -505,6 +510,7 @@
     width: 200px;
     font-size: 1.2em;
     list-style-type: none;
+    line-height: 1.5;
     // background-color: #1b222e;
     /**
      * Undo atlaskit padding by reducing margins.
@@ -657,5 +663,11 @@
             cursor: initial;
             color: #3b475c;
         }
+    }
+
+    .participant-list {
+        padding-left: 0;
+        max-height: 200px;
+        overflow-y: auto;
     }
 }

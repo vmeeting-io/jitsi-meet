@@ -5,12 +5,13 @@ import axios from 'axios';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getAuthUrl } from '../../../api/url';
 
-import { Dialog, hideDialog } from '../../base/dialog';
+import { Dialog, hideDialog, openDialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
 import { Icon, IconCancelSelection, IconPlusCircle, IconShareDesktop } from '../../base/icons';
 import { createLocalTrack } from '../../base/lib-jitsi-meet/functions';
 import { VIDEO_TYPE } from '../../base/media';
 import { connect } from '../../base/redux';
+import { updateSettings } from '../../base/settings';
 import { Tooltip } from '../../base/tooltip';
 import { getLocalVideoTrack } from '../../base/tracks';
 import TouchmoveHack from '../../chat/components/web/TouchmoveHack';
@@ -64,24 +65,32 @@ const images = [
 type Props = {
 
     /**
+     * The current local flip x status.
+     */
+    _localFlipX: boolean,
+
+    /**
      * Returns the jitsi track that will have backgraund effect applied.
      */
     _jitsiTrack: Object,
 
     /**
-     * Returns the selected thumbnail identifier.
+     * Returns the selected virtual background object.
      */
-    _selectedThumbnail: string,
-
-    /**
-     * Returns the selected virtual source object.
-     */
-    _virtualSource: Object,
+    _virtualBackground: Object,
 
     /**
      * The redux {@code dispatch} function.
      */
     dispatch: Function,
+
+    /**
+     * The initial options copied in the state for the {@code VirtualBackground} component.
+     *
+     * NOTE: currently used only for electron in order to open the dialog in the correct state after desktop sharing
+     * selection.
+     */
+    initialOptions: Object,
 
     /**
      * Invoked to obtain translated strings.
@@ -92,6 +101,9 @@ type Props = {
 const onError = event => {
     event.target.style.display = 'none';
 };
+
+
+const VirtualBackgroundDialog = translate(connect(_mapStateToProps)(VirtualBackground));
 
 /**
  * Renders virtual background dialog.
@@ -133,6 +145,8 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
             blurValue: 25,
             selectedThumbnail: 'blur'
         });
+        logger.info('"Blur" option setted for virtual background preview!');
+
     }, []);
 
     const enableBlurKeyPress = useCallback(e => {
@@ -149,6 +163,8 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
             blurValue: 8,
             selectedThumbnail: 'slight-blur'
         });
+        logger.info('"Slight-blur" option setted for virtual background preview!');
+
     }, []);
 
     const enableSlideBlurKeyPress = useCallback(e => {
@@ -160,30 +176,57 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
 
 
     const shareDesktop = useCallback(async () => {
-        var url = await createLocalTrack('desktop', '');
-        if (Array.isArray(url)){ //if createLocalTrack returns both audio and video track
-            url = url[1]; //url[0] is audio track
-            dispatch(showWarningNotification({
-                titleKey: 'virtualBackground.desktopShareAudioWarning',
-                descriptionKey: 'virtualBackground.desktopShareAudioWarningDesc'
-            }));
+        let isCancelled = false, url;
+
+        try {
+            url = await createLocalTrack('desktop', '');
+        } catch (e) {
+            if (e.name === JitsiTrackErrors.SCREENSHARING_USER_CANCELED) {
+                isCancelled = true;
+            } else {
+                logger.error(e);
+            }
         }
 
         if (!url) {
-            dispatch(showErrorNotification({
-                titleKey: 'virtualBackground.desktopShareError'
-            }));
-            logger.error('Could not create desktop share as a virtual background!');
+            if (!isCancelled) {
+                dispatch(showErrorNotification({
+                    titleKey: 'virtualBackground.desktopShareError'
+                }));
+                logger.error('Could not create desktop share as a virtual background!');
+            }
+
+            /**
+             * For electron createLocalTrack will open the {@code DesktopPicker} dialog and hide the
+             * {@code VirtualBackgroundDialog}. That's why we need to reopen the {@code VirtualBackgroundDialog}
+             * and restore the current state through {@code initialOptions} prop.
+             */
+            if (browser.isElectron()) {
+                dispatch(openDialog(VirtualBackgroundDialog, { initialOptions: options }));
+            }
 
             return;
         }
-        setOptions({
+
+        const newOptions = {
             backgroundType: VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE,
             enabled: true,
             selectedThumbnail: 'desktop-share',
             url
-        });
-    }, []);
+        };
+
+        /**
+         * For electron createLocalTrack will open the {@code DesktopPicker} dialog and hide the
+         * {@code VirtualBackgroundDialog}. That's why we need to reopen the {@code VirtualBackgroundDialog}
+         * and force it to show desktop share virtual background through {@code initialOptions} prop.
+         */
+        if (browser.isElectron()) {
+            dispatch(openDialog(VirtualBackgroundDialog, { initialOptions: newOptions }));
+        } else {
+            setOptions(newOptions);
+            logger.info('"Desktop-share" option setted for virtual background preview!');
+        }
+    }, [ dispatch, options ]);
 
     const shareDesktopKeyPress = useCallback(e => {
         if (e.key === ' ' || e.key === 'Enter') {
@@ -215,6 +258,7 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
                 enabled: false,
                 selectedThumbnail: 'none'
             });
+            logger.info('Uploaded image setted for virtual background preview!');
         }
         if (image) {
             setRemoteImages(remoteImages.filter(item => image !== item));
@@ -242,6 +286,8 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
                 url,
                 selectedThumbnail: image.id
             });
+            logger.info('Image setted for virtual background preview!');
+
             setLoading(false);
         }
     }, []);
@@ -302,8 +348,21 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
         setLoading(true);
         await dispatch(toggleBackgroundEffect(options, _jitsiTrack));
         await setLoading(false);
+        if (_localFlipX && options.backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
+            dispatch(updateSettings({
+                localFlipX: !_localFlipX
+            }));
+        } else {
+
+            // Set x scale to default value.
+            dispatch(updateSettings({
+                localFlipX: true
+            }));
+        }
         dispatch(hideDialog());
-    }, [ dispatch, options ]);
+        logger.info(`Virtual background type: '${typeof options.backgroundType === 'undefined'
+            ? 'none' : options.backgroundType}' applied!`);
+    }, [ dispatch, options, _localFlipX ]);
 
     const cancelVirtualBackground = useCallback(async () => {
         await dispatch(backgroundEnabled(origin.backgroundEffectEnabled));
@@ -510,7 +569,10 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
  * @returns {Object}
  */
 function _mapStateToProps(state) {
+    const { localFlipX } = state['features/base/settings'];
+
     return {
+        _localFlipX: Boolean(localFlipX),
         _apiBase: getAuthUrl(state),
         _jitsiTrack: getLocalVideoTrack(state['features/base/tracks'])?.jitsiTrack,
         _virtualBackground: state['features/virtual-background'],

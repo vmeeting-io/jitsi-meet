@@ -49,7 +49,7 @@ type Props = {
     _participantCount: number,
 
     /**
-     * An array with IDs of the remote participants in the conference.
+     * An array with the IDs of the remote participants in the conference.
      */
     _remoteParticipants: Array<string>,
 

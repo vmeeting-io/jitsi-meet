@@ -10,7 +10,7 @@ import {
 import { getName } from '../../app/functions';
 import { showNotification } from '../../notifications';
 import { endpointMessageReceived } from '../../subtitles';
-import { ConfirmUnmuteDialog } from '../../video-menu/components';
+import { getReplaceParticipant } from '../config/functions';
 import { JITSI_CONNECTION_CONFERENCE_KEY } from '../connection';
 import { openDialog } from '../dialog';
 import { JitsiConferenceEvents } from '../lib-jitsi-meet';
@@ -612,7 +612,9 @@ export function createConference() {
 
         sendLocalParticipant(state, conference);
 
-        conference.join(password);
+        const replaceParticipant = getReplaceParticipant(state);
+
+        conference.join(password, replaceParticipant);
     };
 }
 

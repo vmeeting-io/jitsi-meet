@@ -145,7 +145,7 @@ export function showModeratedNotification(mediaType: MediaType) {
 /**
  * Shows a notification with the participant that asked to audio unmute.
  *
- * @param {Object} participant - The participant for which the notification to be hidden.
+ * @param {Object} participant - The participant for which is the notification.
  * @returns {Object}
  */
 export function participantPendingAudio(participant: Object) {

@@ -1,8 +1,4 @@
-import arrayMove from 'array-move';
-
-import { NOTIFICATION_TIMEOUT, showNotification, showToast } from '../../notifications';
-import { setPagination } from '../../video-layout';
-import { i18next } from '../i18n';
+import { NOTIFICATION_TIMEOUT, showNotification } from '../../notifications';
 import { set } from '../redux';
 
 import {
@@ -24,7 +20,6 @@ import {
     PARTICIPANT_UPDATED,
     PIN_PARTICIPANT,
     SET_LOADABLE_AVATAR_URL,
-    SET_PARTICIPANTS,
 } from './actionTypes';
 import {
     DISCO_REMOTE_CONTROL_FEATURE
@@ -36,9 +31,6 @@ import {
     getParticipantById
 } from './functions';
 import logger from './logger';
-
-let joinedParticipants = [];
-let updatedParticipants = {};
 
 /**
  * Create an action for when dominant speaker changes.
@@ -433,6 +425,7 @@ export function hiddenParticipantLeft(id) {
  * with the participant identified by the specified {@code id}. Only the local
  * participant is allowed to not specify an associated {@code JitsiConference}
  * instance.
+ * @param {boolean} isReplaced - Whether the participant is to be replaced in the meeting.
  * @returns {{
  *     type: PARTICIPANT_LEFT,
  *     participant: {
@@ -441,12 +434,13 @@ export function hiddenParticipantLeft(id) {
  *     }
  * }}
  */
-export function participantLeft(id, conference) {
+export function participantLeft(id, conference, isReplaced) {
     return {
         type: PARTICIPANT_LEFT,
         participant: {
             conference,
-            id
+            id,
+            isReplaced
         }
     };
 }
@@ -554,8 +548,12 @@ export function participantKicked(kicker, kicked) {
         dispatch({
             type: PARTICIPANT_KICKED,
             kicked: kicked.getId(),
-            kicker: kicker.getId()
+            kicker: kicker?.getId()
         });
+
+        if (kicked.isReplaced && kicked.isReplaced()) {
+            return;
+        }
 
         dispatch(showNotification({
             titleKey: 'notify.kickParticipant',
@@ -610,24 +608,6 @@ export function setLoadableAvatarUrl(participantId, url) {
             id: participantId,
             loadableAvatarUrl: url
         }
-    };
-}
-
-export function setParticipants(participants) {
-    // console.error('SET_PARTICIPANTS:', (new Date()).toJSON());
-    return {
-        type: SET_PARTICIPANTS,
-        participants
-    };
-}
-
-export function moveParticipant(from, to) {
-    return (dispatch, getState) => {
-        const participants = arrayMove(
-            getState()['features/base/participants'],
-            from, to);
-        dispatch(setParticipants(participants));
-        dispatch(setPagination({ order: null }));
     };
 }
 

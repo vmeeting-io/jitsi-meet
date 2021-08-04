@@ -14,6 +14,14 @@ import { MEDIA_TYPE_TO_WHITELIST_STORE_KEY, MEDIA_TYPE_TO_PENDING_STORE_KEY } fr
 const getState = state => state['features/av-moderation'];
 
 /**
+ * We use to construct once the empty array so we can keep the same instance between calls
+ * of getParticipantsAskingToAudioUnmute.
+ *
+ * @type {*[]}
+ */
+const EMPTY_ARRAY = [];
+
+/**
  * Returns whether moderation is enabled per media type.
  *
  * @param {MEDIA_TYPE} mediaType - The media type to check.
@@ -22,16 +30,8 @@ const getState = state => state['features/av-moderation'];
  */
 export const isEnabledFromState = (mediaType: MediaType, state: Object) =>
     (mediaType === MEDIA_TYPE.AUDIO
-        ? getState(state).audioModerationEnabled
-        : getState(state).videoModerationEnabled) === true;
-
-/**
- * We use to construct once the empty array so we can keep the same instance between calls
- * of getParticipantsAskingToAudioUnmute.
- *
- * @type {*[]}
- */
-const EMPTY_ARRAY = [];
+        ? getState(state)?.audioModerationEnabled
+        : getState(state)?.videoModerationEnabled) === true;
 
 /**
  * Returns whether moderation is enabled per media type.

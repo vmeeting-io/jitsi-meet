@@ -10,7 +10,6 @@ import {
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { updateSettings } from '../../../base/settings';
-import { setPagination } from '../../../video-layout';
 import { appendSuffix } from '../../functions';
 
 /**
@@ -247,7 +246,6 @@ class DisplayName extends Component<Props, State> {
         dispatch(updateSettings({
             displayName: editDisplayNameValue
         }));
-        dispatch(setPagination());
 
         this.setState({
             isEditing: false,

@@ -218,6 +218,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
         }
 
         state.remote.set(participant.id, participant);
+
         if (participant.isFakeParticipant) {
             state.fakeParticipants.set(participant.id, participant);
         }
@@ -365,7 +366,9 @@ function _participant(state: Object = {}, action) {
                 newState[key] = participant[key];
             }
         }
+
         return newState;
+    }
     }
 
     return state;
@@ -391,6 +394,7 @@ function _participantJoined({ participant }) {
         dominantSpeaker,
         email,
         isFakeParticipant,
+        isReplacing,
         isJigasi,
         loadableAvatarUrl,
         local,
@@ -422,6 +426,7 @@ function _participantJoined({ participant }) {
         email,
         id,
         isFakeParticipant,
+        isReplacing,
         isJigasi,
         loadableAvatarUrl,
         local: local || false,

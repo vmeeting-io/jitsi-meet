@@ -1,7 +1,9 @@
 // @flow
 
-export { default as ConfirmUnmuteDialog } from './ConfirmUnmuteDialog';
+export { default as BlockAudioVideoDialog } from './BlockAudioVideoDialog';
 export { default as GrantModeratorDialog } from './GrantModeratorDialog';
 export { default as KickRemoteParticipantDialog } from './KickRemoteParticipantDialog';
 export { default as MuteRemoteParticipantDialog } from './MuteRemoteParticipantDialog';
+export { default as MuteRemoteParticipantsVideoDialog } from './MuteRemoteParticipantsVideoDialog';
 export { default as RemoteVideoMenu } from './RemoteVideoMenu';
+export { default as VolumeSlider } from './VolumeSlider';

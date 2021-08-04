@@ -61,11 +61,9 @@ import {
 import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
 import { isRecording } from '../../recording';
 import { omit } from 'lodash';
-import { setPagination } from '../../video-layout';
 import { MEDIA_TYPE } from '../media';
 
 declare var APP: Object;
-declare var interfaceConfig: Object;
 
 /**
  * Middleware that captures CONFERENCE_JOINED and CONFERENCE_LEFT actions and
@@ -223,29 +221,23 @@ MiddlewareRegistry.register(store => next => action => {
             }
         }
         const result = next(action);
-        store.dispatch(setPagination());
         return result;
     }
 
     case PARTICIPANT_JOINED: {
         _maybePlaySounds(store, action);
         const result = _participantJoinedOrUpdated(store, next, action);
-        store.dispatch(setPagination());
         return result;
     }
 
     case PARTICIPANT_LEFT: {
         _maybePlaySounds(store, action);
         const result = next(action);
-        store.dispatch(setPagination());
         return result;
     }
 
     case PARTICIPANT_UPDATED: {
         const result = _participantJoinedOrUpdated(store, next, action);
-        if (action.participant?.name) {
-            store.dispatch(setPagination());
-        }
         return result;
     }
 
@@ -453,6 +445,7 @@ function _localParticipantLeft({ dispatch }, next, action) {
 function _maybePlaySounds({ getState, dispatch }, action) {
     const state = getState();
     const { startAudioMuted, disableJoinLeaveSounds } = state['features/base/config'];
+    const { soundsParticipantJoined: joinSound, soundsParticipantLeft: leftSound } = state['features/base/settings'];
 
     // If we have join/leave sounds disabled, don't play anything.
     if (disableJoinLeaveSounds) {
@@ -466,14 +459,19 @@ function _maybePlaySounds({ getState, dispatch }, action) {
     if (!action.participant.local
             && (!startAudioMuted
                 || getParticipantCount(state) < startAudioMuted)) {
+        const { isReplacing, isReplaced } = action.participant;
+
         if (action.type === PARTICIPANT_JOINED) {
+            if (!joinSound) {
+                return;
+            }
             const { presence } = action.participant;
 
             // The sounds for the poltergeist are handled by features/invite.
-            if (presence !== INVITED && presence !== CALLING) {
+            if (presence !== INVITED && presence !== CALLING && !isReplacing) {
                 dispatch(playSound(PARTICIPANT_JOINED_SOUND_ID));
             }
-        } else if (action.type === PARTICIPANT_LEFT) {
+        } else if (action.type === PARTICIPANT_LEFT && !isReplaced && leftSound) {
             dispatch(playSound(PARTICIPANT_LEFT_SOUND_ID));
         }
     }
@@ -614,9 +612,6 @@ function _trackUpdated({ dispatch, getState }, next, action) {
     case TRACK_REMOVED: {
         const participant = getParticipantById(state, participantId);
         dispatch(participantUpdated(omit(participant, jitsiTrack.type)));
-        if (jitsiTrack.type !== MEDIA_TYPE.AUDIO) {
-            dispatch(setPagination());
-        }
         break;
     }
     case TRACK_ADDED:
@@ -626,9 +621,6 @@ function _trackUpdated({ dispatch, getState }, next, action) {
             id: participantId,
             [jitsiTrack.type]: track,
         }));
-        if (jitsiTrack.type !== MEDIA_TYPE.AUDIO) {
-            dispatch(setPagination());
-        }
         break;
     }
     }

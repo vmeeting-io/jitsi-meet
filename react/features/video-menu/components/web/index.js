@@ -1,6 +1,6 @@
 // @flow
 
-export { default as ConfirmUnmuteDialog } from './ConfirmUnmuteDialog';
+export { default as ConnectionStatusButton } from './ConnectionStatusButton';
 export { default as GrantModeratorButton } from './GrantModeratorButton';
 export { default as GrantModeratorDialog } from './GrantModeratorDialog';
 export { default as KickButton } from './KickButton';

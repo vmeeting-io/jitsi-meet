@@ -73,7 +73,6 @@ class WelcomePage extends AbstractWelcomePage {
             generateRoomnames:
                 interfaceConfig.GENERATE_ROOMNAMES_ON_WELCOME_PAGE,
             selectedTab: 0,
-            savedNotification: jitsiLocalStorage.getItem('saved_notification'),
             submitting: false,
             currentTenant: props._jwt.tenant || DEFAULT_TENANT
         };
@@ -204,8 +203,10 @@ class WelcomePage extends AbstractWelcomePage {
     }
 
     componentDidUpdate() {
+        super.componentDidMount();
+
         const { savedNotification } = this.state;
-        const { t, tReady } = this.props;
+        const { tReady } = this.props;
 
         if (savedNotification && tReady) {
             this.setState({ savedNotification: null });

@@ -22,6 +22,16 @@ ReducerRegistry.register('features/e2ee', (state = DEFAULT_STATE, action) => {
             ...state,
             enabled: action.enabled
         };
+    case SET_EVERYONE_ENABLED_E2EE:
+        return {
+            ...state,
+            everyoneEnabledE2EE: action.everyoneEnabledE2EE
+        };
+    case SET_EVERYONE_SUPPORT_E2EE:
+        return {
+            ...state,
+            everyoneSupportE2EE: action.everyoneSupportE2EE
+        };
 
     case SET_EVERYONE_ENABLED_E2EE:
         return {

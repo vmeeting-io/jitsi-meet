@@ -1,6 +1,5 @@
 // @flow
 
-import { filter, flatten, keyBy, map, partition } from 'lodash';
 import { getCurrentConference } from '../base/conference';
 import { CONFERENCE_WILL_JOIN } from '../base/conference/actionTypes';
 import {
@@ -10,11 +9,10 @@ import {
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
     pinParticipant,
-    setParticipants
 } from '../base/participants';
 import { MiddlewareRegistry } from '../base/redux';
 import { setFilmstripVisible } from '../filmstrip';
-import { setTileView, setPagination } from '../video-layout';
+import { setTileView } from '../video-layout';
 
 import {
     setFollowMeModerator,
@@ -191,22 +189,20 @@ function _onFollowMeCommand(attributes = {}, value, id, store) {
         store.dispatch(pinParticipant(null));
     }
 
-    if (value && oldValue !== value) {
-        const { data, ...pagination } = JSON.parse(value.replace(/&quot;/g, '"'));
-        if (data && !iAmRecorder) {
-            // 전달된 id 배열이 현재 참석자 목록과 상이할 경우,
-            // 배열을 우선 배치하고 나머지는 뒷에 위치시킨다.
-            const participants = store.getState()['features/base/participants'];
-            const parts = partition(participants, p => data.includes(p.id));
-            const mapData = keyBy(parts[0], 'id');
-            store.dispatch(setParticipants(flatten([
-                filter(map(data, id => mapData[id])),
-                parts[1]
-            ])));
-        }
-        // force repagination
-        store.dispatch(setPagination({ order: pagination.order }, true));
-    }
+    // if (value && oldValue !== value) {
+    //     const {
+    //         visibleParticipantStartIndex,
+    //         visibleParticipantEndIndex,
+    //         visibleParticipants,
+    //     } = JSON.parse(value.replace(/&quot;/g, '"'));
+    //     if (visibleParticipants && !iAmRecorder) {
+    //         store.dispatch(setVisibleRemoteParticipants(
+    //             visibleParticipantStartIndex,
+    //             visibleParticipantEndIndex,
+    //             visibleParticipants
+    //         ));
+    //     }
+    // }
     // console.error('onFollowMeCommand:', attributes, value, id);
 }
 

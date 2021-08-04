@@ -1,6 +1,6 @@
 // @flow
 
-import { TOGGLE_E2EE } from './actionTypes';
+import { SET_EVERYONE_ENABLED_E2EE, SET_EVERYONE_SUPPORT_E2EE, TOGGLE_E2EE } from './actionTypes';
 
 /**
  * Dispatches an action to enable / disable E2EE.

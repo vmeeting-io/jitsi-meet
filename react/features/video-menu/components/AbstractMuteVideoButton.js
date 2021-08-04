@@ -4,7 +4,8 @@ import {
     createRemoteVideoMenuButtonEvent,
     sendAnalytics
 } from '../../analytics';
-import { IconCameraDisabled } from '../../base/icons';
+import { openDialog } from '../../base/dialog';
+import { IconVideoOff } from '../../base/icons';
 import { MEDIA_TYPE } from '../../base/media';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
 import { isRemoteTrackMuted } from '../../base/tracks';
@@ -41,7 +42,7 @@ export type Props = AbstractButtonProps & {
  */
 export default class AbstractMuteVideoButton extends AbstractButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.remoteVideoMute';
-    icon = IconCameraDisabled;
+    icon = IconVideoOff;
     label = 'videothumbnail.domuteVideo';
     toggledLabel = 'videothumbnail.videoMuted';
 

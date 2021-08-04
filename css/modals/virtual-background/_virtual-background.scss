@@ -7,6 +7,9 @@
     display: inline-flex;
     flex-wrap: wrap;
     cursor: pointer;
+    overflow-y: auto;
+    grid-column-gap: 9px;
+
     .desktop-share:hover,
     .thumbnail:hover,
     .blur:hover,
@@ -23,7 +26,7 @@
         margin-top: 8px;
         border-radius: 6px;
         height: 60px;
-        width: 107px;
+        width: 105px;
         text-align: center;
         justify-content: center;
         font-weight: bold;
@@ -123,6 +126,7 @@
         }
         .video-preview {
             height: auto;
+            max-height: 250px;
         }
         .virtual-background-content {
             flex-grow: 1;
@@ -180,8 +184,9 @@
 .video-background-preview-entry {
     margin-left: -10px;
     height: inherit;
-    width: 100%;
+    width: calc(100% + 10px);
     margin-bottom: 8px;
+    max-height: 250px;
     z-index: 2;
     @media (max-width: 632px) {
         max-width: 336;
@@ -189,11 +194,12 @@
 
     .video-preview-video {
         height: inherit;
+        width: inherit;
+        max-height: inherit;
     }
 }
 
 .virtual-background-preview-video {
-    margin-left: -10;
     border-radius: 6px;
     height: 100%;
     object-fit: cover;
@@ -203,7 +209,7 @@
 .video-preview-loader {
     border-radius: 6px;
     background-color: transparent;
-    height: 100%;
+    height: 250px;
     margin-bottom: 8px;
     width: 100%;
     z-index: 2;

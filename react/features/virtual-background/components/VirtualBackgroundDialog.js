@@ -23,7 +23,7 @@ import logger from '../logger';
 
 import VirtualBackgroundPreview from './VirtualBackgroundPreview';
 
-const COL_WIDTH = 107 + 9;
+const COL_WIDTH = 105 + 9;
 const ROW_HEIGHT = 60 + 8;
 const images = [
     {
@@ -110,7 +110,15 @@ const VirtualBackgroundDialog = translate(connect(_mapStateToProps)(VirtualBackg
  *
  * @returns {ReactElement}
  */
-function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtualSource, dispatch, t }: Props) {
+function VirtualBackground({
+    _apiBase,
+    _jitsiTrack,
+    _localFlipX,
+    _virtualBackground,
+    _virtualSource,
+    dispatch,
+    t
+}: Props) {
     const [ origin ] = useState(_virtualBackground);
     const [ options, setOptions ] = useState(_virtualBackground);
     const [ remoteImages, setRemoteImages ] = useState([]);
@@ -377,20 +385,6 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
         setDialogElement(el);
     }, [setDialogElement]);
 
-    let previewStyle, backgroundStyle;
-    if (dialogElement) {
-        previewStyle = {
-            width: dialogElement.clientWidth + 20,
-            height: (dialogElement.clientWidth + 20) * 9 / 16
-        };
-        const cols = Math.floor((previewStyle.width + 1) / COL_WIDTH);
-        const rows = Math.min(
-            Math.floor((dialogElement.clientHeight - previewStyle.height) / ROW_HEIGHT),
-            Math.ceil((images.length + remoteImages.length + 4) / cols));
-        //console.log(cols, dialogElement.clientWidth, dialogElement.clientHeight);
-        backgroundStyle = { height: ROW_HEIGHT * rows };
-    }
-
     return (
         <Dialog
             className = 'virtual-background-dialog-content'
@@ -402,8 +396,7 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
             submitDisabled = { !options || loading }
             titleKey = { 'virtualBackground.title' } >
             <VirtualBackgroundPreview
-                options = { options }
-                style = { previewStyle } />
+                options = { options } />
             <div className = 'virtual-background-content'>
                 {loading ? (
                     <div className = 'virtual-background-loading'>
@@ -436,7 +429,6 @@ function VirtualBackground({ _apiBase, _jitsiTrack, _virtualBackground, _virtual
                     <div
                         className = 'virtual-background-dialog'
                         role = 'radiogroup'
-                        style = { backgroundStyle }
                         tabIndex = '-1'>
                         <Tooltip
                             content = { t('virtualBackground.removeBackground') }

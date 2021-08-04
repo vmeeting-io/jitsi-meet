@@ -76,7 +76,7 @@ class ShareScreenWarningDialog extends Component<Props> {
             title = 'dialog.shareAudioWarningTitle';
             stopSharing = 'toolbar.stopScreenSharing';
         } else {
-            header1 = 'dialog.shareScreenWarningTitle';
+            header1 = 'dialog.shareScreenWarningH1';
             header2 = 'dialog.shareMediaWarningGenericH2';
             description1 = 'dialog.shareScreenWarningD1';
             description2 = 'dialog.shareScreenWarningD2';

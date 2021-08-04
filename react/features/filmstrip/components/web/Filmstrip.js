@@ -4,7 +4,6 @@ import React, { PureComponent } from 'react';
 import { FixedSizeList, FixedSizeGrid } from 'react-window';
 import type { Dispatch } from 'redux';
 
-// import { getVideoId } from '../../../../../modules/UI/videolayout/VideoLayout';
 import {
     createShortcutEvent,
     createToolbarEvent,
@@ -34,7 +33,6 @@ import ThumbnailWrapper from './ThumbnailWrapper';
 
 declare var APP: Object;
 declare var interfaceConfig: Object;
-declare var $: Object;
 
 /**
  * The type of the React {@code Component} props of {@link Filmstrip}.
@@ -50,6 +48,11 @@ type Props = {
      * The current layout of the filmstrip.
      */
     _currentLayout: string,
+
+    /**
+     * The number of columns in tile view.
+     */
+    _columns: number,
 
     /**
      * The width of the filmstrip.
@@ -150,7 +153,6 @@ class Filmstrip extends PureComponent <Props> {
      * @inheritdoc
      */
     componentDidMount() {
-        // this.$videosContainer = $(this._videosContainer.current);
         APP.keyboardshortcut.registerShortcut(
             'F',
             'filmstripPopover',
@@ -166,54 +168,6 @@ class Filmstrip extends PureComponent <Props> {
      */
     componentWillUnmount() {
         APP.keyboardshortcut.unregisterShortcut('F');
-    }
-
-    // componentDidUpdate(prevProps: Props) {
-    //     if (!this.props._disableSortable && (
-    //         prevProps._currentLayout !== this.props._currentLayout ||
-    //         prevProps._pagination !== this.props._pagination ||
-    //         prevProps._currentPage !== this.props._currentPage
-    //     )) {
-    //         this._changeSortable();
-    //     }
-    // }
-
-    // _changeSortable() {
-    //     const { _currentLayout, _pagination, dispatch } = this.props;
-
-    //     if (_currentLayout === LAYOUTS.TILE_VIEW) {
-    //         this.$videosContainer.sortable({
-    //             disabled: false,
-    //             start: (evt, ui) => {
-    //                 ui.item.data('index', ui.item.index());
-    //             },
-    //             stop: (evt, ui) => {
-    //                 const { current, pageSize } = _pagination;
-    //                 const pageStart = (current - 1) * pageSize;
-    //                 const src = ui.item.data('index');
-    //                 const dst = ui.item.index();
-    //                 dispatch(moveParticipant(pageStart + src, pageStart + dst));
-    //             }
-    //         });
-    //     } else {
-    //         this.$videosContainer.sortable({
-    //             disabled: true
-    //         });
-    //     }
-    // }
-
-    _renderAudioTrack(track) {
-        const { _startSilent } = this.props;
-        const jitsiAudioTrack = track?.jitsiTrack;
-        const audioTrackId = jitsiAudioTrack && jitsiAudioTrack.getId();
-
-        return (
-            <AudioTrack
-                key = { audioTrackId }
-                audioTrack = { track }
-                id = { `remoteAudio_${audioTrackId || ''}` }
-                muted = { _startSilent } />
-        );
     }
 
     /**
@@ -245,6 +199,7 @@ class Filmstrip extends PureComponent <Props> {
             <div
                 className = { `filmstrip ${this.props._className}` }
                 style = { filmstripStyle }>
+                { toolbar }
                 <div
                     className = { this.props._videosClassName }
                     id = 'remoteVideos'>
@@ -608,6 +563,7 @@ function _mapStateToProps(state) {
         _thumbnailHeight: _thumbnailSize?.height,
         _videosClassName: videosClassName,
         _visible: visible,
+        _isToolboxVisible: isToolboxVisible(state)
     };
 }
 

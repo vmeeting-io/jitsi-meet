@@ -269,7 +269,12 @@ class SpeakerStats extends Component<Props, State> {
  */
 function _mapStateToProps(state) {
     const tracks = state['features/base/tracks'];
-    const participants = keyBy(state['features/base/participants'], 'id');
+    const local = state['features/base/participants'].local;
+    const remote = Array.from(state['features/base/participants'].remote.values());
+
+    remote.push(local);
+
+    const participants = keyBy(remote, 'id');
     const stats = state['features/speaker-stats'];
 
     return {

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import type { Dispatch } from 'redux';
 
-import { getLocalParticipant, getParticipantCountWithFake } from '../../../base/participants';
+import { getLocalParticipant, getParticipantCount } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
 import { setTileViewDimensions } from '../../actions.native';
@@ -314,7 +314,7 @@ function _mapStateToProps(state) {
         _currentPage: pagination?.current || 1,
         _totalPages: pagination?.totalPages || 1,
         _height: responsiveUi.clientHeight,
-        _participantCount: state['features/base/participants'].length,
+        _participantCount: getParticipantCount(state),
         _width: responsiveUi.clientWidth
     };
 }

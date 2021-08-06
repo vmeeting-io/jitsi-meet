@@ -905,8 +905,7 @@ class Thumbnail extends Component<Props, State> {
             _participant,
             _startSilent,
             _videoTrack,
-            _volume = 1,
-            _currentLayout
+            _volume = 1
         } = this.props;
         const { id } = _participant;
         const { audioLevel, canPlayEventReceived } = this.state;

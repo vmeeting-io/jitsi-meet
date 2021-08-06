@@ -10,7 +10,7 @@ import {
     IconCameraDisabled,
     IconChatDisabled,
     IconChatEnabled,
-    IconCrown,
+    IconModerator,
     IconMicDisabled,
     IconMicrophone,
     IconShareDesktop
@@ -190,7 +190,7 @@ class SpeakerStatsItem extends Component<Props> {
         return (
             <BaseIndicator
                 className = { isModerator ? '' : s.disabled }
-                icon = { IconCrown }
+                icon = { IconModerator }
                 iconId = 'crown'
                 iconSize = { 16 }
                 tooltipKey = { toolTipMessage }

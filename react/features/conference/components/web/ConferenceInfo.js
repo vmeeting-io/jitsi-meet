@@ -19,6 +19,7 @@ import { isToolboxVisible } from '../../../toolbox/functions.web';
 import { TranscribingLabel } from '../../../transcribing';
 import { VideoQualityLabel } from '../../../video-quality';
 import ConferenceTimer from '../ConferenceTimer';
+import { PARTICIPANT_ROLE } from '../../../base/participants';
 
 import ParticipantsCount from './ParticipantsCount';
 
@@ -94,11 +95,12 @@ function ConferenceInfo(props: Props) {
         _hideConferenceTimer,
         _showParticipantCount,
         _hideRecordingLabel,
-        _isHost,
+        // _isHost,
         _subject,
         _fullWidth,
         _visible,
-        _recordingLabel
+        _recordingLabel,
+        _isModerator
     } = props;
     const dispatch = useDispatch();
     const { t } = useTranslation();
@@ -121,6 +123,7 @@ function ConferenceInfo(props: Props) {
         });
     }, [_subject, dispatch, t]);
 
+    // change _isModerator to _isHost to only allow person who made the room to edit room subject
     return (
         <div className = { `subject ${_recordingLabel ? 'recording' : ''} ${_visible ? 'visible' : ''}` }>
             <div
@@ -145,7 +148,7 @@ function ConferenceInfo(props: Props) {
                         !_hideConferenceNameAndTimer
                             && <div className = 'subject-info'>
                                 { _subject && (
-                                    _isHost ? (
+                                    _isModerator ? (
                                         <Tooltip content = { t('dialog.edit') } position = 'bottom'>
                                             <span className = 'subject-text editable' onClick = { _onEditSubject }>
                                                 { _subject }
@@ -202,18 +205,20 @@ function _mapStateToProps(state) {
     const isStreamRecording = streamRecordingStatus
         ? streamRecordingStatus !== JitsiRecordingConstants.status.OFF : false;
     const { isEngaged } = state['features/local-recording'];
+    const isModerator = state['features/base/participants']?.local?.role === PARTICIPANT_ROLE.MODERATOR;
 
     return {
         _hideConferenceNameAndTimer: clientWidth < 300,
         _hideConferenceTimer: Boolean(hideConferenceTimer),
         _hideRecordingLabel: hideRecordingLabel,
         _fullWidth: state['features/video-layout'].tileViewEnabled,
-        _isHost: isHost(state),
+        // _isHost: isHost(state),
         _showParticipantCount: participantCount > 2 && !hideParticipantsStats,
         _showSubject: !hideConferenceSubject,
         _subject: hideConferenceSubject ? '' : getConferenceName(state),
         _visible: Boolean(timeRemained) || isToolboxVisible(state),
-        _recordingLabel: (isFileRecording || isStreamRecording || isEngaged) && !hideRecordingLabel
+        _recordingLabel: (isFileRecording || isStreamRecording || isEngaged) && !hideRecordingLabel,
+        _isModerator: isModerator
     };
 }
 

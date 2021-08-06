@@ -148,19 +148,17 @@ export default class AbstractRecordingLabel
         // 녹화 시작을 내가 한 경우, initiator가 local이기 때문에 undefined 임.
         if (newProps._status !== oldProps._status &&
             newProps._session?.initiator == newProps._localParticipantId) {
-            const state = APP.store.getState();
-            const conference = getCurrentConference(state);
 
             if (newProps._status === JitsiRecordingConstants.status.OFF) {
-                conference.sendCommandOnce(
+                newProps._conference.sendCommandOnce(
                     FOLLOW_ME_COMMAND,
                     { attributes: { off: true } }
                 );
             } else if (newProps._status === JitsiRecordingConstants.status.ON) {
                 setTimeout(() => {
-                    conference.sendCommand(
+                    newProps._conference.sendCommand(
                         FOLLOW_ME_COMMAND,
-                        { attributes: getFollowMeState(state) }
+                        { attributes: newProps._followMeState }
                     );
                 }, 1000);
             }
@@ -197,6 +195,8 @@ export function _mapStateToProps(state: Object, ownProps: Props) {
     const { mode } = ownProps;
 
     return {
+        _conference: getCurrentConference(state),
+        _followMeState: getFollowMeState(state),
         _localParticipantId: getLocalParticipant(state)?.id,
         _status: getSessionStatusToShow(state, mode),
         _session: getActiveSession(state, mode)

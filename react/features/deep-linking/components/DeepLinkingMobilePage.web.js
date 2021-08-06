@@ -202,7 +202,7 @@ class DeepLinkingMobilePage extends Component<Props> {
             ISI = '1165103905'
         } = interfaceConfig.MOBILE_DYNAMIC_LINK || {};
 
-        const domain = CUSTOM_DOMAIN ?? `https://${APP_CODE}.app.goo.gl`;
+        const domain = CUSTOM_DOMAIN ?? `https://${APP_CODE}.page.link`;
         const IUS = interfaceConfig.APP_SCHEME || 'org.postech.vmeeting';
 
         return `${domain}/?link=${

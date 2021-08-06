@@ -774,6 +774,7 @@ class Thumbnail extends Component<Props, State> {
         const { audioLevel } = this.state;
         const styles = this._getStyles();
         const containerClassName = this._getContainerClassName();
+        const isTileView = _currentLayout === LAYOUTS.TILE_VIEW;
         const videoTrackClassName
             = !_disableLocalVideoFlip && _videoTrack && !_isScreenSharing && _localFlipX ? 'flipVideoX' : '';
 
@@ -802,6 +803,12 @@ class Thumbnail extends Component<Props, State> {
                         id = 'localVideo_container'
                         videoTrack = { _videoTrack } />
                 </span>
+                { isTileView  
+                    ? <div className = 'videocontainer__toolbar'>
+                        <StatusIndicators participantID = { id } />
+                    </div>
+                    : <StatusIndicators participantID = { id } />
+                }
                 <div className = 'videocontainer__toptoolbar'>
                     { this._renderTopIndicators() }
                 </div>
@@ -898,12 +905,14 @@ class Thumbnail extends Component<Props, State> {
             _participant,
             _startSilent,
             _videoTrack,
-            _volume = 1
+            _volume = 1,
+            _currentLayout
         } = this.props;
         const { id } = _participant;
         const { audioLevel, canPlayEventReceived } = this.state;
         const styles = this._getStyles();
         const containerClassName = this._getContainerClassName();
+        const isTileView = _currentLayout === LAYOUTS.TILE_VIEW;
 
         // hide volume when in silent mode
         const onVolumeChange = _startSilent ? undefined : this._onVolumeChange;
@@ -952,11 +961,12 @@ class Thumbnail extends Component<Props, State> {
                 <div className = 'videocontainer__toptoolbar'>
                     { this._renderTopIndicators() }
                 </div>
-                { _currentLayout === LAYOUTS.TILE_VIEW && (
-                    <div className = 'videocontainer__toolbar'>
+                { isTileView  
+                    ? <div className = 'videocontainer__toolbar'>
                         <StatusIndicators participantID = { id } />
                     </div>
-                )}
+                    : <StatusIndicators participantID = { id } />
+                }
                 <div className = 'videocontainer__hoverOverlay' />
                 <div className = 'displayNameContainer'>
                     <DisplayName

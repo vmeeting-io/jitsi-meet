@@ -71,6 +71,7 @@ class StatusIndicators extends Component<Props> {
             _showScreenShareIndicator,
             _showVideoMutedIndicator
         } = this.props;
+        const isTileView = _currentLayout === LAYOUTS.TILE_VIEW;
         let tooltipPosition;
 
         switch (_currentLayout) {
@@ -84,17 +85,28 @@ class StatusIndicators extends Component<Props> {
             tooltipPosition = 'top';
         }
 
-        const INDICATOR_LAYOUT = _currentLayout === LAYOUTS.TILE_VIEW ? null : {
+        const INDICATOR_LAYOUT = {
             float: 'right'
         };
 
         return (
-            <div style = { INDICATOR_LAYOUT }>
-                { _showAudioMutedIndicator ? <AudioMutedIndicator tooltipPosition = { tooltipPosition } /> : null }
-                { _showScreenShareIndicator ? <ScreenShareIndicator tooltipPosition = { tooltipPosition } /> : null }
-                { _showVideoMutedIndicator ? <VideoMutedIndicator tooltipPosition = { tooltipPosition } /> : null }
-                { _showModeratorIndicator ? <ModeratorIndicator tooltipPosition = { tooltipPosition } /> : null }
-            </div>
+            isTileView ? 
+                <div>
+                    { _showAudioMutedIndicator ? <AudioMutedIndicator tooltipPosition = { tooltipPosition } /> : null }
+                    { _showScreenShareIndicator ? <ScreenShareIndicator tooltipPosition = { tooltipPosition } /> : null }
+                    { _showVideoMutedIndicator ? <VideoMutedIndicator tooltipPosition = { tooltipPosition } /> : null }
+                    { _showModeratorIndicator ? 
+                        <div className = 'moderator-icon right'>
+                            <ModeratorIndicator tooltipPosition = { tooltipPosition } />
+                        </div> : null
+                    }
+                </div> :
+                <div style = { INDICATOR_LAYOUT }>
+                    { _showModeratorIndicator ? <ModeratorIndicator tooltipPosition = { tooltipPosition } /> : null }
+                    { _showAudioMutedIndicator ? <AudioMutedIndicator tooltipPosition = { tooltipPosition } /> : null }
+                    { _showScreenShareIndicator ? <ScreenShareIndicator tooltipPosition = { tooltipPosition } /> : null }
+                    { _showVideoMutedIndicator ? <VideoMutedIndicator tooltipPosition = { tooltipPosition } /> : null }
+                </div>
         );
     }
 }

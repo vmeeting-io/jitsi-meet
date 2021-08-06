@@ -695,8 +695,6 @@ class Thumbnail extends Component<Props, State> {
                         iconSize = { iconSize }
                         tooltipPosition = { tooltipPosition } />
                 }
-                { _currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW
-                    && <StatusIndicators participantID = { id } /> }
             </div>);
     }
 
@@ -812,11 +810,6 @@ class Thumbnail extends Component<Props, State> {
                 <div className = 'videocontainer__toptoolbar'>
                     { this._renderTopIndicators() }
                 </div>
-                { _currentLayout === LAYOUTS.TILE_VIEW && (
-                    <div className = 'videocontainer__toolbar'>
-                        <StatusIndicators participantID = { id } />
-                    </div>
-                )}
                 <div className = 'videocontainer__hoverOverlay' />
                 <div
                     className = 'displayNameContainer'

@@ -331,20 +331,10 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                             <ContextMenuItemGroup>
                                 {
                                     _isLocalModerator && (
-                                        <>
-                                            {
-                                                !_isParticipantAudioMuted
-                                                && <ContextMenuItem onClick = { muteAudio(_participant) }>
-                                                    <ContextMenuIcon src = { IconMicDisabled } />
-                                                    <span>{t('dialog.muteParticipantButton')}</span>
-                                                </ContextMenuItem>
-                                            }
-
                                             <ContextMenuItem onClick = { this._onMuteEveryoneElse }>
                                                 <ContextMenuIcon src = { IconMuteEveryoneElse } />
                                                 <span>{t('toolbar.accessibilityLabel.muteEveryoneElse')}</span>
                                             </ContextMenuItem>
-                                        </>
                                     )
                                 }
 

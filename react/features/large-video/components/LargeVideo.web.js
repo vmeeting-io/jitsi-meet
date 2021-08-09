@@ -106,11 +106,8 @@ class LargeVideo extends Component<Props> {
                     <div
                         id = 'largeVideoWrapper'
                         role = 'figure' >
-                        <video
-                            autoPlay = { !_noAutoPlayVideo }
-                            id = 'largeVideo'
-                            muted = { true }
-                            playsInline = { true } /* for Safari on iOS to work */ />
+                        
+                        <canvas id = 'largeVideo' autoPlay = { !_noAutoPlayVideo } muted = { true } playsInline = { true } width="1920px" height="937px" />
                     </div>
                 </div>
                 { interfaceConfig.DISABLE_TRANSCRIPTION_SUBTITLES

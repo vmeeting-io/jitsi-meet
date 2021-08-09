@@ -86,7 +86,9 @@ class StatusIndicators extends Component<Props> {
         }
 
         const INDICATOR_LAYOUT = {
-            float: 'right'
+            position: 'absolute',
+            right: 0,
+            zIndex: 2,
         };
 
         return (

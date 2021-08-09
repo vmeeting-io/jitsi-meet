@@ -663,6 +663,12 @@ class Toolbox extends Component<Props> {
             group: 2
         };
 
+        const livestreaming = {
+            key: 'livestreaming',
+            Content: LiveStreamButton,
+            group: 2
+        };
+
         const muteEveryone = {
             key: 'mute-everyone',
             Content: MuteEveryoneButton,
@@ -672,12 +678,6 @@ class Toolbox extends Component<Props> {
         const muteVideoEveryone = {
             key: 'mute-video-everyone',
             Content: MuteEveryonesVideoButton,
-            group: 2
-        };
-
-        const livestreaming = {
-            key: 'livestreaming',
-            Content: LiveStreamButton,
             group: 2
         };
 
@@ -763,9 +763,9 @@ class Toolbox extends Component<Props> {
             cc,
             recording,
             localRecording,
+            livestreaming,
             muteEveryone,
             muteVideoEveryone,
-            livestreaming,
             shareVideo,
             shareAudio,
             etherpad,

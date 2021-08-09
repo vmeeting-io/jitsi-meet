@@ -10,6 +10,7 @@ import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/com
 import { isRemoteTrackMuted } from '../../base/tracks';
 
 import { MuteRemoteParticipantDialog } from '.';
+import { openDialog } from '../../base/dialog';
 
 export type Props = AbstractButtonProps & {
 
@@ -64,8 +65,8 @@ export default class AbstractMuteButton extends AbstractButton<Props, *> {
                 'participant_id': participantID
             }));
 
-        dispatch(openDialog(MuteRemoteParticipantDialog, { participantID }));
-    }
+            dispatch(openDialog(MuteRemoteParticipantDialog, { participantID }));
+        }
 
     /**
      * Renders the item disabled if the participant is muted.

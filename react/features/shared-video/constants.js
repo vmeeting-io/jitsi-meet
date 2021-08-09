@@ -28,7 +28,7 @@ export const SHARED_VIDEO = 'shared-video';
 /**
  * Available playback statuses
  */
- export const PLAYBACK_STATUSES = {
+export const PLAYBACK_STATUSES = {
     PLAYING: 'playing',
     PAUSED: 'pause',
     STOPPED: 'stop'

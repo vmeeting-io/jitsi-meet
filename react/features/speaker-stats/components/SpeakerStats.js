@@ -21,7 +21,7 @@ import SpeakerStatsLabels from './SpeakerStatsLabels';
 import s from './SpeakerStats.module.scss';
 import { MEDIA_TYPE, VIDEO_TYPE } from '../../base/media';
 import { getLocalVideoTrack, getTrackByMediaTypeAndParticipant, isLocalTrackMuted, isLocalCameraTrackMuted, isRemoteTrackMuted } from '../../base/tracks';
-import { PARTICIPANT_ROLE } from '../../base/participants';
+import { getParticipantById, PARTICIPANT_ROLE } from '../../base/participants';
 import { Icon, IconSearch } from '../../base/icons';
 import CrossCircleIcon from '@atlaskit/icon/glyph/cross-circle';
 
@@ -269,12 +269,11 @@ class SpeakerStats extends Component<Props, State> {
  */
 function _mapStateToProps(state) {
     const tracks = state['features/base/tracks'];
-    const participants = keyBy(state['features/base/participants'], 'id');
     const stats = state['features/speaker-stats'];
 
     return {
         stats: map(stats.items, item => {
-            const p = participants[item.nick];
+            const p = getParticipantById(state, item.nick);
 
             if (p) {
                 const videoTrack = p.local

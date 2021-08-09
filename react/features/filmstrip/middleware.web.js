@@ -7,10 +7,9 @@ import { SETTINGS_UPDATED } from '../base/settings';
 import {
     getCurrentLayout,
     LAYOUTS,
-    setPagination
 } from '../video-layout';
 
-import { setHorizontalViewDimensions, setTileViewDimensions } from './actions.web';
+import { setHorizontalViewDimensions, setTileViewDimensions, setVerticalViewDimensions } from './actions.web';
 
 import './subscriber.web';
 
@@ -28,26 +27,16 @@ MiddlewareRegistry.register(store => next => action => {
         switch (layout) {
         case LAYOUTS.TILE_VIEW: {
             const { gridDimensions } = state['features/filmstrip'].tileViewDimensions;
-            const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
 
-            store.dispatch(
-                setTileViewDimensions(
-                    gridDimensions,
-                    {
-                        clientHeight,
-                        clientWidth
-                    },
-                    store
-                )
-            );
-            store.dispatch(setPagination());
+            store.dispatch(setTileViewDimensions(gridDimensions));
             break;
         }
         case LAYOUTS.HORIZONTAL_FILMSTRIP_VIEW:
-            store.dispatch(setHorizontalViewDimensions(state['features/base/responsive-ui'].clientHeight));
+            store.dispatch(setHorizontalViewDimensions());
             break;
+
         case LAYOUTS.VERTICAL_FILMSTRIP_VIEW:
-            store.dispatch(setPagination());
+            store.dispatch(setVerticalViewDimensions());
             break;
         }
         break;

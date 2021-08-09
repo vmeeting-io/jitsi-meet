@@ -20,7 +20,7 @@ import { NotificationsContainer } from '../../notifications/components';
 import { RecentList } from '../../recent-list';
 import { SETTINGS_TABS } from '../../settings';
 import { openSettingsDialog } from '../../settings/actions';
-import { VirtualBackgroundDialog } from '../../virtual-background';
+import { checkBlurSupport, VirtualBackgroundDialog } from '../../virtual-background';
 
 import { AbstractWelcomePage, _mapStateToProps } from './AbstractWelcomePage';
 import Tabs from './Tabs';
@@ -73,7 +73,6 @@ class WelcomePage extends AbstractWelcomePage {
             generateRoomnames:
                 interfaceConfig.GENERATE_ROOMNAMES_ON_WELCOME_PAGE,
             selectedTab: 0,
-            savedNotification: jitsiLocalStorage.getItem('saved_notification'),
             submitting: false,
             currentTenant: props._jwt.tenant || DEFAULT_TENANT
         };
@@ -148,6 +147,7 @@ class WelcomePage extends AbstractWelcomePage {
         this._onTabSelected = this._onTabSelected.bind(this);
         this._onVirtualBackground = this._onVirtualBackground.bind(this);
         this._onLogout = this._onLogout.bind(this);
+        this._onOpenChange = this._onOpenChange.bind(this);
         this._onOpenSettings = this._onOpenSettings.bind(this);
         this._handleKeyPress = this._handleKeyPress.bind(this);
     }
@@ -203,8 +203,10 @@ class WelcomePage extends AbstractWelcomePage {
     }
 
     componentDidUpdate() {
+        super.componentDidMount();
+
         const { savedNotification } = this.state;
-        const { t, tReady } = this.props;
+        const { tReady } = this.props;
 
         if (savedNotification && tReady) {
             this.setState({ savedNotification: null });
@@ -245,6 +247,10 @@ class WelcomePage extends AbstractWelcomePage {
         const { dispatch } = this.props;
         
         dispatch(openDialog(VirtualBackgroundDialog));
+    }
+
+    _onOpenChange() {
+        document.activeElement.blur();
     }
 
     /**
@@ -290,7 +296,8 @@ class WelcomePage extends AbstractWelcomePage {
             }
             buttons.push(
                 <DropdownMenu
-                    position="bottom right"
+                    onOpenChange = { this._onOpenChange }
+                    position = "bottom right"
                     isLoading = { submitting }
                     key = 'userMenu'
                     trigger = {
@@ -320,6 +327,14 @@ class WelcomePage extends AbstractWelcomePage {
                             href = { `${AUTH_PAGE_BASE}/features` }>
                             {t('toolbar.features')}
                         </DropdownItem>
+                        {
+                            _user.isAdmin && 
+                            <DropdownItem 
+                                className = {`${s.menuItem} ${s.mobile}`}
+                                href = { `${AUTH_PAGE_BASE}/admin/rooms` }>
+                                {t('welcomepage.adminConsole')}
+                            </DropdownItem>
+                        }
                         <DropdownItem
                             className = {s.menuItem}
                             href = { `${AUTH_PAGE_BASE}/account` }>
@@ -330,11 +345,13 @@ class WelcomePage extends AbstractWelcomePage {
                                 </div>
                             )}
                         </DropdownItem>
-                        <DropdownItem
-                            className = {s.menuItem}
-                            onClick = { this._onVirtualBackground }>
-                            { t('toolbar.selectBackground') }
-                        </DropdownItem>
+                        { checkBlurSupport() && (
+                            <DropdownItem
+                                className = {s.menuItem}
+                                onClick = { this._onVirtualBackground }>
+                                { t('toolbar.selectBackground') }
+                            </DropdownItem>
+                        )}
                         <DropdownItem
                             className = {s.menuItem}
                             onClick = { this._onLogout }>
@@ -387,14 +404,14 @@ class WelcomePage extends AbstractWelcomePage {
                             <ButtonGroup>
                                 <Button
                                     appearance = 'subtle'
-                                    className = {`${s.button} ${s.desktop}`}
+                                    className = {_user ? `${s.button} ${s.desktop}` : `${s.button}`}
                                     href = { `${AUTH_PAGE_BASE}/features` }>
                                     {t('toolbar.features')}
                                 </Button>
                                 { buttons }
                                 <Button
                                     appearance = 'subtle'
-                                    className = {`${s.button} ${s.desktop}`}
+                                    className = {_user ? `${s.button} ${s.desktop}` : `${s.button}`}
                                     onClick = { this._onOpenSettings }>
                                     { t('toolbar.Settings') }
                                 </Button>

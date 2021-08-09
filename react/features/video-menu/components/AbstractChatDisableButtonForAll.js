@@ -5,7 +5,7 @@ import { IconMessage } from '../../base/icons';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
 import {
     isLocalParticipantModerator,
-    getParticipants
+    isEveryoneModerator
 } from '../../base/participants';
 import { EnableChatForAllParticipantsDialog, DisableChatForAllParticipantsDialog } from '.';
 
@@ -72,17 +72,8 @@ export function _mapStateToProps(state: Object, ownProps: Props): Object {
     const isModerator = isLocalParticipantModerator(state);
     visible = isModerator;
     
-    const allParticipants = getParticipants(APP.store.getState());
-    const allParticipantsRole = allParticipants.map(participant => participant.role);
-    let participantCount = 0;
-    allParticipantsRole.forEach((participantRole => {
-        if(participantRole === "participant") {
-            participantCount = participantCount + 1;
-        }
-    }));
-
     return {
-        _isChatForAllDisabled: Boolean(participantCount == 0),
+        _isChatForAllDisabled: isEveryoneModerator(state),
         visible
     };
 }

@@ -96,7 +96,8 @@ body {
                 background: white;
                 fill: white;
                 color: $welcomePageButtonTextColor;
-
+                font-weight: normal;
+                
                 &:hover {
                     background: rgba(0,0,0,.1);
                 }
@@ -341,6 +342,10 @@ body {
                 font-weight: bold;  
             }
             
+            form: {
+                margin-bottom: 0;
+            }
+
             .virtualTenant {
                 display: inline-block;
                 position: absolute;

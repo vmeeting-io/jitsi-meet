@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import type { Dispatch } from 'redux';
 
+import { getLocalParticipant, getParticipantCountWithFake } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
 import { setTileViewDimensions } from '../../actions.native';
@@ -20,6 +21,7 @@ import debounce from 'lodash.debounce';
 import PageNextButton from '../../../conference/components/native/PageNextButton';
 import PagePrevButton from '../../../conference/components/native/PagePrevButton';
 import { isToolboxVisible } from '../../../toolbox/functions.native';
+
 
 /**
  * The type of the React {@link Component} props of {@link TileView}.
@@ -37,9 +39,19 @@ type Props = {
     _height: number,
 
     /**
+     * The local participant.
+     */
+    _localParticipant: Object,
+
+    /**
      * The number of participants in the conference.
      */
     _participantCount: number,
+
+    /**
+     * An array with the IDs of the remote participants in the conference.
+     */
+    _remoteParticipants: Array<string>,
 
     /**
      * Application's viewport height.
@@ -176,6 +188,21 @@ class TileView extends Component<Props> {
     }
 
     /**
+     * Returns all participants with the local participant at the end.
+     *
+     * @private
+     * @returns {Participant[]}
+     */
+    _getSortedParticipants() {
+        const { _localParticipant, _remoteParticipants } = this.props;
+        const participants = [ ..._remoteParticipants ];
+
+        _localParticipant && participants.push(_localParticipant.id);
+
+        return participants;
+    }
+
+    /**
      * Calculate the height and width for the tiles.
      *
      * @private
@@ -249,16 +276,15 @@ class TileView extends Component<Props> {
             width: null
         };
 
-        return this.props._participants
-            .map(participant => (
+        return this._getSortedParticipants()
+            .map(id => (
                 <Thumbnail
                     disableTint = { true }
-                    key = { participant.id }
-                    participant = { participant }
+                    key = { id }
+                    participantID = { id }
                     renderDisplayName = { true }
                     styleOverrides = { styleOverrides }
-                    tileView = { true } />
-            ));
+                    tileView = { true } />));
     }
 
     /**
@@ -289,8 +315,7 @@ class TileView extends Component<Props> {
  */
 function _mapStateToProps(state) {
     const responsiveUi = state['features/base/responsive-ui'];
-    const { pagination } = state['features/video-layout'] || {};
-    const toolboxVisible = isToolboxVisible(state);
+    const { remoteParticipants } = state['features/filmstrip'];
 
     return {
         _aspectRatio: responsiveUi.aspectRatio,
@@ -299,7 +324,9 @@ function _mapStateToProps(state) {
         _currentPage: pagination?.current || 1,
         _totalPages: pagination?.totalPages || 1,
         _height: responsiveUi.clientHeight,
-        _participantCount: state['features/base/participants'].length,
+        _localParticipant: getLocalParticipant(state),
+        _participantCount: getParticipantCountWithFake(state),
+        _remoteParticipants: remoteParticipants,
         _width: responsiveUi.clientWidth
     };
 }

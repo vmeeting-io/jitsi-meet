@@ -30,14 +30,14 @@ class ModeratorIndicator extends Component<Props> {
      */
     render() {
         return (
-            <div className = 'moderator-icon right'>
+            // <div className = 'moderator-icon right'>
                 <BaseIndicator
                     className = 'focusindicator toolbar-icon'
                     icon = { IconModerator }
                     iconSize = { 13 }
                     tooltipKey = 'videothumbnail.moderator'
                     tooltipPosition = { this.props.tooltipPosition } />
-            </div>
+            // </div>
         );
     }
 }

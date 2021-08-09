@@ -7,6 +7,7 @@ import {
     getPinnedParticipant,
     getParticipantCount,
     pinParticipant,
+    getParticipantCountWithFake
 } from '../base/participants';
 import { ASPECT_RATIO_NARROW } from '../base/responsive-ui';
 import {
@@ -73,6 +74,7 @@ export function getMaxColumnCount(state: Object) {
     }
 
     if (!browser.isReactNative() && !disableResponsiveTiles) {
+        const { clientWidth } = state['features/base/responsive-ui'];
         const participantCount = getParticipantCount(state);
 
         // If there are just two participants in a conference, enforce single-column view for mobile size.
@@ -108,33 +110,6 @@ export function getMaxRowCount(state: Object) {
 }
 
 /**
- * Returns participants of in the current page.
- *
- * @param {Object} state - The redux store state.
- * @returns {number}
- */
-export function getCurrentPage(state) {
-    const { current = 1, pageSize } = state['features/video-layout'].pagination || {};
-    const participants = state['features/base/participants'];
-    const isTileViewActive = shouldDisplayTileView(state);
-    const pageStart = (current - 1) * pageSize;
-    const pageEnd = current * pageSize;
-    const page = [];
-    let index = 0;
-
-    for (let cursor = 0; pageSize > page.length && cursor < participants.length; cursor += 1) {
-        const p = participants[cursor];
-        if (p.isFakeParticipant) continue;
-        if (index >= pageStart && index < pageEnd) {
-            page.push(p);
-        }
-        index += 1;
-    }
-
-    return page;
-}
-
-/**
  * Returns the cell count dimensions for tile view. Tile view tries to uphold
  * equal count of tiles for height and width, until maxColumn is reached in
  * which rows will be added but no more columns.
@@ -149,17 +124,17 @@ export function getTileViewGridDimensions(state: Object) {
     // When in tile view mode, we must discount ourselves (the local participant) because our
     // tile is not visible.
     const { iAmRecorder } = state['features/base/config'];
-    const numberOfParticipants = getParticipantCount(state) - (iAmRecorder ? 1 : 0);
+    const numberOfParticipants = getParticipantCountWithFake(state) - (iAmRecorder ? 1 : 0);
 
     const columnsToMaintainASquare = Math.ceil(Math.sqrt(numberOfParticipants));
     const columns = Math.min(columnsToMaintainASquare, maxColumns);
     const rows = Math.ceil(numberOfParticipants / columns);
-    const visibleRows = Math.min(maxColumns, rows);
+    const minVisibleRows = Math.min(maxColumns, rows);
 
     return {
         columns,
-        rows,
-        visibleRows
+        minVisibleRows,
+        rows
     };
 }
 
@@ -257,4 +232,14 @@ export function updateAutoPinnedParticipant(
     if (latestScreenShareParticipantId) {
         dispatch(pinParticipant(latestScreenShareParticipantId));
     }
+}
+
+/**
+ * Selector for whether we are currently in tile view.
+ *
+ * @param {Object} state - The redux state.
+ * @returns {boolean}
+ */
+export function isLayoutTileView(state: Object) {
+    return getCurrentLayout(state) === LAYOUTS.TILE_VIEW;
 }

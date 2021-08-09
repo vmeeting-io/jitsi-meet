@@ -1,5 +1,7 @@
 // @flow
 
+import { batch } from 'react-redux';
+
 import UIEvents from '../../../../service/UI/UIEvents';
 import { toggleE2EE } from '../../e2ee/actions';
 import { NOTIFICATION_TIMEOUT, showNotification } from '../../notifications';
@@ -23,6 +25,7 @@ import {
     DOMINANT_SPEAKER_CHANGED,
     GRANT_MODERATOR,
     KICK_PARTICIPANT,
+    LOCAL_PARTICIPANT_RAISE_HAND,
     DISABLE_CHAT_PARTICIPANT,
     DISABLE_CHAT_FOR_ALL,
     ENABLE_CHAT_PARTICIPANT,
@@ -52,16 +55,15 @@ import {
     getLocalParticipant,
     getParticipantById,
     getParticipantCount,
-    getParticipantDisplayName
+    getParticipantDisplayName,
+    getRemoteParticipants
 } from './functions';
 import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
 import { isRecording } from '../../recording';
 import { omit } from 'lodash';
-import { setPagination } from '../../video-layout';
 import { MEDIA_TYPE } from '../media';
 
 declare var APP: Object;
-declare var interfaceConfig: Object;
 
 /**
  * Middleware that captures CONFERENCE_JOINED and CONFERENCE_LEFT actions and
@@ -180,6 +182,29 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
 
+    case LOCAL_PARTICIPANT_RAISE_HAND: {
+        const { enabled } = action;
+        const localId = getLocalParticipant(store.getState())?.id;
+
+        store.dispatch(participantUpdated({
+            // XXX Only the local participant is allowed to update without
+            // stating the JitsiConference instance (i.e. participant property
+            // `conference` for a remote participant) because the local
+            // participant is uniquely identified by the very fact that there is
+            // only one local participant.
+
+            id: localId,
+            local: true,
+            raisedHand: enabled
+        }));
+
+        if (typeof APP !== 'undefined') {
+            APP.API.notifyRaiseHandUpdated(localId, enabled);
+        }
+
+        break;
+    }
+
     case MUTE_REMOTE_PARTICIPANT: {
         const { conference } = store.getState()['features/base/conference'];
         conference.muteParticipant(action.id, action.mediaType);
@@ -196,29 +221,23 @@ MiddlewareRegistry.register(store => next => action => {
             }
         }
         const result = next(action);
-        store.dispatch(setPagination());
         return result;
     }
 
     case PARTICIPANT_JOINED: {
         _maybePlaySounds(store, action);
         const result = _participantJoinedOrUpdated(store, next, action);
-        store.dispatch(setPagination());
         return result;
     }
 
     case PARTICIPANT_LEFT: {
         _maybePlaySounds(store, action);
         const result = next(action);
-        store.dispatch(setPagination());
         return result;
     }
 
     case PARTICIPANT_UPDATED: {
         const result = _participantJoinedOrUpdated(store, next, action);
-        if (action.participant?.name) {
-            store.dispatch(setPagination());
-        }
         return result;
     }
 
@@ -240,11 +259,12 @@ MiddlewareRegistry.register(store => next => action => {
 StateListenerRegistry.register(
     /* selector */ state => getCurrentConference(state),
     /* listener */ (conference, { dispatch, getState }) => {
-        for (const p of getState()['features/base/participants']) {
-            !p.local
-                && (!conference || p.conference !== conference)
-                && dispatch(participantLeft(p.id, p.conference, p.isReplaced));
-        }
+        batch(() => {
+            for (const [ id, p ] of getRemoteParticipants(getState())) {
+                (!conference || p.conference !== conference)
+                    && dispatch(participantLeft(id, p.conference, p.isReplaced));
+            }
+        });
     });
 
 /**
@@ -425,6 +445,7 @@ function _localParticipantLeft({ dispatch }, next, action) {
 function _maybePlaySounds({ getState, dispatch }, action) {
     const state = getState();
     const { startAudioMuted, disableJoinLeaveSounds } = state['features/base/config'];
+    const { soundsParticipantJoined: joinSound, soundsParticipantLeft: leftSound } = state['features/base/settings'];
 
     // If we have join/leave sounds disabled, don't play anything.
     if (disableJoinLeaveSounds) {
@@ -441,13 +462,16 @@ function _maybePlaySounds({ getState, dispatch }, action) {
         const { isReplacing, isReplaced } = action.participant;
 
         if (action.type === PARTICIPANT_JOINED) {
+            if (!joinSound) {
+                return;
+            }
             const { presence } = action.participant;
 
             // The sounds for the poltergeist are handled by features/invite.
             if (presence !== INVITED && presence !== CALLING && !isReplacing) {
                 dispatch(playSound(PARTICIPANT_JOINED_SOUND_ID));
             }
-        } else if (action.type === PARTICIPANT_LEFT && !isReplaced) {
+        } else if (action.type === PARTICIPANT_LEFT && !isReplaced && leftSound) {
             dispatch(playSound(PARTICIPANT_LEFT_SOUND_ID));
         }
     }
@@ -588,9 +612,6 @@ function _trackUpdated({ dispatch, getState }, next, action) {
     case TRACK_REMOVED: {
         const participant = getParticipantById(state, participantId);
         dispatch(participantUpdated(omit(participant, jitsiTrack.type)));
-        if (jitsiTrack.type !== MEDIA_TYPE.AUDIO) {
-            dispatch(setPagination());
-        }
         break;
     }
     case TRACK_ADDED:
@@ -600,9 +621,6 @@ function _trackUpdated({ dispatch, getState }, next, action) {
             id: participantId,
             [jitsiTrack.type]: track,
         }));
-        if (jitsiTrack.type !== MEDIA_TYPE.AUDIO) {
-            dispatch(setPagination());
-        }
         break;
     }
     }

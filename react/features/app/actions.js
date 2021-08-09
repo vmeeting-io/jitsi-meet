@@ -35,10 +35,8 @@ import {
     parseURIString,
     toURLString
 } from '../base/util';
-import { setLicenseError } from '../billing-counter/actions';
-import { LICENSE_ERROR_INVALID_LICENSE, LICENSE_ERROR_MAXED_LICENSE } from '../billing-counter/constants';
-import { isVpaasMeeting } from '../billing-counter/functions';
-import { clearNotifications, showNotification } from '../notifications';
+import { isVpaasMeeting } from '../jaas/functions';
+import { clearNotifications, saveErrorNotification, showNotification } from '../notifications';
 import { setFatalError } from '../overlay';
 
 import {
@@ -46,6 +44,11 @@ import {
     getName
 } from './functions';
 import logger from './logger';
+
+const LICENSE_ERROR_MAXED_LICENSE = 'maxed_license';
+const LICENSE_ERROR_INVALID_LICENSE = 'invalid_license';
+const LICENSE_ERROR_NOT_MODERATOR = 'not_moderator';
+const LICENSE_ERROR_FORBIDDEN = 'forbidden';
 
 // eslint-disable-next-line require-jsdoc
 function getParams(uri: string) {
@@ -281,30 +284,22 @@ export function appNavigate(uri: ?string) {
                 console.log('Request is failed.', err.response);
                 const { error } = err.response?.data || {};
 
-                if (error === LICENSE_ERROR_INVALID_LICENSE ||
-                    error === LICENSE_ERROR_MAXED_LICENSE) {
-                    // 라이센스가 유효하지 않습니다.
-                    dispatch(setLicenseError(error));
-                    // 개설 권한이 없는 경우, 게스트로 참석한다.
-                    // 게스트는 회의 조인만 허용한다.
-                } else {
-                    // (error === 'not_moderator')
-                    // (error === 'forbidden')
-                    // Unknown error.
-                    dispatch(setLicenseError(''));
+                switch (error) {
+                    case LICENSE_ERROR_INVALID_LICENSE:
+                    case LICENSE_ERROR_MAXED_LICENSE: {
+                        const messages = {
+                            [LICENSE_ERROR_INVALID_LICENSE]: 'dialog.InvalidLicense',
+                            [LICENSE_ERROR_MAXED_LICENSE]: 'dialog.MaxedLicense',
+                        };
+                        
+                        dispatch(saveErrorNotification({
+                            titleKey: 'dialog.LicenseError',
+                            descriptionKey: messages[error],
+                        }));
+                        dispatch(redirectWithStoredParams('/'));
+                        return;
+                    }
                 }
-                // try {
-                //     resp = await axios.post(`${apiBase}/conferences`, {
-                //         name: room,
-                //         start_time: new Date(),
-                //         mail_owner: getState()['features/base/jwt'].user.email
-                //     });
-                //     roomInfo = resp.data;
-                //     roomInfo.isHost = true;
-                // } catch (err2) {
-                //     console.log("Error! Not navigate to target, ", err2);
-                //     disconnect();
-                // }
             }
         }
 

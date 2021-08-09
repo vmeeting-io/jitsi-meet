@@ -134,9 +134,10 @@ function handleSharingVideoStatus(store, videoUrl, { state, time, from, muted },
             id: videoUrl,
             isFakeParticipant: true,
             avatarURL,
-            pinned: true,
             name: VIDEO_PLAYER_PARTICIPANT_NAME
         }));
+
+        dispatch(pinParticipant(videoUrl));
     }
 
     if (localParticipantId !== from) {

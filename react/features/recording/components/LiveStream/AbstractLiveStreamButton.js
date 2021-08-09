@@ -2,13 +2,14 @@
 
 import { openDialog } from '../../../base/dialog';
 import { IconLiveStreaming } from '../../../base/icons';
-import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
 import {
     getLocalParticipant,
     isLocalParticipantModerator
 } from '../../../base/participants';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
 import { isRecording, isStreaming } from '../../functions';
+import { maybeShowPremiumFeatureDialog } from '../../../jaas/actions';
+import { FEATURES } from '../../../jaas/constants';
 
 import {
     StartLiveStreamDialog,
@@ -73,12 +74,16 @@ export default class AbstractLiveStreamButton<P: Props> extends AbstractButton<P
      * @protected
      * @returns {void}
      */
-    _handleClick() {
+    async _handleClick() {
         const { _isLiveStreamRunning, dispatch } = this.props;
 
-        dispatch(openDialog(
-            _isLiveStreamRunning ? StopLiveStreamDialog : StartLiveStreamDialog
-        ));
+        const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(FEATURES.RECORDING));
+
+        if (!dialogShown) {
+            dispatch(openDialog(
+                _isLiveStreamRunning ? StopLiveStreamDialog : StartLiveStreamDialog
+            ));
+        }
     }
 
     /**

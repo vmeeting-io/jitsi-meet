@@ -10,7 +10,8 @@ import { isMobileBrowser } from '../../react/features/base/environment/utils';
 import { setColorAlpha } from '../../react/features/base/util';
 import { setDocumentUrl } from '../../react/features/etherpad';
 import { setFilmstripVisible } from '../../react/features/filmstrip';
-import { joinLeaveNotificationsDisabled, setNotificationsEnabled } from '../../react/features/notifications';
+import { joinLeaveNotificationsDisabled } from '../../react/features/notifications/functions.any';
+import { setNotificationsEnabled } from '../../react/features/notifications';
 import {
     dockToolbox,
     setToolboxEnabled,

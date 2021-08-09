@@ -1,11 +1,10 @@
 // @flow
 
-import { map, throttle } from 'lodash';
+import { throttle } from 'lodash';
 import { getCurrentConference } from '../base/conference';
 import { isHost } from '../base/jwt';
 import {
     getLocalParticipant,
-    getParticipants,
     getPinnedParticipant,
     isLocalParticipantModerator
 } from '../base/participants';
@@ -14,7 +13,7 @@ import { isRecording, isStreaming } from '../recording';
 import { shouldDisplayTileView } from '../video-layout/functions';
 
 import { FOLLOW_ME_COMMAND } from './constants';
-import { isFollowMeEnabled } from './functions';
+// import { isFollowMeEnabled } from './functions';
 
 /**
  * Sends the follow-me command, when a local property change occurs.
@@ -60,18 +59,23 @@ const _sendFollowMeCommand = throttle(
         return;
     }
 
-    const { pagination = {} } = state['features/video-layout'] || {};
-    const participants = state['features/base/participants'];
-    const data = map(participants, 'id');
+    // const { pagination = {} } = state['features/video-layout'] || {};
+    // const {
+    //     visibleParticipantStartIndex,
+    //     visibleParticipantEndIndex,
+    //     visibleParticipants
+    // } = state['features/filmstrip'];
 
     conference.sendCommand(
         FOLLOW_ME_COMMAND,
         {
             attributes: getFollowMeState(state),
-            value: JSON.stringify({
-                ...pagination,
-                data
-            })
+            // value: JSON.stringify({
+            //     ...pagination,
+            //     visibleParticipantStartIndex,
+            //     visibleParticipantEndIndex,
+            //     visibleParticipants
+            // })
         }
     );
 }, 100);
@@ -128,19 +132,16 @@ StateListenerRegistry.register(
 /**
  * Subscribes to changes to the tile view order setting.
  */
-StateListenerRegistry.register(
-    /* selector */ state => state['features/video-layout'].pagination,
-    /* listener */ _sendFollowMeCommand);
+// StateListenerRegistry.register(
+//     /* selector */ state => state['features/video-layout'].pagination,
+//     /* listener */ _sendFollowMeCommand);
 
 /**
  * Subscribes to changes to the tile view order setting.
  */
-StateListenerRegistry.register(
-    /* selector */ state => {
-        const participants = getParticipants(state);
-        return map(participants, 'id');
-    },
-    /* listener */ _sendFollowMeCommand);
+// StateListenerRegistry.register(
+//     /* selector */ state => state['features/filmstrip'].visibleParticipants,
+//     /* listener */ _sendFollowMeCommand);
 
 /**
  * selector for returning state from redux that should be respected by

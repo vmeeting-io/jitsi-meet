@@ -9,8 +9,6 @@ import { getAuthUrl } from '../../../../api/url';
 import { getCurrentUser } from '../../../base/auth';
 import { disconnect } from '../../../base/connection';
 import { Dialog } from '../../../base/dialog';
-import { getLicenseError } from '../../../billing-counter/functions';
-import { LICENSE_ERROR_INVALID_LICENSE, LICENSE_ERROR_MAXED_LICENSE } from '../../../billing-counter/constants';
 import { translate, translateToHTML } from '../../../base/i18n';
 import { setJWT } from '../../../base/jwt';
 import { connect } from '../../../base/redux';
@@ -114,14 +112,17 @@ class WaitForOwnerDialog extends PureComponent<Props> {
 
         return (
             <Dialog
+                okKey = { 'dialog.login' }
+                cancelKey = { 'dialog.goHome' }
                 onCancel = { this._onCancelWaitForOwner }
                 onSubmit = { this._onSubmit }
+                titleKey = { 'dialog.WaitingForHost' }
                 width = { 'small' }
                 {...dialogProps}>
                 <span>
                     { translateToHTML(
                         t,
-                        description,
+                        'dialog.WaitForHostMsg',
                         { room: decodeURI(room) }) }
                 </span>
             </Dialog>
@@ -141,21 +142,11 @@ function mapStateToProps(state) {
     const { authRequired } = state['features/base/conference'];
     const { waitOnlyGuestEnabled } = state['features/base/config'];
     const isAuthenticated = Boolean(getCurrentUser(state));
+    let submitDisabled;
+    let cancelDisabled;
+    let description;
 
-    const messages = {
-        [LICENSE_ERROR_INVALID_LICENSE]: 'dialog.InvalidLicense',
-        [LICENSE_ERROR_MAXED_LICENSE]: 'dialog.MaxedLicense',
-        none: isAuthenticated ? 'dialog.WaitForHostMsg' : 'dialog.WaitingRoomMsg'
-    };
-    
-    const error = getLicenseError();
-    const titleKey = error ? 'dialog.LicenseError' : 'dialog.WaitingForHost';
-    const okKey = 'dialog.login';
-    const cancelKey = 'dialog.goHome';
-    let description = messages[error || 'none'];
-    let cancelDisabled, submitDisabled;
-
-    if (isAuthenticated || error) {
+    if (isAuthenticated) {
         submitDisabled = true;
     }
 
@@ -167,11 +158,8 @@ function mapStateToProps(state) {
 
     return {
         cancelDisabled,
-        cancelKey,
         description,
-        okKey,
         submitDisabled,
-        titleKey,
         _room: authRequired && safeDecodeURIComponent(authRequired.getName())
     };
 }

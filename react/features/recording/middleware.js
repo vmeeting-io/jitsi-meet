@@ -164,7 +164,6 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                         mode, initiator, action.sessionData.id));
                 }
 
-
                 sendAnalytics(createRecordingEvent('start', mode));
 
                 if (disableRecordAudioNotification) {

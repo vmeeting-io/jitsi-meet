@@ -115,6 +115,10 @@ class VirtualBackgroundPreview extends PureComponent<Props, State> {
         this.setState({
             jitsiTrack
         });
+
+        if (this.props.options.backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
+            this._applyBackgroundEffect();
+        }
     }
 
     /**
@@ -226,10 +230,11 @@ class VirtualBackgroundPreview extends PureComponent<Props, State> {
      */
     render() {
         const { jitsiTrack } = this.state;
+        const { style } = this.props;
 
         return jitsiTrack
-            ? <div className = 'video-preview'>{this._renderPreviewEntry(jitsiTrack)}</div>
-            : <div className = 'video-preview-loader'>{this._loadVideoPreview()}</div>
+            ? <div className = 'video-preview' style = { style }>{this._renderPreviewEntry(jitsiTrack)}</div>
+            : <div className = 'video-preview-loader' style = { style }>{this._loadVideoPreview()}</div>
         ;
     }
 }

@@ -4,7 +4,6 @@ import { ReducerRegistry } from '../base/redux';
 
 import {
     SCREEN_SHARE_REMOTE_PARTICIPANTS_UPDATED,
-    SELECT_ENDPOINTS,
     SET_PAGINATION,
     SET_TILE_VIEW,
 } from './actionTypes';
@@ -40,13 +39,6 @@ ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
         return {
             ...state,
             remoteScreenShares: action.participantIds
-        };
-    }
-
-    case SELECT_ENDPOINTS: {
-        return {
-            ...state,
-            selectedEndpoints: action.participantIds
         };
     }
 

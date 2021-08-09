@@ -17,7 +17,7 @@ import {
     showParticipantJoinedNotification
 } from './actions';
 import { NOTIFICATION_TIMEOUT } from './constants';
-import { joinLeaveNotificationsDisabled } from './functions';
+import { joinLeaveNotificationsDisabled } from './functions.any';
 
 declare var interfaceConfig: Object;
 

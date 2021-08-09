@@ -14,6 +14,7 @@ import { AbstractAudioMuteButton } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
 import { isLocalTrackMuted } from '../../base/tracks';
 import { muteLocal } from '../../video-menu/actions';
+import { getLocalParticipant } from '../../base/participants';
 
 declare var APP: Object;
 
@@ -151,12 +152,17 @@ class AudioMuteButton extends AbstractAudioMuteButton<Props, *> {
  */
 function _mapStateToProps(state): Object {
     const _audioMuted = isLocalTrackMuted(state['features/base/tracks'], MEDIA_TYPE.AUDIO);
+    const localParticipant = getLocalParticipant(APP.store.getState());
+    let isLocalParticipantAModerator = (localParticipant.role === "moderator");
     const _disabled = state['features/base/config'].startSilent;
     const enabledFlag = getFeatureFlag(state, AUDIO_MUTE_BUTTON_ENABLED, true);
 
+    let isUserDeviceAccessDisabled = state['features/base/conference'].userDeviceAccessDisabled;
+    isUserDeviceAccessDisabled = false ? undefined : isUserDeviceAccessDisabled;
+
     return {
         _audioMuted,
-        _disabled,
+        _disabled: !isLocalParticipantAModerator && (_disabled || isUserDeviceAccessDisabled),
         visible: enabledFlag
     };
 }

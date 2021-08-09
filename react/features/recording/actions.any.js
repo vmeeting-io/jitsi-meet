@@ -1,7 +1,10 @@
 // @flow
 
+import { getMeetingRegion, getRecordingSharingUrl } from '../base/config';
 import JitsiMeetJS, { JitsiRecordingConstants } from '../base/lib-jitsi-meet';
-import { getParticipantDisplayName } from '../base/participants';
+import { getLocalParticipant, getParticipantDisplayName } from '../base/participants';
+import { copyText } from '../base/util/helpers';
+import { getVpaasTenant, isVpaasMeeting } from '../jaas/functions';
 import {
     NOTIFICATION_TIMEOUT,
     hideNotification,
@@ -13,9 +16,11 @@ import {
     CLEAR_RECORDING_SESSIONS,
     RECORDING_SESSION_UPDATED,
     SET_PENDING_RECORDING_NOTIFICATION_UID,
+    SET_SELECTED_RECORDING_SERVICE,
     SET_STREAM_KEY
 } from './actionTypes';
-import { getResourceId } from './functions';
+import { getRecordingLink, getResourceId, isSavingRecordingOnDropbox } from './functions';
+import logger from './logger';
 
 /**
  * Clears the data of every recording sessions.
@@ -145,24 +150,59 @@ export function showStoppedRecordingNotification(streamType: string, participant
  */
 export function showStartedRecordingNotification(
         mode: string,
-        initiator: Object | String,
+        initiator: Object | string,
         sessionId: string) {
     return async (dispatch: Function, getState: Function) => {
         const state = getState();
         const initiatorId = getResourceId(initiator);
         const participantName = getParticipantDisplayName(state, initiatorId);
-        const isLiveStreaming
-            = mode === JitsiMeetJS.constants.recording.mode.STREAM;
-        const descriptionArguments = { name: participantName };
-        const dialogProps = isLiveStreaming ? {
+        let dialogProps = {
+            customActionNameKey: undefined,
             descriptionKey: participantName ? 'liveStreaming.onBy' : 'liveStreaming.on',
-            descriptionArguments,
+            descriptionArguments: { name: participantName },
+            isDismissAllowed: true,
             titleKey: 'dialog.liveStreaming'
-        } : {
-            descriptionKey: participantName ? 'recording.onBy' : 'recording.on',
-            descriptionArguments,
-            titleKey: 'dialog.recording'
         };
+
+        if (mode !== JitsiMeetJS.constants.recording.mode.STREAM) {
+            const recordingSharingUrl = getRecordingSharingUrl(state);
+            const iAmRecordingInitiator = getLocalParticipant(state).id === initiatorId;
+
+            dialogProps = {
+                customActionHandler: undefined,
+                customActionNameKey: undefined,
+                descriptionKey: participantName ? 'recording.onBy' : 'recording.on',
+                descriptionArguments: { name: participantName },
+                isDismissAllowed: true,
+                titleKey: 'dialog.recording'
+            };
+
+            // fetch the recording link from the server for recording initiators in jaas meetings
+            if (recordingSharingUrl
+                && isVpaasMeeting(state)
+                && iAmRecordingInitiator
+                && !isSavingRecordingOnDropbox(state)) {
+                const region = getMeetingRegion(state);
+                const tenant = getVpaasTenant(state);
+
+                try {
+                    const link = await getRecordingLink(recordingSharingUrl, sessionId, region, tenant);
+
+                    // add the option to copy recording link
+                    dialogProps.customActionNameKey = 'recording.copyLink';
+                    dialogProps.customActionHandler = () => copyText(link);
+                    dialogProps.titleKey = 'recording.on';
+                    dialogProps.descriptionKey = 'recording.linkGenerated';
+                    dialogProps.isDismissAllowed = false;
+                } catch (err) {
+                    dispatch(showErrorNotification({
+                        titleKey: 'recording.errorFetchingLink'
+                    }));
+
+                    return logger.error('Could not fetch recording link', err);
+                }
+            }
+        }
 
         dispatch(showNotification(dialogProps));
     };
@@ -197,6 +237,19 @@ export function updateRecordingSessionData(session: Object) {
             terminator: session.getTerminator(),
             timestamp
         }
+    };
+}
+
+/**
+ * Sets the selected recording service.
+ *
+ * @param {string} selectedRecordingService - The new selected recording service.
+ * @returns {Object}
+ */
+export function setSelectedRecordingService(selectedRecordingService: string) {
+    return {
+        type: SET_SELECTED_RECORDING_SERVICE,
+        selectedRecordingService
     };
 }
 

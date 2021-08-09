@@ -2,17 +2,23 @@
 
 import React, { Component } from 'react';
 
+import ConnectionIndicatorContent from
+    '../../../../features/connection-indicator/components/web/ConnectionIndicatorContent';
+import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { Icon, IconMenuThumb } from '../../../base/icons';
 import { getLocalParticipant, getParticipantById, PARTICIPANT_ROLE } from '../../../base/participants';
 import { Popover } from '../../../base/popover';
 import { connect } from '../../../base/redux';
 import { requestRemoteControl, stopController } from '../../../remote-control';
-import { getCurrentLayout, LAYOUTS, shouldDisplayTileView } from '../../../video-layout';
+import { getCurrentLayout, LAYOUTS } from '../../../video-layout';
+import { renderConnectionStatus } from '../../actions.web';
 
+import ConnectionStatusButton from './ConnectionStatusButton';
 import MuteEveryoneElseButton from './MuteEveryoneElseButton';
 import MuteEveryoneElsesVideoButton from './MuteEveryoneElsesVideoButton';
 import { REMOTE_CONTROL_MENU_STATES } from './RemoteControlButton';
+
 
 import {
     GrantModeratorButton,
@@ -24,11 +30,8 @@ import {
     VideoMenu,
     VolumeSlider
 } from './';
-import MoveToFirstButton from './MoveToFirstButton';
-import MoveToLastButton from './MoveToLastButton';
 
 declare var $: Object;
-declare var interfaceConfig: Object;
 
 /**
  * The type of the React {@code Component} props of
@@ -73,11 +76,15 @@ type Props = {
      */
     _remoteControlState: number,
 
-
     /**
      * The redux dispatch function.
      */
     dispatch: Function,
+
+    /**
+     * Gets a ref to the current component instance.
+     */
+    getRef: Function,
 
     /**
      * A value between 0 and 1 indicating the volume of the participant's
@@ -102,6 +109,11 @@ type Props = {
     _participantDisplayName: string,
 
     /**
+     * Whether the popover should render the Connection Info stats.
+     */
+    _showConnectionInfo: Boolean,
+
+    /**
      * Invoked to obtain translated strings.
      */
     t: Function
@@ -114,19 +126,57 @@ type Props = {
  * @extends {Component}
  */
 class RemoteVideoMenuTriggerButton extends Component<Props> {
-    constructor(props) {
+    /**
+     * Reference to the Popover instance.
+     */
+    popoverRef: Object;
+
+    /**
+     * Initializes a new RemoteVideoMenuTriggerButton instance.
+     *
+     * @param {Object} props - The read-only React Component props with which
+     * the new instance is to be initialized.
+     */
+    constructor(props: Props) {
         super(props);
 
-        this._onMenuOpen = this._onMenuOpen.bind(this);
-        this._closeMenu = this._closeMenu.bind(this);
+        this.popoverRef = React.createRef();
+        this._onPopoverClose = this._onPopoverClose.bind(this);
     }
 
-    _onMenuOpen(doMenuClose) {
-        this.setState({ doMenuClose });
+    /**
+     * Triggers showing the popover's context menu.
+     *
+     * @returns {void}
+     */
+    showContextMenu() {
+        if (this.popoverRef && this.popoverRef.current) {
+            this.popoverRef.current.showDialog();
+        }
     }
 
-    _closeMenu() {
-        this.state.doMenuClose && this.state.doMenuClose();
+    /**
+     * Calls the ref(instance) getter.
+     *
+     * @inheritdoc
+     * @returns {void}
+     */
+    componentDidMount() {
+        if (this.props.getRef) {
+            this.props.getRef(this);
+        }
+    }
+
+    /**
+     * Calls the ref(instance) getter.
+     *
+     * @inheritdoc
+     * @returns {void}
+     */
+    componentWillUnmount() {
+        if (this.props.getRef) {
+            this.props.getRef(null);
+        }
     }
 
     /**
@@ -136,31 +186,48 @@ class RemoteVideoMenuTriggerButton extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const content = this._renderRemoteVideoMenu();
+        const { _showConnectionInfo, _participantDisplayName, participantID } = this.props;
+        const content = _showConnectionInfo
+            ? <ConnectionIndicatorContent participantId = { participantID } />
+            : this._renderRemoteVideoMenu();
 
         if (!content) {
             return null;
         }
 
-        const username = this.props._participantDisplayName;
+        const username = _participantDisplayName;
 
         return (
             <Popover
                 content = { content }
+                onPopoverClose = { this._onPopoverClose }
                 overflowDrawer = { this.props._overflowDrawer }
-                onPopoverOpen = { this._onMenuOpen }
-                position = { this.props._menuPosition }>
-                <span className = 'popover-trigger remote-video-menu-trigger'>
-                    <Icon
-                        ariaLabel = { this.props.t('dialog.remoteUserControls', { username }) }
-                        role = 'button'
-                        size = '1.4em'
-                        src = { IconMenuThumb }
-                        tabIndex = { 0 }
-                        title = { this.props.t('dialog.remoteUserControls', { username }) } />
-                </span>
+                position = { this.props._menuPosition }
+                ref = { this.popoverRef }>
+                {!isMobileBrowser() && (
+                    <span className = 'popover-trigger remote-video-menu-trigger'>
+                        <Icon
+                            ariaLabel = { this.props.t('dialog.remoteUserControls', { username }) }
+                            role = 'button'
+                            size = '1.4em'
+                            src = { IconMenuThumb }
+                            tabIndex = { 0 }
+                            title = { this.props.t('dialog.remoteUserControls', { username }) } />
+                    </span>
+                )}
             </Popover>
         );
+    }
+
+    _onPopoverClose: () => void;
+
+    /**
+     * Render normal context menu next time popover dialog opens.
+     *
+     * @returns {void}
+     */
+    _onPopoverClose() {
+        this.props.dispatch(renderConnectionStatus(false));
     }
 
     /**
@@ -177,11 +244,8 @@ class RemoteVideoMenuTriggerButton extends Component<Props> {
             _disableGrantModerator,
             _isModerator,
             _remoteControlState,
-            _shouldDisplayTileView,
             dispatch,
             initialVolumeValue,
-            isFirst,
-            isLast,
             onVolumeChange,
             participantID,
         } = this.props;
@@ -253,23 +317,11 @@ class RemoteVideoMenuTriggerButton extends Component<Props> {
                 participantID = { participantID } />
         );
 
-        if (_shouldDisplayTileView) {
-            if (!isFirst) {
-                buttons.push(
-                    <MoveToFirstButton
-                        key = 'moveToFirst'
-                        onClick = { this._closeMenu }
-                        participantID = { participantID } />
-                );
-            }
-            if (!isLast) {
-                buttons.push(
-                    <MoveToLastButton
-                        key = 'moveToLast'
-                        onClick = { this._closeMenu }
-                        participantID = { participantID } />
-                );
-            }
+        if (isMobileBrowser()) {
+            buttons.push(
+                <ConnectionStatusButton
+                    participantId = { participantID } />
+            );
         }
 
         if (onVolumeChange && typeof initialVolumeValue === 'number' && !isNaN(initialVolumeValue)) {
@@ -315,7 +367,7 @@ function _mapStateToProps(state, ownProps) {
     const { requestedParticipant, controlled } = controller;
     const activeParticipant = requestedParticipant || controlled;
     const { overflowDrawer } = state['features/toolbox'];
-    const participants = state['features/base/participants'];
+    const { showConnectionInfo } = state['features/base/connection'];
 
     if (_supportsRemoteControl
             && ((!active && !_isRemoteControlSessionActive) || activeParticipant === participantID)) {
@@ -351,9 +403,7 @@ function _mapStateToProps(state, ownProps) {
         _overflowDrawer: overflowDrawer,
         _participantDisplayName,
         _disableGrantModerator: Boolean(disableGrantModerator),
-        _shouldDisplayTileView: shouldDisplayTileView(state),
-        isFirst: participants[0] === participant,
-        isLast: participants[participants.length - 1] === participant,
+        _showConnectionInfo: showConnectionInfo
     };
 }
 

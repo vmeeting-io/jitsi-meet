@@ -1,6 +1,6 @@
 // @flow
 
-import React from 'react';
+import React, { Component } from 'react';
 
 import { Dialog } from '../../../base/dialog';
 import { connect } from '../../../base/redux';
@@ -11,7 +11,14 @@ import { connect } from '../../../base/redux';
  *
  * @extends Component
  */
-class ConfirmUnmuteDialog extends Dialog {
+class ConfirmUnmuteDialog extends Component {
+    constructor(props) {
+        super(props);
+
+        this._onCancel = this._onCancel.bind(this);
+        this._onSubmit = this._onSubmit.bind(this);
+    }
+
     _onSubmit() {
         this.props.onSubmit && this.props.onSubmit();
     }
@@ -19,7 +26,19 @@ class ConfirmUnmuteDialog extends Dialog {
     _onCancel() {
         this.props.onCancel && this.props.onCancel();
     }
-}
+
+    /**
+     * Implements React's {@link Component#render()}.
+     *
+     * @inheritdoc
+     * @returns {ReactElement}
+     */
+     render() {
+        return (
+            <Dialog { ...this.props } />
+        );
+    }
+};
 
 function _mapStateToProps(state: Object, ownProps: Props) {
     return {

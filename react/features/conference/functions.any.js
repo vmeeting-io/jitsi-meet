@@ -1,5 +1,5 @@
 import { toState } from '../base/redux';
-import { areThereNotifications } from '../notifications';
+import { areThereNotifications } from '../notifications/functions.any';
 import { getOverlayToRender } from '../overlay';
 
 /**

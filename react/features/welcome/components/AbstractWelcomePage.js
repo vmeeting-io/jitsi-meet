@@ -1,5 +1,6 @@
 // @flow
 
+import { jitsiLocalStorage } from '@jitsi/js-utils';
 import { generateRoomWithoutSeparator } from '@jitsi/js-utils/random';
 import { Component } from 'react';
 import type { Dispatch } from 'redux';
@@ -7,8 +8,8 @@ import type { Dispatch } from 'redux';
 import { createWelcomePageEvent, sendAnalytics } from '../../analytics';
 import { appNavigate } from '../../app/actions';
 import isInsecureRoomName from '../../base/util/isInsecureRoomName';
-import { setLicenseError } from '../../billing-counter/actions';
 import { isCalendarEnabled } from '../../calendar-sync';
+import { showNotification } from '../../notifications';
 import { isRecentListEnabled } from '../../recent-list/functions';
 
 /**
@@ -115,6 +116,7 @@ export class AbstractWelcomePage extends Component<Props, *> {
         this._onRoomChange = this._onRoomChange.bind(this);
         this._renderInsecureRoomNameWarning = this._renderInsecureRoomNameWarning.bind(this);
         this._updateRoomname = this._updateRoomname.bind(this);
+        this.state.savedNotification = jitsiLocalStorage.getItem('saved_notification');
     }
 
     /**
@@ -126,7 +128,6 @@ export class AbstractWelcomePage extends Component<Props, *> {
     componentDidMount() {
         this._mounted = true;
         sendAnalytics(createWelcomePageEvent('viewed', undefined, { value: 1 }));
-        this.props.dispatch(setLicenseError());
     }
 
     /**

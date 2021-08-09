@@ -1,8 +1,9 @@
 // @flow
 
 import { JitsiRecordingConstants } from '../base/lib-jitsi-meet';
+import { isEnabled as isDropboxEnabled } from '../dropbox';
 
-import { RECORDING_STATUS_PRIORITIES } from './constants';
+import { RECORDING_STATUS_PRIORITIES, RECORDING_TYPES } from './constants';
 
 /**
  * Searches in the passed in redux state for an active recording session of the
@@ -44,6 +45,38 @@ export function getRecordingDurationEstimation(size: ?number) {
 export function getSessionById(state: Object, id: string) {
     return state['features/recording'].sessionDatas.find(
         sessionData => sessionData.id === id);
+}
+
+/**
+ * Fetches the recording link from the server.
+ *
+ * @param {string} url - The base url.
+ * @param {string} recordingSessionId - The ID of the recording session to find.
+ * @param {string} region - The meeting region.
+ * @param {string} tenant - The meeting tenant.
+ * @returns {Promise<any>}
+ */
+export async function getRecordingLink(url: string, recordingSessionId: string, region: string, tenant: string) {
+    const fullUrl = `${url}?recordingSessionId=${recordingSessionId}&region=${region}&tenant=${tenant}`;
+    const res = await fetch(fullUrl, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    const json = await res.json();
+
+    return res.ok ? json.url : Promise.reject(json);
+}
+
+/**
+ * Selector used for determining if recording is saved on dropbox.
+ *
+ * @param {Object} state - The redux state to search in.
+ * @returns {string}
+ */
+export function isSavingRecordingOnDropbox(state: Object) {
+    return isDropboxEnabled(state)
+        && state['features/recording'].selectedRecordingService === RECORDING_TYPES.DROPBOX;
 }
 
 /**
@@ -103,7 +136,7 @@ export function isStreaming(state: Object, initiator: Any) {
  * @param {Object | string} recorder - A participant or it's resource.
  * @returns {string|undefined}
  */
- export function getResourceId(recorder: string | Object) {
+export function getResourceId(recorder: string | Object) {
     if (recorder) {
         return typeof recorder === 'string'
             ? recorder

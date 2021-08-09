@@ -1,20 +1,19 @@
 // @flow
 
 import React, { Component } from 'react';
-import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView, ScrollView } from 'react-native';
 
 import { Platform } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
-import PagePrevButton from '../../../conference/components/native/PagePrevButton';
-import PageNextButton from '../../../conference/components/native/PageNextButton';
-import { isFilmstripVisible } from '../../functions';
+import { isFilmstripVisible, shouldRemoteVideosBeVisible } from '../../functions';
 
 import LocalThumbnail from './LocalThumbnail';
 import Thumbnail from './Thumbnail';
 import styles from './styles';
-import { isToolboxVisible } from '../../../toolbox/functions.native';
-import { getCurrentPage } from '../../../video-layout';
+
+// Immutable reference to avoid re-renders.
+const NO_REMOTE_VIDEOS = [];
 
 /**
  * Filmstrip component's property types.
@@ -98,41 +97,39 @@ class Filmstrip extends Component<Props> {
         const layout = isNarrowAspectRatio ? 'horizontal' : 'vertical';
 
         return (
-            <SafeAreaView style = { paginationStyle }>
-                { _pageButtonVisible && (
-                    <View style = {{ ...paginationContainer, overflow: 'hidden' }}>
-                        <PagePrevButton disabled = { true } layout = { layout } />
-                        <Text numberOfLines = { 1 } style = { styles.paginationLabel }>
-                            { _currentPage }
-                        </Text>
-                        { isNarrowAspectRatio && (
-                            <>
-                                <Text key = 'divider' numberOfLines = { 1 } style = { styles.paginationLabel }>
-                                    /
-                                </Text>
-                                <Text key = 'total-page' numberOfLines = { 1 } style = { styles.paginationLabel }>
-                                    { _totalPages }
-                                </Text>
-                            </>
-                        )}
-                        <PageNextButton layout = { layout } />
-                    </View>
-                )}
-                <View style = { filmstripStyle }>
-                    <ScrollView
-                        horizontal = { isNarrowAspectRatio }
-                        showsHorizontalScrollIndicator = { false }
-                        showsVerticalScrollIndicator = { false }
-                        style = { styles.scrollView } >
-                        {
-                            _participants.map(p => (
-                                p.local
-                                ? <LocalThumbnail key = { p.id } />
-                                : <Thumbnail key = { p.id } participant = { p } />
-                            ))
-                        }
-                    </ScrollView>
-                </View>
+            <SafeAreaView style = { filmstripStyle }>
+                {
+                    this._separateLocalThumbnail
+                        && !isNarrowAspectRatio
+                        && <LocalThumbnail />
+                }
+                <ScrollView
+                    horizontal = { isNarrowAspectRatio }
+                    showsHorizontalScrollIndicator = { false }
+                    showsVerticalScrollIndicator = { false }
+                    style = { styles.scrollView } >
+                    {
+                        !this._separateLocalThumbnail && !isNarrowAspectRatio
+                            && <LocalThumbnail />
+                    }
+                    {
+
+                        this._sort(_participants, isNarrowAspectRatio)
+                            .map(id => (
+                                <Thumbnail
+                                    key = { id }
+                                    participantID = { id } />))
+
+                    }
+                    {
+                        !this._separateLocalThumbnail && isNarrowAspectRatio
+                            && <LocalThumbnail />
+                    }
+                </ScrollView>
+                {
+                    this._separateLocalThumbnail && isNarrowAspectRatio
+                        && <LocalThumbnail />
+                }
             </SafeAreaView>
         );
     }
@@ -175,16 +172,12 @@ class Filmstrip extends Component<Props> {
  * @returns {Props}
  */
 function _mapStateToProps(state) {
-    const { enabled } = state['features/filmstrip'];
-    const { pagination } = state['features/video-layout'] || {};
-    const toolboxVisible = isToolboxVisible(state);
+    const { enabled, remoteParticipants } = state['features/filmstrip'];
+    const showRemoteVideos = shouldRemoteVideosBeVisible(state);
 
     return {
         _aspectRatio: state['features/base/responsive-ui'].aspectRatio,
-        _pageButtonVisible: toolboxVisible && pagination?.totalPages > 1,
-        _participants: getCurrentPage(state),
-        _currentPage: pagination?.current || 1,
-        _totalPages: pagination?.totalPages || 1,
+        _participants: showRemoteVideos ? remoteParticipants : NO_REMOTE_VIDEOS,
         _visible: enabled && isFilmstripVisible(state)
     };
 }

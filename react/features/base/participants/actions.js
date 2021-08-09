@@ -1,8 +1,4 @@
-import arrayMove from 'array-move';
-
-import { NOTIFICATION_TIMEOUT, showNotification, showToast } from '../../notifications';
-import { setPagination } from '../../video-layout';
-import { i18next } from '../i18n';
+import { NOTIFICATION_TIMEOUT, showNotification } from '../../notifications';
 import { set } from '../redux';
 
 import {
@@ -11,6 +7,7 @@ import {
     HIDDEN_PARTICIPANT_LEFT,
     GRANT_MODERATOR,
     KICK_PARTICIPANT,
+    LOCAL_PARTICIPANT_RAISE_HAND,
     DISABLE_CHAT_FOR_ALL,
     DISABLE_CHAT_PARTICIPANT,
     ENABLE_CHAT_PARTICIPANT,
@@ -23,7 +20,6 @@ import {
     PARTICIPANT_UPDATED,
     PIN_PARTICIPANT,
     SET_LOADABLE_AVATAR_URL,
-    SET_PARTICIPANTS,
 } from './actionTypes';
 import {
     DISCO_REMOTE_CONTROL_FEATURE
@@ -35,9 +31,6 @@ import {
     getParticipantById
 } from './functions';
 import logger from './logger';
-
-let joinedParticipants = [];
-let updatedParticipants = {};
 
 /**
  * Create an action for when dominant speaker changes.
@@ -563,14 +556,14 @@ export function participantKicked(kicker, kicked) {
         }
 
         dispatch(showNotification({
+            titleKey: 'notify.kickParticipant',
             titleArguments: {
                 kicked:
                     getParticipantDisplayName(getState, kicked.getId()),
                 kicker:
                     getParticipantDisplayName(getState, kicker.getId())
-            },
-            titleKey: 'notify.kickParticipant'
-        }, NOTIFICATION_TIMEOUT * 2)); // leave more time for this
+            }
+        }, NOTIFICATION_TIMEOUT * 2));
     };
 }
 
@@ -618,20 +611,18 @@ export function setLoadableAvatarUrl(participantId, url) {
     };
 }
 
-export function setParticipants(participants) {
-    // console.error('SET_PARTICIPANTS:', (new Date()).toJSON());
+/**
+ * Raise hand for the local participant.
+ *
+ * @param {boolean} enabled - Raise or lower hand.
+ * @returns {{
+ *     type: LOCAL_PARTICIPANT_RAISE_HAND,
+ *     enabled: boolean
+ * }}
+ */
+export function raiseHand(enabled) {
     return {
-        type: SET_PARTICIPANTS,
-        participants
-    };
-}
-
-export function moveParticipant(from, to) {
-    return (dispatch, getState) => {
-        const participants = arrayMove(
-            getState()['features/base/participants'],
-            from, to);
-        dispatch(setParticipants(participants));
-        dispatch(setPagination({ order: null }));
+        type: LOCAL_PARTICIPANT_RAISE_HAND,
+        enabled
     };
 }

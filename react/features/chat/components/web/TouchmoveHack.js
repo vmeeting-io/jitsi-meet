@@ -23,7 +23,7 @@ type Props = {
  *
  * @returns {ReactElement}
  */
-function TouchmoveHack({ children, isModal }: Props) {
+function TouchmoveHack({ children, style, isModal }: Props) {
     if (!isModal || !isMobileBrowser()) {
         return children;
     }
@@ -58,7 +58,8 @@ function TouchmoveHack({ children, isModal }: Props) {
     return (
         <div
             className = 'touchmove-hack'
-            ref = { touchMoveElementRef }>
+            ref = { touchMoveElementRef }
+            style = { style }>
             {children}
         </div>
     );

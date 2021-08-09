@@ -5,10 +5,8 @@ import { Text, View } from 'react-native';
 
 import { translate } from '../../../base/i18n';
 import {
-    getLocalParticipant,
     getParticipantById,
     getParticipantDisplayName,
-    shouldRenderParticipantVideo
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { appendSuffix } from '../../functions';
@@ -51,7 +49,7 @@ class DisplayNameLabel extends Component<Props> {
         return (
             <View style = { styles.displayNameBackdrop }>
                 <Text style = { styles.displayNameText }>
-                    { appendSuffix(_participantName, t(displayNameSuffix)) }
+                { appendSuffix(_participantName, t(displayNameSuffix)) }
                 </Text>
             </View>
         );

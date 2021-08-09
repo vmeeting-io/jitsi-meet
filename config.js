@@ -5,6 +5,19 @@ var config = {
     // Connection
     //
 
+    //Capatcha Configs
+    captcha: {
+        enabled: true,           // flag to enable/disable captcha.
+        gRecaptcha: false,       // flag to choose captcha amoung self hosted and google recaptcha {true: google recaptcha, false: self hosted captcha.}
+        google:{
+            SiteKey: '',//Site key form google.
+        },
+        selfHosted:{
+		   timeout:2       //Captcha expiry time for self hosted captcha in minutes.
+        },
+        noOfFailedLoginAttemptsAllowed: 5  //no of failed login attempt allowed with captcha disabled.
+    },	
+
     hosts: {
         // XMPP domain.
         domain: 'jitsi-meet.example.com',
@@ -39,11 +52,12 @@ var config = {
 
     // Testing / experimental features.
     //
+    newTestVar : true,
 
     testing: {
         // Disables the End to End Encryption feature. Useful for debugging
         // issues related to insertable streams.
-        // disableE2EE: false,
+        disableE2EE: true,
 
         // P2P test mode disables automatic switching to P2P when there are 2
         // participants in the conference.
@@ -55,8 +69,7 @@ var config = {
         },
 
         // Enables the test specific features consumed by jitsi-meet-torture
-        // testMode: false
-
+        testMode: true,
         // Disables the auto-play behavior of *all* newly created video element.
         // This is useful when the client runs on a host with limited resources.
         // noAutoPlayVideo: false
@@ -75,6 +88,9 @@ var config = {
         // the callstats to be enabled.
         // callStatsThreshold: 5 // enable callstats for 5% of the users.
     },
+
+    // Enables reactions feature.
+    // enableReactions: false,
 
     // Disables ICE/UDP by filtering out local and remote UDP candidates in
     // signalling.
@@ -107,6 +123,10 @@ var config = {
     // used to collect debug information (XMPP IQs, SDP offer/answer cycles)
     // about the call.
     // enableSaveLogs: false,
+
+    // Enabling this will hide the "Show More" link in the GSM popover that can be
+    // used to display more statistics about the connection (IP, Port, protocol, etc).
+    // disableShowMoreStats: true,
 
     // Enabling this will run the lib-jitsi-meet noise detection module which will
     // notify the user if there is noise, other than voice, coming from the current
@@ -472,11 +492,38 @@ var config = {
     // - 'desktop' controls the "Share your screen" button
     // - if `toolbarButtons` is undefined, we fallback to enabling all buttons on the UI
     toolbarButtons: [
-       'microphone', 'camera', 'closedcaptions', 'desktop', 'embedmeeting', 'fullscreen',
-       'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
-       'livestreaming', 'etherpad', 'sharedvideo', 'shareaudio', 'settings', 'raisehand',
-       'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
-       'tileview', 'select-background', 'download', 'help', 'mute-everyone', 'mute-video-everyone', 'security'
+       'camera',
+       'chat',
+       'closedcaptions',
+       'desktop',
+       'download',
+       'embedmeeting',
+       'etherpad',
+       'feedback',
+       'filmstrip',
+       'fullscreen',
+       'hangup',
+       'help',
+       'invite',
+       'livestreaming',
+       'microphone',
+       'mute-everyone',
+       'mute-video-everyone',
+       'participants-pane',
+       'profile',
+       'raisehand',
+       'recording',
+       'security',
+       'select-background',
+       'settings',
+       'shareaudio',
+       'sharedvideo',
+       'shortcuts',
+       'stats',
+       'tileview',
+       'toggle-camera',
+       'videoquality',
+       '__end'
     ],
 
     // Stats
@@ -527,8 +574,8 @@ var config = {
         // connection.
         enabled: true,
 
-        // Use XEP-0215 to fetch STUN and TURN servers.
-        // useStunTurn: true,
+        // Enable unified plan implementation support on Chromium for p2p connection.
+        // enableUnifiedOnChrome: false,
 
         // Sets the ICE transport policy for the p2p connection. At the time
         // of this writing the list of possible values are 'all' and 'relay',
@@ -616,6 +663,9 @@ var config = {
     // Disables the sounds that play when other participants join or leave the
     // conference (if set to true, these sounds will not be played).
     // disableJoinLeaveSounds: false,
+
+    // Disables the sounds that play when a chat message is received.
+    // disableIncomingMessageSound: false,
 
     // Information for the chrome extension banner
     // chromeExtensionBanner: {
@@ -749,6 +799,9 @@ var config = {
     // Hides the conference subject
     // hideConferenceSubject: true,
 
+    // Hides the recording label
+    // hideRecordingLabel: false,
+
     // Hides the conference timer.
     // hideConferenceTimer: true,
 
@@ -763,6 +816,18 @@ var config = {
     // is not persisting the local storage inside the iframe.
     // useHostPageLocalStorage: true,
 
+    // etherpad ("shared document") integration.
+    //
+
+    // If set, add a "Open shared document" link to the bottom right menu that
+    // will open an etherpad document.
+    // etherpad_base: 'https://your-etherpad-installati.on/p/',
+
+    // If etherpad_base is set, and useRoomAsSharedDocumentName is set to true,
+    // open a pad with the name of the room (lowercased) instead of a pad with a
+    // random UUID.
+    // useRoomAsSharedDocumentName: true,
+
     // List of undocumented settings used in jitsi-meet
     /**
      _immediateReloadThreshold
@@ -775,7 +840,6 @@ var config = {
      dialOutCodesUrl
      disableRemoteControl
      displayJids
-     etherpad_base
      externalConnectUrl
      firefox_fake_device
      googleApiApplicationClientID

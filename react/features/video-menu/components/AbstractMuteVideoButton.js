@@ -10,6 +10,7 @@ import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/com
 import { isRemoteTrackMuted } from '../../base/tracks';
 
 import { MuteRemoteParticipantsVideoDialog } from '.';
+import { openDialog } from '../../base/dialog';
 
 export type Props = AbstractButtonProps & {
 

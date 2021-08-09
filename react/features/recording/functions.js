@@ -96,3 +96,17 @@ export function isStreaming(state: Object, initiator: Any) {
     const session = getActiveSession(state, JitsiRecordingConstants.mode.STREAM);
     return initiator ? (session?.initiator === initiator) : Boolean(session);
 }
+
+/**
+ * Returns the resource id.
+ *
+ * @param {Object | string} recorder - A participant or it's resource.
+ * @returns {string|undefined}
+ */
+ export function getResourceId(recorder: string | Object) {
+    if (recorder) {
+        return typeof recorder === 'string'
+            ? recorder
+            : recorder.getId();
+    }
+}

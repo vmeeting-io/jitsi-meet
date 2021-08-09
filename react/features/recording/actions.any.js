@@ -1,6 +1,7 @@
 // @flow
 
 import JitsiMeetJS, { JitsiRecordingConstants } from '../base/lib-jitsi-meet';
+import { getParticipantDisplayName } from '../base/participants';
 import {
     NOTIFICATION_TIMEOUT,
     hideNotification,
@@ -14,6 +15,7 @@ import {
     SET_PENDING_RECORDING_NOTIFICATION_UID,
     SET_STREAM_KEY
 } from './actionTypes';
+import { getResourceId } from './functions';
 
 /**
  * Clears the data of every recording sessions.
@@ -136,26 +138,34 @@ export function showStoppedRecordingNotification(streamType: string, participant
  * Signals that a started recording notification should be shown on the
  * screen for a given period.
  *
- * @param {string} streamType - The type of the stream ({@code file} or
- * {@code stream}).
- * @param {string} participantName - The participant name that started the recording.
- * @returns {showNotification}
+ * @param {string} mode - The type of the recording: Stream of File.
+ * @param {string | Object} initiator - The participant who started recording.
+ * @param {string} sessionId - The recording session id.
+ * @returns {Function}
  */
-export function showStartedRecordingNotification(streamType: string, participantName: string) {
-    const isLiveStreaming
-        = streamType === JitsiMeetJS.constants.recording.mode.STREAM;
-    const descriptionArguments = { name: participantName };
-    const dialogProps = isLiveStreaming ? {
-        descriptionKey: participantName ? 'liveStreaming.onBy' : 'liveStreaming.on',
-        descriptionArguments,
-        titleKey: 'dialog.liveStreaming'
-    } : {
-        descriptionKey: participantName ? 'recording.onBy' : 'recording.on',
-        descriptionArguments,
-        titleKey: 'dialog.recording'
-    };
+export function showStartedRecordingNotification(
+        mode: string,
+        initiator: Object | String,
+        sessionId: string) {
+    return async (dispatch: Function, getState: Function) => {
+        const state = getState();
+        const initiatorId = getResourceId(initiator);
+        const participantName = getParticipantDisplayName(state, initiatorId);
+        const isLiveStreaming
+            = mode === JitsiMeetJS.constants.recording.mode.STREAM;
+        const descriptionArguments = { name: participantName };
+        const dialogProps = isLiveStreaming ? {
+            descriptionKey: participantName ? 'liveStreaming.onBy' : 'liveStreaming.on',
+            descriptionArguments,
+            titleKey: 'dialog.liveStreaming'
+        } : {
+            descriptionKey: participantName ? 'recording.onBy' : 'recording.on',
+            descriptionArguments,
+            titleKey: 'dialog.recording'
+        };
 
-    return showNotification(dialogProps, NOTIFICATION_TIMEOUT);
+        dispatch(showNotification(dialogProps));
+    };
 }
 
 /**

@@ -31,13 +31,3 @@ export const SET_PAGINATION = 'SET_PAGINATION';
  * }}
  */
 export const SET_TILE_VIEW = 'SET_TILE_VIEW';
-
-/**
- * The type of the action which reorder the video thumbnails for tile view
- * 
- * @return {{
- *     type: SET_PAGE_ORDER,
- *     order: Object
- * }}
- */
-export const SET_PAGE_ORDER = 'SET_PAGE_ORDER';

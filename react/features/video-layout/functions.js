@@ -110,37 +110,6 @@ export function getMaxRowCount(state: Object) {
 }
 
 /**
- * Returns participants of in the current page.
- *
- * @param {Object} state - The redux store state.
- * @returns {number}
- */
-export function getCurrentPage(state) {
-    const { current = 1, pageSize } = state['features/video-layout'].pagination || {};
-    const participants = state['features/base/participants'];
-    const isTileViewActive = shouldDisplayTileView(state);
-    const pageStart = (current - 1) * pageSize;
-    const pageEnd = current * pageSize;
-    const page = [];
-    let index = 0;
-
-    for (let cursor = 0; pageSize > page.length && cursor < participants.length; cursor += 1) {
-        const p = participants[cursor];
-        if (p.isFakeParticipant) {
-            continue;
-        } else if (p.local && !browser.isReactNative() && !isTileViewActive) {
-            continue;
-        }
-        if (index >= pageStart && index < pageEnd) {
-            page.push(p);
-        }
-        index += 1;
-    }
-
-    return page;
-}
-
-/**
  * Returns the cell count dimensions for tile view. Tile view tries to uphold
  * equal count of tiles for height and width, until maxColumn is reached in
  * which rows will be added but no more columns.

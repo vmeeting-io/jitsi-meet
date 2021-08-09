@@ -3,13 +3,12 @@
 import React, { Component } from 'react';
 import {
     ScrollView,
-    Text,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
 import type { Dispatch } from 'redux';
 
-import { getLocalParticipant, getParticipantCount } from '../../../base/participants';
+import { getLocalParticipant, getParticipantCountWithFake } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
 import { setTileViewDimensions } from '../../actions.native';
@@ -17,11 +16,6 @@ import { setTileViewDimensions } from '../../actions.native';
 import Thumbnail from './Thumbnail';
 import styles from './styles';
 
-import { getCurrentPage } from '../../../video-layout';
-import debounce from 'lodash.debounce';
-import PageNextButton from '../../../conference/components/native/PageNextButton';
-import PagePrevButton from '../../../conference/components/native/PagePrevButton';
-import { isToolboxVisible } from '../../../toolbox/functions.native';
 
 /**
  * The type of the React {@link Component} props of {@link TileView}.
@@ -76,7 +70,7 @@ type Props = {
  * @private
  * @type {number}
  */
-const MARGIN = 0;
+const MARGIN = 10;
 
 /**
  * The aspect ratio the tiles should display in.
@@ -118,7 +112,7 @@ class TileView extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { _currentPage, _height, _pageButtonVisible, _totalPages, _width, onClick } = this.props;
+        const { _height, _width, onClick } = this.props;
         const rowElements = this._groupIntoRows(this._renderThumbnails(), this._getColumnCount());
 
         return (
@@ -138,27 +132,6 @@ class TileView extends Component<Props> {
                         { rowElements }
                     </View>
                 </TouchableWithoutFeedback>
-                { _pageButtonVisible && (
-                    <View style = {{
-                        ...styles.paginationContainerNarrow,
-                        alignSelf: 'center',
-                        position: 'absolute',
-                        overflow: 'hidden',
-                        bottom: 70
-                    }}>
-                        <PagePrevButton layout = 'horizontal' />
-                        <Text numberOfLines = { 1 } style = { styles.paginationLabel }>
-                            { _currentPage }
-                        </Text>
-                        <Text numberOfLines = { 1 } style = { styles.paginationLabel }>
-                            /
-                        </Text>
-                        <Text numberOfLines = { 1 } style = { styles.paginationLabel }>
-                            { _totalPages }
-                        </Text>
-                        <PageNextButton layout = 'horizontal' />
-                    </View>
-                )}
             </ScrollView>
         );
     }
@@ -185,6 +158,21 @@ class TileView extends Component<Props> {
         }
 
         return Math.min(3, participantCount);
+    }
+
+    /**
+     * Returns all participants with the local participant at the end.
+     *
+     * @private
+     * @returns {Participant[]}
+     */
+    _getSortedParticipants() {
+        const { _localParticipant, _remoteParticipants } = this.props;
+        const participants = [ ..._remoteParticipants ];
+
+        _localParticipant && participants.push(_localParticipant.id);
+
+        return participants;
     }
 
     /**
@@ -261,16 +249,15 @@ class TileView extends Component<Props> {
             width: null
         };
 
-        return this.props._participants
-            .map(participant => (
+        return this._getSortedParticipants()
+            .map(id => (
                 <Thumbnail
                     disableTint = { true }
-                    key = { participant.id }
-                    participantID = { participant.id }
+                    key = { id }
+                    participantID = { id }
                     renderDisplayName = { true }
                     styleOverrides = { styleOverrides }
-                    tileView = { true } />
-            ));
+                    tileView = { true } />));
     }
 
     /**
@@ -280,7 +267,7 @@ class TileView extends Component<Props> {
      * @private
      * @returns {void}
      */
-    _updateReceiverQuality = debounce(() => {
+    _updateReceiverQuality() {
         const { height, width } = this._getTileDimensions();
 
         this.props.dispatch(setTileViewDimensions({
@@ -289,7 +276,7 @@ class TileView extends Component<Props> {
                 width
             }
         }));
-    }, 300);
+    }
 }
 
 /**
@@ -302,19 +289,13 @@ class TileView extends Component<Props> {
 function _mapStateToProps(state) {
     const responsiveUi = state['features/base/responsive-ui'];
     const { remoteParticipants } = state['features/filmstrip'];
-    const { pagination } = state['features/video-layout'] || {};
-    const toolboxVisible = isToolboxVisible(state);
 
     return {
         _aspectRatio: responsiveUi.aspectRatio,
-        _pageButtonVisible: toolboxVisible && pagination?.totalPages > 1,
-        _participants: getCurrentPage(state),
-        _localParticipant: getLocalParticipant(state),
-        _remoteParticipants: remoteParticipants,
-        _currentPage: pagination?.current || 1,
-        _totalPages: pagination?.totalPages || 1,
         _height: responsiveUi.clientHeight,
-        _participantCount: getParticipantCount(state),
+        _localParticipant: getLocalParticipant(state),
+        _participantCount: getParticipantCountWithFake(state),
+        _remoteParticipants: remoteParticipants,
         _width: responsiveUi.clientWidth
     };
 }

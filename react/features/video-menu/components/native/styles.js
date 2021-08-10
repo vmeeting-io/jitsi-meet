@@ -4,7 +4,7 @@ import {
     MD_FONT_SIZE,
     MD_ITEM_HEIGHT,
     MD_ITEM_MARGIN_PADDING
-} from '../../../base/dialog';
+} from '../../../base/dialog/components/native';
 import { ColorPalette, createStyleSheet } from '../../../base/styles';
 import BaseTheme from '../../../base/ui/components/BaseTheme.native';
 
@@ -16,14 +16,15 @@ export default createStyleSheet({
         borderTopLeftRadius: 16,
         borderTopRightRadius: 16,
         flexDirection: 'row',
-        height: MD_ITEM_HEIGHT
+        height: MD_ITEM_HEIGHT,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
     },
 
     participantNameLabel: {
         color: ColorPalette.lightGrey,
-        flexShrink: 1,
         fontSize: MD_FONT_SIZE,
-        marginLeft: MD_ITEM_MARGIN_PADDING,
+        marginLeft: 16,
         opacity: 0.90
     },
 

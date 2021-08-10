@@ -92,7 +92,7 @@ function ParticipantItem({
                     <Text style = { styles.participantName }>
                         { displayName }
                     </Text>
-                    { local ? <Text style = { styles.isLocal }>({t('chat.you')})</Text> : null }
+                    { local ? <Text style = { styles.isLocal }>({t('me')})</Text> : null }
                 </View>
                 {
                     !isKnockingParticipant

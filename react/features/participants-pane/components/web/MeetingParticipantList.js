@@ -112,7 +112,7 @@ export function MeetingParticipantList() {
     // One potential proper fix would be to use react-window component in order to lower the number of components
     // mounted.
     const participantActionEllipsisLabel = t('MeetingParticipantItem.ParticipantActionEllipsis.options');
-    const youText = t('chat.you');
+    const youText = t('me');
     const askUnmuteText = t('participantsPane.actions.askUnmute');
     const muteParticipantButtonText = t('dialog.muteParticipantButton');
 

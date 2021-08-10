@@ -72,7 +72,7 @@ type Props = {
  * @private
  * @type {number}
  */
-const MARGIN = 0;
+const MARGIN = 10;
 
 /**
  * The aspect ratio the tiles should display in.
@@ -142,13 +142,16 @@ class TileView extends Component<Props> {
 
         return (
             <TouchableWithoutFeedback onPress = { onClick }>
+                <View style = {{ height: _height, width: _width }}>
                 <FlatList
                     data = { this._groupIntoRows() }
                     extraData = { this.state.extraData }
-                    style = {{
+                    style = {{ flexShrink: 0 }}
+                    contentContainerStyle = {{
                         ...styles.tileViewRows,
                         minHeight: _height,
-                        minWidth: _width
+                        minWidth: _width,
+                        flexShrink: 0,
                     }}
                     getItemLayout = { this._getItemLayout }
                     initialNumToRender = { _initialNumToRender }
@@ -159,6 +162,7 @@ class TileView extends Component<Props> {
                     renderItem = { this._renderItem }
                     viewablilityConfig = { this._viewablilityConfig }
                     windowSize = { 1 } />
+                </View>
             </TouchableWithoutFeedback>
         );
     }

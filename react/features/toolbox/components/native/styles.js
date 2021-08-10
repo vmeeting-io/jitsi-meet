@@ -101,7 +101,11 @@ const styles = {
         width: '100%',
         maxWidth: 580,
         marginLeft: 'auto',
-        marginRight: 'auto'
+        marginRight: 'auto',
+        bottom: 0,
+        position: 'absolute',
+        alignSelf: 'center',
+        height: 60
     }
 };
 

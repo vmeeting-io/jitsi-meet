@@ -116,7 +116,7 @@ export default class Label extends AbstractLabel<Props, State> {
                     size = '18'
                     color = { textStyle?.color }
                     src = { icon } /> }
-                { text && <Text style = { textStyle || style.styles.labelText }>
+                { text && <Text style = { textStyle || styles.labelText }>
                     { text }
                 </Text>}
             </Animated.View>

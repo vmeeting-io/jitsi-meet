@@ -23,7 +23,7 @@ import { getTrackByMediaTypeAndParticipant } from '../../../base/tracks';
 import { ConnectionIndicator } from '../../../connection-indicator';
 import { DisplayNameLabel } from '../../../display-name';
 import { toggleToolboxVisible } from '../../../toolbox/actions.native';
-import { RemoteVideoMenu } from '../../../video-menu';
+import RemoteVideoMenu from '../../../video-menu/components/native/RemoteVideoMenu';
 import ConnectionStatusComponent from '../../../video-menu/components/native/ConnectionStatusComponent';
 import SharedVideoMenu
     from '../../../video-menu/components/native/SharedVideoMenu';
@@ -167,15 +167,7 @@ function Thumbnail(props: Props) {
         }
     }, [ participant, dispatch ]);
 
-    return hidden ? (
-        <View
-            style = { [
-                styles.thumbnail,
-                participant.pinned && !tileView
-                    ? _styles.thumbnailPinned : null,
-                props.styleOverrides || null
-            ] } />
-    ) : (
+    return (
         <Container
             onClick = { onClick }
             onLongPress = { onThumbnailLongPress }
@@ -186,51 +178,51 @@ function Thumbnail(props: Props) {
                 props.styleOverrides || null
             ] }
             touchFeedback = { false }>
+            { !hidden && <>
+                <ParticipantView
+                    avatarSize = { tileView ? AVATAR_SIZE * 1.5 : AVATAR_SIZE }
+                    disableVideo = { isScreenShare || participant.isFakeParticipant }
+                    participantId = { participantId }
+                    style = { _styles.participantViewStyle }
+                    tintEnabled = { participantInLargeVideo && !disableTint }
+                    tintStyle = { _styles.activeThumbnailTint }
+                    zOrder = { 1 } />
 
-            <ParticipantView
-                avatarSize = { tileView ? AVATAR_SIZE * 1.5 : AVATAR_SIZE }
-                disableVideo = { isScreenShare || participant.isFakeParticipant }
-                participantId = { participantId }
-                style = { _styles.participantViewStyle }
-                tintEnabled = { participantInLargeVideo && !disableTint }
-                tintStyle = { _styles.activeThumbnailTint }
-                zOrder = { 1 } />
+                { renderDisplayName && <Container style = { styles.displayNameContainer }>
+                    <DisplayNameLabel participantId = { participantId } />
+                </Container> }
 
-            { renderDisplayName && <Container style = { styles.displayNameContainer }>
-                <DisplayNameLabel participantId = { participantId } />
-            </Container> }
+                { renderModeratorIndicator
+                    && <View style = { styles.moderatorIndicatorContainer }>
+                        <ModeratorIndicator />
+                    </View>}
 
-            { renderModeratorIndicator
-                && <View style = { styles.moderatorIndicatorContainer }>
-                    <ModeratorIndicator />
-                </View>}
+                { !participant.isFakeParticipant && <View
+                    style = { [
+                        styles.thumbnailTopIndicatorContainer,
+                        styles.thumbnailTopLeftIndicatorContainer
+                    ] }>
+                    <RaisedHandIndicator participantId = { participant.id } />
+                    { renderDominantSpeakerIndicator && <DominantSpeakerIndicator /> }
+                </View> }
 
-            { !participant.isFakeParticipant && <View
-                style = { [
-                    styles.thumbnailTopIndicatorContainer,
-                    styles.thumbnailTopLeftIndicatorContainer
-                ] }>
-                <RaisedHandIndicator participantId = { participant.id } />
-                { renderDominantSpeakerIndicator && <DominantSpeakerIndicator /> }
-            </View> }
+                { !participant.isFakeParticipant && <View
+                    style = { [
+                        styles.thumbnailTopIndicatorContainer,
+                        styles.thumbnailTopRightIndicatorContainer
+                    ] }>
+                    <ConnectionIndicator participantId = { participant.id } />
+                </View> }
 
-            { !participant.isFakeParticipant && <View
-                style = { [
-                    styles.thumbnailTopIndicatorContainer,
-                    styles.thumbnailTopRightIndicatorContainer
-                ] }>
-                <ConnectionIndicator participantId = { participant.id } />
-            </View> }
-
-            { !participant.isFakeParticipant && <Container style = { styles.thumbnailIndicatorContainer }>
-                { audioMuted
-                    && <AudioMutedIndicator /> }
-                { videoMuted
-                    && <VideoMutedIndicator /> }
-                { isScreenShare
-                    && <ScreenShareIndicator /> }
-            </Container> }
-
+                { !participant.isFakeParticipant && <Container style = { styles.thumbnailIndicatorContainer }>
+                    { audioMuted
+                        && <AudioMutedIndicator /> }
+                    { videoMuted
+                        && <VideoMutedIndicator /> }
+                    { isScreenShare
+                        && <ScreenShareIndicator /> }
+                </Container> }
+            </>}
         </Container>
     );
 }

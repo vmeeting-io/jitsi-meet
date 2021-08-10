@@ -91,7 +91,7 @@ export default class Label extends AbstractLabel<Props, State> {
      * @inheritdoc
      */
     render() {
-        const { icon, text, status, style } = this.props;
+        const { icon, text, status, style, textStyle } = this.props;
 
         let extraStyle = null;
 
@@ -114,8 +114,9 @@ export default class Label extends AbstractLabel<Props, State> {
                 ] }>
                 { icon && <Icon
                     size = '18'
+                    color = { textStyle?.color }
                     src = { icon } /> }
-                { text && <Text style = { styles.labelText }>
+                { text && <Text style = { textStyle || style.styles.labelText }>
                     { text }
                 </Text>}
             </Animated.View>

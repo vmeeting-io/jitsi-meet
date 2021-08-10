@@ -5,4 +5,3 @@ export { default as ConferenceInfo } from './ConferenceInfo';
 export { default as renderConferenceTimer } from './ConferenceTimerDisplay';
 export { default as InsecureRoomNameLabel } from './InsecureRoomNameLabel';
 export { default as InviteMore } from './InviteMore';
-export { default as PageButton } from './PageButton';

@@ -20,7 +20,7 @@ import { AbstractVideoMuteButton } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
 import { getLocalVideoType, isLocalCameraTrackMuted } from '../../base/tracks';
 import { isVideoMuteButtonDisabled } from '../functions';
-import { getLocalParticipant } from '../../base/participants';
+import { getLocalParticipant, isLocalParticipantModerator } from '../../base/participants';
 
 declare var APP: Object;
 
@@ -191,8 +191,7 @@ function _mapStateToProps(state): Object {
     const tracks = state['features/base/tracks'];
     const enabledFlag = getFeatureFlag(state, VIDEO_MUTE_BUTTON_ENABLED, true);
 
-    const localParticipant = getLocalParticipant(APP.store.getState());
-    let isLocalParticipantAModerator = (localParticipant.role === "moderator");
+    let isLocalParticipantAModerator = isLocalParticipantModerator(state);
 
     let isUserDeviceAccessDisabled = state['features/base/conference'].userDeviceAccessDisabled;
     isUserDeviceAccessDisabled = false ? undefined : isUserDeviceAccessDisabled;

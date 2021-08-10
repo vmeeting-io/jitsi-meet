@@ -3,14 +3,16 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 
-import { getConferenceName } from '../../../base/conference';
+import { getConferenceName, getConferenceTimeRemained } from '../../../base/conference';
 import { getFeatureFlag, CONFERENCE_TIMER_ENABLED, MEETING_NAME_ENABLED } from '../../../base/flags';
+import { getParticipantCount } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { PictureInPictureButton } from '../../../mobile/picture-in-picture';
 import { isToolboxVisible } from '../../../toolbox/functions.native';
 import ConferenceTimer from '../ConferenceTimer';
 
 import Labels from './Labels';
+import ParticipantsCount from './ParticipantsCount';
 import styles from './styles';
 
 
@@ -30,6 +32,11 @@ type Props = {
      * Whether displaying the current meeting name is enabled or not.
      */
     _meetingNameEnabled: boolean,
+
+    /**
+     * Whether the participant count should be shown or not.
+     */
+    _showParticipantCount: boolean,
 
     /**
      * True if the navigation bar should be visible.
@@ -72,10 +79,12 @@ const NavigationBar = (props: Props) => {
                 }
                 {
                     props._conferenceTimerEnabled
-                            && <View style = { styles.roomTimerView }>
-                                <ConferenceTimer textStyle = { styles.roomTimer } />
-                            </View>
+                        && <View style = { props._timeRemained ? styles.remainTimerView : styles.roomTimerView }>
+                            <ConferenceTimer
+                                textStyle = { styles.roomTimer } />
+                        </View>
                 }
+                { props._showParticipantCount && <ParticipantsCount /> }
                 <Labels />
             </View>
         </View>
@@ -89,15 +98,23 @@ const NavigationBar = (props: Props) => {
  * @returns {Props}
  */
 function _mapStateToProps(state) {
-    const { hideConferenceTimer, hideConferenceSubject } = state['features/base/config'];
+    const {
+        hideConferenceTimer,
+        hideConferenceSubject,
+        hideParticipantsStats
+    } = state['features/base/config'];
+    const meetingNameEnabled = getFeatureFlag(state, MEETING_NAME_ENABLED, true) && !hideConferenceSubject;
+    const participantCount = getParticipantCount(state);
+    const timeRemained = getConferenceTimeRemained(state);
 
     return {
         _conferenceTimerEnabled:
             getFeatureFlag(state, CONFERENCE_TIMER_ENABLED, true) && !hideConferenceTimer,
         _meetingName: getConferenceName(state),
-        _meetingNameEnabled:
-            getFeatureFlag(state, MEETING_NAME_ENABLED, true) && !hideConferenceSubject,
-        _visible: isToolboxVisible(state)
+        _meetingNameEnabled: meetingNameEnabled,
+        _showParticipantCount: participantCount > 2 && !hideParticipantsStats,
+        _timeRemained: timeRemained,
+        _visible: Boolean(timeRemained) || isToolboxVisible(state)
     };
 }
 

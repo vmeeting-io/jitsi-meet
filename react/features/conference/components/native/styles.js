@@ -100,6 +100,14 @@ export default {
         minWidth: 50
     },
 
+    remainTimerView: {
+        backgroundColor: '#1b5e20',
+        borderBottomRightRadius: 3,
+        borderTopRightRadius: 3,
+        height: 28,
+        justifyContent: 'center',
+    },
+
     roomName: {
         color: ColorPalette.white,
         fontSize: 14,
@@ -139,23 +147,19 @@ export default {
         backgroundColor: INSECURE_ROOM_NAME_LABEL_COLOR
     },
 
-    pageButton: {
-        underlayColor: ColorPalette.buttonUnderlay,
-        text: {
-            color: '#B8C7E0',
-        },
-        icon: {
-            alignSelf: 'center',
-            color: ColorPalette.white,
-            fontSize: 24
-        },
-        button: {
-            display: 'flex',
-            padding: 10,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
+    participantsCountView: {
+        backgroundColor: 'white',
+        color: '#5e6d7a',
+        flexDirection: 'row',
+        alignItems: 'center'
     },
+
+    participantsCountText: {
+        color: '#5e6d7a',
+        fontSize: 13,
+        fontWeight: '600',
+        marginLeft: 6,
+    }
 };
 
 ColorSchemeRegistry.register('Conference', {

@@ -3,7 +3,8 @@
 import {
     SET_FILMSTRIP_ENABLED,
     SET_FILMSTRIP_VISIBLE,
-    SET_TILE_VIEW_DIMENSIONS
+    SET_TILE_VIEW_DIMENSIONS,
+    SET_VISIBLE_REMOTE_PARTICIPANTS,
 } from './actionTypes';
 
 /**
@@ -58,5 +59,28 @@ export function setTileViewDimensions({ thumbnailSize }: Object) {
         dimensions: {
             thumbnailSize
         }
+    };
+}
+
+/**
+ * Sets the list of the visible participants in the filmstrip by storing the start and end index from the remote
+ * participants array.
+ *
+ * @param {number} startIndex - The start index from the remote participants array.
+ * @param {number} endIndex - The end index from the remote participants array.
+ * @returns {{
+ *      type: SET_VISIBLE_REMOTE_PARTICIPANTS,
+ *      startIndex: number,
+ *      endIndex: number,
+ *      participants: Array<string>
+ * }}
+ */
+export function setVisibleRemoteParticipants(startIndex: number, endIndex: number, participants: Array<string>) {
+    console.log('setVisibleRemoteparticipants:', startIndex, endIndex, participants);
+    return {
+        type: SET_VISIBLE_REMOTE_PARTICIPANTS,
+        startIndex,
+        endIndex,
+        participants
     };
 }

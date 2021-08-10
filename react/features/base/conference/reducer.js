@@ -291,6 +291,7 @@ function _conferenceLeftOrWillLeave(state, { conference, type }) {
                 // been LOCKED_LOCALLY or LOCKED_REMOTELY.
                 delete nextState.locked;
                 delete nextState.password;
+                delete nextState.conferenceTimeRemained;
                 break;
             }
         }

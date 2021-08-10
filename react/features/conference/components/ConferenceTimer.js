@@ -102,7 +102,7 @@ class ConferenceTimer extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { timerValue } = this.state;
+        let timerValue = this.state.timerValue;
         const { _startTimestamp, _timeRemained, t, textStyle } = this.props;
 
         if (!_startTimestamp && !_timeRemained) {
@@ -110,13 +110,9 @@ class ConferenceTimer extends Component<Props, State> {
         }
 
         if (_timeRemained) {
-            return (
-                <div className = 'time-remained-container'>
-                    { t('dialog.conferenceTimeRemaining', {
-                        seconds: getLocalizedDurationFormatter(timerValue * 1000)
-                    }) }
-                </div>
-            )
+            timerValue = t('dialog.conferenceTimeRemaining', {
+                seconds: getLocalizedDurationFormatter(timerValue * 1000)
+            });
         }
 
         return renderConferenceTimer(timerValue, textStyle);

@@ -133,7 +133,8 @@ function Thumbnail(props: Props) {
         dispatch,
         disableTint,
         renderDisplayName,
-        tileView
+        tileView,
+        hidden
     } = props;
 
     const participantId = participant.id;
@@ -166,7 +167,15 @@ function Thumbnail(props: Props) {
         }
     }, [ participant, dispatch ]);
 
-    return (
+    return hidden ? (
+        <View
+            style = { [
+                styles.thumbnail,
+                participant.pinned && !tileView
+                    ? _styles.thumbnailPinned : null,
+                props.styleOverrides || null
+            ] } />
+    ) : (
         <Container
             onClick = { onClick }
             onLongPress = { onThumbnailLongPress }
@@ -258,7 +267,7 @@ function _mapStateToProps(state, ownProps) {
         _audioMuted: audioTrack?.muted ?? true,
         _largeVideo: largeVideo,
         _localVideoOwner: Boolean(ownerId === localParticipantId),
-        _participant: participant,
+        _participant: participant || getLocalParticipant(state),
         _renderDominantSpeakerIndicator: renderDominantSpeakerIndicator,
         _renderModeratorIndicator: renderModeratorIndicator,
         _styles: ColorSchemeRegistry.get(state, 'Thumbnail'),
@@ -266,4 +275,4 @@ function _mapStateToProps(state, ownProps) {
     };
 }
 
-export default connect(_mapStateToProps)(Thumbnail);
+export default connect(_mapStateToProps)(React.memo(Thumbnail));

@@ -105,6 +105,9 @@ function _addConferenceListeners(conference, dispatch, state) {
     conference.on(JitsiConferenceEvents.SUBJECT_CHANGED,
         (...args) => dispatch(conferenceSubjectChanged(...args)));
 
+    conference.on(JitsiConferenceEvents.TIME_REMAINED,
+        timeRemained => dispatch(conferenceTimeRemained(timeRemained)));
+
     conference.on(JitsiConferenceEvents.CONFERENCE_CREATED_TIMESTAMP,
         (...args) => dispatch(conferenceTimestampChanged(...args)));
 

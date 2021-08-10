@@ -2,8 +2,8 @@
 
 import React, { Component } from 'react';
 import {
-    ScrollView,
-    Text,
+    FlatList,
+    SafeAreaView,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -12,15 +12,11 @@ import type { Dispatch } from 'redux';
 import { getLocalParticipant, getParticipantCountWithFake } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
-import { setTileViewDimensions } from '../../actions.native';
+import { setTileViewDimensions, setVisibleRemoteParticipants } from '../../actions.native';
 
 import Thumbnail from './Thumbnail';
 import styles from './styles';
-import { getCurrentPage } from '../../../video-layout';
 import debounce from 'lodash.debounce';
-import PageNextButton from '../../../conference/components/native/PageNextButton';
-import PagePrevButton from '../../../conference/components/native/PagePrevButton';
-import { isToolboxVisible } from '../../../toolbox/functions.native';
 
 
 /**
@@ -93,13 +89,33 @@ const TILE_ASPECT_RATIO = 1;
  * @extends Component
  */
 class TileView extends Component<Props> {
+    constructor(props) {
+        super(props);
+
+        this.state = { extraData: null };
+
+        this._getItemLayout = this._getItemLayout.bind(this);
+        this._debouncedViewableItemsChanged = debounce(
+            this._onViewableItemsChanged.bind(this),
+            100);
+        this._debouncedUpdateReceiverQuality = debounce(
+            this._updateReceiverQuality.bind(this),
+            300);
+        this._renderItem = this._renderItem.bind(this);
+        this._viewablilityConfig = {
+            itemVisiblePercentThreshold: 20,
+            minimumViewTime: 500,
+            waitForInteraction: false,
+        };
+    }
+
     /**
      * Implements React's {@link Component#componentDidMount}.
      *
      * @inheritdoc
      */
     componentDidMount() {
-        this._updateReceiverQuality();
+        this._debouncedUpdateReceiverQuality();
     }
 
     /**
@@ -108,7 +124,7 @@ class TileView extends Component<Props> {
      * @inheritdoc
      */
     componentDidUpdate() {
-        this._updateReceiverQuality();
+        this._debouncedUpdateReceiverQuality();
     }
 
     /**
@@ -118,145 +134,73 @@ class TileView extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { _currentPage, _height, _pageButtonVisible, _totalPages, _width, onClick } = this.props;
-        const rowElements = this._groupIntoRows(this._renderThumbnails(), this._getColumnCount());
+        const {
+            _height, _width,
+            _initialNumToRender,
+            onClick
+        } = this.props;
 
         return (
-            <ScrollView
-                style = {{
-                    ...styles.tileView,
-                    height: _height,
-                    width: _width
-                }}>
-                <TouchableWithoutFeedback onPress = { onClick }>
-                    <View
-                        style = {{
-                            ...styles.tileViewRows,
-                            minHeight: _height,
-                            minWidth: _width
-                        }}>
-                        { rowElements }
-                    </View>
-                </TouchableWithoutFeedback>
-                { _pageButtonVisible && (
-                    <View style = {{
-                        ...styles.paginationContainerNarrow,
-                        alignSelf: 'center',
-                        position: 'absolute',
-                        overflow: 'hidden',
-                        bottom: 70
-                    }}>
-                        <PagePrevButton layout = 'horizontal' />
-                        <Text numberOfLines = { 1 } style = { styles.paginationLabel }>
-                            { _currentPage }
-                        </Text>
-                        <Text numberOfLines = { 1 } style = { styles.paginationLabel }>
-                            /
-                        </Text>
-                        <Text numberOfLines = { 1 } style = { styles.paginationLabel }>
-                            { _totalPages }
-                        </Text>
-                        <PageNextButton layout = 'horizontal' />
-                    </View>
-                )}
-            </ScrollView>
+            <TouchableWithoutFeedback onPress = { onClick }>
+                <FlatList
+                    data = { this._groupIntoRows() }
+                    extraData = { this.state.extraData }
+                    style = {{
+                        ...styles.tileViewRows,
+                        minHeight: _height,
+                        minWidth: _width
+                    }}
+                    getItemLayout = { this._getItemLayout }
+                    initialNumToRender = { _initialNumToRender }
+                    keyExtractor = { this._keyExtractor }
+                    style = { styles.scrollView }
+                    onViewableItemsChanged = { this._debouncedViewableItemsChanged }
+                    remoteClippedSubviews = { true }
+                    renderItem = { this._renderItem }
+                    viewablilityConfig = { this._viewablilityConfig }
+                    windowSize = { 1 } />
+            </TouchableWithoutFeedback>
         );
     }
 
-    /**
-     * Returns how many columns should be displayed for tile view.
-     *
-     * @returns {number}
-     * @private
-     */
-    _getColumnCount() {
-        const participantCount = this.props._participantCount;
-
-        // For narrow view, tiles should stack on top of each other for a lonely
-        // call and a 1:1 call. Otherwise tiles should be grouped into rows of
-        // two.
-        if (this.props._aspectRatio === ASPECT_RATIO_NARROW) {
-            return participantCount >= 3 ? 2 : 1;
-        }
-
-        if (participantCount === 4) {
-            // In wide view, a four person call should display as a 2x2 grid.
-            return 2;
-        }
-
-        return Math.min(3, participantCount);
-    }
-
-    /**
-     * Returns all participants with the local participant at the end.
-     *
-     * @private
-     * @returns {Participant[]}
-     */
-    _getSortedParticipants() {
-        const { _localParticipant, _remoteParticipants } = this.props;
-        const participants = [ ..._remoteParticipants ];
-
-        _localParticipant && participants.push(_localParticipant.id);
-
-        return participants;
-    }
-
-    /**
-     * Calculate the height and width for the tiles.
-     *
-     * @private
-     * @returns {Object}
-     */
-    _getTileDimensions() {
-        const { _height, _participantCount, _width } = this.props;
-        const columns = this._getColumnCount();
-        const heightToUse = _height - (MARGIN * 2);
-        const widthToUse = _width - (MARGIN * 2);
-        let tileWidth;
-
-        // If there is going to be at least two rows, ensure that at least two
-        // rows display fully on screen.
-        if (_participantCount / columns > 1) {
-            tileWidth = Math.min(widthToUse / columns, heightToUse / 2);
-        } else {
-            tileWidth = Math.min(widthToUse / columns, heightToUse);
-        }
-
-        return {
-            height: tileWidth / TILE_ASPECT_RATIO,
-            width: tileWidth
-        };
-    }
-
-    /**
-     * Splits a list of thumbnails into React Elements with a maximum of
-     * {@link rowLength} thumbnails in each.
-     *
-     * @param {Array} thumbnails - The list of thumbnails that should be split
-     * into separate row groupings.
-     * @param {number} rowLength - How many thumbnails should be in each row.
-     * @private
-     * @returns {ReactElement[]}
-     */
-    _groupIntoRows(thumbnails, rowLength) {
+    _groupIntoRows() {
+        const { _columnCount: rowLength, _localParticipant, _remoteParticipants } = this.props;
+        const participants = _localParticipant
+            ? [_localParticipant.id, ..._remoteParticipants]
+            : _remoteParticipants;
         const rowElements = [];
 
-        for (let i = 0; i < thumbnails.length; i++) {
+        for (let i = 0; i < participants.length; i++) {
             if (i % rowLength === 0) {
-                const thumbnailsInRow = thumbnails.slice(i, i + rowLength);
-
-                rowElements.push(
-                    <View
-                        key = { rowElements.length }
-                        style = { styles.tileViewRow }>
-                        { thumbnailsInRow }
-                    </View>
-                );
+                const row = participants.slice(i, i + rowLength);
+                rowElements.push(row);
             }
         }
 
         return rowElements;
+    }
+
+    _getItemLayout(data, index) {
+        const length = this.props._tileHeight + 4;
+        return {
+            length,
+            offset: length * index,
+            index,
+        }
+    }
+
+    _keyExtractor(item) {
+        return item[0];
+    }
+
+    _onViewableItemsChanged = change => {
+        const { dispatch, _columnCount } = this.props;
+        const { viewableItems } = change;
+        const startIndex = Math.max(viewableItems[0].index * _columnCount - 1, 0);
+        const endIndex = startIndex + viewableItems.length * _columnCount - 1;
+        console.log('onViewableItemsChanged:', startIndex, endIndex, viewableItems.length);
+        dispatch(setVisibleRemoteParticipants(startIndex, endIndex));
+        this.setState({ extraData: [startIndex, endIndex] });
     }
 
     /**
@@ -266,25 +210,44 @@ class TileView extends Component<Props> {
      * @private
      * @returns {ReactElement[]}
      */
-    _renderThumbnails() {
+    _renderItem({ item, index }) {
+        const {
+            _columnCount,
+            _visibleParticipantsStartIndex: startIndex,
+            _visibleParticipantsEndIndex: endIndex,
+        } = this.props;
+        const tIndex = index * _columnCount;
+        const visible = startIndex <= tIndex && tIndex <= endIndex;
+
+        // console.log('renderItem:', startIndex, tIndex, endIndex, visible);
+
+        return (
+            <View key = { index } style = { styles.tileViewRow }>
+                { this._renderThumbnails(item, visible) }
+            </View>
+        );
+    }
+
+    _renderThumbnails(item, visible) {
         const styleOverrides = {
             aspectRatio: TILE_ASPECT_RATIO,
             flex: 0,
-            height: this._getTileDimensions().height,
+            height: this.props._tileHeight,
             maxHeight: null,
             maxWidth: null,
             width: null
         };
 
-        return this._getSortedParticipants()
-            .map(id => (
-                <Thumbnail
-                    disableTint = { true }
-                    key = { id }
-                    participantID = { id }
-                    renderDisplayName = { true }
-                    styleOverrides = { styleOverrides }
-                    tileView = { true } />));
+        return item.map(id => (
+            <Thumbnail
+                disableTint = { true }
+                key = { id }
+                participantID = { id }
+                renderDisplayName = { true }
+                styleOverrides = { styleOverrides }
+                tileView = { true }
+                hidden = { !visible } />
+        ));
     }
 
     /**
@@ -294,16 +257,16 @@ class TileView extends Component<Props> {
      * @private
      * @returns {void}
      */
-    _updateReceiverQuality = debounce(() => {
-        const { height, width } = this._getTileDimensions();
+    _updateReceiverQuality() {
+        const { _tileHeight, _tileWidth } = this.props;
 
         this.props.dispatch(setTileViewDimensions({
             thumbnailSize: {
-                height,
-                width
+                height: _tileHeight,
+                width: _tileWidth
             }
         }));
-    }, 300);
+    }
 }
 
 /**
@@ -314,20 +277,54 @@ class TileView extends Component<Props> {
  * @returns {Props}
  */
 function _mapStateToProps(state) {
-    const responsiveUi = state['features/base/responsive-ui'];
-    const { remoteParticipants } = state['features/filmstrip'];
+    const { aspectRatio, clientHeight, clientWidth } = state['features/base/responsive-ui'];
+    const {
+        remoteParticipants,
+        visibleParticipantsStartIndex,
+        visibleParticipantsEndIndex,
+    } = state['features/filmstrip'];
+    const localParticipant = getLocalParticipant(state);
+    const participantCount = getParticipantCountWithFake(state);
+    let columnCount;
+
+    // For narrow view, tiles should stack on top of each other for a lonely
+    // call and a 1:1 call. Otherwise tiles should be grouped into rows of
+    // two.
+    if (aspectRatio === ASPECT_RATIO_NARROW) {
+        columnCount = participantCount >= 3 ? 2 : 1;
+    }
+
+    if (participantCount === 4) {
+        // In wide view, a four person call should display as a 2x2 grid.
+        columnCount = 2;
+    }
+    columnCount = columnCount ?? Math.min(3, participantCount);
+
+    const heightToUse = clientHeight - (MARGIN * 2);
+    const widthToUse = clientWidth - (MARGIN * 2);
+    let tileWidth;
+
+    // If there is going to be at least two rows, ensure that at least two
+    // rows display fully on screen.
+    if (participantCount / columnCount > 1) {
+        tileWidth = Math.min(widthToUse / columnCount, heightToUse / 2);
+    } else {
+        tileWidth = Math.min(widthToUse / columnCount, heightToUse);
+    }
 
     return {
-        _aspectRatio: responsiveUi.aspectRatio,
-        _pageButtonVisible: toolboxVisible && pagination?.totalPages > 1,
-        _participants: getCurrentPage(state),
-        _currentPage: pagination?.current || 1,
-        _totalPages: pagination?.totalPages || 1,
-        _height: responsiveUi.clientHeight,
-        _localParticipant: getLocalParticipant(state),
-        _participantCount: getParticipantCountWithFake(state),
+        _aspectRatio: aspectRatio,
+        _columnCount: columnCount,
+        _height: clientHeight,
+        _initialNumToRender: Math.floor(heightToUse / tileWidth),
+        _localParticipant: localParticipant,
+        _participantCount: participantCount,
         _remoteParticipants: remoteParticipants,
-        _width: responsiveUi.clientWidth
+        _tileWidth: tileWidth,
+        _tileHeight: tileWidth / TILE_ASPECT_RATIO,
+        _visibleParticipantsStartIndex: visibleParticipantsStartIndex,
+        _visibleParticipantsEndIndex: visibleParticipantsEndIndex,
+        _width: clientWidth
     };
 }
 

@@ -100,7 +100,8 @@ function ConferenceInfo(props: Props) {
         _fullWidth,
         _visible,
         _recordingLabel,
-        _isModerator
+        _isModerator,
+        _timeRemained
     } = props;
     const dispatch = useDispatch();
     const { t } = useTranslation();
@@ -161,7 +162,9 @@ function ConferenceInfo(props: Props) {
                                         <span className = 'subject-text'>{ _subject }</span>
                                     )
                                 )}
-                                { !_hideConferenceTimer && <ConferenceTimer /> }
+                                { !_hideConferenceTimer && (
+                                    <ConferenceTimer
+                                        textStyle = { _timeRemained ? 'timer-remained-container' : 'subject-timer' } /> )}
                             </div>
                     }
                     { _showParticipantCount && <ParticipantsCount /> }
@@ -227,7 +230,8 @@ function _mapStateToProps(state) {
         _subject: hideConferenceSubject ? '' : getConferenceName(state),
         _visible: Boolean(timeRemained) || isToolboxVisible(state),
         _recordingLabel: (isFileRecording || isStreamRecording || isEngaged) && !shouldHideRecordingLabel,
-        _isModerator: isModerator
+        _isModerator: isModerator,
+        _timeRemained: timeRemained,
     };
 }
 

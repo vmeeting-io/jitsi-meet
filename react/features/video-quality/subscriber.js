@@ -213,12 +213,7 @@ function _updateReceiverVideoConstraints({ getState }) {
     const { maxReceiverVideoQuality, preferredVideoQuality } = state['features/video-quality'];
     const { participantId: largeVideoParticipantId } = state['features/large-video'];
     const maxFrameHeight = Math.min(maxReceiverVideoQuality, preferredVideoQuality);
-    let { visibleParticipants } = state['features/filmstrip'];
-
-    // TODO: implement this on mobile.
-    if (navigator.product === 'ReactNative') {
-        visibleParticipants = Array.from(state['features/base/participants'].remote.keys());
-    }
+    const { visibleParticipants } = state['features/filmstrip'];
 
     const receiverConstraints = {
         constraints: {},
@@ -257,6 +252,7 @@ function _updateReceiverVideoConstraints({ getState }) {
     }
 
     logger.info(`Setting receiver video constraints to ${JSON.stringify(receiverConstraints)}`);
+    // console.log(receiverConstraints);
     try {
         conference.setReceiverConstraints(receiverConstraints);
     } catch (error) {

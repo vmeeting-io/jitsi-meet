@@ -32,7 +32,7 @@ export default {
     filmstripNarrow: {
         flexDirection: 'row',
         flexGrow: 0,
-        justifyContent: 'flex-start',
+        justifyContent: 'flex-end',
         marginBottom: 5
     },
 
@@ -44,8 +44,12 @@ export default {
      * to {@code FILMSTRIP_SIZE}.
      */
     filmstripWide: {
+        bottom: 0,
         flexDirection: 'column',
         flexGrow: 0,
+        position: 'absolute',
+        right: 0,
+        top: 0
     },
 
     /**
@@ -80,13 +84,13 @@ export default {
         alignItems: 'stretch',
         backgroundColor: ColorPalette.appBackground,
         borderColor: '#424242',
-        borderRadius: 0,
+        borderRadius: 3,
         borderStyle: 'solid',
-        borderWidth: 0,
+        borderWidth: 1,
         flex: 1,
         height: SMALL_THUMBNAIL_SIZE,
         justifyContent: 'center',
-        margin: 0.5,
+        margin: 2,
         maxHeight: SMALL_THUMBNAIL_SIZE,
         maxWidth: SMALL_THUMBNAIL_SIZE,
         overflow: 'hidden',
@@ -131,54 +135,6 @@ export default {
     tileViewRow: {
         flexDirection: 'row',
         justifyContent: 'center'
-    },
-
-    paginationContainerNarrow: {
-        alignItems: 'center',
-        backgroundColor: ColorPalette.darkBackground,
-        borderRadius: 22,
-        flexDirection: 'row',
-        flexGrow: 0,
-        justifyContent: 'center',
-        marginBottom: 5,
-        height: 44,
-        width: 'auto'
-    },
-
-    paginationContainerWide: {
-        alignItems: 'center',
-        backgroundColor: ColorPalette.darkBackground,
-        borderRadius: 22,
-        flexDirection: 'column',
-        flexGrow: 0,
-        justifyContent: 'center',
-        marginRight: 5,
-        height: 'auto',
-        width: 44
-    },
-
-    paginationNarrow: {
-        flexDirection: 'column',
-        flexGrow: 0,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 5
-    },
-
-    paginationWide: {
-        alignItems: 'center',
-        bottom: 0,
-        flexDirection: 'row',
-        flexGrow: 0,
-        position: 'absolute',
-        right: 0,
-        top: 0
-    },
-
-    paginationLabel: {
-        color: ColorPalette.white,
-        fontSize: 16,
-        padding: 5,
     }
 };
 

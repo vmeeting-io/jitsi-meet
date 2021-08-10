@@ -1,3 +1,4 @@
+import { jitsiLocalStorage } from '@jitsi/js-utils';
 import React from 'react';
 import {
     Animated,
@@ -24,6 +25,7 @@ import {
 } from '../../base/tracks';
 import { HelpView } from '../../help';
 import { DialInSummary } from '../../invite';
+import { showNotification } from '../../notifications';
 import { SettingsView } from '../../settings/components';
 import { setSideBarVisible } from '../actions';
 

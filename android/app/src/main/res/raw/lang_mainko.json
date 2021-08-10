@@ -1141,6 +1141,7 @@
         "standardDefinition": "표준 해상도"
     },
     "videothumbnail": {
+        "connectionInfo": "연결 정보",
         "domute": "음소거",
         "domuteOthers": "다른 사람 음소거",
         "domuteVideo": "카메라 끄기",

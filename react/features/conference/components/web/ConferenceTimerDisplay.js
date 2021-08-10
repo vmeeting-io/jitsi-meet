@@ -8,12 +8,12 @@ import React from 'react';
  * Returns web element to be rendered.
  *
  * @param {string} timerValue - String to display as time.
- * @param {Object} textStyle - Unused on web.
+ * @param {string} textStyle - timer text style.
  *
  * @returns {ReactElement}
  */
-export default function renderConferenceTimer(timerValue: string, textStyle: Object) {
+export default function renderConferenceTimer(timerValue: string, textStyle: Any) {
     return (
-        <span className = 'subject-timer'>{ timerValue }</span>
+        <span className = { textStyle }>{ timerValue }</span>
     );
 }

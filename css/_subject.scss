@@ -108,9 +108,10 @@
 
 .time-remained-container {
     display: inline-block;
-    background: darkgreen;
+    background: #1b5e20;
     color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 14px;
+    padding: 6px 8px;
+    border-radius: 0 3px 3px 0;
+    font-size: 12px;
+    line-height: 16px;
 }

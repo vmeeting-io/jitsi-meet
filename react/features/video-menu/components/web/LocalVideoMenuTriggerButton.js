@@ -168,7 +168,7 @@ class LocalVideoMenuTriggerButton extends Component<Props> {
                             <Icon
                                 ariaLabel = { t('dialog.localUserControls') }
                                 role = 'button'
-                                size = '1em'
+                                size = '1.4em'
                                 src = { IconMenuThumb }
                                 tabIndex = { 0 }
                                 title = { t('dialog.localUserControls') } />

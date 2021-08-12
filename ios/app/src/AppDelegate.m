@@ -17,6 +17,7 @@
 
 #import "AppDelegate.h"
 #import "FIRUtilities.h"
+#import "Orientation.h"
 #import "Types.h"
 #import "ViewController.h"
 
@@ -44,9 +45,7 @@
 
         // Apple rejected our app because they claim requiring a
         // Dropbox account for recording is not acceptable.
-#if DEBUG
         [builder setFeatureFlag:@"ios.recording.enabled" withBoolean:YES];
-#endif
     }];
 
   [jitsiMeet application:application didFinishLaunchingWithOptions:launchOptions];
@@ -130,6 +129,10 @@
     return [[JitsiMeet sharedInstance] application:app
                                            openURL:openUrl
                                            options:options];
+}
+
+- (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
+    return [Orientation getOrientation];
 }
 
 @end

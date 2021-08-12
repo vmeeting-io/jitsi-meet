@@ -2,18 +2,20 @@
 
 import { once } from 'lodash';
 import React, { PureComponent } from 'react';
+import { Divider } from 'react-native-paper';
 import { createToolbarEvent, sendAnalytics } from '../../../analytics';
 import { appNavigate } from '../../../app/actions';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { BottomSheet, hideDialog, isDialogOpen } from '../../../base/dialog';
-import { grantModerator, PARTICIPANT_ROLE } from '../../../base/participants';
+import { grantModerator } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import HangupAllButton from './HangupAllButton';
 import HangupMeButton from './HangupMeButton';
 import ParticipantItem from './ParticipantItem';
 import SelectModeratorAndLeave from './SelectModeratorAndLeave';
+import styles from './styles';
 
 /**
  * The type of the React {@code Component} props of {@link HangupMenu}.
@@ -125,23 +127,23 @@ class HangupMenu extends PureComponent<Props, State> {
             );
         }
 
+        const selected = this.state.selected || this.props._selected;
         return (
             <BottomSheet onCancel = { this._onCancel }>
-                { _participants.map(p => {
-                    const selected = p.id === (this.state.selected || _selected);
+                { _participants.map(id => {
                     const className = selected ? 'menu-item-selected' : 'menu-item';
 
                     return (
                         <ParticipantItem
                             className = { className }
-                            selected = { selected }
+                            selected = { id === selected }
                             styles = { buttonProps.styles }
-                            onClick = { () => this._onModeratorSelection(p.id) }
-                            id = { p.id }
-                            name = { p.name }
-                            key = { p.id } />
+                            onClick = { () => this._onModeratorSelection(id) }
+                            participantID = { id }
+                            key = { id } />
                     );
                 }) }
+                <Divider style = { styles.divider } />
                 <SelectModeratorAndLeave
                     key = 'close'
                     { ...buttonProps }
@@ -174,12 +176,10 @@ class HangupMenu extends PureComponent<Props, State> {
      * Handler for hangup me button
      */
     _onHangupMe() {
-        const { _moderator, _participants } = this.props;
+        const { _participants } = this.props;
 
-        if (_moderator || _participants.length === 1) {
-            if (!_moderator) {
-                this.props.dispatch(grantModerator(_participants[0].id));
-            }
+        if (_participants.length === 1) {
+            this.props.dispatch(grantModerator(_participants[0]));
             this._hangup();
         } else {
             this.setState({ showSelectModerator: true });
@@ -212,25 +212,13 @@ class HangupMenu extends PureComponent<Props, State> {
  * @returns {Props}
  */
 function _mapStateToProps(state) {
-    const participants = state['features/base/participants'];
-
-    let moderator = 0;
-    const items = participants.filter(p => {
-        if (!p.local && !p.isFakeParticipant) {
-            if (!moderator && p.role === PARTICIPANT_ROLE.MODERATOR) {
-                moderator = p.id;
-            }
-            return true;
-        }
-        return false;
-    });
+    const { remoteParticipants } = state['features/filmstrip'];
 
     return {
         _bottomSheetStyles: ColorSchemeRegistry.get(state, 'BottomSheet'),
         _isOpen: isDialogOpen(state, HangupMenu_),
-        _moderator: moderator,
-        _participants: items,
-        _selected: !moderator && items[0]?.id,
+        _participants: remoteParticipants,
+        _selected: remoteParticipants[0],
     };
 }
 

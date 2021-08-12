@@ -22,6 +22,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.RestrictionEntry;
 import android.content.RestrictionsManager;
+import android.content.res.Configuration;
+
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -225,6 +227,14 @@ public class MainActivity extends JitsiMeetActivity {
             this.startActivity(new Intent(this, getClass())
                 .addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Intent intent = new Intent("onConfigurationChanged");
+        intent.putExtra("newConfig", newConfig);
+        this.sendBroadcast(intent);
     }
 
     // Helper methods

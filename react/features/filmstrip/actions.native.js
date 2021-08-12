@@ -76,7 +76,7 @@ export function setTileViewDimensions({ thumbnailSize }: Object) {
  * }}
  */
 export function setVisibleRemoteParticipants(startIndex: number, endIndex: number, participants: Array<string>) {
-    console.log('setVisibleRemoteparticipants:', startIndex, endIndex, participants);
+    // console.log('setVisibleRemoteparticipants:', startIndex, endIndex, participants);
     return {
         type: SET_VISIBLE_REMOTE_PARTICIPANTS,
         startIndex,

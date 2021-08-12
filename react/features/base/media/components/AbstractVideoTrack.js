@@ -5,6 +5,7 @@ import type { Dispatch } from 'redux';
 
 import { trackVideoStarted } from '../../tracks';
 import { shouldRenderVideoTrack } from '../functions';
+import logger from '../logger';
 
 import { Video } from './_';
 
@@ -111,6 +112,7 @@ export default class AbstractVideoTrack<P: Props> extends Component<P> {
                 && videoTrack
                 && videoTrack.videoType === 'desktop';
 
+        logger.info(`videoTrack: ${render}, ${Boolean(videoTrack)}, ${Boolean(stream)}`);
         return (
             <Video
                 mirror = { videoTrack && videoTrack.mirror }

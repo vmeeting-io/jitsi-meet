@@ -15,6 +15,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		392E19EA26BCF99F00F629BF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 392E19E926BCF99F00F629BF /* GoogleService-Info.plist */; };
+		3956ACE426C558790089235E /* libRCTOrientation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3956ACE326C558410089235E /* libRCTOrientation.a */; };
 		399CBFC126A145720050FA24 /* WebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 399CBFC026A145720050FA24 /* WebRTC.xcframework */; };
 		399CBFC226A145720050FA24 /* WebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 399CBFC026A145720050FA24 /* WebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		39C60FF826B126D50019A5C9 /* JitsiMeetSDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39C60FF726B126D50019A5C9 /* JitsiMeetSDK.framework */; };
@@ -30,6 +31,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		3956ACE226C558410089235E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3956ACDE26C558410089235E /* RCTOrientation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 134814201AA4EA6300B7C361;
+			remoteInfo = RCTOrientation;
+		};
 		39C6100926B12E630019A5C9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
@@ -99,6 +107,8 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		392E19E926BCF99F00F629BF /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		3956ACDC26C5569C0089235E /* libreact-native-orientation.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = "libreact-native-orientation.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3956ACDE26C558410089235E /* RCTOrientation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTOrientation.xcodeproj; path = "../../node_modules/@dachongziy/react-native-orientation/iOS/RCTOrientation.xcodeproj"; sourceTree = "<group>"; };
 		399CBFC026A145720050FA24 /* WebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = WebRTC.xcframework; path = "../../node_modules/react-native-webrtc/apple/WebRTC.xcframework"; sourceTree = "<group>"; };
 		39C60FF726B126D50019A5C9 /* JitsiMeetSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = JitsiMeetSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		39C60FFA26B128890019A5C9 /* SocketConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SocketConnection.swift; sourceTree = "<group>"; };
@@ -130,6 +140,7 @@
 			files = (
 				39C60FF826B126D50019A5C9 /* JitsiMeetSDK.framework in Frameworks */,
 				0087C21FA5A978E98A12654C /* libPods-vmeeting.a in Frameworks */,
+				3956ACE426C558790089235E /* libRCTOrientation.a in Frameworks */,
 				399CBFC126A145720050FA24 /* WebRTC.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -148,6 +159,7 @@
 		0B26BE711EC5BC4D00EEFB41 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3956ACDC26C5569C0089235E /* libreact-native-orientation.a */,
 				39C6100726B1290E0019A5C9 /* ReplayKit.framework */,
 				39C60FF726B126D50019A5C9 /* JitsiMeetSDK.framework */,
 				399CBFC026A145720050FA24 /* WebRTC.xcframework */,
@@ -204,6 +216,21 @@
 			path = src;
 			sourceTree = "<group>";
 		};
+		3956ACC526C53CC30089235E /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		3956ACDF26C558410089235E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3956ACE326C558410089235E /* libRCTOrientation.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		4EB06025260E026600F524C5 /* JitsiMeetBroadcast Extension */ = {
 			isa = PBXGroup;
 			children = (
@@ -245,6 +272,8 @@
 				0BEA5C261F7B8F73000D0AB4 /* Watch app */,
 				0BEA5C351F7B8F73000D0AB4 /* WatchKit extension */,
 				4EB06025260E026600F524C5 /* JitsiMeetBroadcast Extension */,
+				87FEFEE545304C928166B97C /* Libraries */,
+				3956ACC526C53CC30089235E /* Recovered References */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -257,6 +286,14 @@
 				4EB06023260E026600F524C5 /* JitsiMeetBroadcastExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		87FEFEE545304C928166B97C /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				3956ACDE26C558410089235E /* RCTOrientation.xcodeproj */,
+			);
+			name = Libraries;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -340,6 +377,12 @@
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 3956ACDF26C558410089235E /* Products */;
+					ProjectRef = 3956ACDE26C558410089235E /* RCTOrientation.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* vmeeting */,
@@ -347,6 +390,16 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		3956ACE326C558410089235E /* libRCTOrientation.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRCTOrientation.a;
+			remoteRef = 3956ACE226C558410089235E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		13B07F8E1A680F5B00A75B9A /* Resources */ = {
@@ -533,10 +586,11 @@
 				CODE_SIGN_ENTITLEMENTS = app.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 628662D3Q5;
 				ENABLE_BITCODE = NO;
+				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = src/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -569,9 +623,10 @@
 				CODE_SIGN_ENTITLEMENTS = app.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 628662D3Q5;
 				ENABLE_BITCODE = YES;
+				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = src/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -606,7 +661,7 @@
 				CODE_SIGN_ENTITLEMENTS = "broadcast-extension/extension.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 628662D3Q5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -643,7 +698,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 4;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 628662D3Q5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;

@@ -2,6 +2,7 @@
 
 import { ColorSchemeRegistry, schemeColor } from '../../../base/color-scheme';
 import { BoxModel, ColorPalette } from '../../../base/styles';
+import BaseTheme from '../../../base/ui/components/BaseTheme.native';
 
 const BUTTON_SIZE = 48;
 
@@ -103,9 +104,35 @@ const styles = {
         marginLeft: 'auto',
         marginRight: 'auto',
         bottom: 0,
-        position: 'absolute',
-        alignSelf: 'center',
-        height: 60
+    },
+
+    divider: {
+        backgroundColor: BaseTheme.palette.dividerColor
+    },
+
+    hangupAll: {
+        style: {
+            alignItems: 'center',
+            backgroundColor: BaseTheme.palette.actionDanger,
+            flexDirection: 'row',
+            height: 48,
+            paddingHorizontal: 16,
+            borderTopLeftRadius: 3,
+            borderTopRightRadius: 3,
+        },
+        iconStyle: {
+            backgroundColor: 'transparent',
+            borderWidth: 0,
+            flex: 0,
+            fontSize: 24,
+        },
+        labelStyle: {
+            color: 'white',
+            flexShrink: 1,
+            fontSize: 16,
+            opacity: 1,
+            marginLeft: 16
+        }
     }
 };
 

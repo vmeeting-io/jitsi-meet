@@ -4,6 +4,7 @@
 import { StyleSheet, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import DeviceInfo from 'react-native-device-info';
+import Orientation from '@dachongziy/react-native-orientation';
 import { WebView } from 'react-native-webview';
 import { useSelector, useStore } from 'react-redux';
 
@@ -27,13 +28,23 @@ const LoginWebView = ({ onReceiveToken }) => {
             setUserAgent(res);
         })
         .catch(err => console.log(err));
-    });
+
+        const isTablet = DeviceInfo.isTablet();
+        if (!isTablet) {
+            Orientation.lockToPortrait();
+    
+            return function willUnmount() {
+                Orientation.unlockAllOrientations();
+            };
+        }
+    }, []);
 
     const style = {
         ...StyleSheet.absoluteFillObject,
         width: '100%',
         flex: 0,
         height: '100%',
+        overflowY: 'auto'
     };
 
     return (

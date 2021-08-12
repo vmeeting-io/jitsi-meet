@@ -12,6 +12,8 @@ import { IconClose } from '../../../base/icons';
 import { connect } from '../../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
 
+import styles from './styles';
+
 /**
  * The type of the React {@code Component} props of {@link HangupAllButton}.
  */
@@ -79,6 +81,7 @@ function _mapStateToProps(state, ownProps): Object {
         _apiBase: getAuthUrl(state),
         _meetingId: conference?.room?.meetingId,
         _roomInfo: roomInfo,
+        styles: styles.hangupAll,
     };
 }
 

@@ -134,6 +134,7 @@ class AbstractVideoManager extends PureComponent<Props> {
     async processUpdatedProps() {
         const { _status, _time, _isOwner } = this.props;
 
+        console.log('processUpdatedProps:', _status, _time, _isOwner);
         if (_isOwner) {
             return;
         }

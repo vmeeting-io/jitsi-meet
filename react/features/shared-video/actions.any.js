@@ -39,6 +39,7 @@ export function resetSharedVideoStatus() {
  * }}
  */
 export function setSharedVideoStatus({ videoUrl, status, time, ownerId, muted }) {
+    console.log('setSharedVideoStatus:', time);
     return {
         type: SET_SHARED_VIDEO_STATUS,
         ownerId,

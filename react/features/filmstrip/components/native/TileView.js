@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import {
     FlatList,
-    SafeAreaView,
+    StyleSheet,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -141,29 +141,33 @@ class TileView extends Component<Props> {
         } = this.props;
 
         return (
+            <View style = {{
+                ...styles.tileView,
+                width: _width,
+                height: _height
+            }}>
             <TouchableWithoutFeedback onPress = { onClick }>
-                <View style = {{ height: _height, width: _width }}>
-                <FlatList
-                    data = { this._groupIntoRows() }
-                    extraData = { this.state.extraData }
-                    style = {{ flexShrink: 0 }}
-                    contentContainerStyle = {{
+                <View
+                    style = {{
                         ...styles.tileViewRows,
                         minHeight: _height,
-                        minWidth: _width,
-                        flexShrink: 0,
-                    }}
-                    getItemLayout = { this._getItemLayout }
-                    initialNumToRender = { _initialNumToRender }
-                    keyExtractor = { this._keyExtractor }
-                    style = { styles.scrollView }
-                    onViewableItemsChanged = { this._debouncedViewableItemsChanged }
-                    remoteClippedSubviews = { true }
-                    renderItem = { this._renderItem }
-                    viewablilityConfig = { this._viewablilityConfig }
-                    windowSize = { 1 } />
+                        minWidth: _width
+                    }}>
+                    <FlatList
+                        data = { this._groupIntoRows() }
+                        extraData = { this.state.extraData }
+                        style = { styles.scrollView }
+                        getItemLayout = { this._getItemLayout }
+                        initialNumToRender = { _initialNumToRender }
+                        keyExtractor = { this._keyExtractor }
+                        onViewableItemsChanged = { this._debouncedViewableItemsChanged }
+                        remoteClippedSubviews = { true }
+                        renderItem = { this._renderItem }
+                        viewablilityConfig = { this._viewablilityConfig }
+                        windowSize = { 1 } />
                 </View>
             </TouchableWithoutFeedback>
+            </View>
         );
     }
 
@@ -202,7 +206,8 @@ class TileView extends Component<Props> {
         const { viewableItems } = change;
         const startIndex = Math.max(viewableItems[0].index * _columnCount - 1, 0);
         const endIndex = startIndex + viewableItems.length * _columnCount - 1;
-        console.log('onViewableItemsChanged:', startIndex, endIndex, viewableItems.length);
+
+        // console.log('onViewableItemsChanged:', startIndex, endIndex, viewableItems.length);
         dispatch(setVisibleRemoteParticipants(startIndex, endIndex));
         this.setState({ extraData: [startIndex, endIndex] });
     }

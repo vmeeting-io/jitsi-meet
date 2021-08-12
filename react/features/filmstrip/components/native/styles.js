@@ -125,6 +125,10 @@ export default {
     },
 
     tileView: {
+        flexGrow: 1,
+        flexShrink: 1,
+        flexDirection: 'column',
+        overflow: 'scroll',
         alignSelf: 'center'
     },
 

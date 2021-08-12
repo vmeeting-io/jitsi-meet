@@ -64,9 +64,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
      * @returns {void}
      */
     _doHangup() {
-        const { _participants } = this.props;
-
-        if (_participants.length > 1 && this.props._showHangupMenu) {
+        if (this.props._showHangupMenu) {
             this.props.dispatch(openDialog(HangupMenu));
         } else {
             this._hangup();
@@ -83,15 +81,12 @@ class HangupButton extends AbstractHangupButton<Props, *> {
  * @returns {{}}
  */
  function _mapStateToProps(state) {
-    const participants = state['features/base/participants'];
-    const { roomInfo } = state['features/base/conference'];
+    const { remoteParticipants } = state['features/filmstrip'];
     const isModerator = getLocalParticipant(state).role === PARTICIPANT_ROLE.MODERATOR;
 
     return {
-        _apiBase: getAuthUrl(state),
-        _participants: participants,
-        _showHangupMenu: isModerator && participants.length > 1,
-        _roomInfo: roomInfo,
+        _participants: remoteParticipants,
+        _showHangupMenu: isModerator && remoteParticipants.length > 0,
     };
 }
 

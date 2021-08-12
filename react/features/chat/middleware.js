@@ -301,7 +301,7 @@ function _handleChatError({ dispatch }, error) {
  * @returns {void}
  */
 function _handleReceivedMessage({ dispatch, getState },
-        { id, message, privateMessage, timestamp },
+        { id, message, nick, privateMessage, timestamp },
         shouldPlaySound = true
 ) {
     // Logic for all platforms:

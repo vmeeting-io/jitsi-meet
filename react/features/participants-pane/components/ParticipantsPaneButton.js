@@ -4,6 +4,7 @@ import { translate } from '../../base/i18n';
 import { IconParticipants } from '../../base/icons';
 import { connect } from '../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { getParticipantsPaneOpen } from '../functions';
 
 /**
  * The type of the React {@code Component} props of {@link ParticipantsPaneButton}.
@@ -34,6 +35,22 @@ class ParticipantsPaneButton extends AbstractButton<Props, *> {
     _handleClick() {
         this.props.handleClick();
     }
+
+    _isToggled() {
+        return this.props._participantsPaneOpen;
+    }
 }
 
-export default translate(connect()(ParticipantsPaneButton));
+/**
+ * Function that maps parts of Redux state tree into component props.
+ *
+ * @param {Object} state - Redux state.
+ * @returns {Object}
+ */
+const mapStateToProps = state => {
+    return {
+        _participantsPaneOpen: getParticipantsPaneOpen(state)
+    };
+};
+
+export default translate(connect(mapStateToProps)(ParticipantsPaneButton));

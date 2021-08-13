@@ -127,7 +127,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
 
         const selected = this.state.selected || this.props._selected;
         return [
-            <ul className = 'participant-list'>
+            <ul className = 'participant-list' key = 'remotes'>
                 { _participants.map(id => (
                     <ParticipantItem
                         key = { id }
@@ -152,10 +152,12 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     _onHangupMe: () => void;
 
     _onHangupMe(e) {
-        const { _participants } = this.props;
+        const { _participants, _moderators } = this.props;
 
-        if (_participants.length === 1) {
-            this.props.dispatch(grantModerator(_participants[0]));
+        if (_participants.length === 1 || _moderators > 1) {
+            if (_moderators === 1) {
+                this.props.dispatch(grantModerator(_participants[0]));
+            }
             this._hangup();
         } else {
             this.setState({ showSelectModerator: true });
@@ -268,6 +270,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
         _participants: remoteParticipants,
         _selected: remoteParticipants[0],
         _showHangupMenu: isModerator && remoteParticipants.length > 0,
+        _moderators: state['features/base/participants'].moderators.size,
         _roomInfo: roomInfo,
         _timer: state['features/toolbox'].timer,
     };

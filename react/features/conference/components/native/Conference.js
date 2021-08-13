@@ -37,6 +37,9 @@ import type { AbstractProps } from '../AbstractConference';
 import LonelyMeetingExperience from './LonelyMeetingExperience';
 import NavigationBar from './NavigationBar';
 import styles from './styles';
+import { openDialog } from '../../../base/dialog';
+import HangupMenu from '../../../toolbox/components/native/HangupMenu';
+import { getLocalParticipant, PARTICIPANT_ROLE } from '../../../base/participants';
 
 
 /**
@@ -189,19 +192,19 @@ class Conference extends AbstractConference<Props, *> {
      * @returns {boolean} Exiting the app is undesired, so {@code true} is always returned.
      */
     _onHardwareBackPress() {
-        let p;
-
         if (this.props._pictureInPictureEnabled) {
             const { PictureInPicture } = NativeModules;
 
-            p = PictureInPicture.enterPictureInPicture();
-        } else {
-            p = Promise.reject(new Error('PiP not enabled'));
+            PictureInPicture.enterPictureInPicture();
+
+            return true;
         }
 
-        p.catch(() => {
+        if (this.props._showHangupMenu) {
+            this.props.dispatch(openDialog(HangupMenu));
+        } else {
             this.props.dispatch(appNavigate(undefined));
-        });
+        }
 
         return true;
     }
@@ -416,6 +419,9 @@ function _mapStateToProps(state) {
     const connecting_
         = connecting || (connection && (!membersOnly && (joining || (!conference && !leaving))));
 
+    const { remoteParticipants } = state['features/filmstrip'];
+    const isModerator = getLocalParticipant(state).role === PARTICIPANT_ROLE.MODERATOR;
+    
     return {
         ...abstractMapStateToProps(state),
         _aspectRatio: aspectRatio,
@@ -427,6 +433,7 @@ function _mapStateToProps(state) {
         _largeVideoParticipantId: state['features/large-video'].participantId,
         _pictureInPictureEnabled: getFeatureFlag(state, PIP_ENABLED),
         _reducedUI: reducedUI,
+        _showHangupMenu: isModerator && remoteParticipants.length > 0,
         _toolboxVisible: isToolboxVisible(state)
     };
 }

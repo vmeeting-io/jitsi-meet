@@ -176,10 +176,12 @@ class HangupMenu extends PureComponent<Props, State> {
      * Handler for hangup me button
      */
     _onHangupMe() {
-        const { _participants } = this.props;
+        const { _participants, _moderators } = this.props;
 
-        if (_participants.length === 1) {
-            this.props.dispatch(grantModerator(_participants[0]));
+        if (_participants.length === 1 || _moderators > 1) {
+            if (_moderators === 1) {
+                this.props.dispatch(grantModerator(_participants[0]));
+            }
             this._hangup();
         } else {
             this.setState({ showSelectModerator: true });
@@ -217,6 +219,7 @@ function _mapStateToProps(state) {
     return {
         _bottomSheetStyles: ColorSchemeRegistry.get(state, 'BottomSheet'),
         _isOpen: isDialogOpen(state, HangupMenu_),
+        _moderators: state['features/base/participants'].moderators.size,
         _participants: remoteParticipants,
         _selected: remoteParticipants[0],
     };

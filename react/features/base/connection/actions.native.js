@@ -81,7 +81,10 @@ export function connect(id: ?string, password: ?string) {
         const options = _constructOptions(state);
         const { locationURL } = state['features/base/connection'];
         const { jwt } = state['features/base/jwt'];
-        const connection = new JitsiMeetJS.JitsiConnection(options.appId, jwt, options);
+        const { isHost } = state['features/base/conference'].roomInfo || {};
+        const credentials = isHost ? jwt : undefined;
+
+        const connection = new JitsiMeetJS.JitsiConnection(options.appId, credentials, options);
 
         connection[JITSI_CONNECTION_URL_KEY] = locationURL;
 

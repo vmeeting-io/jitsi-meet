@@ -60,7 +60,7 @@ class MessageContainer extends AbstractMessageContainer<Props> {
                 // https://github.com/facebook/react-native/issues/21196
                 inverted = { Boolean(data.length) }
                 keyExtractor = { this._keyExtractor }
-                keyboardShouldPersistTaps = 'always'
+                keyboardShouldPersistTaps = 'never'
                 renderItem = { this._renderMessageGroup }
                 style = { styles.messageContainer } />
         );

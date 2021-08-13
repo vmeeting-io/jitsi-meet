@@ -321,6 +321,7 @@ class WelcomePage extends AbstractWelcomePage {
                                 autoComplete = 'off'
                                 autoCorrect = { false }
                                 autoFocus = { false }
+                                disableFullscreenUI = { true }
                                 onBlur = { this._onFieldBlur }
                                 onChangeText = { this._onRoomChange }
                                 onFocus = { this._onFieldFocus }

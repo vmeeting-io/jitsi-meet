@@ -77,6 +77,7 @@ class ChatInputBar extends Component<Props, State> {
                 ] }>
                 <TextInput
                     blurOnSubmit = { false }
+                    disableFullscreenUI = { true }
                     multiline = { false }
                     onBlur = { this._onFocused(false) }
                     onChangeText = { this._onChangeText }

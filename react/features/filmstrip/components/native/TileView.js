@@ -3,7 +3,6 @@
 import React, { Component } from 'react';
 import {
     FlatList,
-    StyleSheet,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -141,19 +140,20 @@ class TileView extends Component<Props> {
         } = this.props;
 
         return (
-            <View style = {{
-                ...styles.tileView,
-                width: _width,
-                height: _height
-            }}>
             <TouchableWithoutFeedback onPress = { onClick }>
-                <View
-                    style = {{
-                        ...styles.tileViewRows,
-                        minHeight: _height,
-                        minWidth: _width
-                    }}>
+                <View style = {{
+                    ...styles.tileView,
+                    flex: 1,
+                    width: _width,
+                    height: _height
+                }}>
                     <FlatList
+                        contentContainerStyle = {{
+                            flex: 1,
+                            minWidth: _width,
+                            minHeight: _height,
+                            justifyContent: 'center',
+                        }}
                         data = { this._groupIntoRows() }
                         extraData = { this.state.extraData }
                         style = { styles.scrollView }
@@ -167,7 +167,6 @@ class TileView extends Component<Props> {
                         windowSize = { 1 } />
                 </View>
             </TouchableWithoutFeedback>
-            </View>
         );
     }
 
@@ -231,7 +230,9 @@ class TileView extends Component<Props> {
         // console.log('renderItem:', startIndex, tIndex, endIndex, visible);
 
         return (
-            <View key = { index } style = { styles.tileViewRow }>
+            <View
+                key = { index }
+                style = { styles.tileViewRow }>
                 { this._renderThumbnails(item, visible) }
             </View>
         );

@@ -1,6 +1,5 @@
 // @flow
 
-import { map } from 'lodash';
 import { ReducerRegistry, set } from '../redux';
 
 import {
@@ -61,7 +60,8 @@ const DEFAULT_STATE = {
     pinnedParticipant: undefined,
     local: undefined,
     remote: new Map(),
-    fakeParticipants: new Map()
+    fakeParticipants: new Map(),
+    moderators: new Map(),
 };
 
 /**
@@ -169,6 +169,10 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
                 state.everyoneIsModerator = _isEveryoneModerator(state);
             }
 
+            if (isModerator) {
+                state.moderators.set(newParticipant.id, newParticipant);
+            }
+    
             // haveParticipantWithScreenSharingFeature calculation:
             const { features = {} } = participant;
 
@@ -217,6 +221,10 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
             };
         }
 
+        if (isModerator) {
+            state.moderators.set(participant.id, participant);
+        }
+
         state.remote.set(participant.id, participant);
 
         if (participant.isFakeParticipant) {
@@ -233,7 +241,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
         // (and the fact that the local participant "joins" at the beginning of
         // the app and "leaves" at the end of the app).
         const { conference, id } = action.participant;
-        const { fakeParticipants, remote, local, dominantSpeaker, pinnedParticipant } = state;
+        const { fakeParticipants, remote, moderators, local, dominantSpeaker, pinnedParticipant } = state;
         let oldParticipant = remote.get(id);
 
         if (oldParticipant && oldParticipant.conference === conference) {
@@ -282,6 +290,10 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
 
         if (fakeParticipants.has(id)) {
             fakeParticipants.delete(id);
+        }
+
+        if (moderators.has(id)) {
+            moderators.delete(id);
         }
 
         return { ...state };

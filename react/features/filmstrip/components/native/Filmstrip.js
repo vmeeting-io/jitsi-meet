@@ -152,7 +152,7 @@ class Filmstrip extends Component<Props> {
         const { viewableItems } = change;
         const startIndex = viewableItems[0].index;
         const endIndex = startIndex + viewableItems.length - 1;
-        console.log('onViewableItemsChanged:', startIndex, endIndex, viewableItems.length);
+        // console.log('onViewableItemsChanged:', startIndex, endIndex, viewableItems.length);
         dispatch(setVisibleRemoteParticipants(startIndex, endIndex));
         this.setState({ extraData: [startIndex, endIndex] });
     }
@@ -194,9 +194,7 @@ function _mapStateToProps(state) {
     let initialNumToRender;
 
     if (!_separateLocalThumbnail) {
-        participants = !isNarrowAspectRatio
-            ? [ _localParticipant, ...remoteParticipants ]
-            : [ ...remoteParticipants, _localParticipant ];
+        participants = [ _localParticipant, ...remoteParticipants ];
     }
     if (isNarrowAspectRatio) {
         initialNumToRender = Math.floor(clientWidth / SMALL_THUMBNAIL_SIZE);

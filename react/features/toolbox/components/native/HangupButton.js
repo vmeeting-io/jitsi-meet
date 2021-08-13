@@ -3,7 +3,6 @@
 import { once } from 'lodash';
 import React from 'react';
 
-import { getAuthUrl } from '../../../../api/url';
 import { createToolbarEvent, sendAnalytics } from '../../../analytics';
 import { appNavigate } from '../../../app/actions';
 import { openDialog } from '../../../base/dialog';

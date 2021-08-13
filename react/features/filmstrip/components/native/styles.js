@@ -32,7 +32,7 @@ export default {
     filmstripNarrow: {
         flexDirection: 'row',
         flexGrow: 0,
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
         marginBottom: 5
     },
 
@@ -73,7 +73,7 @@ export default {
      * The style of the scrollview containing the remote thumbnails.
      */
     scrollView: {
-        flexGrow: 0
+        flexGrow: 0,
     },
 
     /**
@@ -125,14 +125,17 @@ export default {
     },
 
     tileView: {
+        flex: 1,
         flexGrow: 1,
         flexShrink: 1,
         flexDirection: 'column',
         overflow: 'scroll',
-        alignSelf: 'center'
+        alignSelf: 'center',
     },
 
     tileViewRows: {
+        flex: 1,
+        flexGrow: 1,
         justifyContent: 'center'
     },
 

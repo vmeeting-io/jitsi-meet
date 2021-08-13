@@ -1,5 +1,6 @@
 // @flow
 
+import { CONFERENCE_LEFT, CONFERENCE_WILL_LEAVE } from '../base/conference';
 import { PARTICIPANT_JOINED, PARTICIPANT_LEFT } from '../base/participants';
 import { ReducerRegistry } from '../base/redux';
 
@@ -148,7 +149,7 @@ ReducerRegistry.register(
         case PARTICIPANT_JOINED: {
             const { id, local } = action.participant;
 
-            if (!local) {
+            if (!local && state.remoteParticipants.indexOf(id) < 0) {
                 state.remoteParticipants = [ ...state.remoteParticipants, id ];
 
                 const { visibleParticipantsStartIndex: startIndex, visibleParticipantsEndIndex: endIndex } = state;
@@ -188,6 +189,10 @@ ReducerRegistry.register(
             delete state.participantsVolume[id];
 
             return state;
+        }
+        case CONFERENCE_LEFT:
+        case CONFERENCE_WILL_LEAVE: {
+            return DEFAULT_STATE;
         }
         }
 

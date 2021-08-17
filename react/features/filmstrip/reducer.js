@@ -149,7 +149,7 @@ ReducerRegistry.register(
         case PARTICIPANT_JOINED: {
             const { id, local } = action.participant;
 
-            if (!local && state.remoteParticipants.indexOf(id) < 0) {
+            if (!local) {
                 state.remoteParticipants = [ ...state.remoteParticipants, id ];
 
                 const { visibleParticipantsStartIndex: startIndex, visibleParticipantsEndIndex: endIndex } = state;
@@ -158,8 +158,9 @@ ReducerRegistry.register(
                     state.visibleParticipants = state.remoteParticipants.slice(startIndex, endIndex + 1);
                 }
             }
+            // console.log('PARTICIPANT_JOINED:', id, local, state.remoteParticipants);
 
-            return state;
+            return { ...state };
         }
         case PARTICIPANT_LEFT: {
             const { id, local } = action.participant;
@@ -188,11 +189,8 @@ ReducerRegistry.register(
 
             delete state.participantsVolume[id];
 
-            return state;
-        }
-        case CONFERENCE_LEFT:
-        case CONFERENCE_WILL_LEAVE: {
-            return DEFAULT_STATE;
+            // console.log('PARTICIPANT_LEFT:', id, local, state.remoteParticipants);
+            return { ...state };
         }
         }
 

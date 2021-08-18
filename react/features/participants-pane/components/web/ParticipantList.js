@@ -16,7 +16,22 @@ import { findStyledAncestor, shouldRenderInviteButton } from '../../functions';
 import { InviteButton } from './InviteButton';
 import MeetingParticipantContextMenu from './MeetingParticipantContextMenu';
 import MeetingParticipantItem from './MeetingParticipantItem';
-import { Heading, ParticipantContainer } from './styled';
+import { ParticipantContainer } from './styled';
+
+
+//////////////////////////////////////////////////////////////
+// for virtual scrolling
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { FixedSizeList as List } from 'react-window';
+
+import * as s from './ParticipantList.module.scss';
+
+// integrating lobby list
+import { withPixelLineHeight } from '../../../base/styles/functions.web';
+import { admitMultiple } from '../../../lobby/actions.web';
+import { getLobbyState } from '../../../lobby/functions';
+import { LobbyParticipantItem } from './LobbyParticipantItem';
+
 
 type NullProto = {
   [key: string]: any,
@@ -39,11 +54,11 @@ type RaiseContext = NullProto | {|
 const initialState = Object.freeze(Object.create(null));
 
 /**
- * Renders the MeetingParticipantList component.
+ * Renders the ParticipantList component.
  *
  * @returns {ReactNode} - The component.
  */
-export function MeetingParticipantList() {
+export function ParticipantList() {
     const dispatch = useDispatch();
     const isMouseOverMenu = useRef(false);
     const participants = useSelector(getRemoteParticipants);
@@ -56,6 +71,24 @@ export function MeetingParticipantList() {
     const showInviteButton = useSelector(shouldRenderInviteButton);
     const [ raiseContext, setRaiseContext ] = useState<RaiseContext>(initialState);
     const { t } = useTranslation();
+
+    ///////////////////////////////////////
+
+    const {
+        lobbyEnabled,
+        knockingParticipants
+    } = useSelector(getLobbyState);
+
+    const admitAll = useCallback(() => {
+        dispatch(admitMultiple(knockingParticipants));
+    }, [ dispatch, knockingParticipants ]);
+
+    const lobbyCount = lobbyEnabled ? knockingParticipants ? knockingParticipants.length : 0 : 0;
+    const scrollOffset = useRef(null);
+    const listRef = useRef();
+    //////////////////////////////////////////
+
+
 
     const lowerMenu = useCallback(() => {
         /**
@@ -76,9 +109,11 @@ export function MeetingParticipantList() {
     }, [ raiseContext ]);
 
     const raiseMenu = useCallback((participantID, target) => {
+        const listItem = findStyledAncestor(target, ParticipantContainer).parentElement;
         setRaiseContext({
             participantID,
-            offsetTarget: findStyledAncestor(target, ParticipantContainer)
+            target: (parseInt(listItem.style.top) - scrollOffset?.current),
+            containerHeight: listRef.current.props.height
         });
     }, [ raiseContext ]);
 
@@ -130,20 +165,115 @@ export function MeetingParticipantList() {
             youText = { youText } />
     );
 
+    const renderKnockingParticipant = p => (
+        <LobbyParticipantItem
+            key = { p.id }
+            participant = { p } />
+    );
+
     const items = [];
 
-    localParticipant && items.push(renderParticipant(localParticipant?.id));
-    participants.forEach(p => {
-        items.push(renderParticipant(p?.id));
+    if(lobbyEnabled && lobbyCount != 0) {
+        items.push({ itemType: "lobbyHeading" });
+        knockingParticipants.forEach(p => {
+            items.push({ 
+                itemType: "knockingParticipant",
+                participant: p
+            });
+        });
+    }
+
+    items.push({ itemType: "participantHeading" });
+    if(showInviteButton) {
+        items.push({
+            itemType: "inviteButton"
+        });
+    }
+    localParticipant && items.push({
+        itemType: "participant",
+        id: localParticipant.id
     });
+    participants.forEach(p => {
+        items.push({
+            itemType: "participant",
+            id: p?.id
+        });
+    });
+
+    const renderItem = ({index, style}) => {
+        const item = items[index];
+        switch (item.itemType) {
+            case "participant": 
+                return (
+                    <div style={style}>
+                        { renderParticipant(item.id) }
+                    </div>
+                );
+            
+            case "knockingParticipant":
+                return (
+                    <div style={style}>
+                        { renderKnockingParticipant(item.participant) }
+                    </div>
+                );
+            
+            case "participantHeading":
+                return (
+                    <div style={style}>
+                        <div className={s.Heading}>{t('participantsPane.headings.participantsList', { count: participantsCount })}</div>
+                    </div>
+                );
+
+            case "lobbyHeading":
+                return (
+                    <div style={style}>
+                        <div className={s.Heading}>
+                            <div>
+                                {t('participantsPane.headings.lobby', { count: lobbyCount })}
+                            </div>
+                            { lobbyCount > 1 && 
+                                <div className={s.AdmitAll} onClick = { admitAll }>
+                                    {t('lobby.admitAll')}
+                                </div>
+                            }
+                        </div>
+                    </div>
+                );
+
+            case "inviteButton":
+                return (
+                    <div style={style}>
+                        <div style={{"padding":"0 16px"}}>
+                            <InviteButton />
+                        </div>
+                    </div>
+                );
+            
+            default:
+                return (<div style={style}></div>);
+        }
+    }
+
+    const onScroll = (args) => {
+        scrollOffset.current = args.scrollOffset;
+    };
 
     return (
     <>
-        <Heading>{t('participantsPane.headings.participantsList', { count: participantsCount })}</Heading>
-        {showInviteButton && <InviteButton />}
-        <div>
-            { items }
-        </div>
+        <AutoSizer>{
+            ({height, width}) => (
+            <List
+                ref={listRef}
+                onScroll={onScroll}
+                className={s.List}
+                height={height}
+                width={width}
+                itemCount={items.length}
+                itemSize={48}>
+                { renderItem }    
+            </List>)
+        }
+        </AutoSizer>
         <MeetingParticipantContextMenu
             muteAudio = { muteAudio }
             onEnter = { menuEnter }

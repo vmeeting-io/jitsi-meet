@@ -67,6 +67,7 @@
         "today": "오늘"
     },
     "chat": {
+        "enter": "방 입장",
         "error": "오류 : 메시지가 전송되지 않았습니다. 이유 : {{error}}",
         "fieldPlaceHolder": "여기에 메시지를 입력하세요",
         "messagebox": "메시지 입력",
@@ -74,11 +75,16 @@
         "noMessagesMessage": "회의에 아직 메시지가 없습니다. 여기서 대화를 시작하십시오!",
         "nickname": {
             "popover": "별명을 선택하세요",
-            "title": "채팅에 사용할 별명 입력"
+            "title": "채팅과 투표에 사용할 별명 입력"
         },
         "privateNotice": "{{recipient}}에게 개인메시지",
         "search": "대화내용 검색",
-        "title": "채팅",
+        "smileysPanel": "이모지 패널",
+        "tabs": {
+            "chat": "채팅",
+            "polls": "투표"
+        },
+        "title": "채팅 / 투표",
         "you": "you"
     },
     "chromeExtensionBanner": {
@@ -712,6 +718,34 @@
     },
     "passwordSetRemotely": "다른 참가자가 설정",
     "passwordDigitsOnly": "최대 {{number}} 자리",
+    "polls": {
+        "create": {
+            "addOption": "항목 추가",
+            "answerPlaceholder": "항목 입력",
+            "create": "투표 추가하기",
+            "cancel": "취소",
+            "pollOption" : "항목 {{index}}",
+            "pollQuestion" : "투표 제목",
+            "questionPlaceholder": "제목 입력",
+            "removeOption": "항목 삭제",
+            "send": "완료"
+        },
+        "answer": {
+            "skip": "건너뛰기",
+            "submit": "제출"
+        },
+        "results": {
+            "vote": "투표",
+            "changeVote": "투표 변경하기",
+            "empty": "생성된 투표가 없습니다. 여기에서 투표를 추가해보세요!",
+            "hideDetailedResults": "세부 정보 숨기기",
+            "showDetailedResults": "세부 정보 표시"
+        },
+        "notification": {
+            "title": "새로운 투표가 추가되었습니다.",
+            "description": "투표하려면 채팅 창을 열고 투표 탭을 선택하세요"
+        }
+    },
     "poweredby": "powered by",
     "prejoin": {
         "audioAndVideoError": "오디오 및 비디오 오류:",

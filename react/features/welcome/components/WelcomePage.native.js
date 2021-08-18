@@ -23,9 +23,11 @@ import {
     destroyLocalDesktopTrackIfExists,
     destroyLocalTracks
 } from '../../base/tracks';
+import { shouldDisplayNotifications } from '../../conference/functions.any';
 import { HelpView } from '../../help';
 import { DialInSummary } from '../../invite';
 import { showNotification } from '../../notifications';
+import { NotificationsContainer } from '../../notifications/components';
 import { SettingsView } from '../../settings/components';
 import { setSideBarVisible } from '../actions';
 
@@ -311,6 +313,7 @@ class WelcomePage extends AbstractWelcomePage {
                         <VideoSwitch />
                     </Header>
                     <SafeAreaView style = { styles.roomContainer } >
+                        { this._renderNotificationsContainer() }
                         <View style = { styles.joinControls } >
                             <Text style = { styles.enterRoomText }>
                                 { t('welcomepage.roomname') }
@@ -377,6 +380,23 @@ class WelcomePage extends AbstractWelcomePage {
             <SettingsView key = 'settings' />
         ];
     }
+
+    /**
+     * Renders a container for notifications to be displayed by the
+     * base/notifications feature.
+     *
+     * @private
+     * @returns {React$Element}
+     */
+     _renderNotificationsContainer() {
+        if (this.props._notificationsVisible) {
+            return (
+                React.createElement(NotificationsContainer)
+            );
+        }
+
+        return null;
+    }
 }
 
 /**
@@ -388,7 +408,8 @@ class WelcomePage extends AbstractWelcomePage {
 function _mapStateToProps(state) {
     return {
         ..._abstractMapStateToProps(state),
-        _headerStyles: ColorSchemeRegistry.get(state, 'Header')
+        _headerStyles: ColorSchemeRegistry.get(state, 'Header'),
+        _notificationsVisible: shouldDisplayNotifications(state),
 
         // _reducedUI: state['features/base/responsive-ui'].reducedUI
     };

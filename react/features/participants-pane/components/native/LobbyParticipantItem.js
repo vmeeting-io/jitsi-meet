@@ -23,6 +23,7 @@ type Props = {
 export const LobbyParticipantItem = ({ participant: p }: Props) => {
     const dispatch = useDispatch();
     const admit = useCallback(() => dispatch(approveKnockingParticipant(p.id), [ dispatch ]));
+    const reject = useCallback(() => dispatch(rejectKnockingParticipant(p.id), [ dispatch ]));
     const openContextMenuReject = useCallback(() => dispatch(showContextMenuReject(p), [ dispatch ]));
     const { t } = useTranslation();
 
@@ -37,6 +38,13 @@ export const LobbyParticipantItem = ({ participant: p }: Props) => {
             participantID = { p.id }
             raisedHand = { p.raisedHand }
             videoMediaState = { MEDIA_STATE.NONE }>
+            <Button
+                children = {t('lobby.reject')}
+                contentStyle = { styles.participantActionsButtonContent }
+                labelStyle = { styles.participantActionsButtonText }
+                mode = 'contained'
+                onPress = { reject }
+                style = { styles.participantActionsButtonAdmit } />
             <Button
                 children = { t('lobby.admit') }
                 contentStyle = { styles.participantActionsButtonContent }

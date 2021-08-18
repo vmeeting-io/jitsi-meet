@@ -169,10 +169,6 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
                 state.everyoneIsModerator = _isEveryoneModerator(state);
             }
 
-            if (isModerator) {
-                state.moderators.set(newParticipant.id, newParticipant);
-            }
-    
             // haveParticipantWithScreenSharingFeature calculation:
             const { features = {} } = participant;
 
@@ -224,6 +220,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
         if (isModerator) {
             state.moderators.set(participant.id, participant);
         }
+        // console.log('PARTICIPANT_JOINED:', isModerator, state.moderators.size);
 
         state.remote.set(participant.id, participant);
 
@@ -251,6 +248,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
             delete state.local;
         } else {
             // no participant found
+            moderators.delete(id);
             return state;
         }
 
@@ -292,9 +290,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
             fakeParticipants.delete(id);
         }
 
-        if (moderators.has(id)) {
-            moderators.delete(id);
-        }
+        moderators.delete(id);
 
         return { ...state };
     }

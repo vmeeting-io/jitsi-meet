@@ -177,9 +177,9 @@ class HangupMenu extends PureComponent<Props, State> {
      */
     _onHangupMe() {
         const { _participants, _moderators } = this.props;
-
-        if (_participants.length === 1 || _moderators > 1) {
-            if (_moderators === 1) {
+        // console.log('_onHangupMe:', _moderators);
+        if (_participants.length === 1 || _moderators > 0) {
+            if (_moderators === 0) {
                 this.props.dispatch(grantModerator(_participants[0]));
             }
             this._hangup();

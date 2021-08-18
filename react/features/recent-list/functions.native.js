@@ -5,6 +5,11 @@ import {
 import { NavigateSectionList } from '../base/react';
 import { parseURIString, safeDecodeURIComponent } from '../base/util';
 
+const DEFAULT_DATE_FORMAT = 'ddd, MMMM DD h:mm A';
+const longDateFormat = {
+    ko: 'MMMM Do (ddd) LT',
+};
+
 /**
  * Creates a displayable list item of a recent list entry.
  *
@@ -74,10 +79,10 @@ function _toDateString(itemDate, t) {
     } else if (date.getFullYear() !== now.getFullYear()) {
         // We only want to include the year in the date if its not the current
         // year.
-        return m.format('ddd, MMMM DD h:mm A, gggg');
+        return m.format('LLLL');
     }
 
-    return m.format('ddd, MMMM DD h:mm A');
+    return m.format(longDateFormat[m.locale()] || DEFAULT_DATE_FORMAT);
 }
 
 /**

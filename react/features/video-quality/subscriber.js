@@ -255,6 +255,7 @@ function _updateReceiverVideoConstraints({ getState }) {
     // console.log(receiverConstraints);
     try {
         conference.setReceiverConstraints(receiverConstraints);
+        conference.recvVideoParticipants(Object.keys(receiverConstraints.constraints));
     } catch (error) {
         _handleParticipantError(error);
         reportError(error, `Failed to set receiver video constraints ${JSON.stringify(receiverConstraints)}`);

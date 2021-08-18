@@ -145,7 +145,11 @@ export function MeetingParticipantList() {
     });
 
     const renderItem = ({index, style}) => {
-        return (<div className='ListItem'>{renderParticipant(items[index])}</div>);
+        return (
+            <div style={style}>
+                { renderParticipant(items[index]) }
+            </div>
+        );
     }
 
     return (

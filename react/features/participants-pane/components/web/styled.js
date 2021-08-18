@@ -40,7 +40,7 @@ export const Container = styled.div`
   flex: 1;
 
   position: relative;
-  padding: 0 ${props => props.theme.panePadding}px;
+  
 
   & > * + *:not(.${ignoredChildClassName}) {
     margin-top: 16px;
@@ -249,6 +249,7 @@ export const ParticipantContent = styled.div`
   flex: 1;
   height: 100%;
   overflow: hidden;
+  padding-right: ${props => props.theme.panePadding}px;
 `;
 
 export const ParticipantContainer = styled.div`

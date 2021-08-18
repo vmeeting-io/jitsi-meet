@@ -139,24 +139,35 @@ export function MeetingParticipantList() {
 
     const items = [];
 
-    localParticipant && items.push(localParticipant?.id);
-    participants.forEach(p => {
-        items.push(p?.id);
-    });
+    for(let i = 0; i < 10000; i++) {
+        localParticipant && items.push(localParticipant?.id);
+        participants.forEach(p => {
+            items.push(p?.id);
+        });
+    }
 
     const renderItem = ({index, style}) => {
-        return (
-            <div style={style}>
-                { renderParticipant(items[index]) }
-            </div>
-        );
+        if(index === 0) {
+            return (
+                <div style={style}>
+                    <Heading>{t('participantsPane.headings.participantsList', { count: participantsCount })}</Heading>
+                </div>
+            );
+        }
+        else {
+            return (
+                <div style={style}>
+                    { renderParticipant(items[index - 1]) }
+                </div>
+            );
+        }
     }
 
     return (
     <>
         {/* <Heading>{t('participantsPane.headings.participantsList', { count: participantsCount })}</Heading>
-        {showInviteButton && <InviteButton />}
-        <div>
+        {showInviteButton && <InviteButton />} */}
+        {/* <div>
             { items }
         </div> */}
         <AutoSizer>{

@@ -187,7 +187,7 @@ export const Heading = styled.div`
   font-style: normal;
   font-size: 15px;
   line-height: 24px;
-  margin: 8px 0 ${props => props.theme.panePadding}px;
+  margin: 8px 0 ${props => props.theme.panePadding}px 16px;
 `;
 
 export const ColoredIcon = styled.div`

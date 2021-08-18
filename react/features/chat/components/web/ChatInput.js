@@ -8,7 +8,8 @@ import type { Dispatch } from 'redux';
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { getLocalParticipant, getParticipants, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
-import { Icon, IconPlane, IconSmile } from '../../../base/icons';
+import { Icon, IconPlane, IconSmile, IconShareDoc } from '../../../base/icons';
+import { FileUploadButton } from './FileUploadButton';
 import { connect } from '../../../base/redux';
 
 import { setPrivateMessageRecipient } from '../../actions';
@@ -131,6 +132,7 @@ class ChatInput extends Component<Props, State> {
         return (
             <div className = { `chat-input-container${this.state.message.trim().length ? ' populated' : ''}` }>
                 <div id = 'chat-input' >
+                    <FileUploadButton visible = { true } />
                     <div className = 'smiley-input'>
                         <div id = 'smileysarea'>
                             <div id = 'smileys'>

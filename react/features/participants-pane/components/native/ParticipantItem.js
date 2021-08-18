@@ -88,12 +88,11 @@ function ParticipantItem({
                     className = 'participant-avatar'
                     participantId = { participantID }
                     size = { 32 } />
-                <View style = { styles.participantNameContainer }>
-                    <Text style = { styles.participantName }>
-                        { displayName }
-                    </Text>
-                    { local ? <Text style = { styles.isLocal }>({t('me')})</Text> : null }
-                </View>
+                <Text
+                    numberOfLines = { 2 }
+                    style = { styles.participantName }>
+                    { local ? `${displayName} (${t('me')})` : displayName }
+                </Text>
                 {
                     !isKnockingParticipant
                     && <>

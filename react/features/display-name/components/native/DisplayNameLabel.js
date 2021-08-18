@@ -48,7 +48,9 @@ class DisplayNameLabel extends Component<Props> {
         const { _participantName, displayNameSuffix, t } = this.props;
         return (
             <View style = { styles.displayNameBackdrop }>
-                <Text style = { styles.displayNameText }>
+                <Text
+                    numberOfLines = { 1 }
+                    style = { styles.displayNameText }>
                 { appendSuffix(_participantName, t(displayNameSuffix)) }
                 </Text>
             </View>

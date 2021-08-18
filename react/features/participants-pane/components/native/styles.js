@@ -87,31 +87,35 @@ const contextMenuItem = {
  */
 export default {
 
-    participantActionsButtonAdmit: {
-        backgroundColor: BaseTheme.palette.action01,
+    participantActionsButton: {
         borderRadius: BaseTheme.shape.borderRadius,
         flexDirection: 'row',
-        height: BaseTheme.spacing[6],
-        marginRight: BaseTheme.spacing[3],
-        position: 'absolute',
-        right: 0,
-        zIndex: 1
+        margin: 3,
+        minWidth: 10,
+    },
+
+    participantActionsButtonPrimary: {
+        backgroundColor: BaseTheme.palette.action01,
+    },
+
+    participantActionsButtonSecondary: {
+        backgroundColor: 'transparent',
     },
 
     participantActionsButtonContent: {
         alignItems: 'center',
         display: 'flex',
-        height: BaseTheme.spacing[5],
-        top: BaseTheme.spacing[1]
     },
 
     participantActionsButtonText: {
         color: BaseTheme.palette.text01,
+        fontWeight: 'normal',
+        letterSpacing: 0,
+        marginHorizontal: 10,
         textTransform: 'capitalize'
     },
 
     admitAllParticipantsActionButtonLabel: {
-        ...BaseTheme.typography.heading6,
         color: BaseTheme.palette.link01,
         textTransform: 'capitalize'
     },
@@ -133,27 +137,19 @@ export default {
         display: 'flex',
         flexDirection: 'row',
         height: '100%',
+        width: 'auto',
         overflow: 'hidden',
-        width: '100%'
-    },
-
-    participantNameContainer: {
-        display: 'flex',
-        flexDirection: 'row',
-        overflow: 'hidden',
-        paddingLeft: BaseTheme.spacing[3],
-        width: '63%'
+        flexGrow: 1,
+        flexShrink: 1,
     },
 
     participantName: {
         overflow: 'hidden',
-        color: BaseTheme.palette.text01
-    },
-
-    isLocal: {
-        alignSelf: 'center',
         color: BaseTheme.palette.text01,
-        marginLeft: 4
+        flexGrow: 1,
+        flexShrink: 1,
+        marginLeft: 10,
+        textOverflow: 'ellipsis'
     },
 
     participantsPane: {
@@ -163,7 +159,7 @@ export default {
     participantStatesContainer: {
         display: 'flex',
         flexDirection: 'row',
-        marginLeft: 'auto',
+        marginLeft: 16,
         width: '15%'
     },
 

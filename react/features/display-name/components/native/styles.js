@@ -13,6 +13,7 @@ export default {
 
     displayNameText: {
         color: ColorPalette.white,
-        fontSize: 14
+        fontSize: 14,
+        textAlign: 'center'
     }
 };

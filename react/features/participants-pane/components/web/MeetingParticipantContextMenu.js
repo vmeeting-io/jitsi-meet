@@ -250,7 +250,8 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
      */
     _position() {
         const { _participant, offsetTarget } = this.props;
-
+        console.log(offsetTarget?.offsetParent);
+        // console.log(_participant, this._containerRef.current, offsetTarget?.offsetParent, offsetTarget.offsetParent instanceof HTMLElement);
         if (_participant
             && this._containerRef.current
             && offsetTarget?.offsetParent

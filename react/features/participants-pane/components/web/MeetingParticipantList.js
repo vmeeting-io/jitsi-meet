@@ -18,6 +18,12 @@ import MeetingParticipantContextMenu from './MeetingParticipantContextMenu';
 import MeetingParticipantItem from './MeetingParticipantItem';
 import { Heading, ParticipantContainer } from './styled';
 
+// for virtual scrolling
+import AutoSizer from 'react-virtualized-auto-sizer';
+import { FixedSizeList as List } from 'react-window';
+
+import * as s from './MeetingParticipantList.module.scss';
+
 type NullProto = {
   [key: string]: any,
   __proto__: null
@@ -76,9 +82,10 @@ export function MeetingParticipantList() {
     }, [ raiseContext ]);
 
     const raiseMenu = useCallback((participantID, target) => {
+        // console.log(findStyledAncestor(target, ParticipantContainer).parentElement);
         setRaiseContext({
             participantID,
-            offsetTarget: findStyledAncestor(target, ParticipantContainer)
+            offsetTarget: findStyledAncestor(target, ParticipantContainer).parentElement.parentElement
         });
     }, [ raiseContext ]);
 
@@ -132,18 +139,33 @@ export function MeetingParticipantList() {
 
     const items = [];
 
-    localParticipant && items.push(renderParticipant(localParticipant?.id));
+    localParticipant && items.push(localParticipant?.id);
     participants.forEach(p => {
-        items.push(renderParticipant(p?.id));
+        items.push(p?.id);
     });
+
+    const renderItem = ({index, style}) => {
+        return (<div className='ListItem'>{renderParticipant(items[index])}</div>);
+    }
 
     return (
     <>
-        <Heading>{t('participantsPane.headings.participantsList', { count: participantsCount })}</Heading>
+        {/* <Heading>{t('participantsPane.headings.participantsList', { count: participantsCount })}</Heading>
         {showInviteButton && <InviteButton />}
         <div>
             { items }
-        </div>
+        </div> */}
+        <AutoSizer>{
+            ({height, width}) => (
+            <List
+                className={s.List}
+                height={height}
+                width={width}
+                itemCount={items.length}
+                itemSize={48}>
+                { renderItem }    
+            </List>)
+        }</AutoSizer>
         <MeetingParticipantContextMenu
             muteAudio = { muteAudio }
             onEnter = { menuEnter }

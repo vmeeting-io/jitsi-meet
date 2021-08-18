@@ -146,8 +146,8 @@ class ParticipantsPane extends Component<Props, State> {
                                 tabIndex = { 0 } />
                         </Header>
                         <Container>
-                            <LobbyParticipantList />
-                            <AntiCollapse />
+                            {/* <LobbyParticipantList />
+                            <AntiCollapse /> */}
                             <MeetingParticipantList />
                         </Container>
                         {_showFooter && (

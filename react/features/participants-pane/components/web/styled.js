@@ -38,7 +38,7 @@ export const QuickActionButton = styled(Button)`
 export const Container = styled.div`
   box-sizing: border-box;
   flex: 1;
-  overflow-y: auto;
+
   position: relative;
   padding: 0 ${props => props.theme.panePadding}px;
 
@@ -249,7 +249,6 @@ export const ParticipantContent = styled.div`
   flex: 1;
   height: 100%;
   overflow: hidden;
-  padding-right: ${props => props.theme.panePadding}px;
 `;
 
 export const ParticipantContainer = styled.div`
@@ -258,7 +257,6 @@ export const ParticipantContainer = styled.div`
   display: flex;
   font-size: 13px;
   height: ${props => props.theme.participantItemHeight}px;
-  margin: 0 -${props => props.theme.panePadding}px;
   padding-left: ${props => props.theme.panePadding}px;
   position: relative;
 

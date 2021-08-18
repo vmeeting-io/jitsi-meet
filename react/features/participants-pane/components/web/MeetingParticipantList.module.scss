@@ -1,0 +1,13 @@
+@import '~bootstrap/scss/mixins';
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+@import '../../../../../css/variables';
+
+
+.List {
+    -ms-overflow-style: none;
+
+    ::-webkit-scrollbar {
+        display: none;
+    }
+}

@@ -20,7 +20,8 @@ import { getLocalParticipant, getParticipantById, getParticipants } from '../../
 import { openDialog } from '../../../base/dialog';
 import EnableChatForRemoteParticipantDialog from '../../../video-menu/components/web/EnableChatForRemoteParticipantDialog';
 import DisableChatForRemoteParticipantDialog from '../../../video-menu/components/web/DisableChatForRemoteParticipantDialog';
-import { setPrivateMessageRecipient } from '../../actions'
+import { setPrivateMessageRecipient } from '../../actions';
+import PrivateNotice from './PrivateNotice';
 
 declare var APP: Object;
 
@@ -67,16 +68,10 @@ class ChatMessage extends AbstractChatMessage<Props> {
                         <div className = 'messagecontent'>
                             { this.props.showDisplayName && this._renderDisplayName() }
                             <div className = 'usermessage'>
-                                {/* Commented out the portion that was yielding "me says: ****" and "X says: ****" */}
-                                {/* <span className = 'sr-only'>
-                                    { this.props.message.displayName === this.props.message.recipient
-                                        ? t('chat.messageAccessibleTitleMe')
-                                        : t('chat.messageAccessibleTitle',
-                                        { user: this.props.message.displayName }) }
-                                </span> */}
                                 { processedMessage }
                             </div>
-                            { message.privateMessage && this._renderPrivateNotice() }
+                            {/* { message.privateMessage && this._renderPrivateNotice() } */}
+                            { message.privateMessage && <PrivateNotice message= { message } t = { t } /> }
                         </div>
                         { message.privateMessage && message.messageType !== MESSAGE_TYPE_LOCAL
                             && (

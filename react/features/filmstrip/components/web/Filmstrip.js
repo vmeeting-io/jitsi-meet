@@ -269,11 +269,11 @@ class Filmstrip extends PureComponent <Props> {
             return `empty-${index}`;
         }
 
-        if (index === _remoteParticipantsLength) {
+        if (index === 0) {
             return 'local';
         }
 
-        return _remoteParticipants[index];
+        return _remoteParticipants[index - 1];
     }
 
     _onListItemsRendered: Object => void;
@@ -304,9 +304,9 @@ class Filmstrip extends PureComponent <Props> {
         visibleRowStartIndex,
         visibleRowStopIndex
     }) {
-        const { _columns, dispatch } = this.props;
-        const startIndex = (visibleRowStartIndex * _columns) + visibleColumnStartIndex;
-        const endIndex = (visibleRowStopIndex * _columns) + visibleColumnStopIndex;
+        const { _columns, _rows, dispatch } = this.props;
+        const startIndex = Math.max((visibleRowStartIndex * _columns) + visibleColumnStartIndex - 1, 0);
+        const endIndex = (visibleRowStopIndex * _columns) + visibleColumnStopIndex - (visibleRowStopIndex === _rows - 1 ? 0 : 1);
 
         dispatch(setVisibleRemoteParticipants(startIndex, endIndex));
     }

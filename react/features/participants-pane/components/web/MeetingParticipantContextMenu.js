@@ -249,18 +249,17 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
      * @returns {void}
      */
     _position() {
-        const { _participant, target, offset, containerHeight } = this.props;
+        const { _participant, target, containerHeight } = this.props;
 
         if (_participant
             && this._containerRef.current
             && target) {
-            const top = parseInt(target.style.top);
             const { current: container } = this._containerRef;
             const outerHeight = getComputedOuterHeight(container);
 
-            const start = (top - offset + outerHeight) > containerHeight
-                ? top - offset - outerHeight
-                : top - offset;
+            const start = (target + outerHeight) > containerHeight
+                ? target - outerHeight
+                : target;
 
             container.style.top = `${start}px`;
 

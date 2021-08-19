@@ -109,11 +109,10 @@ export function ParticipantList() {
     }, [ raiseContext ]);
 
     const raiseMenu = useCallback((participantID, target) => {
-        const styled = findStyledAncestor(target, ParticipantContainer);
+        const listItem = findStyledAncestor(target, ParticipantContainer).parentElement;
         setRaiseContext({
             participantID,
-            target: styled.parentElement,
-            offset: scrollOffset.current,
+            target: (parseInt(listItem.style.top) - scrollOffset?.current),
             containerHeight: listRef.current.props.height
         });
     }, [ raiseContext ]);

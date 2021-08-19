@@ -18,12 +18,6 @@ import MeetingParticipantContextMenu from './MeetingParticipantContextMenu';
 import MeetingParticipantItem from './MeetingParticipantItem';
 import { Heading, ParticipantContainer } from './styled';
 
-// for virtual scrolling
-import AutoSizer from 'react-virtualized-auto-sizer';
-import { FixedSizeList as List } from 'react-window';
-
-import * as s from './MeetingParticipantList.module.scss';
-
 type NullProto = {
   [key: string]: any,
   __proto__: null
@@ -82,10 +76,9 @@ export function MeetingParticipantList() {
     }, [ raiseContext ]);
 
     const raiseMenu = useCallback((participantID, target) => {
-        // console.log(findStyledAncestor(target, ParticipantContainer).parentElement);
         setRaiseContext({
             participantID,
-            offsetTarget: findStyledAncestor(target, ParticipantContainer).parentElement.parentElement
+            offsetTarget: findStyledAncestor(target, ParticipantContainer)
         });
     }, [ raiseContext ]);
 
@@ -139,48 +132,18 @@ export function MeetingParticipantList() {
 
     const items = [];
 
-    for(let i = 0; i < 10000; i++) {
-        localParticipant && items.push(localParticipant?.id);
-        participants.forEach(p => {
-            items.push(p?.id);
-        });
-    }
-
-    const renderItem = ({index, style}) => {
-        if(index === 0) {
-            return (
-                <div style={style}>
-                    <Heading>{t('participantsPane.headings.participantsList', { count: participantsCount })}</Heading>
-                </div>
-            );
-        }
-        else {
-            return (
-                <div style={style}>
-                    { renderParticipant(items[index - 1]) }
-                </div>
-            );
-        }
-    }
+    localParticipant && items.push(renderParticipant(localParticipant?.id));
+    participants.forEach(p => {
+        items.push(renderParticipant(p?.id));
+    });
 
     return (
     <>
-        {/* <Heading>{t('participantsPane.headings.participantsList', { count: participantsCount })}</Heading>
-        {showInviteButton && <InviteButton />} */}
-        {/* <div>
+        <Heading>{t('participantsPane.headings.participantsList', { count: participantsCount })}</Heading>
+        {showInviteButton && <InviteButton />}
+        <div>
             { items }
-        </div> */}
-        <AutoSizer>{
-            ({height, width}) => (
-            <List
-                className={s.List}
-                height={height}
-                width={width}
-                itemCount={items.length}
-                itemSize={48}>
-                { renderItem }    
-            </List>)
-        }</AutoSizer>
+        </div>
         <MeetingParticipantContextMenu
             muteAudio = { muteAudio }
             onEnter = { menuEnter }

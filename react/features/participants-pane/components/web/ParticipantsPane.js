@@ -29,6 +29,10 @@ import {
     Header
 } from './styled';
 
+
+// virtual scrolling
+import { ParticipantList } from './ParticipantList';
+
 /**
  * The type of the React {@code Component} props of {@link ParticipantsPane}.
  */
@@ -148,7 +152,8 @@ class ParticipantsPane extends Component<Props, State> {
                         <Container>
                             {/* <LobbyParticipantList />
                             <AntiCollapse /> */}
-                            <MeetingParticipantList />
+                            {/* <MeetingParticipantList /> */}
+                            <ParticipantList />
                         </Container>
                         {_showFooter && (
                             <Footer>

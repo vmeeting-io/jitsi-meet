@@ -249,20 +249,20 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
      * @returns {void}
      */
     _position() {
-        const { _participant, offsetTarget } = this.props;
+        const { _participant, target, offset, containerHeight } = this.props;
 
         if (_participant
             && this._containerRef.current
-            && offsetTarget?.offsetParent
-            && offsetTarget.offsetParent instanceof HTMLElement
-        ) {
+            && target) {
+            const top = parseInt(target.style.top);
             const { current: container } = this._containerRef;
-            const { offsetTop, offsetParent: { offsetHeight, scrollTop } } = offsetTarget;
             const outerHeight = getComputedOuterHeight(container);
 
-            container.style.top = offsetTop + outerHeight > offsetHeight + scrollTop
-                ? offsetTop - outerHeight
-                : offsetTop;
+            const start = (top - offset + outerHeight) > containerHeight
+                ? top - offset - outerHeight
+                : top - offset;
+
+            container.style.top = `${start}px`;
 
             this.setState({ isHidden: false });
         } else {
@@ -286,7 +286,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
      * @inheritdoc
      */
     componentDidUpdate(prevProps: Props) {
-        if (prevProps.offsetTarget !== this.props.offsetTarget || prevProps._participant !== this.props._participant) {
+        if (prevProps.offset !== this.props.offset || prevProps.target !== this.props.target || prevProps._participant !== this.props._participant) {
             this._position();
         }
     }

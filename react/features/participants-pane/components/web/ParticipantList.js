@@ -84,7 +84,8 @@ export function ParticipantList() {
     }, [ dispatch, knockingParticipants ]);
 
     const lobbyCount = lobbyEnabled ? knockingParticipants ? knockingParticipants.length : 0 : 0;
-
+    const scrollOffset = useRef(null);
+    const listRef = useRef();
     //////////////////////////////////////////
 
 
@@ -108,9 +109,12 @@ export function ParticipantList() {
     }, [ raiseContext ]);
 
     const raiseMenu = useCallback((participantID, target) => {
+        const styled = findStyledAncestor(target, ParticipantContainer);
         setRaiseContext({
             participantID,
-            offsetTarget: findStyledAncestor(target, ParticipantContainer).parentElement
+            target: styled.parentElement,
+            offset: scrollOffset.current,
+            containerHeight: listRef.current.props.height
         });
     }, [ raiseContext ]);
 
@@ -251,11 +255,17 @@ export function ParticipantList() {
         }
     }
 
+    const onScroll = (args) => {
+        scrollOffset.current = args.scrollOffset;
+    };
+
     return (
     <>
         <AutoSizer>{
             ({height, width}) => (
             <List
+                ref={listRef}
+                onScroll={onScroll}
                 className={s.List}
                 height={height}
                 width={width}
@@ -263,7 +273,8 @@ export function ParticipantList() {
                 itemSize={48}>
                 { renderItem }    
             </List>)
-        }</AutoSizer>
+        }
+        </AutoSizer>
         <MeetingParticipantContextMenu
             muteAudio = { muteAudio }
             onEnter = { menuEnter }

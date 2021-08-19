@@ -16,13 +16,22 @@ import { findStyledAncestor, shouldRenderInviteButton } from '../../functions';
 import { InviteButton } from './InviteButton';
 import MeetingParticipantContextMenu from './MeetingParticipantContextMenu';
 import MeetingParticipantItem from './MeetingParticipantItem';
-import { Heading, ParticipantContainer } from './styled';
+import { ParticipantContainer } from './styled';
 
+
+//////////////////////////////////////////////////////////////
 // for virtual scrolling
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList as List } from 'react-window';
 
 import * as s from './ParticipantList.module.scss';
+
+// integrating lobby list
+import { withPixelLineHeight } from '../../../base/styles/functions.web';
+import { admitMultiple } from '../../../lobby/actions.web';
+import { getLobbyState } from '../../../lobby/functions';
+import { LobbyParticipantItem } from './LobbyParticipantItem';
+
 
 type NullProto = {
   [key: string]: any,
@@ -63,6 +72,23 @@ export function ParticipantList() {
     const [ raiseContext, setRaiseContext ] = useState<RaiseContext>(initialState);
     const { t } = useTranslation();
 
+    ///////////////////////////////////////
+
+    const {
+        lobbyEnabled,
+        knockingParticipants
+    } = useSelector(getLobbyState);
+
+    const admitAll = useCallback(() => {
+        dispatch(admitMultiple(knockingParticipants));
+    }, [ dispatch, knockingParticipants ]);
+
+    const lobbyCount = lobbyEnabled ? knockingParticipants ? knockingParticipants.length : 0 : 0;
+
+    //////////////////////////////////////////
+
+
+
     const lowerMenu = useCallback(() => {
         /**
          * We are tracking mouse movement over the active participant item and
@@ -82,10 +108,9 @@ export function ParticipantList() {
     }, [ raiseContext ]);
 
     const raiseMenu = useCallback((participantID, target) => {
-        // console.log(findStyledAncestor(target, ParticipantContainer).parentElement);
         setRaiseContext({
             participantID,
-            offsetTarget: findStyledAncestor(target, ParticipantContainer).parentElement.parentElement
+            offsetTarget: findStyledAncestor(target, ParticipantContainer).parentElement
         });
     }, [ raiseContext ]);
 
@@ -137,29 +162,92 @@ export function ParticipantList() {
             youText = { youText } />
     );
 
+    const renderKnockingParticipant = p => (
+        <LobbyParticipantItem
+            key = { p.id }
+            participant = { p } />
+    );
+
     const items = [];
 
-    for(let i = 0; i < 10000; i++) {
-        localParticipant && items.push(localParticipant?.id);
-        participants.forEach(p => {
-            items.push(p?.id);
+    if(lobbyEnabled && lobbyCount != 0) {
+        items.push({ itemType: "lobbyHeading" });
+        knockingParticipants.forEach(p => {
+            items.push({ 
+                itemType: "knockingParticipant",
+                participant: p
+            });
         });
     }
 
+    items.push({ itemType: "participantHeading" });
+    if(showInviteButton) {
+        items.push({
+            itemType: "inviteButton"
+        });
+    }
+    localParticipant && items.push({
+        itemType: "participant",
+        id: localParticipant.id
+    });
+    participants.forEach(p => {
+        items.push({
+            itemType: "participant",
+            id: p?.id
+        });
+    });
+
     const renderItem = ({index, style}) => {
-        if(index === 0) {
-            return (
-                <div style={style}>
-                    <Heading>{t('participantsPane.headings.participantsList', { count: participantsCount })}</Heading>
-                </div>
-            );
-        }
-        else {
-            return (
-                <div style={style}>
-                    { renderParticipant(items[index - 1]) }
-                </div>
-            );
+        const item = items[index];
+        switch (item.itemType) {
+            case "participant": 
+                return (
+                    <div style={style}>
+                        { renderParticipant(item.id) }
+                    </div>
+                );
+            
+            case "knockingParticipant":
+                return (
+                    <div style={style}>
+                        { renderKnockingParticipant(item.participant) }
+                    </div>
+                );
+            
+            case "participantHeading":
+                return (
+                    <div style={style}>
+                        <div className={s.Heading}>{t('participantsPane.headings.participantsList', { count: participantsCount })}</div>
+                    </div>
+                );
+
+            case "lobbyHeading":
+                return (
+                    <div style={style}>
+                        <div className={s.Heading}>
+                            <div>
+                                {t('participantsPane.headings.lobby', { count: lobbyCount })}
+                            </div>
+                            { lobbyCount > 1 && 
+                                <div className={s.AdmitAll} onClick = { admitAll }>
+                                    {t('lobby.admitAll')}
+                                </div>
+                            }
+                        </div>
+                    </div>
+                );
+
+            case "inviteButton":
+                return (
+                    <div style={style}>
+                        <div style={{"padding":"0 16px"}}>
+                            <InviteButton />
+                        </div>
+                    </div>
+                );
+            
+            default:
+                return (<div style={style}></div>);
         }
     }
 

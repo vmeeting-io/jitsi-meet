@@ -32,6 +32,8 @@ import {
 
 // virtual scrolling
 import { ParticipantList } from './ParticipantList';
+import { shouldRenderInviteButton } from '../../functions';
+import InviteButton from './InviteButton';
 
 /**
  * The type of the React {@code Component} props of {@link ParticipantsPane}.

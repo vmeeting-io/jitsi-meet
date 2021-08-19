@@ -187,7 +187,7 @@ export const Heading = styled.div`
   font-style: normal;
   font-size: 15px;
   line-height: 24px;
-  margin: 8px 0 ${props => props.theme.panePadding}px 16px;
+  margin: 8px 0 ${props => props.theme.panePadding}px;
 `;
 
 export const ColoredIcon = styled.div`
@@ -282,7 +282,7 @@ export const ParticipantInviteButton = styled(Button).attrs({
   font-size: 15px;
   height: 40px;
   width: 100%;
-
+  
   & > *:not(:last-child) {
     margin-right: 8px;
   }

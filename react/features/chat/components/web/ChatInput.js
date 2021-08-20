@@ -122,6 +122,7 @@ class ChatInput extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
+        const { t } = this.props;
         const smileysPanelClassName = `${this.state.showSmileysPanel
             ? 'show-smileys' : 'hide-smileys'} smileys-panel`;
         
@@ -132,7 +133,7 @@ class ChatInput extends Component<Props, State> {
         return (
             <div className = { `chat-input-container${this.state.message.trim().length ? ' populated' : ''}` }>
                 <div id = 'chat-input' >
-                    <FileUploadButton visible = { true } />
+                    <FileUploadButton t = { t } visible = { true } />
                     <div className = 'smiley-input'>
                         <div id = 'smileysarea'>
                             <div id = 'smileys'>

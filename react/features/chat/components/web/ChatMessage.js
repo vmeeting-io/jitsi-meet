@@ -8,6 +8,7 @@ import { translate } from '../../../base/i18n';
 import { Linkify } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { MESSAGE_TYPE_LOCAL } from '../../constants';
+import { getBaseUrl } from '../../../base/util';
 // import BanRemoteParticipantDialog from '../../../video-menu/components/web/BanRemoteParticipantDialog';
 import KickRemoteParticipantDialog from '../../../video-menu/components/web/KickRemoteParticipantDialog';
 
@@ -46,18 +47,30 @@ class ChatMessage extends AbstractChatMessage<Props> {
     render() {
         const { message, t } = this.props;
         const processedMessage = [];
+        let _uploadedFileIsImage = undefined;
 
         // content is an array of text and emoji components
         const content = toArray(this._getMessageText(), { className: 'smiley' });
 
-        content.forEach(i => {
-            if (typeof i === 'string') {
-                processedMessage.push(<Linkify key = { i }>{ i }</Linkify>);
+        content.forEach(msg => {
+
+            if(msg.startsWith(getBaseUrl())) {
+                // poetic way to check whether the uploaded file is image or not
+                _uploadedFileIsImage = /\.(jpe?g|png|gif|bmp)$/i.test(msg) ? true : false
+            }
+
+            if (typeof msg === 'string') {
+                // uploaded file is an image
+                if(_uploadedFileIsImage === true) {
+                    processedMessage.push(<a target="_blank" href={ msg }><img key = {msg } src = { msg } /></a>)
+                } else {
+                    processedMessage.push(<Linkify key = { msg }>{ msg }</Linkify>);
+                }
             } else {
                 processedMessage.push(i);
             }
+            console.log("Size of processed message is: ", processedMessage.length);
         });
-
         return (
             <div
                 className = {`chatmessage-wrapper ${message.messageType}`}
@@ -67,13 +80,6 @@ class ChatMessage extends AbstractChatMessage<Props> {
                         <div className = 'messagecontent'>
                             { this.props.showDisplayName && this._renderDisplayName() }
                             <div className = 'usermessage'>
-                                {/* Commented out the portion that was yielding "me says: ****" and "X says: ****" */}
-                                {/* <span className = 'sr-only'>
-                                    { this.props.message.displayName === this.props.message.recipient
-                                        ? t('chat.messageAccessibleTitleMe')
-                                        : t('chat.messageAccessibleTitle',
-                                        { user: this.props.message.displayName }) }
-                                </span> */}
                                 { processedMessage }
                             </div>
                             { message.privateMessage && this._renderPrivateNotice() }

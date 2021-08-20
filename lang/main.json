@@ -477,6 +477,9 @@
         "veryGood": "Very Good",
         "star": "Star"
     },
+    "fileupload": {
+        "error": "There was an error in uploading file"
+    },
     "footer": {
         "contactUs": "Contact Us",
         "copyright": "Copyright@2020 {{provider}}. ALL RIGHTS RESERVED.",

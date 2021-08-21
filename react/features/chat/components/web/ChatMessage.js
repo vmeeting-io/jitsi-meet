@@ -62,7 +62,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
             if (typeof msg === 'string') {
                 // uploaded file is an image
                 if(_uploadedFileIsImage === true) {
-                    processedMessage.push(<a target="_blank" href={ msg }><img key = {msg } src = { msg } /></a>)
+                    processedMessage.push(<a target="_blank" href={ msg }><img className = 'chatmessage-uploadedImage' key = {msg } src = { msg } /></a>)
                 } else {
                     processedMessage.push(<Linkify key = { msg }>{ msg }</Linkify>);
                 }

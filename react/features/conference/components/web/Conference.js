@@ -18,7 +18,7 @@ import { KnockingParticipantList, LobbyScreen } from '../../../lobby';
 import { ParticipantsPane } from '../../../participants-pane/components/web';
 import { getParticipantsPaneOpen } from '../../../participants-pane/functions';
 import { Prejoin, isPrejoinPageVisible } from '../../../prejoin';
-import { fullScreenChanged, hideToolbox, showToolbox } from '../../../toolbox/actions.web';
+import { fullScreenChanged, showToolbox } from '../../../toolbox/actions.web';
 import { Toolbox } from '../../../toolbox/components/web';
 import { LAYOUTS, getCurrentLayout } from '../../../video-layout';
 import { maybeShowSuboptimalExperienceNotification } from '../../functions';
@@ -30,7 +30,6 @@ import type { AbstractProps } from '../AbstractConference';
 
 import ConferenceInfo from './ConferenceInfo';
 import { default as Notice } from './Notice';
-import { isToolboxVisible } from '../../../toolbox/functions.web';
 
 declare var APP: Object;
 declare var interfaceConfig: Object;
@@ -111,7 +110,12 @@ type Props = AbstractProps & {
  */
 class Conference extends AbstractConference<Props, *> {
     _onFullScreenChange: Function;
-    _onToggleToolbar: Function;
+    _onMouseEnter: Function;
+    _onMouseLeave: Function;
+    _onMouseMove: Function;
+    _onShowToolbar: Function;
+    _originalOnMouseMove: Function;
+    _originalOnShowToolbar: Function;
     _setBackground: Function;
 
     /**
@@ -123,9 +127,31 @@ class Conference extends AbstractConference<Props, *> {
     constructor(props) {
         super(props);
 
+        const { _mouseMoveCallbackInterval } = props;
+
+        // Throttle and bind this component's mousemove handler to prevent it
+        // from firing too often.
+        this._originalOnShowToolbar = this._onShowToolbar;
+        this._originalOnMouseMove = this._onMouseMove;
+
+        this._onShowToolbar = _.throttle(
+            () => this._originalOnShowToolbar(),
+            100,
+            {
+                leading: true,
+                trailing: false
+            });
+
+        this._onMouseMove = _.throttle(
+            event => this._originalOnMouseMove(event),
+            _mouseMoveCallbackInterval,
+            {
+                leading: true,
+                trailing: false
+            });
+
         // Bind event handler so it is only bound once for every instance.
         this._onFullScreenChange = this._onFullScreenChange.bind(this);
-        this._onToggleToolbar = this._onToggleToolbar.bind(this);
         this._setBackground = this._setBackground.bind(this);
     }
 
@@ -188,17 +214,20 @@ class Conference extends AbstractConference<Props, *> {
         } = this.props;
 
         return (
-            <div id = 'layout_wrapper'>
+            <div
+                id = 'layout_wrapper'
+                onMouseEnter = { this._onMouseEnter }
+                onMouseLeave = { this._onMouseLeave }
+                onMouseMove = { this._onMouseMove } >
                 <div
                     className = { _layoutClassName }
                     id = 'videoconference_page'
+                    onMouseMove = { this._onShowToolbar }
                     ref = { this._setBackground }>
                     <ConferenceInfo />
 
                     <Notice />
-                    <div
-                        id = 'videospace'
-                        onClick = { this._onToggleToolbar }>
+                    <div id = 'videospace'>
                         <LargeVideo />
                         {!_isParticipantsPaneVisible
                          && <div id = 'notification-participant-list'>
@@ -263,15 +292,46 @@ class Conference extends AbstractConference<Props, *> {
     }
 
     /**
-     * Toggle toolbar
+     * Triggers iframe API mouseEnter event.
+     *
+     * @param {MouseEvent} event - The mouse event.
+     * @private
+     * @returns {void}
      */
-    _onToggleToolbar() {
-        console.log('_onToggleToolbar:', this.props._isToolbarVisible);
-        if (this.props._isToolbarVisible) {
-            this.props.dispatch(hideToolbox(true));
-        } else {
-            this.props.dispatch(showToolbox());
-        }
+    _onMouseEnter(event) {
+        APP.API.notifyMouseEnter(event);
+    }
+
+    /**
+     * Triggers iframe API mouseLeave event.
+     *
+     * @param {MouseEvent} event - The mouse event.
+     * @private
+     * @returns {void}
+     */
+    _onMouseLeave(event) {
+        APP.API.notifyMouseLeave(event);
+    }
+
+    /**
+     * Triggers iframe API mouseMove event.
+     *
+     * @param {MouseEvent} event - The mouse event.
+     * @private
+     * @returns {void}
+     */
+    _onMouseMove(event) {
+        APP.API.notifyMouseMove(event);
+    }
+
+    /**
+     * Displays the toolbar.
+     *
+     * @private
+     * @returns {void}
+     */
+    _onShowToolbar() {
+        this.props.dispatch(showToolbox());
     }
 
     /**
@@ -314,11 +374,10 @@ function _mapStateToProps(state) {
         _backgroundAlpha: backgroundAlpha,
         _isLobbyScreenVisible: state['features/base/dialog']?.component === LobbyScreen,
         _isParticipantsPaneVisible: getParticipantsPaneOpen(state),
-        _isToolbarVisible: isToolboxVisible(state),
         _layoutClassName: LAYOUT_CLASSNAMES[getCurrentLayout(state)],
         _mouseMoveCallbackInterval: mouseMoveCallbackInterval,
         _roomName: getConferenceNameForTitle(state),
-        _showPrejoin: isPrejoinPageVisible(state),
+        _showPrejoin: isPrejoinPageVisible(state)
     };
 }
 

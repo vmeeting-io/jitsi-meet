@@ -27,6 +27,7 @@ import MessageRecipient from './MessageRecipient';
 import InlineDialog from '@atlaskit/inline-dialog/dist/cjs/InlineDialog';
 import { getLocalParticipant } from '../../../base/participants';
 import ChatDisableButtonForAll from './ChatDisableButtonForAll';
+import TouchmoveHack from './TouchmoveHack';
 
 import s from './Chat.module.scss';
 import { openDialog } from '../../../base/dialog';
@@ -241,7 +242,7 @@ class Chat extends AbstractChat<Props> {
                     <MessageContainer
                         messages = { this.props._messages }
                         ref = { this._messageContainerRef } />
-                    </TouchmoveHack>
+                </TouchmoveHack>
                 <MessageRecipient />
                 { _showChatInput && (
                     <>

@@ -53,6 +53,7 @@ ol.poll-result-list {
 
 .poll-create-option-row {
     display: 'flex';
+    align-items: 'center';
     margin-bottom: 4;
 }
 
@@ -74,6 +75,8 @@ ol.poll-result-list {
     border: none;
     color: #8B8B8B;
     padding-left: 0;
+    margin-right: 10px;
+    cursor: pointer;
 }
 
 .poll-create-add-option {
@@ -191,6 +194,7 @@ ol.poll-result-list {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    padding: 0 15px;
 }
 
 a.poll-detail-link, a.poll-change-vote-link {

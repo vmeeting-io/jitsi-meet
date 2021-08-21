@@ -32,7 +32,7 @@ const parsePollData = (pollData): Poll | null => {
 
         for (const [ voterId, voter ] of Object.entries(answer.voters)) {
             if (typeof voter !== 'string') {
-                return null;
+                continue;
             }
             voters.set(voterId, voter);
         }

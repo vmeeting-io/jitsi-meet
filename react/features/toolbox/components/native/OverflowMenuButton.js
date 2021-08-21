@@ -35,6 +35,7 @@ class OverflowMenuButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
+        this.props._timer.pause();
         this.props.dispatch(openDialog(OverflowMenu));
     }
 }
@@ -51,6 +52,7 @@ function _mapStateToProps(state): Object {
     const enabledFlag = getFeatureFlag(state, OVERFLOW_MENU_ENABLED, true);
 
     return {
+        _timer: state['features/toolbox'].timer,
         visible: enabledFlag
     };
 }

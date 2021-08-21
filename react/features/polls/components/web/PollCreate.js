@@ -2,8 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Icon, IconMenu } from '../../../base/icons';
-import { Tooltip } from '../../../base/tooltip';
+import { Icon, IconClose, IconMenu } from '../../../base/icons';
 import AbstractPollCreate from '../AbstractPollCreate';
 import type { AbstractProps } from '../AbstractPollCreate';
 
@@ -170,6 +169,13 @@ const PollCreate = (props: AbstractProps) => {
                         key = { i }
                         onMouseOver = { () => onMouseOver(i) }>
                         <div className = 'poll-create-option-row'>
+                            { answers.length > 2 && (
+                                <Icon
+                                    src = { IconClose }
+                                    color = '#DD3849'
+                                    className = 'poll-remove-option-button'
+                                    onClick = { () => removeAnswer(i) } />
+                            ) }
                             <textarea
                                 className = 'expandable-input'
                                 onChange = { ev => setAnswer(i, ev.target.value) }
@@ -188,16 +194,6 @@ const PollCreate = (props: AbstractProps) => {
                                 <Icon src = { IconMenu } />
                             </button>
                         </div>
-
-                        { answers.length > 2
-                        && <Tooltip content = { t('polls.create.removeOption') }>
-                            <button
-                                className = 'poll-remove-option-button'
-                                onClick = { () => removeAnswer(i) }
-                                type = 'button'>
-                                { t('polls.create.removeOption') }
-                            </button>
-                        </Tooltip>}
                     </li>)
                 )}
             </ol>

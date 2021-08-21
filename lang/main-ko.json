@@ -48,6 +48,19 @@
         "delete": "배경 이미지 삭제",
         "none": "없음"
     },
+    "breakoutRooms": {
+        "defaultName": "소회의실 #{{index}}",
+        "mainRoom": "메인 회의실",
+        "actions": {
+            "add": "회의실 추가",
+            "autoAssign": "소회의실에 자동으로 할당",
+            "close": "닫기",
+            "join": "할당",
+            "remove": "삭제",
+            "leaveBreakoutRoom": "소회의실 나가기",
+            "sendToBreakoutRoom": "{{name}}로 보내기"
+        }
+    },
     "calendarSync": {
         "addMeetingURL": "회의 링크 추가",
         "confirmAddLink": "이 이벤트에 회의 링크를 추가 하시겠습니까?",
@@ -699,6 +712,7 @@
         "header": "참석자 목록",
         "headings": {
             "lobby": "로비 ({{count}})",
+            "mainRoom": "메인 회의실 ({{count}})",
             "participantsList": "참석자 ({{count}})",
             "waitingLobby": "로비에서 대기중 ({{count}})"
         },
@@ -727,7 +741,7 @@
             "pollOption" : "항목 {{index}}",
             "pollQuestion" : "투표 제목",
             "questionPlaceholder": "제목 입력",
-            "removeOption": "항목 삭제",
+            "removeOption": "삭제",
             "send": "완료"
         },
         "answer": {
@@ -737,7 +751,7 @@
         "results": {
             "vote": "투표",
             "changeVote": "투표 변경하기",
-            "empty": "생성된 투표가 없습니다. 여기에서 투표를 추가해보세요!",
+            "empty": "투표가 없습니다. 여기에서 투표를 추가하세요!",
             "hideDetailedResults": "세부 정보 숨기기",
             "showDetailedResults": "세부 정보 표시"
         },
@@ -968,6 +982,7 @@
             "audioOnly": "음성전용 모드 토글",
             "audioRoute": "음성 장비 선택하기",
             "boo": "우우",
+            "breakoutRoom": "소회의실 참석/나가기",
             "callQuality": "품질 설정하기",
             "cc": "자막 토글하기",
             "chat": "채팅방 토글하기",
@@ -1063,7 +1078,9 @@
         "hangupAll": "모두에 대해 회의 종료",
         "help": "도움말",
         "invite": "친구 초대",
+        "joinBreakoutRoom": "소회의실 참석",
         "laugh": "웃음",
+        "leaveBreakoutRoom": "소회의실 나가기",
         "like": "좋아요",
         "lobbyButtonDisable": "로비 모드 비활성화",
         "lobbyButtonEnable": "로비 모드 활성화",

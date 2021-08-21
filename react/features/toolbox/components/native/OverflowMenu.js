@@ -8,6 +8,7 @@ import { BottomSheet, hideDialog, isDialogOpen } from '../../../base/dialog';
 import { getFeatureFlag, REACTIONS_ENABLED } from '../../../base/flags';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
+import { BreakoutRoomButton } from '../../../breakout-rooms/components/native';
 import { SharedDocumentButton } from '../../../etherpad';
 import { AudioRouteButton } from '../../../mobile/audio-mode';
 import { ParticipantsPaneButton } from '../../../participants-pane/components/native';
@@ -143,6 +144,7 @@ class OverflowMenu extends PureComponent<Props, State> {
                 <AudioOnlyButton { ...buttonProps } />
                 {!_reactionsEnabled && !toolbarButtons.has('raisehand') && <RaiseHandButton { ...buttonProps } />}
                 <Divider style = { styles.divider } />
+                <BreakoutRoomButton { ...buttonProps } />
                 <SecurityDialogButton { ...buttonProps } />
                 <RecordButton { ...buttonProps } />
                 <LiveStreamButton { ...buttonProps } />
@@ -172,6 +174,7 @@ class OverflowMenu extends PureComponent<Props, State> {
     _onCancel() {
         if (this.props._isOpen) {
             this.props.dispatch(hideDialog(OverflowMenu_));
+            this.props._timer.resume();
 
             return true;
         }
@@ -205,7 +208,8 @@ function _mapStateToProps(state) {
         _bottomSheetStyles: ColorSchemeRegistry.get(state, 'BottomSheet'),
         _isOpen: isDialogOpen(state, OverflowMenu_),
         _width: state['features/base/responsive-ui'].clientWidth,
-        _reactionsEnabled: getFeatureFlag(state, REACTIONS_ENABLED, false)
+        _reactionsEnabled: getFeatureFlag(state, REACTIONS_ENABLED, false),
+        _timer: state['features/toolbox'].timer,
     };
 }
 

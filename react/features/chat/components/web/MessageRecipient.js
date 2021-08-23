@@ -11,6 +11,14 @@ import AbstractMessageRecipient, {
     type Props
 } from '../AbstractMessageRecipient';
 
+
+/**
+ * The type of the React {@code Component} state of {@link MessageRecipient}.
+ */
+ type State = {
+    privateMessageRecipientName: String,
+};
+
 /**
  * Class to implement the displaying of the recipient of the next message.
  */
@@ -23,6 +31,10 @@ class MessageRecipient extends AbstractMessageRecipient<Props> {
      */
     constructor(props) {
         super(props);
+
+        this.state = {
+            privateMessageRecipientName: '',
+        };
 
         // Bind event handler so it is only bound once for every instance.
         this._onKeyPress = this._onKeyPress.bind(this);
@@ -50,7 +62,7 @@ class MessageRecipient extends AbstractMessageRecipient<Props> {
      * @inheritdoc
      */
     render() {
-        const { _privateMessageRecipient } = this.props;
+        let { _privateMessageRecipient } = this.props;
 
         if (!_privateMessageRecipient) {
             return null;
@@ -64,7 +76,8 @@ class MessageRecipient extends AbstractMessageRecipient<Props> {
                 role = 'alert'>
                 <span>
                     { t('chat.messageTo', {
-                        recipient: _privateMessageRecipient
+                        // recipient: _privateMessageRecipient
+                        recipient: this.state.privateMessageRecipientName
                     }) }
                 </span>
                 <div
@@ -78,6 +91,26 @@ class MessageRecipient extends AbstractMessageRecipient<Props> {
                 </div>
             </div>
         );
+    }
+
+    componentDidUpdate(prevProps: Props, prevState: State) {
+        let { _privateMessageRecipient } = this.props;
+        
+        // first scenario, when selecting a participant for private messaging
+        if ((prevProps._privateMessageRecipient === undefined) && (_privateMessageRecipient !== undefined)) {
+            this.setState({ privateMessageRecipientName: _privateMessageRecipient });
+        }
+
+        // second scenario, when the participant to private message has left the chatroom
+        else if((prevProps._privateMessageRecipient === undefined) && (_privateMessageRecipient === undefined)) {
+            this.setState({ privateMessageRecipientName: prevState.privateMessageRecipientName })
+        }
+
+        // third scenario, when participant A has left, but user wants to send a private message to participant B
+        else if((prevProps._privateMessageRecipient === "Vmeeter" || prevProps._privateMessageRecipient === "Fellow Jister") &&
+                (_privateMessageRecipient !== undefined &&  _privateMessageRecipient !== prevState.privateMessageRecipientName)) {
+            this.setState({ privateMessageRecipientName: _privateMessageRecipient });
+        }
     }
 }
 

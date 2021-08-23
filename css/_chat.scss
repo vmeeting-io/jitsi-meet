@@ -714,6 +714,7 @@
     }
 
     &.error {
+        align-items: flex-end;
         .chatmessage {
             background-color: $defaultWarningColor;
             border-radius: 0px;
@@ -722,6 +723,18 @@
 
         .display-name {
             display: none;
+        }
+
+        .timestamp {
+            text-align: right;
+            margin-top: auto;
+            margin-right: 3px;
+        }
+
+        .chatmessage-wrapper {
+            flex-direction: row-reverse;
+            align-items: flex-end;
+            text-align: right;
         }
     }
 

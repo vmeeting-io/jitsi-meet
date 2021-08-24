@@ -13,6 +13,7 @@ import { AbstractDialogTab } from '../../../base/dialog';
 import type { Props as AbstractDialogTabProps } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
 import { openLogoutDialog } from '../../actions';
+import { getLocalParticipant} from '../../../base/participants';
 
 declare var APP: Object;
 
@@ -138,6 +139,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
                             placeholder = { t('profile.setEmailInput') }
                             shouldFitContainer = { true }
                             type = 'text'
+                            disabled = { true }
                             value = { email } />
                     </div>
                 </div>
@@ -181,22 +183,29 @@ class ProfileTab extends AbstractDialogTab<Props> {
             t
         } = this.props;
 
+        // TOFIX: Following is a dirty Patch to Issue #171: Checks if user is logged in or not(based on JWT).
+        // This seem to have been caused because JWT token was not propagated to XMPP after login. 
+        // "authLogin" variable is not set even after logging in from setting page.
+        
+        const loggedIn = localStorage.getItem('token/https://vmeeting.io'); //TOFIX: Remove HARD-CODED.
+        const localParticipant = getLocalParticipant(APP.store.getState());
+        const loggedInName = localParticipant.name;
         return (
             <div>
                 <h2 className = 'mock-atlaskit-label'>
                     { t('toolbar.authenticate') }
                 </h2>
-                { authLogin
+                { loggedIn
                     && <div className = 'auth-name'>
-                        { t('settings.loggedIn', { name: authLogin }) }
+                        { t('settings.loggedIn', { name: loggedInName }) }
                     </div> }
-                <Button
+                { !loggedIn && <Button
                     appearance = 'primary'
                     id = 'login_button'
                     onClick = { this._onAuthToggle }
                     type = 'button'>
-                    { authLogin ? t('toolbar.logout') : t('toolbar.login') }
-                </Button>
+                    { t('toolbar.login') }
+                </Button>}
             </div>
         );
     }

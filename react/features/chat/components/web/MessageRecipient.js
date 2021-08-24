@@ -11,6 +11,7 @@ import AbstractMessageRecipient, {
     type Props
 } from '../AbstractMessageRecipient';
 
+
 /**
  * Class to implement the displaying of the recipient of the next message.
  */
@@ -23,6 +24,7 @@ class MessageRecipient extends AbstractMessageRecipient<Props> {
      */
     constructor(props) {
         super(props);
+
 
         // Bind event handler so it is only bound once for every instance.
         this._onKeyPress = this._onKeyPress.bind(this);

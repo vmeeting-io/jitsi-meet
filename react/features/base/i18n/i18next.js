@@ -37,7 +37,7 @@ export const DEFAULT_LANGUAGE = LANGUAGES[0];
  */
 const options = {
     backend: {
-        loadPath: 'lang/{{ns}}-{{lng}}.json'
+        loadPath: 'lang/{{ns}}-{{lng}}.json?v=1'
     },
     defaultNS: 'main',
     fallbackLng: DEFAULT_LANGUAGE,

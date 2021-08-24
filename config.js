@@ -69,7 +69,7 @@ var config = {
         },
 
         // Enables the test specific features consumed by jitsi-meet-torture
-        testMode: true,
+        // testMode: true,
         // Disables the auto-play behavior of *all* newly created video element.
         // This is useful when the client runs on a host with limited resources.
         // noAutoPlayVideo: false

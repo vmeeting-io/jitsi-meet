@@ -65,7 +65,7 @@
     },
     "chat": {
         "enter": "Enter chat room",
-        "error": "Error: your message was not sent. Reason: {{error}}",
+        "error": "Your message was not sent.\n{{error}}",
         "fieldPlaceHolder": "Type your message here",
         "messagebox": "Type a message",
         "messageTo": "Private message to {{recipient}}",

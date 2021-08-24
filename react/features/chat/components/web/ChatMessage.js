@@ -70,7 +70,6 @@ class ChatMessage extends AbstractChatMessage<Props> {
                             <div className = 'usermessage'>
                                 { processedMessage }
                             </div>
-                            {/* { message.privateMessage && this._renderPrivateNotice() } */}
                             { message.privateMessage && <PrivateNotice message= { message } t = { t } /> }
                         </div>
                         { message.privateMessage && message.messageType !== MESSAGE_TYPE_LOCAL

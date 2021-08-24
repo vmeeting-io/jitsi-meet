@@ -41,9 +41,6 @@ export default class PrivateNotice extends Component<Props, State> {
 
     _getPrivateNoticeMessage = () => {
         const { message, t } = this.props;
-        console.log("Inside _getPrivateNoticeMessage");
-        console.log("this props are: ", this.props);
-        
         return t('chat.privateNotice', {
             recipient: message.messageType === MESSAGE_TYPE_LOCAL ? message.recipient : t('me')
         });

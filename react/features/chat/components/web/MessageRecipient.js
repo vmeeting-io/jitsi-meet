@@ -98,18 +98,24 @@ class MessageRecipient extends AbstractMessageRecipient<Props> {
         
         // first scenario, when selecting a participant for private messaging
         if ((prevProps._privateMessageRecipient === undefined) && (_privateMessageRecipient !== undefined)) {
-            this.setState({ privateMessageRecipientName: _privateMessageRecipient });
+            this.setState({ privateMessageRecipientName: _privateMessageRecipient }, () => { console.log("Updating local state")});
+        }
+
+        else if((prevProps._privateMessageRecipient !== _privateMessageRecipient) && (_privateMessageRecipient !== undefined) && 
+                (prevProps._privateMessageRecipient !== "Vmeeter" && prevProps._privateMessageRecipient !== "Fellow Jister") &&
+                (_privateMessageRecipient !== "Vmeeter" && _privateMessageRecipient !== "Fellow Jister")) {
+            this.setState({ privateMessageRecipientName: _privateMessageRecipient }, () => { console.log("Updating local state")});
         }
 
         // second scenario, when the participant to private message has left the chatroom
         else if((prevProps._privateMessageRecipient === undefined) && (_privateMessageRecipient === undefined)) {
-            this.setState({ privateMessageRecipientName: prevState.privateMessageRecipientName })
+            this.setState({ privateMessageRecipientName: prevState.privateMessageRecipientName }, () => { console.log("Updating local state")});
         }
 
         // third scenario, when participant A has left, but user wants to send a private message to participant B
         else if((prevProps._privateMessageRecipient === "Vmeeter" || prevProps._privateMessageRecipient === "Fellow Jister") &&
                 (_privateMessageRecipient !== undefined &&  _privateMessageRecipient !== prevState.privateMessageRecipientName)) {
-            this.setState({ privateMessageRecipientName: _privateMessageRecipient });
+            this.setState({ privateMessageRecipientName: _privateMessageRecipient }, () => { console.log("Updating local state")});
         }
     }
 }

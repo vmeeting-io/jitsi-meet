@@ -23,13 +23,22 @@ require('@tensorflow/tfjs-backend-webgl');
 export async function createAREffect(arObj: Object, dispatch: Function) {
     const packageConfig = {
         shouldLoadIrisModel: false,
-        detectionConfidence: 0.7
+        detectionConfidence: 0.7,
+        maxFaces: 3
     };
     const model = await faceLandmarksDetection.load(
         faceLandmarksDetection.SupportedPackages.mediapipeFacemesh, packageConfig);
 
     const options = {
-        mesh: arObj
+        obj: 'images/ar-object/birthday_hat.png',
+        src_points: [
+            {x: 308, y: 530}, //left
+            {x: 692, y: 530}, //right
+        ],
+        dst_index: [
+            21, //left
+            251 //right
+        ]
     };
 
     return new JitsiStreamAREffect(model, options);

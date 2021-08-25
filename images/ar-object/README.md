@@ -10,11 +10,11 @@ For example, for birthday_hat, I placed bottom point of the hat to the center of
 
 ## How to use AR object image
 
-You should change [this file](https://github.com/vmeeting-io/jitsi-meet/blob/tfjs-ar/react/features/stream-effects/ar-effect/JitsiStreamAREffect.js)
+You should change [this file](https://github.com/vmeeting-io/jitsi-meet/blob/tfjs-ar/react/features/stream-effects/ar-effect/index.js)
 
-- line 65: Change to new image link
-- line 112-115: Change to leftmost point, rightmost point to map
-- line 118-121: Change to mapping keypoint index of line 112-115
+- line 33: Change to new image link
+- line 35-36: Change to leftmost point, rightmost point to map
+- line 39-40: Change to mapping keypoint index of line 35-36
 
 
 ## Keypoints

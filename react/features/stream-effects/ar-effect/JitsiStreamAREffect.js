@@ -62,7 +62,7 @@ export default class JitsiStreamAREffect {
 
         this._arObj = document.createElement('img');
         this._arObj.crossOrigin = 'anonymous';
-        this._arObj.src = 'images/ar-object/birthday_hat.png';
+        this._arObj.src = options.obj;
     }
 
     /**
@@ -85,17 +85,16 @@ export default class JitsiStreamAREffect {
      * @returns {void}
      */
     async runInference() {
-        const track = this._stream.getVideoTracks()[0];
-        const { height, width } = track.getSettings() ?? track.getConstraints();
-
-        //this._arCanvasCtx.drawImage(this._arObj, 0, 0, this._arObj.width, this._arObj.height, 0, 0, this._arCanvas.width, this._arCanvas.height);
+        // Get face mesh prediction
         this._faceMeshCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
         const predictions = await this._faceMesh.estimateFaces({input: this._faceMeshCanvas, predictIrises: false});
         this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
 
+        //To draw AR object
         for (let i = 0; i < predictions.length; i++) {
             const keypoints = predictions[i].scaledMesh;
 
+            // Draw keypoints on face
             /*for (let i = 0; i < keypoints.length; i++) {
                 const x = keypoints[i][0];
                 const y = keypoints[i][1];
@@ -104,32 +103,28 @@ export default class JitsiStreamAREffect {
                 this._outputCanvasCtx.fillStyle = "aqua";
                 this._outputCanvasCtx.fill();
             }*/
-            
-            /*const src_points = [
-                {x: 324, y: 530},
-                {x: 676, y: 530},
-            ];*/
-            const src_points = [
-                {x: 308, y: 530},
-                {x: 692, y: 530},
-            ];
+
+            const src_points = this._options.src_points;
 
             const head_top = {x: keypoints[10][0], y: keypoints[10][1]};
             const dst_points = [
-                {x: keypoints[21][0], y: keypoints[21][1]},
-                {x: keypoints[251][0], y: keypoints[251][1]}
+                {x: keypoints[this._options.dst_index[0]][0], y: keypoints[this._options.dst_index[0]][1]},
+                {x: keypoints[this._options.dst_index[1]][0], y: keypoints[this._options.dst_index[1]][1]}
             ];
 
+            // Calculating transformation factor
             const hScaling = (dst_points[1].x - dst_points[0].x) / (src_points[1].x - src_points[0].x);
             const hTrans = head_top.x - this._arCanvas.width / 2;
             const vTrans = head_top.y - this._arCanvas.height / 2;
             const angle = Math.atan2(dst_points[1].y - dst_points[0].y, dst_points[1].x - dst_points[0].x);
-
+            
+            // Initialize canvas
             this._arCanvasCtx.resetTransform();
             this._arCanvasCtx.clearRect(0, 0, this._arCanvas.width, this._arCanvas.height);
             this._arCanvas2Ctx.resetTransform();
             this._arCanvas2Ctx.clearRect(0, 0, this._arCanvas2.width, this._arCanvas2.height);
 
+            // Calculating transformation factor
             const objScalingFactor = Math.min(this._outputCanvasElement.width, this._outputCanvasElement.height) / this._arObj.width;
             const sizeCheck = this._arCanvas.width > this._arCanvas.height? true : false;
             const xLoc = sizeCheck? (this._arCanvas.width - this._arCanvas.height) / 2 : 0;
@@ -137,11 +132,13 @@ export default class JitsiStreamAREffect {
             const xySize = sizeCheck? this._arCanvas.height : this._arCanvas.width;
             const scalingFactor = hScaling / objScalingFactor;
 
+            // Move origin to (0, 0) and rotate around its center
             this._arCanvasCtx.translate(this._arCanvas.width / 2, this._arCanvas.height / 2);
             this._arCanvasCtx.rotate(angle);
             this._arCanvasCtx.translate(-this._arCanvas.width / 2, -this._arCanvas.height / 2);
             this._arCanvasCtx.drawImage(this._arObj, xLoc, yLoc, xySize, xySize);
 
+            // Move origin to (0, 0) and scale from its center
             this._arCanvas2Ctx.translate(this._arCanvas.width / 2, this._arCanvas.height / 2);
             this._arCanvas2Ctx.scale(1.2 * scalingFactor, 1.2 * scalingFactor);
             this._arCanvas2Ctx.translate(-this._arCanvas.width / 2, -this._arCanvas.height / 2);
@@ -151,6 +148,7 @@ export default class JitsiStreamAREffect {
             this._arCanvasCtx.resetTransform();
             this._arCanvasCtx.clearRect(0, 0, this._arCanvas.width, this._arCanvas.height);
 
+            // Move to proper location
             this._arCanvasCtx.translate(hTrans, vTrans);
             this._arCanvasCtx.drawImage(this._arCanvas2, 0, 0);
 

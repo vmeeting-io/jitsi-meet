@@ -62,7 +62,7 @@ export default class JitsiStreamAREffect {
 
         this._arObj = document.createElement('img');
         this._arObj.crossOrigin = 'anonymous';
-        this._arObj.src = 'images/ar-object/birthday_hat_sq_center3.png';
+        this._arObj.src = 'images/ar-object/birthday_hat.png';
     }
 
     /**

@@ -21,8 +21,12 @@ require('@tensorflow/tfjs-backend-webgl');
  * @returns {Promise<JitsiStreamBackgroundEffect>}
  */
 export async function createAREffect(arObj: Object, dispatch: Function) {
+    const packageConfig = {
+        shouldLoadIrisModel: false,
+        detectionConfidence: 0.7
+    };
     const model = await faceLandmarksDetection.load(
-        faceLandmarksDetection.SupportedPackages.mediapipeFacemesh);
+        faceLandmarksDetection.SupportedPackages.mediapipeFacemesh, packageConfig);
 
     const options = {
         mesh: arObj

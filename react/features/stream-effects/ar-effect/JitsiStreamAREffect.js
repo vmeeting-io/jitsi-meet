@@ -90,7 +90,7 @@ export default class JitsiStreamAREffect {
 
         //this._arCanvasCtx.drawImage(this._arObj, 0, 0, this._arObj.width, this._arObj.height, 0, 0, this._arCanvas.width, this._arCanvas.height);
         this._faceMeshCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
-        const predictions = await this._faceMesh.estimateFaces({input: this._faceMeshCanvas});
+        const predictions = await this._faceMesh.estimateFaces({input: this._faceMeshCanvas, predictIrises: false});
         this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
 
         for (let i = 0; i < predictions.length; i++) {

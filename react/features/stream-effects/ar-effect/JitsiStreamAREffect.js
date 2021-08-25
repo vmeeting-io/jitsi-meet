@@ -1,7 +1,6 @@
 // @flow
 
 import * as tf from '@tensorflow/tfjs';
-import PerspT from 'perspective-transform';
 
 import {
     CLEAR_TIMEOUT,

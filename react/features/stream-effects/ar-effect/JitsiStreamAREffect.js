@@ -11,25 +11,23 @@ import {
 
 /**
  * Represents a modified MediaStream that adds effects to video background.
- * <tt>JitsiStreamBackgroundEffect</tt> does the processing of the original
+ * <tt>JitsiStreamAREffect</tt> does the processing of the original
  * video stream.
  */
 export default class JitsiStreamAREffect {
-    _model: Object;
+    _faceMesh: Object;
     _options: Object;
     _stream: Object;
-    _segmentationPixelCount: number;
     _inputVideoElement: HTMLVideoElement;
+    _faceMeshCanvas: HTMLCanvasElement;
+    _arCanvas: HTMLCanvasElement;
+    _arCanvas2: HTMLCanvasElement;
+    _arObj: HTMLImageElement;
     _onMaskFrameTimer: Function;
     _maskFrameTimerWorker: Worker;
     _outputCanvasElement: HTMLCanvasElement;
     _outputCanvasCtx: Object;
-    _segmentationMaskCtx: Object;
-    _segmentationMask: Object;
-    _segmentationMaskCanvas: Object;
     _renderMask: Function;
-    _virtualImage: HTMLImageElement;
-    _virtualVideo: HTMLVideoElement;
     isEnabled: Function;
     startEffect: Function;
     stopEffect: Function;
@@ -38,7 +36,7 @@ export default class JitsiStreamAREffect {
      * Represents a modified video MediaStream track.
      *
      * @class
-     * @param {Object} model - Meet model.
+     * @param {Object} faceMesh - Face Mesh model.
      * @param {Object} options - Segmentation dimensions.
      */
     constructor(faceMesh: Object, options: Object) {
@@ -87,7 +85,7 @@ export default class JitsiStreamAREffect {
         // Get face mesh prediction
         this._faceMeshCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
         const predictions = await this._faceMesh.estimateFaces({input: this._faceMeshCanvas, predictIrises: false});
-        this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
+        this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0, this._outputCanvasElement.width, this._outputCanvasElement.height);
 
         //To draw AR object
         for (let i = 0; i < predictions.length; i++) {
@@ -156,7 +154,7 @@ export default class JitsiStreamAREffect {
     }
 
     /**
-     * Loop function to render the background mask.
+     * Loop function to render the AR object.
      *
      * @private
      * @returns {void}
@@ -182,7 +180,7 @@ export default class JitsiStreamAREffect {
     }
 
     /**
-     * Starts loop to capture video frame and render the segmentation mask.
+     * Starts loop to capture video frame and render the AR object.
      *
      * @param {MediaStream} stream - Stream to be used for processing.
      * @returns {MediaStream} - The stream with the applied effect.

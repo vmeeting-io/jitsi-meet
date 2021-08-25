@@ -12,11 +12,10 @@ import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detec
 require('@tensorflow/tfjs-backend-webgl');
 
 /**
- * Creates a new instance of JitsiStreamBackgroundEffect. This loads the Meet background model that is used to
- * extract person segmentation.
+ * Creates a new instance of JitsiStreamAREffect. This loads the TF.js FaceMesh model that is used to
+ * extract keypoints of face.
  *
- * @param {Object} virtualBackground - The virtual object that contains the background image source and
- * the isVirtualBackground flag that indicates if virtual image is activated.
+ * @param {Object} arObj - AR image link
  * @param {Function} dispatch - The Redux dispatch function.
  * @returns {Promise<JitsiStreamBackgroundEffect>}
  */

@@ -195,7 +195,7 @@ var interfaceConfig = {
     // ],
 
     // stayge labs requirement
-    SSO_AUTH_KEYS: ['otp'],
+    SSO_AUTH_KEYS: ['user_id'],
     SHOW_JITSI_WATERMARK: false,
     TOOLBAR_BUTTONS: [
         'microphone', 'camera', 'desktop', 'fullscreen',

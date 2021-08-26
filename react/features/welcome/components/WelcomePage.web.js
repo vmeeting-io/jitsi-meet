@@ -27,6 +27,7 @@ import { AbstractWelcomePage, _mapStateToProps } from './AbstractWelcomePage';
 import Tabs from './Tabs';
 import s from './WelcomePage.module.scss';
 import { NOTIFICATION_TYPE, showSweetAlert } from '../../notifications';
+import { getAvatarColor, getInitials } from '../../base/avatar';
 //import alarmImg from '../../../../resources/img/appstore-badge.png';
 
 /**
@@ -263,6 +264,7 @@ class WelcomePage extends AbstractWelcomePage {
         const showAdditionalToolbarContent = this._shouldShowAdditionalToolbarContent();
         const buttons = [];
         const [ tenant ] = room.split('/');
+        const avatarColor = getAvatarColor(getInitials(_user?.name), 0.9);
 
         if (_user) {
             if (_user.isAdmin) {
@@ -283,11 +285,15 @@ class WelcomePage extends AbstractWelcomePage {
                     key = 'userMenu'
                     trigger = {
                         <div className = {s.userContainer}>
-                            { _user.avatarURL && (
+                            { _user.avatarURL ? (
                                 <img
                                     alt = 'avatar'
                                     className = {s.avatar}
                                     src = { _user.avatarURL } />
+                            ) : (
+                                <div className={s.avatar} style={{backgroundColor: avatarColor}}>
+                                    {_user.name?.[0] || _user.username[0]}
+                                </div>
                             )}
                             { _user.name }
                             { (!_user.email_verified && currentTenant === DEFAULT_TENANT) && (

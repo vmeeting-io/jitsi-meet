@@ -49,6 +49,8 @@ body {
                 object-fit: cover;
                 border-radius: 50%;
                 margin-right: 6px;
+                color: white;
+                line-height: 24px;
             }
             .badge {
                 margin-left: 5px;
@@ -170,9 +172,26 @@ body {
 
         .banner {
             min-height: 54px;
+            background-color: #42526E;
 
-            div {
-                overflow: hidden;
+            & > div {
+                margin: 0 auto;
+                max-width: $maxContentWidth;
+
+                & > div {
+                    overflow: hidden;
+                    padding-left: 1em;
+    
+                    @include media-breakpoint-up(md) {
+                        padding-left: 4em;
+                    }
+    
+                    & > div {
+                        justify-content: flex-start;
+                        max-width: initial;
+                        padding: 12px 0;
+                    }
+                }
             }
         }
 

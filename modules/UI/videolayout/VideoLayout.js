@@ -424,6 +424,9 @@ const VideoLayout = {
                     order.push(id);
                 }
             });
+            if (!order.includes(localVideoThumbnail.id)) {
+                order.push(localVideoThumbnail.id);
+            }
 
             ordered = filter(map(order, id =>
                 id === localVideoThumbnail.id

@@ -4,10 +4,10 @@ import _ from 'lodash';
 
 const AVATAR_COLORS = [
     '232, 105, 156',
-    '255, 198, 115',
+    '150, 124, 89',
     '128, 128, 255',
-    '105, 232, 194',
-    '234, 255, 128'
+    '85, 140, 123',
+    '141, 149, 95'
 ];
 
 const AVATAR_OPACITY = 0.4;
@@ -18,7 +18,7 @@ const AVATAR_OPACITY = 0.4;
  * @param {string?} initials - The initials of the avatar.
  * @returns {string}
  */
-export function getAvatarColor(initials: ?string) {
+export function getAvatarColor(initials: ?string, opacity) {
     let colorIndex = 0;
 
     if (initials) {
@@ -31,7 +31,7 @@ export function getAvatarColor(initials: ?string) {
         colorIndex = nameHash % AVATAR_COLORS.length;
     }
 
-    return `rgba(${AVATAR_COLORS[colorIndex]}, ${AVATAR_OPACITY})`;
+    return `rgba(${AVATAR_COLORS[colorIndex]}, ${opacity || AVATAR_OPACITY})`;
 }
 
 /**

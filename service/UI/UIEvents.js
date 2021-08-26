@@ -6,6 +6,8 @@ export default {
      */
     EMAIL_CHANGED: 'UI.email_changed',
 
+    BECOME_MODERATOR: 'UI.become_moderator',
+
     /**
      * Notifies that "start muted" settings changed.
      */

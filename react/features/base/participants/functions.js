@@ -1,6 +1,6 @@
 // @flow
 
-import { getGravatarURL } from '@jitsi/js-utils/avatar';
+// import { getGravatarURL } from '@jitsi/js-utils/avatar';
 
 import { JitsiParticipantConnectionStatus } from '../lib-jitsi-meet';
 import { MEDIA_TYPE, shouldRenderVideoTrack } from '../media';
@@ -31,9 +31,9 @@ const AVATAR_CHECKER_FUNCTIONS = [
     participant => {
         return participant && participant.avatarURL ? participant.avatarURL : null;
     },
-    participant => {
-        return participant && participant.email ? getGravatarURL(participant.email) : null;
-    }
+    // participant => {
+    //     return participant && participant.email ? getGravatarURL(participant.email) : null;
+    // }
 ];
 /* eslint-enable arrow-body-style */
 

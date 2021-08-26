@@ -1,5 +1,6 @@
 // @flow
 
+import { jitsiLocalStorage } from '@jitsi/js-utils';
 import axios from 'axios';
 
 import {
@@ -57,6 +58,7 @@ import {
 import logger from './logger';
 import { appNavigate } from '../../app/actions';
 import { disconnect } from '../connection';
+import { LEAVING_TIMESTAMP } from './constants';
 
 declare var APP: Object;
 
@@ -308,6 +310,7 @@ function _conferenceJoined({ dispatch, getState }, next, action) {
             dispatch(conferenceWillLeave(conference));
         }*/
         dispatch(conferenceWillLeave(conference));
+        jitsiLocalStorage.setItem(LEAVING_TIMESTAMP, Date.now());
     };
     window.addEventListener('beforeunload', beforeUnloadHandler);
 

@@ -1,6 +1,6 @@
 // @flow
 
-import { getRoomName } from '../base/conference';
+import { getRoomName, LEAVING_TIMESTAMP } from '../base/conference';
 import { getDialOutStatusUrl, getDialOutUrl } from '../base/config/functions';
 import { isAudioMuted, isVideoMutedByUser } from '../base/media';
 
@@ -147,9 +147,14 @@ export function isJoinByPhoneDialogVisible(state: Object): boolean {
  * @returns {boolean}
  */
 export function isPrejoinPageEnabled(state: Object): boolean {
+    const { isHost } = state['features/base/conference']?.roomInfo || {};
+    const { prejoinPageEnabled, chatOnlyGuestEnabled } = state['features/base/config'];
+
     return navigator.product !== 'ReactNative'
-        && state['features/base/config'].prejoinPageEnabled
-        && !state['features/base/settings'].userSelectedSkipPrejoin;
+        && prejoinPageEnabled
+        && !state['features/base/settings'].userSelectedSkipPrejoin
+        && (isHost && chatOnlyGuestEnabled)
+        && !state['features/prejoin'].skipPrejoin;
 }
 
 /**
@@ -159,5 +164,9 @@ export function isPrejoinPageEnabled(state: Object): boolean {
  * @returns {boolean}
  */
 export function isPrejoinPageVisible(state: Object): boolean {
-    return isPrejoinPageEnabled(state) && state['features/prejoin']?.showPrejoin;
+    const { isHost } = state['features/base/conference']?.roomInfo || {};
+    const { chatOnlyGuestEnabled } = state['features/base/config'];
+    return isPrejoinPageEnabled(state)
+        && state['features/prejoin']?.showPrejoin
+        && (isHost && chatOnlyGuestEnabled);
 }

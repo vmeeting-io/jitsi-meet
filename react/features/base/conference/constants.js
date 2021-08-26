@@ -46,3 +46,5 @@ export const VIDEO_QUALITY_LEVELS = {
     STANDARD: 360,
     LOW: 180
 };
+
+export const LEAVING_TIMESTAMP = 'leaving-timestamp';

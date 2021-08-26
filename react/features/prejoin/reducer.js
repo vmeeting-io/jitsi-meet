@@ -1,3 +1,5 @@
+import { jitsiLocalStorage } from '@jitsi/js-utils';
+import { LEAVING_TIMESTAMP } from '../base/conference';
 import { ReducerRegistry } from '../base/redux';
 
 import {
@@ -13,6 +15,7 @@ import {
     SET_SKIP_PREJOIN
 } from './actionTypes';
 
+const leavingTimestamp = jitsiLocalStorage.getItem(LEAVING_TIMESTAMP);
 const DEFAULT_STATE = {
     country: '',
     deviceStatusText: 'prejoin.configuringDevices',
@@ -29,6 +32,7 @@ const DEFAULT_STATE = {
     rawError: '',
     showPrejoin: true,
     showJoinByPhoneDialog: false,
+    skipPrejoin: Boolean(leavingTimestamp) && (Number(leavingTimestamp) + 3000) > Date.now(),
     userSelectedSkipPrejoin: false
 };
 

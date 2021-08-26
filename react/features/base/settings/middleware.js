@@ -4,9 +4,11 @@ import _ from 'lodash';
 import { APP_WILL_MOUNT } from '../app';
 import { setAudioOnly } from '../audio-only';
 import { SET_LOCATION_URL } from '../connection/actionTypes'; // minimize imports to avoid circular imports
+import { SET_JWT } from '../jwt/actionTypes';
 import { getLocalParticipant, participantUpdated } from '../participants';
 import { MiddlewareRegistry } from '../redux';
 import { parseURLParams } from '../util';
+import { updateSettings } from './actions';
 
 import { SETTINGS_UPDATED } from './actionTypes';
 import { handleCallIntegrationChange, handleCrashReportingChange } from './functions';
@@ -34,6 +36,11 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     case SET_LOCATION_URL:
         _updateLocalParticipantFromUrl(store);
+        break;
+    case SET_JWT:
+        if (action.user?.name) {
+            store.dispatch(updateSettings({ displayName: action.user.name }));
+        }
         break;
     }
 

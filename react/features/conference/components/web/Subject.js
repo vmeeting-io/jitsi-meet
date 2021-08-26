@@ -146,7 +146,7 @@ function _mapStateToProps(state) {
     return {
         _hideConferenceTimer: Boolean(hideConferenceTimer),
         _isHost: isHost(state),
-        _showParticipantCount: participantCount > 2 && !hideParticipantsStats,
+        _showParticipantCount: !hideParticipantsStats,
         _showSubject: !hideConferenceSubject,
         _subject: getConferenceName(state),
         _visible: Boolean(timeRemained) || isToolboxVisible(state)

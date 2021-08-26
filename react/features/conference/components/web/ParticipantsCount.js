@@ -71,10 +71,13 @@ class ParticipantsCount extends PureComponent<Props> {
      * @returns {ReactElement}
      */
     render() {
+        const { _hideParticipantsStats } = this.props;
+        const className = _hideParticipantsStats ? 'readonly' : '';
+
         return (
             <div
-                className = { `participants-count ${s.container}` }
-                onClick = { this._onClick }>
+                className = { `participants-count ${s.container} ${className}` }
+                onClick = { _hideParticipantsStats ? undefined : this._onClick }>
                 <span className = 'participants-count-number'>
                     {this.props.count}
                 </span>
@@ -95,6 +98,7 @@ class ParticipantsCount extends PureComponent<Props> {
  */
 function mapStateToProps(state) {
     return {
+        _hideParticipantsStats: state['features/base/config'],
         conference: state['features/base/conference'].conference,
         count: getParticipantCount(state)
     };

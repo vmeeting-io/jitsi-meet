@@ -73,3 +73,27 @@ a.fUcuXK {
 .chat-header-control-button .eCFUHs {
     padding: 0px 24px;
 }
+
+/**
+ * Keep overflow menu within screen vertical bounds and make it scrollable.
+ */
+.toolbox-button-wth-dialog > div:nth-child(2) {
+    background: $menuBG;
+    max-height: calc(100vh - #{$newToolbarSizeWithPadding} - 46px);
+    margin-bottom: 4px;
+    padding: 0;
+    overflow-y: auto;
+}
+
+.audio-preview > div > div:nth-child(2) > div > div,
+.video-preview > div > div:nth-child(2) > div > div,
+.reactions-menu-popup > div:nth-child(2) {
+    margin-bottom: 4px;
+    outline: none;
+    padding: 0;
+}
+
+.reactions-menu-popup > div:nth-child(2) {
+    margin-bottom: 6px;
+    box-shadow: none;
+}

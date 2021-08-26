@@ -3,6 +3,7 @@ CLEANCSS = ./node_modules/.bin/cleancss
 DEPLOY_DIR = libs
 LIBJITSIMEET_DIR = node_modules/lib-jitsi-meet/
 LIBFLAC_DIR = node_modules/libflacjs/dist/min/
+OLM_DIR = node_modules/olm
 RNNOISE_WASM_DIR = node_modules/rnnoise-wasm/dist/
 TFLITE_WASM = react/features/stream-effects/virtual-background/vendor/tflite
 MEET_MODELS_DIR  = react/features/stream-effects/virtual-background/vendor/models/
@@ -23,11 +24,14 @@ all: compile deploy clean
 compile:
 	node --max-old-space-size=4096 $(WEBPACK) -p
 
+compile-load-test:
+	${NPM} install --prefix resources/load-test && ${NPM} run build --prefix resources/load-test
+
 clean:
 	rm -fr $(BUILD_DIR)
 
 .NOTPARALLEL:
-deploy: deploy-init deploy-appbundle deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-css deploy-local $(LANGUAGES)
+deploy: deploy-init deploy-appbundle deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-css deploy-local $(LANGUAGES)
 
 deploy-init:
 	rm -fr $(DEPLOY_DIR)
@@ -43,8 +47,6 @@ deploy-appbundle:
 		$(BUILD_DIR)/external_api.min.map \
 		$(BUILD_DIR)/flacEncodeWorker.min.js \
 		$(BUILD_DIR)/flacEncodeWorker.min.map \
-		$(BUILD_DIR)/device_selection_popup_bundle.min.js \
-		$(BUILD_DIR)/device_selection_popup_bundle.min.map \
 		$(BUILD_DIR)/dial_in_info_bundle.min.js \
 		$(BUILD_DIR)/dial_in_info_bundle.min.map \
 		$(BUILD_DIR)/alwaysontop.min.js \
@@ -52,10 +54,8 @@ deploy-appbundle:
 		$(OUTPUT_DIR)/analytics-ga.js \
 		$(BUILD_DIR)/analytics-ga.min.js \
 		$(BUILD_DIR)/analytics-ga.min.map \
-		$(BUILD_DIR)/virtual-background-effect.min.js \
-		$(BUILD_DIR)/virtual-background-effect.min.map \
-		$(BUILD_DIR)/rnnoise-processor.min.js \
-		$(BUILD_DIR)/rnnoise-processor.min.map \
+		$(BUILD_DIR)/close3.min.js \
+		$(BUILD_DIR)/close3.min.map \
 		$(DEPLOY_DIR)
 
 deploy-lib-jitsi-meet:
@@ -70,6 +70,11 @@ deploy-libflac:
 	cp \
 		$(LIBFLAC_DIR)/libflac4-1.3.2.min.js \
 		$(LIBFLAC_DIR)/libflac4-1.3.2.min.js.mem \
+		$(DEPLOY_DIR)
+
+deploy-olm:
+	cp \
+		$(OLM_DIR)/olm.wasm \
 		$(DEPLOY_DIR)
 
 deploy-rnnoise-binary:
@@ -108,7 +113,7 @@ $(LANGUAGES):
 	fi;
 
 .NOTPARALLEL:
-dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac $(LANGUAGES)
+dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm $(LANGUAGES)
 	if [ ! -d $(DEV_COUNTRIES_DIR) ] ; \
 	then \
 		mkdir $(DEV_COUNTRIES_DIR); \

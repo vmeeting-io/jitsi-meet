@@ -6,19 +6,12 @@ import { Video } from '../../../media';
 import { connect } from '../../../redux';
 import { getLocalVideoTrack } from '../../../tracks';
 
-import PreviewAvatar from './Avatar';
-
 export type Props = {
 
     /**
-     * The name of the user that is about to join.
+     * Flag controlling whether the video should be flipped or not.
      */
-    name: string,
-
-    /**
-     * Indicates whether the avatar should be shown when video is off
-     */
-    showAvatar: boolean,
+    flipVideo: boolean,
 
     /**
      * Flag signaling the visibility of camera preview.
@@ -38,34 +31,21 @@ export type Props = {
  * @returns {ReactElement}
  */
 function Preview(props: Props) {
-    const { name, showAvatar, videoMuted, videoTrack } = props;
+    const { videoMuted, videoTrack, flipVideo } = props;
+    const className = flipVideo ? 'flipVideoX' : '';
 
     if (!videoMuted && videoTrack) {
         return (
             <div id = 'preview'>
                 <Video
-                    className = 'flipVideoX'
+                    className = { className }
                     videoTrack = {{ jitsiTrack: videoTrack }} />
-            </div>
-        );
-    }
-
-    if (showAvatar) {
-        return (
-            <div
-                className = 'no-video'
-                id = 'preview'>
-                <PreviewAvatar name = { name } />
             </div>
         );
     }
 
     return null;
 }
-
-Preview.defaultProps = {
-    showAvatar: true
-};
 
 /**
  * Maps part of the Redux state to the props of this component.
@@ -76,6 +56,7 @@ Preview.defaultProps = {
  */
 function _mapStateToProps(state, ownProps) {
     return {
+        flipVideo: state['features/base/settings'].localFlipX,
         videoMuted: ownProps.videoTrack ? ownProps.videoMuted : state['features/base/media'].video.muted,
         videoTrack: ownProps.videoTrack || (getLocalVideoTrack(state['features/base/tracks']) || {}).jitsiTrack
     };

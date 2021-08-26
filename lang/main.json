@@ -248,6 +248,7 @@
         "emailErrInUse": "This email is already in use, try another one.",
         "emailErrInvalid": "Invalid email address.",
         "enterDisplayName": "Name",
+        "enterDisplayNameToJoin": "Please enter your name to join",
         "enterOrganizationName": "Organization",
         "error": "Error",
         "goHome": "Home",
@@ -404,12 +405,28 @@
         "title": "Embed this meeting"
     },
     "virtualBackground": {
-        "title": "Backgrounds",
-        "enableBlur": "Enable blur",
-        "removeBackground": "Remove background",
-        "uploadImage": "Upload image",
-        "pleaseWait": "Please wait...",
-        "none": "None"
+        "apply": "적용",
+        "title": "배경",
+        "blur": "흐리게",
+        "slightBlur": "조금 흐리게",
+        "removeBackground": "배경 삭제",
+        "addBackground": "배경 추가",
+        "pleaseWait": "로딩 중...",
+        "none": "없음",
+        "uploadedImage": "업로드 이미지 {{index}}",
+        "deleteImage": "이미지 삭제",
+        "image1" : "해변",
+        "image2" : "하얀 중립 벽",
+        "image3" : "하얀 빈 방",
+        "image4" : "검정 마루 등",
+        "image5" : "산",
+        "image6" : "숲",
+        "image7" : "해돋이",
+        "desktopShareError": "화면 공유 생성 오류",
+        "desktopShare":"화면 공유",
+        "desktopShareAudioWarning": "오디오가 공유되지 않습니다!",
+        "desktopShareAudioWarningDesc": "배경으로 화면을 공유하는 경우 오디오가 공유되지 않습니다.",
+        "webAssemblyWarning": "WebAssembly가 지원되지 않습니다."
     },
     "feedback": {
         "average": "Average",
@@ -750,6 +767,7 @@
         "more": "More",
         "name": "Name",
         "noDevice": "None",
+        "sameAsSystem": "Same as system ({{label}})",
         "selectAudioOutput": "Audio output",
         "selectCamera": "Camera",
         "selectMic": "Microphone",
@@ -868,6 +886,7 @@
             "selectBackground": "Select Background"
         },
         "addPeople": "Add people to your call",
+        "audioSettings": "Audio settings",
         "audioOnlyOff": "Disable low bandwidth mode",
         "audioOnlyOn": "Enable low bandwidth mode",
         "audioRoute": "Select the sound device",
@@ -939,6 +958,7 @@
         "videomute": "Start / Stop camera",
         "whiteboardClose": "Close whiteboard",
         "whiteboardOpen": "Open whiteboard",
+        "videoSettings": "Video settings",
         "selectBackground": "Select background"
     },
     "transcribing": {

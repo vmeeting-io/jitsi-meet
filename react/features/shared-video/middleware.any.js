@@ -98,10 +98,10 @@ StateListenerRegistry.register(
                     if (isSharingStatus(status)) {
                         handleSharingVideoStatus(store, value, attributes, conference);
                     } else if (status === 'stop') {
-                        dispatch(participantLeft(value, conference));
                         if (localParticipantId !== from) {
                             dispatch(resetSharedVideoStatus());
                         }
+                        dispatch(participantLeft(value, conference));
                     }
                 }
             );

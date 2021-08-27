@@ -2,11 +2,12 @@
 
 import { openDialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
-import { IconVirtualBackground } from '../../base/icons';
+import { IconModerator } from '../../base/icons';
 import { connect } from '../../base/redux';
 import { getLocalVideoTrack } from '../../base/tracks';
 import { AbstractButton } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
+import { setOverflowMenuVisible } from '../../toolbox/actions';
 
 import { toggleAREffect } from '../actions';
 
@@ -30,10 +31,10 @@ type Props = AbstractButtonProps & {
  * An abstract implementation of a button that toggles the video background dialog.
  */
 class ARFeatureButton extends AbstractButton<Props, *> {
-    accessibilityLabel = 'toolbar.accessibilityLabel.selectBackground';
-    icon = IconVirtualBackground;
-    label = 'AR Feature';
-    // tooltip = 'toolbar.selectBackground';
+    accessibilityLabel = 'toolbar.accessibilityLabel.enableAR';
+    icon = IconModerator;
+    label = 'toolbar.enableAR';
+    tooltip = 'toolbar.enableAR';
 
     /**
      * Handles clicking / pressing the button, and toggles the virtual background dialog
@@ -50,6 +51,7 @@ class ARFeatureButton extends AbstractButton<Props, *> {
         }
 
         dispatch(toggleAREffect(option, _jitsiTrack));
+        dispatch(setOverflowMenuVisible(false));
     }
 
     /**

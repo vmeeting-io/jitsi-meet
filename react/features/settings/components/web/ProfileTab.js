@@ -14,6 +14,7 @@ import type { Props as AbstractDialogTabProps } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
 import { openLogoutDialog } from '../../actions';
 import { getLocalParticipant} from '../../../base/participants';
+import tokenLocalStorage from '../../../../api/tokenLocalStorage';
 
 declare var APP: Object;
 
@@ -139,7 +140,6 @@ class ProfileTab extends AbstractDialogTab<Props> {
                             placeholder = { t('profile.setEmailInput') }
                             shouldFitContainer = { true }
                             type = 'text'
-                            disabled = { true }
                             value = { email } />
                     </div>
                 </div>
@@ -183,11 +183,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
             t
         } = this.props;
 
-        // TOFIX: Following is a dirty Patch to Issue #171: Checks if user is logged in or not(based on JWT).
-        // This seem to have been caused because JWT token was not propagated to XMPP after login. 
-        // "authLogin" variable is not set even after logging in from setting page.
-        
-        const loggedIn = localStorage.getItem('token/https://vmeeting.io'); //TOFIX: Remove HARD-CODED.
+        const loggedIn = tokenLocalStorage.getItem(APP.store.getState());
         const localParticipant = getLocalParticipant(APP.store.getState());
         const loggedInName = localParticipant.name;
         return (

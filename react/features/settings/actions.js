@@ -160,6 +160,16 @@ export function submitProfileTab(newState: Object): Function {
     
             if (newState.email !== currentState.email) {
                 APP.conference.changeLocalEmail(newState.email);
+                try {
+                    axios.patch(`${_apiBase}/account`, { email: String(newState.email) }, config).then((resp) => {
+                        const token = resp.data;
+                        tokenLocalStorage.setItem(token, APP.store.getState());
+                        dispatch(setJWT(resp.data));
+                    });
+                } catch(err) {
+                    console.log(err);
+                }
+
             }
             
             // previously hideDialog was called on every onSubmit Button, but here we check the above condition

@@ -1,5 +1,6 @@
 // @flow
 
+import '../ar-effect/reducer';
 import '../av-moderation/reducer';
 import '../base/devices/reducer';
 import '../e2ee/reducer';

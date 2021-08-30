@@ -850,7 +850,7 @@
         "desktopShareWarning": "새 설정을 적용하려면 화면 공유를 다시 시작해야 합니다.",
         "desktopShareHighFpsWarning": "화면 공유를 위한 더 높은 프레임 속도는 네트웍 대역폭에 영향을 미칠 수 있습니다. 새 설정을 적용하려면 화면 공유를 다시 시작해야 합니다.",
         "devices": "장치",
-        "followMe": "모두 나와 같은 설정 상태로",
+        "followMe": "모두 나와 같은 화면 상태로",
         "framesPerSecond": "프레임/초",
         "incomingMessage": "수신 메시지",
         "language": "언어",

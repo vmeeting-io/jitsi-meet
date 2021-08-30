@@ -221,14 +221,19 @@ class Chat extends AbstractChat<Props> {
      * @returns {ReactElement}
      */
     _renderChat() {
-        const { _showChatInput } = this.props;
+        const { _showChatInput, _privateMessageRecipient } = this.props;
+        let _showMessageRecipient = false;
+
+        if((_privateMessageRecipient !== undefined) && (_privateMessageRecipient !== 'Vmeeter') && (_privateMessageRecipient !== 'Fellow Jister')) {
+            _showMessageRecipient = true;
+        }
 
         return (
             <>
                 <MessageContainer
                     messages = { this.props._messages }
                     ref = { this._messageContainerRef } />
-                <MessageRecipient />
+                { _showMessageRecipient && <MessageRecipient /> }
                 { _showChatInput && (
                     <>
                         <ChatInput

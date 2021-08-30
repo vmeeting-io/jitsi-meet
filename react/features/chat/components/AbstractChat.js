@@ -2,8 +2,7 @@
 
 import { Component } from 'react';
 import type { Dispatch } from 'redux';
-
-import { getLocalParticipant } from '../../base/participants';
+import { getLocalParticipant, getParticipantDisplayName } from '../../base/participants';
 import { sendMessage } from '../actions';
 import { SMALL_WIDTH_THRESHOLD } from '../constants';
 
@@ -101,7 +100,7 @@ export default class AbstractChat<P: Props> extends Component<P> {
  * }}
  */
 export function _mapStateToProps(state: Object) {
-    const { isOpen, messages } = state['features/chat'];
+    const { isOpen, messages, privateMessageRecipient } = state['features/chat'];
     const { enableChatControl } = state['features/base/config'];
     const _localParticipant = getLocalParticipant(state);
 
@@ -111,6 +110,7 @@ export function _mapStateToProps(state: Object) {
         _isOpen: isOpen,
         _messages: messages,
         _showChatInput: _localParticipant?.role !== 'visitor',
-        _showNamePrompt: !_localParticipant?.name
+        _showNamePrompt: !_localParticipant?.name,
+        _privateMessageRecipient: privateMessageRecipient ? getParticipantDisplayName(state, privateMessageRecipient.id) : undefined
     };
 }

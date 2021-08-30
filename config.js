@@ -492,6 +492,7 @@ var config = {
     // - 'desktop' controls the "Share your screen" button
     // - if `toolbarButtons` is undefined, we fallback to enabling all buttons on the UI
     toolbarButtons: [
+       'ar-effect',
        'camera',
        'chat',
        'closedcaptions',

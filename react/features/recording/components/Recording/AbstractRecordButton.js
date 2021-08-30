@@ -153,8 +153,8 @@ export function _mapStateToProps(state: Object, ownProps: Props): Object {
         const isLogined = record_user? true : false;
         const { features = {} } = getLocalParticipant(state);
 
-        console.log(`User: ${record_user}`);
-        console.log(`Logined?: ${isLogined}`);
+        //console.log(`User: ${record_user}`);
+        //console.log(`Logined?: ${isLogined}`);
 
         visible = isModerator && isLogined && fileRecordingsEnabled;
 

@@ -31,7 +31,7 @@ import s from './Chat.module.scss';
 import { openDialog } from '../../../base/dialog';
 import EnableChatForAllParticipantsDialog from '../../../video-menu/components/web/EnableChatForAllParticipantsDialog';
 import DisableChatForAllParticipantsDialog from '../../../video-menu/components/web/DisableChatForAllParticipantsDialog';
-
+import { setPrivateMessageRecipient } from '../../actions';
 import { showToast } from '../../../notifications';
 
 import Mark from 'mark.js';
@@ -226,6 +226,10 @@ class Chat extends AbstractChat<Props> {
 
         if((_privateMessageRecipient !== undefined) && (_privateMessageRecipient !== 'Vmeeter') && (_privateMessageRecipient !== 'Fellow Jister')) {
             _showMessageRecipient = true;
+        } else {
+            // when the _showMessageRecipient is false, i.e. there is no private message recipient, 
+            // then dispatch reseting of private messaging
+            this.props.dispatch(setPrivateMessageRecipient());
         }
 
         return (

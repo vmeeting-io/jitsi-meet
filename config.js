@@ -18,6 +18,9 @@ var config = {
         noOfFailedLoginAttemptsAllowed: 5  //no of failed login attempt allowed with captcha disabled.
     },	
 
+    // whether or not to allow moderator to disable other participant's device
+    enableUserDeviceAccessDisabledOption: false,
+
     hosts: {
         // XMPP domain.
         domain: 'jitsi-meet.example.com',

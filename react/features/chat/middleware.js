@@ -131,7 +131,12 @@ MiddlewareRegistry.register(store => next => action => {
             // recipient. This logic tries to mitigate this risk.
             const shouldSendPrivateMessageTo = _shouldSendPrivateMessageTo(state, action);
 
-            if (shouldSendPrivateMessageTo) {
+            // get the name of the participant, or ensure that the participant is still in the meeting
+            const lastPrivMsgSender = getParticipantById(state, shouldSendPrivateMessageTo);
+            
+            // we use additional variable sender to ensure that the private message sender is still in the chatroom
+            // if the last private message sender is not in the chatroom, we don't pop-up the Chat Privacy Dialog
+            if (shouldSendPrivateMessageTo && (lastPrivMsgSender !== undefined)) {
                 dispatch(openDialog(ChatPrivacyDialog, {
                     message: action.message,
                     participantID: shouldSendPrivateMessageTo

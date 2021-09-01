@@ -38,9 +38,9 @@ export const QuickActionButton = styled(Button)`
 export const Container = styled.div`
   box-sizing: border-box;
   flex: 1;
-  overflow-y: auto;
+
   position: relative;
-  padding: 0 ${props => props.theme.panePadding}px;
+  
 
   & > * + *:not(.${ignoredChildClassName}) {
     margin-top: 16px;
@@ -258,7 +258,6 @@ export const ParticipantContainer = styled.div`
   display: flex;
   font-size: 13px;
   height: ${props => props.theme.participantItemHeight}px;
-  margin: 0 -${props => props.theme.panePadding}px;
   padding-left: ${props => props.theme.panePadding}px;
   position: relative;
 
@@ -283,7 +282,7 @@ export const ParticipantInviteButton = styled(Button).attrs({
   font-size: 15px;
   height: 40px;
   width: 100%;
-
+  
   & > *:not(:last-child) {
     margin-right: 8px;
   }

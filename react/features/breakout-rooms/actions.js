@@ -8,12 +8,12 @@ import {
     conferenceLeft,
     conferenceWillLeave,
     createConference,
+    getConferenceOptions,
     getCurrentConference,
     setRoom
 } from '../base/conference';
 import { setAudioMuted, setVideoMuted } from '../base/media';
 import { getRemoteParticipants } from '../base/participants';
-import { getConferenceOptions } from '../conference/functions';
 import { clearNotifications } from '../notifications';
 
 import { UPDATE_BREAKOUT_ROOMS } from './actionTypes';
@@ -22,7 +22,12 @@ import {
     JSON_TYPE_MOVE_TO_ROOM_REQUEST,
     JSON_TYPE_REMOVE_BREAKOUT_ROOM
 } from './constants';
-import { getBreakoutRooms, getCurrentRoomId, getMainRoomId } from './functions';
+import {
+    getBreakoutRooms,
+    getCurrentRoomId,
+    getMainRoomId,
+    isInBreakoutRoom
+} from './functions';
 import logger from './logger';
 
 declare var APP: Object;
@@ -46,7 +51,7 @@ export function createBreakoutRoom() {
             nextIndex: index + 1,
             rooms
         });
-        getCurrentConference(getState).sendMessage(message, 'focus');
+        getCurrentConference(getState).sendMessage(message, 'prosody_mod_breakout_rooms');
     };
 }
 
@@ -58,7 +63,7 @@ export function createBreakoutRoom() {
  * If empty, the participants will be sent to the main room.
  * @returns {Function}
  */
-export function closeRoom(roomId: string, newRoomId?: string) {
+export function closeBreakoutRoom(roomId: string, newRoomId?: string) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const { rooms = {} } = getBreakoutRooms(getState);
         const { participants = {} } = rooms[roomId];
@@ -83,7 +88,7 @@ export function removeBreakoutRoom(breakoutRoomJid: string) {
             breakoutRoomJid
         };
 
-        getCurrentConference(getState).sendMessage(message, 'focus');
+        getCurrentConference(getState).sendMessage(message, 'prosody_mod_breakout_rooms');
     };
 }
 
@@ -123,7 +128,10 @@ export function sendParticipantToRoom(participantId: string, roomId: string) {
         const conferenceOptions = getConferenceOptions(getState);
         const fullJid = participantId.indexOf('@') >= 0
             ? participantId
-            : `${getCurrentRoomId(getState)}@${conferenceOptions.hosts.muc}/${participantId}`;
+            : `${getCurrentRoomId(getState)}@${isInBreakoutRoom(getState)
+                ? `breakout.${conferenceOptions.hosts.domain}`
+                : conferenceOptions.hosts.muc
+            }/${participantId}`;
         const message = {
             type: JSON_TYPE_MOVE_TO_ROOM_REQUEST,
             roomId
@@ -158,17 +166,12 @@ export function moveToRoom(roomId?: string) {
             });
             dispatch(clearNotifications());
             dispatch(setRoom(_roomId));
-            dispatch(createConference()).then(result => {
-                dispatch(setAudioMuted(audio.muted));
-                dispatch(setVideoMuted(video.muted));
-
-                return result;
-            });
+            dispatch(createConference());
+            dispatch(setAudioMuted(audio.muted));
+            dispatch(setVideoMuted(video.muted));
         } else {
-            const join = () => APP.conference.joinRoom(_roomId);
-
             APP.conference.leaveRoom()
-            .then(join, join);
+            .finally(() => APP.conference.joinRoom(_roomId));
         }
     };
 }

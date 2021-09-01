@@ -40,6 +40,7 @@ import {
     DATA_CHANNEL_OPENED,
     KICKED_OUT,
     LOCK_STATE_CHANGED,
+    NON_PARTICIPANT_MESSAGE_RECEIVED,
     P2P_STATUS_CHANGED,
     SEND_TONES,
     SET_FOLLOW_ME,
@@ -53,8 +54,7 @@ import {
     CONFERENCE_TIME_REMAINED,
     SET_NOTICE_MESSAGE,
     SET_USER_DEVICE_ACCESS_DISABLED,
-    DEVICE_ACCESS_DISABLED,
-    NON_PARTICIPANT_MESSAGE_RECEIVED
+    DEVICE_ACCESS_DISABLED
 } from './actionTypes';
 import {
     AVATAR_URL_COMMAND,
@@ -190,15 +190,15 @@ function _addConferenceListeners(conference, dispatch, state) {
 
     conference.on(
         JitsiConferenceEvents.DOMINANT_SPEAKER_CHANGED,
-        id => dispatch(dominantSpeakerChanged(id, conference)));
-
-    conference.on(
-        JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED,
-        (...args) => dispatch(nonParticipantMessageReceived(...args)));
+        (dominant, previous) => dispatch(dominantSpeakerChanged(dominant, previous, conference)));
 
     conference.on(
         JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED,
         (...args) => dispatch(endpointMessageReceived(...args)));
+
+    conference.on(
+        JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED,
+        (...args) => dispatch(nonParticipantMessageReceived(...args)));
 
     conference.on(
         JitsiConferenceEvents.PARTICIPANT_CONN_STATUS_CHANGED,

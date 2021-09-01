@@ -45,20 +45,6 @@ type State = {
  */
 class ReactionEmoji extends Component<Props, State> {
     /**
-     * Initializes a new {@code ReactionEmoji} instance.
-     *
-     * @param {Props} props - The read-only React {@code Component} props with
-     * which the new instance is to be initialized.
-     */
-    constructor(props: Props) {
-        super(props);
-
-        this.state = {
-            index: props.index % 21
-        };
-    }
-
-    /**
      * Implements React Component's componentDidMount.
      *
      * @inheritdoc
@@ -73,17 +59,31 @@ class ReactionEmoji extends Component<Props, State> {
      * @inheritdoc
      */
     render() {
-        const { reaction, uid } = this.props;
-        const { index } = this.state;
+        const { isChatOpen, reaction, uid } = this.props;
 
         return (
             <div
-                className = { `reaction-emoji reaction-${index}` }
+                className = { `reaction-emoji${isChatOpen ? ' shift-right' : ''}` }
                 id = { uid }>
-                { REACTIONS[reaction].emoji }
+                <img src={ REACTIONS[reaction].animoji } alt='animoji' />
             </div>
         );
     }
+}
+
+/**
+ * Maps (parts of) the Redux state to the associated LargeVideo props.
+ *
+ * @param {Object} state - The Redux state.
+ * @private
+ * @returns {Props}
+ */
+function mapStateToProps(state) {
+    const { isOpen: isChatOpen } = state['features/chat'];
+
+    return {
+        isChatOpen,
+    };
 }
 
 const mapDispatchToProps = {
@@ -91,6 +91,6 @@ const mapDispatchToProps = {
 };
 
 export default connect(
-    null,
+    mapStateToProps,
     mapDispatchToProps,
 )(ReactionEmoji);

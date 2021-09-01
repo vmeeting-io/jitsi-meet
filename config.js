@@ -41,9 +41,6 @@ var config = {
     // Websocket URL
     websocket: 'wss://jitsi-meet.example.com/xmpp-websocket',
 
-    // The name of client node advertised in XEP-0115 'c' stanza
-    clientNode: 'http://jitsi.org/jitsimeet',
-
     // The real JID of focus participant - can be overridden here
     // Do not change username - FIXME: Make focus username configurable
     // https://github.com/jitsi/jitsi-meet/issues/7376
@@ -90,7 +87,7 @@ var config = {
     },
 
     // Enables reactions feature.
-    // enableReactions: false,
+    enableReactions: true,
 
     // Disables polls feature.
     // disablePolls: false,
@@ -412,6 +409,11 @@ var config = {
     // bridge itself is reachable via UDP)
     // useTurnUdp: false
 
+    // Enable support for encoded transform in supported browsers. This allows
+    // E2EE to work in Safari if the corresponding flag is enabled in the browser.
+    // Experimental.
+    // enableEncodedTransformSupport: false,
+
     // UI
     //
 
@@ -546,6 +548,10 @@ var config = {
        'videoquality',
        '__end'
     ],
+
+    // List of pre meeting screens buttons to hide. The values must be one or more of the 5 allowed buttons:
+    // 'microphone', 'camera', 'select-background', 'invite', 'settings'
+    // hiddenPremeetingButtons: [],
 
     // Stats
     //

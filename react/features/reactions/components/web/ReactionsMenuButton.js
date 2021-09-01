@@ -8,11 +8,8 @@ import { getLocalParticipant } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import ToolbarButton from '../../../toolbox/components/web/ToolbarButton';
 import { toggleReactionsMenuVisibility } from '../../actions.web';
-import { type ReactionEmojiProps } from '../../constants';
-import { getReactionsQueue } from '../../functions.any';
 import { getReactionsMenuVisibility } from '../../functions.web';
 
-import ReactionEmoji from './ReactionEmoji';
 import ReactionsMenuPopup from './ReactionsMenuPopup';
 
 type Props = {
@@ -38,11 +35,6 @@ type Props = {
     isOpen: boolean,
 
     /**
-     * The array of reactions to be displayed.
-     */
-    reactionsQueue: Array<ReactionEmojiProps>,
-
-    /**
      * Redux dispatch function.
      */
     dispatch: Function
@@ -60,7 +52,6 @@ function ReactionsMenuButton({
     t,
     raisedHand,
     isOpen,
-    reactionsQueue,
     dispatch
 }: Props) {
 
@@ -84,11 +75,6 @@ function ReactionsMenuButton({
                     toggled = { raisedHand }
                     tooltip = { t(`toolbar.${isOpen ? 'closeReactionsMenu' : 'openReactionsMenu'}`) } />
             </ReactionsMenuPopup>
-            {reactionsQueue.map(({ reaction, uid }, index) => (<ReactionEmoji
-                index = { index }
-                key = { uid }
-                reaction = { reaction }
-                uid = { uid } />))}
         </div>
     );
 }
@@ -104,7 +90,6 @@ function mapStateToProps(state) {
 
     return {
         isOpen: getReactionsMenuVisibility(state),
-        reactionsQueue: getReactionsQueue(state),
         raisedHand: localParticipant?.raisedHand
     };
 }

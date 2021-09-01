@@ -6,6 +6,7 @@ import UIEvents from '../../../../service/UI/UIEvents';
 import { toggleE2EE } from '../../e2ee/actions';
 import { NOTIFICATION_TIMEOUT, showNotification } from '../../notifications';
 import { CALLING, INVITED } from '../../presence-status';
+import { RAISE_HAND_SOUND_ID } from '../../reactions/constants';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../app';
 import {
     CONFERENCE_JOINED,
@@ -537,10 +538,6 @@ function _participantJoinedOrUpdated(store, next, action) {
         APP.UI.refreshAvatarDisplay(currentKnownId);
     }
 
-    if (action.name !== getParticipantDisplayName(getState())) {
-        // dispatch(reorderParticipants());
-    }
-
     return result;
 }
 
@@ -573,6 +570,7 @@ function _raiseHandUpdated({ dispatch, getState }, conference, participantId, ne
             },
             titleKey: 'notify.raisedHand'
         }, NOTIFICATION_TIMEOUT));
+        dispatch(playSound(RAISE_HAND_SOUND_ID));
     }
 }
 

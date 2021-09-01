@@ -109,19 +109,6 @@ class ReactionButton extends AbstractToolbarButton<Props, State> {
      */
     _onClickHandler() {
         this.props.onClick();
-        clearTimeout(this.state.increaseTimeout);
-        const timeout = setTimeout(() => {
-            this.setState({
-                increaseLevel: 0
-            });
-        }, 500);
-
-        this.setState(state => {
-            return {
-                increaseLevel: state.increaseLevel + 1,
-                increaseTimeout: timeout
-            };
-        });
     }
 
     /**

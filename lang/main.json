@@ -482,7 +482,8 @@
         "desktopShare":"Desktop share",
         "desktopShareAudioWarning": "Audio is not shared!",
         "desktopShareAudioWarningDesc": "Audio is not shared in Desktop-share background mode.",
-        "webAssemblyWarning": "WebAssembly not supported"
+        "webAssemblyWarning": "WebAssembly not supported",
+        "backgroundEffectError": "Failed to apply background effect."
     },
     "feedback": {
         "average": "Average",

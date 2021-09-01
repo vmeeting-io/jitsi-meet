@@ -95,6 +95,11 @@ type Props = {
     _thumbnailWidth: number,
 
     /**
+     * Flag that indicates whether the thumbnails will be reordered.
+     */
+    _thumbnailsReordered: Boolean,
+
+    /**
      * Additional CSS class names to add to the container of all the thumbnails.
      */
     _videosClassName: string,
@@ -317,8 +322,9 @@ class Filmstrip extends PureComponent <Props> {
      */
     _onListItemsRendered({ visibleStartIndex, visibleStopIndex }) {
         const { dispatch } = this.props;
+        const { startIndex, stopIndex } = this._calculateIndices(visibleStartIndex, visibleStopIndex);
 
-        dispatch(setVisibleRemoteParticipants(visibleStartIndex, visibleStopIndex + 1));
+        dispatch(setVisibleRemoteParticipants(startIndex, stopIndex));
     }
 
     _onGridItemsRendered: Object => void;

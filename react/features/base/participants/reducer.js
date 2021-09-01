@@ -1,6 +1,6 @@
 // @flow
 
-import { map } from 'lodash';
+import { SCREEN_SHARE_REMOTE_PARTICIPANTS_UPDATED } from '../../video-layout/actionTypes';
 import { ReducerRegistry, set } from '../redux';
 
 import {
@@ -11,7 +11,6 @@ import {
     PARTICIPANT_UPDATED,
     PIN_PARTICIPANT,
     SET_LOADABLE_AVATAR_URL,
-    SET_PARTICIPANTS
 } from './actionTypes';
 import { LOCAL_PARTICIPANT_DEFAULT_ID, PARTICIPANT_ROLE } from './constants';
 import { isParticipantModerator } from './functions';
@@ -64,7 +63,8 @@ const DEFAULT_STATE = {
     pinnedParticipant: undefined,
     remote: new Map(),
     sortedRemoteParticipants: new Map(),
-    speakersList: []
+    sortedRemoteScreenshares: new Map(),
+    speakersList: new Map()
 };
 
 /**
@@ -98,13 +98,21 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
     }
     case DOMINANT_SPEAKER_CHANGED: {
         const { participant } = action;
-        const { id, previousSpeakers = [] } = participant;
+        const { id } = participant;
         const { dominantSpeaker, local } = state;
-        const speakersList = [];
+        const newSpeakers = [ id ];
+        const sortedSpeakersList = [];
 
-        // Update the speakers list.
-        id !== local?.id && speakersList.push(id);
-        speakersList.push(...previousSpeakers.filter(p => p !== local?.id));
+        for (const speaker of newSpeakers) {
+            if (speaker !== local?.id) {
+                const remoteParticipant = state.remote.get(speaker);
+
+                remoteParticipant && sortedSpeakersList.push([ speaker, _getDisplayName(remoteParticipant.name) ]);
+            }
+        }
+
+        // Keep the remote speaker list sorted alphabetically.
+        sortedSpeakersList.sort((a, b) => a[1].localeCompare(b[1]));
 
         // Only one dominant speaker is allowed.
         if (dominantSpeaker) {
@@ -115,7 +123,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
             return {
                 ...state,
                 dominantSpeaker: id,
-                speakersList
+                speakersList: new Map(sortedSpeakersList)
             };
         }
 
@@ -238,8 +246,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
         state.remote.set(id, participant);
 
         // Insert the new participant.
-        const displayName = name
-            ?? (typeof interfaceConfig === 'object' ? interfaceConfig.DEFAULT_REMOTE_DISPLAY_NAME : 'Fellow Jitser');
+        const displayName = _getDisplayName(name);
         const sortedRemoteParticipants = Array.from(state.sortedRemoteParticipants);
 
         sortedRemoteParticipants.push([ id, displayName ]);
@@ -248,6 +255,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
         // The sort order of participants is preserved since Map remembers the original insertion order of the keys.
         state.sortedRemoteParticipants = new Map(sortedRemoteParticipants);
 
+        console.log('PARTICIPANT_JOINED:', state.sortedRemoteParticipants);
         if (isFakeParticipant) {
             state.fakeParticipants.set(id, participant);
         }
@@ -306,7 +314,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
         }
 
         // Remove the participant from the list of speakers.
-        state.speakersList = state.speakersList.filter(speaker => speaker !== id);
+        state.speakersList.has(id) && state.speakersList.delete(id);
 
         if (pinnedParticipant === id) {
             state.pinnedParticipant = undefined;
@@ -322,12 +330,41 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
 
         return { ...state };
     }
-    case SET_PARTICIPANTS:
-        return action.participants;
+    case SCREEN_SHARE_REMOTE_PARTICIPANTS_UPDATED: {
+        const { participantIds } = action;
+        const sortedSharesList = [];
+
+        for (const participant of participantIds) {
+            const remoteParticipant = state.remote.get(participant);
+
+            if (remoteParticipant) {
+                const displayName = _getDisplayName(remoteParticipant.name);
+
+                sortedSharesList.push([ participant, displayName ]);
+            }
+        }
+
+        // Keep the remote screen share list sorted alphabetically.
+        sortedSharesList.length && sortedSharesList.sort((a, b) => a[1].localeCompare(b[1]));
+        state.sortedRemoteScreenshares = new Map(sortedSharesList);
+
+        return { ...state };
+    }
     }
 
     return state;
 });
+
+/**
+ * Returns the participant's display name, default string if display name is not set on the participant.
+ *
+ * @param {string} name - The display name of the participant.
+ * @returns {string}
+ */
+function _getDisplayName(name) {
+    return name
+        ?? (typeof interfaceConfig === 'object' ? interfaceConfig.DEFAULT_REMOTE_DISPLAY_NAME : 'Fellow Jitser');
+}
 
 /**
  * Loops trough the participants in the state in order to check if all participants are moderators.
@@ -343,32 +380,6 @@ function _isEveryoneModerator(state) {
                 return false;
             }
         }
-
-        return true;
-    }
-
-    return false;
-}
-
-
-/**
- * Updates a specific property for a participant.
- *
- * @param {State} state - The redux state.
- * @param {string} id - The ID of the participant.
- * @param {string} property - The property to update.
- * @param {*} value - The new value.
- * @returns {boolean} - True if a participant was updated and false otherwise.
- */
-function _updateParticipantProperty(state, id, property, value) {
-    const { remote, local } = state;
-
-    if (remote.has(id)) {
-        remote.set(id, set(remote.get(id), property, value));
-
-        return true;
-    } else if (local?.id === id) {
-        state.local = set(local, property, value);
 
         return true;
     }
@@ -473,17 +484,27 @@ function _participantJoined({ participant }) {
     };
 }
 
-function _participantUpsert(state, action) {
-    let found = false;
-    let newState = state.map(p => {
-        if (p.id === action.id) {
-            found = true;
-            return _participantJoined(action);
-        }
-        return p;
-    });
-    if (!found) {
-        newState.push(_participantJoined(action));
+/**
+ * Updates a specific property for a participant.
+ *
+ * @param {State} state - The redux state.
+ * @param {string} id - The ID of the participant.
+ * @param {string} property - The property to update.
+ * @param {*} value - The new value.
+ * @returns {boolean} - True if a participant was updated and false otherwise.
+ */
+function _updateParticipantProperty(state, id, property, value) {
+    const { remote, local } = state;
+
+    if (remote.has(id)) {
+        remote.set(id, set(remote.get(id), property, value));
+
+        return true;
+    } else if (local?.id === id) {
+        state.local = set(local, property, value);
+
+        return true;
     }
-    return newState;
+
+    return false;
 }

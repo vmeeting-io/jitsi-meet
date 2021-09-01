@@ -474,7 +474,8 @@
         "desktopShare":"화면 공유",
         "desktopShareAudioWarning": "오디오가 공유되지 않습니다!",
         "desktopShareAudioWarningDesc": "배경으로 화면을 공유하는 경우 오디오가 공유되지 않습니다.",
-        "webAssemblyWarning": "WebAssembly가 지원되지 않습니다."
+        "webAssemblyWarning": "WebAssembly가 지원되지 않습니다.",
+        "backgroundEffectError": "배경 적용에 실패했습니다."
     },
     "feedback": {
         "average": "보통",

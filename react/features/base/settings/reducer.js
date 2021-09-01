@@ -31,7 +31,7 @@ const DEFAULT_STATE = {
     soundsParticipantJoined: true,
     soundsParticipantLeft: true,
     soundsTalkWhileMuted: true,
-    soundsReactions: true,
+    soundsReactions: false,
     startAudioOnly: false,
     startWithAudioMuted: false,
     startWithVideoMuted: false,
@@ -61,6 +61,7 @@ Object.keys(DEFAULT_STATE).forEach(key => {
 filterSubtree.audioOutputDeviceId = false;
 filterSubtree.cameraDeviceId = false;
 filterSubtree.micDeviceId = false;
+filterSubtree.soundsReactions = false;
 
 PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
 

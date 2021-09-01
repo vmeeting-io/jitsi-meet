@@ -9,6 +9,7 @@ import {
     createToolbarEvent,
     sendAnalytics
 } from '../../../analytics';
+import { ARFeatureButton } from '../../../ar-effect';
 import { getToolbarButtons } from '../../../base/config';
 import { isToolbarButtonEnabled } from '../../../base/config/functions.web';
 import { openDialog, toggleDialog } from '../../../base/dialog';
@@ -711,6 +712,12 @@ class Toolbox extends Component<Props> {
             group: 3
         };
 
+        const arFeature = {
+            key: 'ar-effect',
+            Content: ARFeatureButton,
+            group: 3
+        }
+
         const settings = {
             key: 'settings',
             Content: SettingsButton,
@@ -771,6 +778,7 @@ class Toolbox extends Component<Props> {
             etherpad,
             virtualBackground,
             speakerStats,
+            arFeature,
             settings,
             shortcuts,
             embed,

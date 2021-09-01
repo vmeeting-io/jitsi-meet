@@ -197,6 +197,8 @@ function VirtualBackground({
             }
         }
 
+
+
         if (!url) {
             if (!isCancelled) {
                 dispatch(showErrorNotification({
@@ -215,6 +217,14 @@ function VirtualBackground({
             }
 
             return;
+        }
+
+        if (Array.isArray(url)){ //if createLocalTrack returns both audio and video track
+            url = url[1]; //url[0] is audio track
+            dispatch(showWarningNotification({
+                titleKey: 'virtualBackground.desktopShareAudioWarning',
+                descriptionKey: 'virtualBackground.desktopShareAudioWarningDesc'
+            }));
         }
 
         const newOptions = {

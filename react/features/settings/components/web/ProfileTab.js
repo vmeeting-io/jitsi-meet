@@ -13,6 +13,8 @@ import { AbstractDialogTab } from '../../../base/dialog';
 import type { Props as AbstractDialogTabProps } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
 import { openLogoutDialog } from '../../actions';
+import { getLocalParticipant} from '../../../base/participants';
+import tokenLocalStorage from '../../../../api/tokenLocalStorage';
 
 declare var APP: Object;
 
@@ -181,22 +183,25 @@ class ProfileTab extends AbstractDialogTab<Props> {
             t
         } = this.props;
 
+        const loggedIn = tokenLocalStorage.getItem(APP.store.getState());
+        const localParticipant = getLocalParticipant(APP.store.getState());
+        const loggedInName = localParticipant.name;
         return (
             <div>
                 <h2 className = 'mock-atlaskit-label'>
                     { t('toolbar.authenticate') }
                 </h2>
-                { authLogin
+                { loggedIn
                     && <div className = 'auth-name'>
-                        { t('settings.loggedIn', { name: authLogin }) }
+                        { t('settings.loggedIn', { name: loggedInName }) }
                     </div> }
-                <Button
+                { !loggedIn && <Button
                     appearance = 'primary'
                     id = 'login_button'
                     onClick = { this._onAuthToggle }
                     type = 'button'>
-                    { authLogin ? t('toolbar.logout') : t('toolbar.login') }
-                </Button>
+                    { t('toolbar.login') }
+                </Button>}
             </div>
         );
     }

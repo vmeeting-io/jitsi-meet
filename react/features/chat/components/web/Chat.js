@@ -33,7 +33,7 @@ import s from './Chat.module.scss';
 import { openDialog } from '../../../base/dialog';
 import EnableChatForAllParticipantsDialog from '../../../video-menu/components/web/EnableChatForAllParticipantsDialog';
 import DisableChatForAllParticipantsDialog from '../../../video-menu/components/web/DisableChatForAllParticipantsDialog';
-
+import { setPrivateMessageRecipient } from '../../actions';
 import { showToast } from '../../../notifications';
 
 import Mark from 'mark.js';
@@ -223,7 +223,16 @@ class Chat extends AbstractChat<Props> {
      * @returns {ReactElement}
      */
     _renderChat() {
-        const { _showChatInput } = this.props;
+        const { _showChatInput, _privateMessageRecipient } = this.props;
+        let _showMessageRecipient = false;
+
+        if((_privateMessageRecipient !== undefined) && (_privateMessageRecipient !== 'Vmeeter') && (_privateMessageRecipient !== 'Fellow Jister')) {
+            _showMessageRecipient = true;
+        } else {
+            // when the _showMessageRecipient is false, i.e. there is no private message recipient, 
+            // then dispatch reseting of private messaging
+            this.props.dispatch(setPrivateMessageRecipient());
+        }
 
         if (this.props._isPollsTabFocused) {
             return (
@@ -243,7 +252,7 @@ class Chat extends AbstractChat<Props> {
                         messages = { this.props._messages }
                         ref = { this._messageContainerRef } />
                 </TouchmoveHack>
-                <MessageRecipient />
+                { _showMessageRecipient && <MessageRecipient /> }
                 { _showChatInput && (
                     <>
                         <ChatInput

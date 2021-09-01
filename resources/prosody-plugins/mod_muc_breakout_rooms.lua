@@ -1,5 +1,36 @@
+-- This module is added under the main virtual host domain
+-- It needs a breakout rooms muc component
+--
+-- VirtualHost "jitmeet.example.com"
+--     modules_enabled = {
+--         "muc_breakout_rooms"
+--     }
+--     breakout_rooms_muc = "breakout.jitmeet.example.com"
+--     main_muc = "muc.jitmeet.example.com"
+--
+-- Component "breakout.jitmeet.example.com" "muc"
+--     restrict_room_creation = true
+--     storage = "memory"
+--     modules_enabled = {
+--         "muc_meeting_id";
+--         "muc_domain_mapper";
+--         --"token_verification";
+--     }
+--     admins = { "focusUser@auth.jitmeet.example.com" }
+--     muc_room_locking = false
+--     muc_room_default_public_jids = true
+--
+-- we use async to detect Prosody 0.10 and earlier
+local have_async = pcall(require, 'util.async');
+
+if not have_async then
+    module:log('warn', 'Breakout rooms will not work with Prosody version 0.10 or less.');
+    return;
+end
+
 local jid_bare = require 'util.jid'.bare;
 local jid_node = require 'util.jid'.node;
+local jid_host = require 'util.jid'.host;
 local jid_resource = require 'util.jid'.resource;
 local jid_split = require 'util.jid'.split;
 local json = require 'util.json';
@@ -8,40 +39,59 @@ local uuid_gen = require 'util.uuid'.generate;
 
 local get_room_from_jid = module:require "util".get_room_from_jid;
 
+local BREAKOUT_ROOMS_IDENTITY_TYPE = 'breakout_rooms';
+-- only send at most this often updates on breakout rooms to avoid flooding.
 local BROADCAST_ROOMS_INTERVAL = .3;
+-- close conference after this amount of seconds if all leave.
 local ROOMS_TTL_IF_ALL_LEFT = 5;
 local JSON_TYPE_ADD_BREAKOUT_ROOM = 'features/breakout-rooms/add';
 local JSON_TYPE_MOVE_TO_ROOM_REQUEST = 'features/breakout-rooms/move-to-room-request';
 local JSON_TYPE_REMOVE_BREAKOUT_ROOM = 'features/breakout-rooms/remove';
 local JSON_TYPE_UPDATE_BREAKOUT_ROOMS = 'features/breakout-rooms/update';
-local BREAKOUT_ROOMS_SUFFIX_PATTERN = '_breakout-[-%x]+$';
 
 local main_muc_component_config = module:get_option_string('main_muc');
 if main_muc_component_config == nil then
     module:log('error', 'breakout rooms not enabled missing main_muc config');
     return ;
 end
+local breakout_rooms_muc_component_config = module:get_option_string('breakout_rooms_muc', 'breakout.'..module.host);
+
+module:depends('jitsi_session');
+
+local breakout_rooms_muc_service;
+local main_muc_service;
 
 
 -- Utility functions
 
 function get_main_room_jid(room_jid)
-    local node = jid_node(room_jid);
-    local from_index, to_index = node:find(BREAKOUT_ROOMS_SUFFIX_PATTERN);
+    local node, host = jid_split(room_jid);
+    local breakout_room_suffix_index = node:find('_[-%x]+$');
 
-	return from_index and node:sub(1, from_index - 1) .. room_jid:sub(to_index + 1) or room_jid
+	return
+        host == main_muc_component_config
+        and room_jid
+        or node:sub(1, breakout_room_suffix_index - 1) .. '@' .. main_muc_component_config;
 end
 
 function get_main_room(room_jid)
     local main_room_jid = get_main_room_jid(room_jid);
 
-    return get_room_from_jid(main_room_jid), main_room_jid;
+    return main_muc_service.get_room_from_jid(main_room_jid), main_room_jid;
 end
 
+function get_room_from_jid(room_jid)
+    local host = jid_host(room_jid);
+
+    return
+        host == main_muc_component_config
+        and main_muc_service.get_room_from_jid(room_jid)
+        or breakout_rooms_muc_service.get_room_from_jid(room_jid);
+end
 function send_json_msg(room, to, json_msg)
     if room and to then
         room:route_to_occupant(to,
-            st.message({ type = 'chat', from = room.jid .. '/focus' })
+            st.message({ type = 'chat', from = room.jid })
                 :tag('json-message', {xmlns='http://jitsi.org/jitmeet'})
                 :text(json_msg):up());
     end
@@ -50,7 +100,7 @@ end
 function broadcast_json_msg(room, json_msg)
     if room then
         room:broadcast_message(
-            st.message({ type = 'groupchat', from = room.jid .. '/focus' })
+            st.message({ type = 'groupchat', from = room.jid })
                 :tag('json-message', {xmlns='http://jitsi.org/jitmeet'})
                 :text(json_msg):up());
     end
@@ -103,7 +153,7 @@ function broadcast_breakout_rooms(room_jid)
         }
 
         for breakout_room_jid, subject in pairs(main_room._data.breakout_rooms or {}) do
-            local breakout_room = get_room_from_jid(breakout_room_jid);
+            local breakout_room = breakout_rooms_muc_service.get_room_from_jid(breakout_room_jid);
             local breakout_room_node = jid_node(breakout_room_jid)
 
             rooms[breakout_room_node] = {
@@ -124,7 +174,7 @@ function broadcast_breakout_rooms(room_jid)
 
         broadcast_json_msg(main_room, json_msg);
         for breakout_room_jid, breakout_room in pairs(main_room._data.breakout_rooms or {}) do
-            local room = get_room_from_jid(breakout_room_jid);
+            local room = breakout_rooms_muc_service.get_room_from_jid(breakout_room_jid);
             if room then
                 broadcast_json_msg(room, json_msg);
             end
@@ -137,9 +187,9 @@ end
 
 function create_breakout_room(room_jid, from, subject, next_index)
     local main_room, main_room_jid = get_main_room(room_jid);
-    local node, host = jid_split(main_room_jid);
-    -- Breakout rooms are named like the main room with a random uuid suffix
-    local breakout_room_jid = node .. '_breakout-' .. uuid_gen() .. '@' .. host;
+    local node = jid_split(main_room_jid);
+    -- Breakout rooms are named like the main room with a random uuid suffix and the breakout domain.
+    local breakout_room_jid = node .. '_' .. uuid_gen() .. '@' .. breakout_rooms_muc_component_config;
 
     if not main_room._data.breakout_rooms then
         main_room._data.breakout_rooms = {};
@@ -159,7 +209,7 @@ function destroy_breakout_room(room_jid, message)
         return;
     end
 
-    local breakout_room = get_room_from_jid(room_jid);
+    local breakout_room = breakout_rooms_muc_service.get_room_from_jid(room_jid);
 
     if breakout_room then
         message = message or 'Breakout room removed.';
@@ -221,22 +271,18 @@ function on_message(event)
     return;
 end
 
-function on_room_pre_create(event)
-    local room = event.room;
-    local main_room, main_room_jid = get_main_room(room.jid);
-
-    if room.jid == main_room_jid then
-        return;
-    end
+function on_breakout_room_pre_create(event)
+    local breakout_room = event.room;
+    local main_room, main_room_jid = get_main_room(breakout_room.jid);
 
     -- Only allow existent breakout rooms to be started.
     -- Authorisation of breakout rooms is done by their random uuid suffix
-    if main_room and main_room._data.breakout_rooms and main_room._data.breakout_rooms[room.jid] then
-        room._data.subject = main_room._data.breakout_rooms[room.jid];
-        room.save();
+    if main_room and main_room._data.breakout_rooms and main_room._data.breakout_rooms[breakout_room.jid] then
+        breakout_room._data.subject = main_room._data.breakout_rooms[breakout_room.jid];
+        breakout_room.save();
     else
-        module:log('debug', 'Invalid breakout room %s will not be created.', room.jid);
-        room:destroy(main_room_jid, 'Breakout room is invalid.');
+        module:log('debug', 'Invalid breakout room %s will not be created.', breakout_room.jid);
+        breakout_room:destroy(main_room_jid, 'Breakout room is invalid.');
         return true;
     end
 end
@@ -274,7 +320,7 @@ function exist_occupants_in_rooms(main_room)
         return true;
     end
     for breakout_room_jid, breakout_room in pairs(main_room._data.breakout_rooms or {}) do
-        local room = get_room_from_jid(breakout_room_jid);
+        local room = breakout_rooms_muc_service.get_room_from_jid(breakout_room_jid);
         if exist_occupants_in_room(room) then
             return true;
         end
@@ -306,7 +352,7 @@ function on_occupant_left(event)
     end
 end
 
-function on_room_destroyed(event)
+function on_main_room_destroyed(event)
     local main_room = event.room;
     local message = 'Conference ended.';
 
@@ -318,36 +364,72 @@ end
 
 -- Module operations
 
-function process_main_muc_loaded(muc_module, host_module)
-    local host_module = module:context(main_muc_component_config);
-    local room_mt = muc_module.room_mt;
+-- process a host module directly if loaded or hooks to wait for its load
+function process_host_module(name, callback)
+    local function process_host(host)
+        if host == name then
+            callback(module:context(host), host);
+        end
+    end
 
-    module:log("info", "Hook to muc events on %s", main_muc_component_config);
+    if prosody.hosts[name] == nil then
+        module:log('debug', 'No host/component found, will wait for it: %s', name)
+
+        -- when a host or component is added
+        prosody.events.add_handler('host-activated', process_host);
+    else
+        process_host(name);
+    end
+end
+
+
+-- operates on already loaded breakout rooms muc module
+function process_breakout_rooms_muc_loaded(breakout_rooms_muc, host_module)
+    module:log('debug', 'Breakout rooms muc loaded');
+
+    -- Advertise the breakout rooms component so clients can pick up the address and use it
+    module:add_identity('component', BREAKOUT_ROOMS_IDENTITY_TYPE, breakout_rooms_muc_component_config);
+
+    breakout_rooms_muc_service = breakout_rooms_muc;
+    module:log("info", "Hook to muc events on %s", breakout_rooms_muc_component_config);
     host_module:hook('message/full', on_message);
     host_module:hook('muc-occupant-joined', on_occupant_joined);
     host_module:hook('muc-occupant-left', on_occupant_left);
-    host_module:hook('muc-room-destroyed', on_room_destroyed);
-    host_module:hook('muc-room-pre-create', on_room_pre_create);
+    host_module:hook('muc-room-pre-create', on_breakout_room_pre_create);
 
-    room_mt.get_members_only_origin = room_mt.get_members_only;
+    host_module:hook('muc-disco#info', function (event)
+        local room = event.room;
+        local main_room = get_main_room(room.jid);
+
+        if (main_room._data.lobbyroom and main_room:get_members_only()) then
+            table.insert(event.form, {
+                name = 'muc#roominfo_lobbyroom';
+                label = 'Lobby room jid';
+                value = '';
+            });
+            event.formdata['muc#roominfo_lobbyroom'] = main_room._data.lobbyroom;
+        end
+    end);
+
+    local room_mt = breakout_rooms_muc_service.room_mt;
+
     room_mt.get_members_only = function(room)
         local main_room = get_main_room(room.jid);
 
-        return room_mt.get_members_only_origin(main_room or room);
+        return main_room.get_members_only(main_room)
     end
 
-    room_mt.get_lobby = function(room)
-        local main_room = get_main_room(room.jid);
-
-        return (main_room or room)._data.lobbyroom;
-    end
-
-    -- Affiliations (roles) in breakout rooms are based on the roles in the main room.
-    room_mt.get_affiliation_origin = room_mt.get_affiliation;
+    -- we base affiliations (roles) in breakout rooms muc component to be based on the roles in the main muc
     room_mt.get_affiliation = function(room, jid)
         local main_room, main_room_jid = get_main_room(room.jid);
-        local role = room_mt.get_affiliation_origin(main_room or room, jid);
 
+        if not main_room then
+            module:log('error', 'No main room(%s) for %s!', room.jid, jid);
+            return 'none';
+        end
+
+        -- moderators in main room are moderators here
+        local role = main_room.get_affiliation(main_room, jid);
         if role then
             return role;
         end
@@ -356,29 +438,48 @@ function process_main_muc_loaded(muc_module, host_module)
     end
 end
 
-function process_host(host)
-    if host ~= main_muc_component_config then
-        return;
-    end
-
-    module:log('info', 'Main muc component loaded %s', host);
+-- process or waits to process the breakout rooms muc component
+process_host_module(breakout_rooms_muc_component_config, function(host_module, host)
+    module:log('info', 'Breakout rooms component created %s', host);
 
     local muc_module = prosody.hosts[host].modules.muc;
+
     if muc_module then
-        process_main_muc_loaded(muc_module);
+        process_breakout_rooms_muc_loaded(muc_module, host_module);
     else
         module:log('debug', 'Will wait for muc to be available');
         prosody.hosts[host].events.add_handler('module-loaded', function(event)
             if (event.module == 'muc') then
-                process_main_muc_loaded(prosody.hosts[host].modules.muc);
+                process_breakout_rooms_muc_loaded(prosody.hosts[host].modules.muc, host_module);
             end
         end);
     end
+end);
+
+-- operates on already loaded main muc module
+function process_main_muc_loaded(main_muc, host_module)
+    module:log('debug', 'Main muc loaded');
+
+    main_muc_service = main_muc;
+    module:log("info", "Hook to muc events on %s", main_muc_component_config);
+    host_module:hook('message/full', on_message);
+    host_module:hook('muc-occupant-joined', on_occupant_joined);
+    host_module:hook('muc-occupant-left', on_occupant_left);
+    host_module:hook('muc-room-destroyed', on_main_room_destroyed);
 end
 
-if prosody.hosts[main_muc_component_config] == nil then
-    module:log("info", "No muc component found, will listen for it: %s", main_muc_component_config)
-    prosody.events.add_handler("host-activated", process_host);
-else
-    process_host(main_muc_component_config);
-end
+-- process or waits to process the main muc component
+process_host_module(main_muc_component_config, function(host_module, host)
+    local muc_module = prosody.hosts[host].modules.muc;
+
+    if muc_module then
+        process_main_muc_loaded(muc_module, host_module);
+    else
+        module:log('debug', 'Will wait for muc to be available');
+        prosody.hosts[host].events.add_handler('module-loaded', function(event)
+            if (event.module == 'muc') then
+                process_main_muc_loaded(prosody.hosts[host].modules.muc, host_module);
+            end
+        end);
+    end
+end);

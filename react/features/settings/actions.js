@@ -1,4 +1,8 @@
 // @flow
+import axios from 'axios';
+import { getAuthUrl } from '../../api/url';
+import {setJWT} from '../base/jwt';
+import tokenLocalStorage from '../../api/tokenLocalStorage';
 
 import { setFollowMe, setStartMutedPolicy, setUserDeviceAccessDisabled } from '../base/conference';
 import { hideDialog, openDialog } from '../base/dialog';
@@ -125,7 +129,11 @@ export function submitMoreTab(newState: Object): Function {
 export function submitProfileTab(newState: Object): Function {
     return (dispatch, getState) => {
         const currentState = getProfileTabProps(getState());
-
+        const config = {
+            headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(getState())}`}
+          };
+        
+        const _apiBase = getAuthUrl(getState());
         // check if there is a value for displayName i.e. participant's name
         // if it is not set, show a toast message
         if(newState.displayName === "" || newState.displayName === undefined || newState.displayName.trim() === "") {
@@ -138,10 +146,30 @@ export function submitProfileTab(newState: Object): Function {
         else {
             if (newState.displayName !== currentState.displayName) {
                 APP.conference.changeLocalDisplayName(newState.displayName);
+                try {
+                    axios.patch(`${_apiBase}/account`, { name: String(newState.displayName) }, config).then((resp) => {
+                        const token = resp.data;
+                        tokenLocalStorage.setItem(token, APP.store.getState());
+                        dispatch(setJWT(resp.data));
+                    });
+                } catch(err) {
+                    console.log(err);
+                }
+
             }
     
             if (newState.email !== currentState.email) {
                 APP.conference.changeLocalEmail(newState.email);
+                try {
+                    axios.patch(`${_apiBase}/account`, { email: String(newState.email) }, config).then((resp) => {
+                        const token = resp.data;
+                        tokenLocalStorage.setItem(token, APP.store.getState());
+                        dispatch(setJWT(resp.data));
+                    });
+                } catch(err) {
+                    console.log(err);
+                }
+
             }
             
             // previously hideDialog was called on every onSubmit Button, but here we check the above condition

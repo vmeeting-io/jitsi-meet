@@ -78,14 +78,6 @@ export default function({
                         ) }
                     </div>
                     { <NotificationButton
-                        action = { onApprove }
-                        className = 'primary'
-                        id = 'unmute-button'
-                        participant = { p }
-                        testId = { `${testIdPrefix}.allow` }>
-                        { approveButtonText }
-                    </NotificationButton> }
-                    { <NotificationButton
                         action = { onReject }
                         className = 'borderLess'
                         id = 'dismiss-button'
@@ -93,6 +85,13 @@ export default function({
                         testId = { `${testIdPrefix}.reject` }>
                         { rejectButtonText }
                     </NotificationButton>}
+                    { <NotificationButton
+                        action = { onApprove }
+                        className = 'primary'
+                        participant = { p }
+                        testId = { `${testIdPrefix}.allow` }>
+                        { approveButtonText }
+                    </NotificationButton> }
                 </li>
             )) }
         </ul>);

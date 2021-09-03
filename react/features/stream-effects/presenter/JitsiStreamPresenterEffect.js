@@ -215,7 +215,7 @@ export default class JitsiStreamPresenterEffect {
             this._ctx.drawImage(
                 this._videoElement,
                 this._canvas.width - this._videoElement.width,
-                this._canvas.height - this._videoElement.height,
+                0,
                 this._videoElement.width,
                 this._videoElement.height);
 
@@ -223,7 +223,7 @@ export default class JitsiStreamPresenterEffect {
             this._ctx.beginPath();
             this._ctx.lineWidth = 2;
             this._ctx.strokeStyle = '#A9A9A9'; // dark grey
-            this._ctx.rect(this._canvas.width - this._videoElement.width, this._canvas.height - this._videoElement.height,
+            this._ctx.rect(this._canvas.width - this._videoElement.width, 0,
                 this._videoElement.width, this._videoElement.height);
             this._ctx.stroke();
         }

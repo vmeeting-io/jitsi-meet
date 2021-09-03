@@ -178,7 +178,8 @@ function authenticate(room: Object, lockPassword: string) {
     if (isTokenAuthEnabled(config)) {
         doExternalAuth(room, lockPassword);
     } else {
-        window.location.href = `${AUTH_PAGE_BASE}/login?next=${encodeURIComponent(`/${room.getName()}`)}`;
+        const { pathname } = APP.store.getState()['features/base/connection'].locationURL;
+        window.location.href = `${AUTH_PAGE_BASE}/login?next=${encodeURIComponent(pathname)}`;
     }
 }
 

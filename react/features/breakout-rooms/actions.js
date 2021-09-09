@@ -1,8 +1,10 @@
 // @flow
 
+import axios from 'axios';
 import i18next from 'i18next';
 import _ from 'lodash';
 import type { Dispatch } from 'redux';
+import { getAuthUrl } from '../../api/url';
 
 import {
     conferenceLeft,
@@ -12,8 +14,10 @@ import {
     getCurrentConference,
     setRoom
 } from '../base/conference';
+import { configureInitialDevices } from '../base/devices';
 import { setAudioMuted, setVideoMuted } from '../base/media';
 import { getRemoteParticipants } from '../base/participants';
+import { parseURIString } from '../base/util';
 import { clearNotifications } from '../notifications';
 
 import { UPDATE_BREAKOUT_ROOMS } from './actionTypes';
@@ -170,8 +174,12 @@ export function moveToRoom(roomId?: string) {
             dispatch(setAudioMuted(audio.muted));
             dispatch(setVideoMuted(video.muted));
         } else {
-            APP.conference.leaveRoom()
-            .finally(() => APP.conference.joinRoom(_roomId));
+            APP.conference.leaveRoomAndDisconnect()
+            .finally(() => {
+                dispatch(configureInitialDevices()).then(() =>
+                    APP.conference.init({ roomName: _roomId })
+                );
+            });
         }
     };
 }

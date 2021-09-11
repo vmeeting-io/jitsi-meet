@@ -716,8 +716,8 @@
             "muteAll": "Mute all",
             "muteEveryoneElse": "Mute everyone else",
             "startModeration": "Unmute themselves or start video",
-            "stopEveryonesVideo": "Stop everyone's video",
-            "stopVideo": "Stop video",
+            "stopEveryonesVideo": "Mute everyone's video",
+            "stopVideo": "Mute video",
             "unblockEveryoneMicCamera": "Unblock everyone's mic and camera"
         }
     },

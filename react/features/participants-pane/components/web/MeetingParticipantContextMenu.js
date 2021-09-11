@@ -6,7 +6,7 @@ import { isToolbarButtonEnabled } from '../../../base/config/functions.web';
 import { openDialog } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
 import {
-    IconCloseCircle,
+    IconKick,
     IconCrown,
     IconMessage,
     IconMicDisabled,
@@ -362,7 +362,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                                 )
                                             }
                                             <ContextMenuItem onClick = { this._onKick }>
-                                                <ContextMenuIcon src = { IconCloseCircle } />
+                                                <ContextMenuIcon src = { IconKick } />
                                                 <span>{ t('videothumbnail.kick') }</span>
                                             </ContextMenuItem>
                                         </>

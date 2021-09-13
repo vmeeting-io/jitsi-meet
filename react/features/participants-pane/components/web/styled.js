@@ -277,7 +277,7 @@ export const ParticipantContainer = styled.div`
 
   &:hover {
     ${ParticipantStates} {
-      ${props => !props.local && 'display: none'};
+      ${props => !props.$local && 'display: none'};
     }
   }
 

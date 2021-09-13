@@ -2,14 +2,16 @@
 
 import { batch } from 'react-redux';
 
+import { appNavigate } from '../app/actions';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app';
 import { CONFERENCE_FAILED, CONFERENCE_JOINED } from '../base/conference';
-import { JitsiConferenceErrors, JitsiConferenceEvents } from '../base/lib-jitsi-meet';
+import { disconnect } from '../base/connection';
+import { browser, JitsiConferenceErrors, JitsiConferenceEvents } from '../base/lib-jitsi-meet';
 import { getFirstLoadableAvatarUrl, getParticipantDisplayName } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
 import { playSound, registerSound, unregisterSound } from '../base/sounds';
 import { isTestModeEnabled } from '../base/testing';
-import { NOTIFICATION_TYPE, showNotification } from '../notifications';
+import { saveErrorNotification, showNotification } from '../notifications';
 import { shouldAutoKnock } from '../prejoin/functions';
 
 import { KNOCKING_PARTICIPANT_ARRIVED_OR_UPDATED } from './actionTypes';
@@ -127,11 +129,15 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
     dispatch(hideLobbyScreen());
 
     if (error.name === JitsiConferenceErrors.CONFERENCE_ACCESS_DENIED) {
-        dispatch(showNotification({
-            appearance: NOTIFICATION_TYPE.ERROR,
+        dispatch(saveErrorNotification({
             hideErrorSupportLink: true,
             titleKey: 'lobby.joinRejectedMessage'
         }));
+        if (browser.isReactNative()) {
+            dispatch(appNavigate(undefined));
+        } else {
+            dispatch(disconnect(false));
+        }
     }
 
     return next(action);

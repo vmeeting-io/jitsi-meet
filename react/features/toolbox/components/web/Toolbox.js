@@ -1282,13 +1282,13 @@ class Toolbox extends Component<Props, State> {
                                         const showSeparator = index > 0 && arr[index - 1].group !== group;
 
                                         return (key !== 'raisehand' || !_reactionsEnabled)
-                                            && <>
+                                            && <React.Fragment key = {index}>
                                                 {showSeparator && <Separator key = { `hr${group}` } />}
                                                 <Content
                                                     { ...rest }
                                                     key = { key }
                                                     showLabel = { true } />
-                                            </>
+                                            </React.Fragment>
                                         ;
                                     })}
                                 </ul>

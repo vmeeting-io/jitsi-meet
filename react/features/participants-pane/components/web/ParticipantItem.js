@@ -114,7 +114,7 @@ export default function ParticipantItem({
         <ParticipantContainer
             id = { `participant-item-${participantID}` }
             isHighlighted = { isHighlighted }
-            local = { local }
+            $local = { local }
             onMouseLeave = { onLeave }
             trigger = { actionsTrigger }>
             <Avatar

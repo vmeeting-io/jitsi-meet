@@ -2365,7 +2365,7 @@ export default {
             room.on(JitsiConferenceEvents.PARTICIPANT_CHAT_DISABLED, participant => {
                 APP.store.dispatch(participantChatDisabled(room, participant));
             });
-    
+
             room.on(JitsiConferenceEvents.PARTICIPANT_CHAT_ENABLED, participant => {
                 //dispatch actions here
                 APP.store.dispatch(participantChatEnabled(room, participant));

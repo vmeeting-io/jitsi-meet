@@ -27,7 +27,7 @@ var config = {
 		   timeout:2       //Captcha expiry time for self hosted captcha in minutes.
         },
         noOfFailedLoginAttemptsAllowed: 5  //no of failed login attempt allowed with captcha disabled.
-    },	
+    },
 
     // whether or not to allow moderator to disable other participant's device
     enableUserDeviceAccessDisabledOption: false,
@@ -231,8 +231,11 @@ var config = {
     // Optional desktop sharing frame rate options. Default value: min:5, max:5.
     desktopSharingFrameRate: {
         min: 5,
-        max: 15
+        max: 5
     },
+
+    // Optional sharing framerate when camera is on. default to 5
+    // frameRateVideoSharingWithCamera: 5,
 
     // Try to start calls with screen-sharing instead of camera video.
     // startScreenSharing: false,

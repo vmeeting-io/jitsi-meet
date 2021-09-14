@@ -75,7 +75,7 @@ export default class JitsiStreamPresenterEffect {
         const maxHeight = h;
 
         // Set the video element properties
-        this._frameRate = parseInt(frameRate, 10);
+        this._frameRate = parseInt(config.frameRateVideoSharingWithCamera ? config.frameRateVideoSharingWithCamera : 5);
         this._videoElement.width = pipMode ? parseInt(width, 10) : Math.min(parseInt(width, 10), maxWidth);
         this._videoElement.height = pipMode ? parseInt(height, 10) : Math.min(parseInt(height, 10), maxHeight);
         this._videoElement.autoplay = true;
@@ -149,7 +149,7 @@ export default class JitsiStreamPresenterEffect {
         if (!this._config.pipMode) {
             this._canvas.width = CANVAS_WIDTH;
             this._canvas.height = CANVAS_HEIGHT;
-    
+
             let rc = this._config.layout.desktop.rect;
             let { w, h } = rc;
 
@@ -238,7 +238,7 @@ export default class JitsiStreamPresenterEffect {
     _loadConfig() {
         const layout = merge({
             background: { w: 1280, h: 720 },
-            desktop: { 
+            desktop: {
                 rect: { x: 40, y: 142, w: 910, h: 512 },
             },
             presenter: {
@@ -248,11 +248,11 @@ export default class JitsiStreamPresenterEffect {
                 title: { color: 'white', fontSize: 14, fontWeight: 'lighter', fontFamily: '맑은 고딕', lineHeight: 1.5, x: 978, y: 395 },
             }
         }, config.presenter?.layout);
-        
+
         // map position from background to canvas
         const mapX = x => parseInt(CANVAS_WIDTH * x / layout.background.w, 10);
         const mapY = y => parseInt(CANVAS_HEIGHT * y / layout.background.h, 10);
-        
+
         const _config = {
             backgroundImageUrl: config.presenter?.backgroundImageUrl || '',
             pipMode: config.presenter?.pipMode ?? true,

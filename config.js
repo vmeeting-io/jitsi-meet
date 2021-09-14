@@ -13,7 +13,7 @@ var config = {
         },
         download:{
             krLink : "/static/doc/manual/Vmeeting_Manual_KO.pdf",
-            enLink : "/static/doc/manual/Vmeeting_Manual_EN.pdf";
+            enLink : "/static/doc/manual/Vmeeting_Manual_EN.pdf"
         }
     },
     //Capatcha Configs

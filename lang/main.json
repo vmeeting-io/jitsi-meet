@@ -1041,7 +1041,12 @@
         "enterTileView": "Enter tile view",
         "exitFullScreen": "Exit full screen",
         "exitTileView": "Exit tile view",
-        "features": "Features",
+        "features": {
+            "title": "Features",
+            "learnMore": "Learn More",
+            "downloadManual": "Download Manual",
+            "support": "Support"
+        },
         "feedback": "Leave feedback",
         "grantModeratorAndHangup": "Grant Moderator and Leave",
         "hangup": "Leave",

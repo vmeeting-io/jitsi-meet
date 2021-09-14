@@ -224,6 +224,19 @@ class WelcomePage extends AbstractWelcomePage {
         }
     }
 
+    _getManualDownloadLink(){
+        const krLink = "https://docs.google.com/presentation/d/1xqwXdVbumAXp62Q0oSKp4qXSc62nCOb1/edit?usp=sharing&ouid=115914746874013996115&rtpof=true&sd=true";
+        const enLink = "https://drive.google.com/file/d/1RINJ9h0U5GTeDDsfVAb2KUaKeww2uLAG/view?usp=sharing";
+        window.location.href = localStorage.language == "ko" ? krLink:enLink;
+    }
+
+    
+    _getSiteLink(){
+        const enLink = "https://sites.google.com/kedutech.kr/en-vmeeting-guide-v1/ko-home";
+        const krLink = "https://sites.google.com/kedutech.kr/ko-vmeeting-guide-v1/home";
+        window.location.href = localStorage.language == "ko" ? krLink:enLink;
+    }
+
     /**
      * Logout handler.
      *
@@ -368,7 +381,8 @@ class WelcomePage extends AbstractWelcomePage {
         } else {
             buttons.push(
                 <Button
-                    className = {`${s.primary} ${s.button}`}
+                    appearance = 'subtle'
+                    className = {s.button}
                     href = { `${AUTH_PAGE_BASE}/register` }
                     key = 'register'>
                     { t('toolbar.Register') }
@@ -401,13 +415,46 @@ class WelcomePage extends AbstractWelcomePage {
                             className = {s.watermark}
                             defaultJitsiLogoURL = { DEFAULT_WELCOME_PAGE_LOGO_URL } />
                         <div className = {s.toolbars}>
+                            <DropdownMenu
+                                onOpenChange = { this._onOpenChange }
+                                position = "bottom left"
+                                key = 'userMenu'
+                                trigger = {
+                                    <div id="featureDropdown" className = {s.feature}>
+                                        {t('toolbar.features.title')}
+                                    </div>
+                                }
+                                triggerType = 'button'>
+                                <DropdownItemGroup className = { s.menuContainer }>
+                                    <DropdownItem 
+                                        className = {`${s.menuItem}`}
+                                        onClick = { this._getSiteLink }>
+                                        { t('toolbar.features.learnMore') } 
+                                    </DropdownItem>
+                                    
+                                    <DropdownItem 
+                                        className = {`${s.menuItem}`}
+                                        onClick = { this._getManualDownloadLink }>
+                                        { t('toolbar.features.downloadManual') }
+                                    </DropdownItem>
+                                   
+                                   
+                                    <DropdownItem
+                                        className = {s.menuItem} 
+                                        href = { "mailto:vmeeting-info@kedutech.kr"} >
+                                        {t('toolbar.features.support')} 
+                                    </DropdownItem>
+                                </DropdownItemGroup>
+                            </DropdownMenu>
+
+                            
                             <ButtonGroup>
-                                <Button
+                                {/* <Button
                                     appearance = 'subtle'
                                     className = {_user ? `${s.button} ${s.desktop}` : `${s.button}`}
                                     href = { `${AUTH_PAGE_BASE}/features` }>
                                     {t('toolbar.features')}
-                                </Button>
+                                </Button> */}
                                 { buttons }
                                 <Button
                                     appearance = 'subtle'

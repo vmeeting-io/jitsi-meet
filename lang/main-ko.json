@@ -1024,7 +1024,12 @@
         "enterTileView": "타일뷰 시작",
         "exitFullScreen": "전체화면 취소",
         "exitTileView": "타일뷰 종료",
-        "features": "주요기능",
+        "features": {
+            "title": "Vmeeting 소개",
+            "learnMore": "기능 설명",
+            "downloadManual": "매뉴얼 다운로드",
+            "support": "문의하기"
+        },
         "feedback": "피드백 남기기",
         "grantModeratorAndHangup": "방장 위임 후 종료",
         "hangup": "회의 나가기",

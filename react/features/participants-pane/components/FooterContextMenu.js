@@ -11,7 +11,7 @@ import {
     isSupported as isAvModerationSupported
 } from '../../av-moderation/functions';
 import { openDialog } from '../../base/dialog';
-import { Icon, IconCheck, IconVideoOff } from '../../base/icons';
+import { Icon, IconCheck, IconVideoOff, IconAnnouncement, IconStopWatch } from '../../base/icons';
 import { MEDIA_TYPE } from '../../base/media';
 import {
     getLocalParticipant,
@@ -70,10 +70,39 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
     const muteAllVideo = useCallback(
         () => dispatch(openDialog(MuteEveryonesVideoDialog, { exclude: [ id ] })), [ dispatch ]);
 
+    const startRandomSelection = useCallback(
+        () => dispatch(console.log("should start random selection procedure"))
+    )
+
+    const startTimer = useCallback(
+        () => dispatch(console.log("should start timer procedure here"))
+    )
+
     return (
         <ContextMenu
             className = { classes.contextMenu }
             onMouseLeave = { onMouseLeave }>
+
+            {/* context menu item for random selection */}
+            <ContextMenuItem
+                id = 'participants-pane-context-menu-random-selection'
+                onClick = { startRandomSelection }>
+                <Icon
+                    size = { 18 }
+                    src = { IconAnnouncement } />
+                <span>{ t('participantsPane.actions.startRandomSelection') }</span>
+            </ContextMenuItem>
+
+            {/* context menu item for timer function */}
+            <ContextMenuItem
+                id = 'participants-pane-context-menu-timer'
+                onClick = { startTimer }>
+                <Icon
+                    size = { 18 }
+                    src = { IconStopWatch } />
+                <span>{ t('participantsPane.actions.startTimer') }</span>
+            </ContextMenuItem>
+
             <ContextMenuItem
                 id = 'participants-pane-context-menu-stop-video'
                 onClick = { muteAllVideo }>

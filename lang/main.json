@@ -716,6 +716,8 @@
             "muteAll": "Mute all",
             "muteEveryoneElse": "Mute everyone else",
             "startModeration": "Unmute themselves or start video",
+            "startRandomSelection": "Random Selection",
+            "startTimer": "Timer",
             "stopEveryonesVideo": "Mute everyone's video",
             "stopVideo": "Mute video",
             "unblockEveryoneMicCamera": "Unblock everyone's mic and camera"

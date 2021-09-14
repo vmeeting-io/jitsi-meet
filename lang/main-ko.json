@@ -705,6 +705,8 @@
             "muteAll": "모두 음소거",
             "muteEveryoneElse": "이외 모두 음소거",
             "startModeration": "마이크 또는 카메라 켜기",
+            "startRandomSelection": "랜덤 지목",
+            "startTimer": "타이머",
             "stopEveryonesVideo": "카메라 모두 끄기",
             "stopVideo": "카메라 끄기",
             "unblockEveryoneMicCamera": "마이크와 카메라 모두 차단 해제"

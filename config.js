@@ -5,6 +5,17 @@ var config = {
     // Connection
     //
 
+    //Download Links
+    features:{
+        learnMore:{
+            enLink: "https://sites.google.com/kedutech.kr/en-vmeeting-guide-v1/ko-home",
+            krLink : "https://sites.google.com/kedutech.kr/ko-vmeeting-guide-v1/home"
+        },
+        download:{
+            krLink : "https://docs.google.com/presentation/d/1xqwXdVbumAXp62Q0oSKp4qXSc62nCOb1/edit?usp=sharing&ouid=115914746874013996115&rtpof=true&sd=true",
+            enLink : "https://drive.google.com/file/d/1RINJ9h0U5GTeDDsfVAb2KUaKeww2uLAG/view?usp=sharing"
+        }
+    },
     //Capatcha Configs
     captcha: {
         enabled: true,           // flag to enable/disable captcha.

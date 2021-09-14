@@ -223,17 +223,26 @@ class WelcomePage extends AbstractWelcomePage {
             }
         }
     }
-
+    
+    /***
+     * Navigate to Vmeeting User pdf link
+     * 
+     * @returns None 
+     *  */    
     _getManualDownloadLink(){
-        const krLink = "https://docs.google.com/presentation/d/1xqwXdVbumAXp62Q0oSKp4qXSc62nCOb1/edit?usp=sharing&ouid=115914746874013996115&rtpof=true&sd=true";
-        const enLink = "https://drive.google.com/file/d/1RINJ9h0U5GTeDDsfVAb2KUaKeww2uLAG/view?usp=sharing";
+        const krLink = window.config.features.download.krLink;
+        const enLink = window.config.features.download.enLink;
         window.location.href = localStorage.language == "ko" ? krLink:enLink;
     }
 
-    
+    /***
+     * Navigate to Vmeeting User Guide site link
+     * 
+     * @returns None 
+     *  */    
     _getSiteLink(){
-        const enLink = "https://sites.google.com/kedutech.kr/en-vmeeting-guide-v1/ko-home";
-        const krLink = "https://sites.google.com/kedutech.kr/ko-vmeeting-guide-v1/home";
+        const krLink = window.config.features.learnMore.krLink;
+        const enLink = window.config.features.learnMore.enLink;
         window.location.href = localStorage.language == "ko" ? krLink:enLink;
     }
 

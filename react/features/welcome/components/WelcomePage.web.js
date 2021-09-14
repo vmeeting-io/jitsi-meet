@@ -232,7 +232,8 @@ class WelcomePage extends AbstractWelcomePage {
     _getManualDownloadLink(){
         const krLink = window.config.features.download.krLink;
         const enLink = window.config.features.download.enLink;
-        window.location.href = localStorage.language == "ko" ? krLink:enLink;
+        const selectedLang =  localStorage.language == "ko" ? krLink:enLink;
+        window.open(selectedLang);
     }
 
     /***
@@ -243,7 +244,8 @@ class WelcomePage extends AbstractWelcomePage {
     _getSiteLink(){
         const krLink = window.config.features.learnMore.krLink;
         const enLink = window.config.features.learnMore.enLink;
-        window.location.href = localStorage.language == "ko" ? krLink:enLink;
+        const selectedLang =  localStorage.language == "ko" ? krLink:enLink;
+        window.open(selectedLang);
     }
 
     /**

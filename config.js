@@ -12,8 +12,8 @@ var config = {
             krLink : "https://sites.google.com/kedutech.kr/ko-vmeeting-guide-v1/home"
         },
         download:{
-            krLink : "https://docs.google.com/presentation/d/1xqwXdVbumAXp62Q0oSKp4qXSc62nCOb1/edit?usp=sharing&ouid=115914746874013996115&rtpof=true&sd=true",
-            enLink : "https://drive.google.com/file/d/1RINJ9h0U5GTeDDsfVAb2KUaKeww2uLAG/view?usp=sharing"
+            krLink : "https://119.202.80.138:7788/Vmeeting_Manual_KO.pdf",
+            enLink : "https://119.202.80.138:7788/Vmeeting_Manual_EN.pdf"
         }
     },
     //Capatcha Configs

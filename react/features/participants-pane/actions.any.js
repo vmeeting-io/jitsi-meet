@@ -26,3 +26,12 @@ export const open = () => {
         type: PARTICIPANTS_PANE_OPEN
     };
 };
+
+/**
+ * Action to display notification for starting random selection
+ */
+export const notifyRandomSelectionStarted = (initiator) => {
+    const state = APP.store.getState();
+    const { conference } = state['features/base/conference'];
+    conference.startRandomSelection(initiator);
+};

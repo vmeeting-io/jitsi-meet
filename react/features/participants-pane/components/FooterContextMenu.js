@@ -15,6 +15,7 @@ import { Icon, IconCheck, IconVideoOff, IconAnnouncement, IconStopWatch } from '
 import { MEDIA_TYPE } from '../../base/media';
 import {
     getLocalParticipant,
+    getParticipantDisplayName,
     isEveryoneModerator
 } from '../../base/participants';
 import { MuteEveryonesVideoDialog } from '../../video-menu/components';
@@ -24,6 +25,10 @@ import {
     ContextMenu,
     ContextMenuItem
 } from './web/styled';
+
+import {
+    notifyRandomSelectionStarted
+} from '../actions.any';
 
 const useStyles = makeStyles(() => {
     return {
@@ -60,6 +65,10 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
     const allModerators = useSelector(isEveryoneModerator);
     const isModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.AUDIO));
     const { id } = useSelector(getLocalParticipant);
+
+    // gets the display name of the participant who clicked on the FooterContextMenu
+    const initiator = getParticipantDisplayName(APP.store.getState(), id);
+
     const { t } = useTranslation();
 
     const disable = useCallback(() => dispatch(requestDisableModeration()), [ dispatch ]);
@@ -72,7 +81,10 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
         () => dispatch(openDialog(MuteEveryonesVideoDialog, { exclude: [ id ] })), [ dispatch ]);
 
     const startRandomSelection = useCallback(
-        () => dispatch(console.log("should start random selection procedure"))
+        () => {
+            notifyRandomSelectionStarted(initiator);
+            console.log("Add additional logic for randomly selecting all participants below here");
+        }
     )
 
     const startTimer = useCallback(

@@ -262,7 +262,7 @@ function _mapStateToProps(state: Object) {
 
     return {
         _paneOpen: isPaneOpen,
-        _showContextMenu: isPaneOpen && getParticipantCount(state) > 2,
+        _showContextMenu: isPaneOpen && getParticipantCount(state) > 1,
         _showFooter: isPaneOpen && isLocalParticipantModerator(state)
     };
 }

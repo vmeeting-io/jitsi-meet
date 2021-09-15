@@ -18,6 +18,7 @@ import {
     isEveryoneModerator
 } from '../../base/participants';
 import { MuteEveryonesVideoDialog } from '../../video-menu/components';
+import {TimerDialog} from './web'
 
 import {
     ContextMenu,
@@ -75,8 +76,10 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
     )
 
     const startTimer = useCallback(
-        () => dispatch(console.log("should start timer procedure here"))
-    )
+        () => {
+                dispatch(openDialog(TimerDialog, { timerDuration: 1123 }))
+            }
+    );
 
     return (
         <ContextMenu

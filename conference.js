@@ -2249,6 +2249,22 @@ export default {
                     });
                 }
             });
+
+
+        room.on(JitsiConferenceEvents.NOTIFY_RANDOM_SELECTION_STARTED,
+            nick => {
+                APP.store.dispatch(showNotification({
+                    descriptionArguments: { initiator: nick },
+                    descriptionKey: 'notify.randomSelectionInitiatedBy',
+                    titleKey: 'notify.randomSelection'
+                },
+                5000)); // hard-coded the duration of notification bubble to 5 seconds
+            });
+
+        room.on(JitsiConferenceEvents.NOTIFY_RANDOM_SELECTION_FINISHED,
+            nick => {
+                console.log("Put the logic to display notification for all participants");
+            });
         // end of added portion
 
         room.on(

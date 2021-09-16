@@ -2263,7 +2263,12 @@ export default {
 
         room.on(JitsiConferenceEvents.NOTIFY_RANDOM_SELECTION_FINISHED,
             nick => {
-                console.log("Put the logic to display notification for all participants");
+                APP.store.dispatch(showNotification({
+                    descriptionArguments: { selectedParticipant: nick },
+                    descriptionKey: 'notify.randomSelectionCompleted',
+                    titleKey: 'notify.randomSelection'
+                },
+                5000)); // hard-coded the duration of notification bubble to 5 seconds
             });
         // end of added portion
 

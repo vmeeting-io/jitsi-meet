@@ -663,6 +663,7 @@
         "passwordSetRemotely": "$t(lockRoomPasswordUppercase) set by another participant",
         "raisedHand": "{{name}} would like to speak.",
         "randomSelection": "Random Selection",
+        "randomSelectionCompleted": "Congratulations! \n{{selectedParticipant}} has been chosen",
         "randomSelectionInitiatedBy": "{{initiator}} has started random selection.",
         "refusedUnmute": "{{participantDisplayName}} refused to unmute.",
         "refusedUnmuteVideo": "{{participantDisplayName}} refused to unmute video",

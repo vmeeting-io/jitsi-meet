@@ -5,6 +5,12 @@ import {
     PARTICIPANTS_PANE_OPEN
 } from './actionTypes';
 
+
+import {
+    getLocalParticipant,
+    getRemoteParticipants
+} from '../base/participants';
+
 /**
  * Action to close the participants pane.
  *
@@ -35,3 +41,29 @@ export const notifyRandomSelectionStarted = (initiator) => {
     const { conference } = state['features/base/conference'];
     conference.startRandomSelection(initiator);
 };
+
+/**
+ * Action to randomly select a participant from all participants
+ */
+export const randomlySelectFromAllParticipants = () => {
+    const state = APP.store.getState();
+
+    // get remote participants' IDs and localParticipant's ID
+    const remoteParticipantIDs = getRemoteParticipants(state).keys();
+    const localParticipantID = getLocalParticipant(state).id;
+
+    // initialize an array to store all participants IDs
+    const allParticipantsID = [localParticipantID, ...remoteParticipantIDs]
+
+    // randomly select an ID from allParticipantsID array
+    const randomlySelectedID = allParticipantsID[Math.floor(Math.random() * allParticipantsID.length)];
+
+    return randomlySelectedID;
+
+}
+
+export const notifyRandomSelectionCompleted = (selectedParticipantDisplayName) => {
+    const state = APP.store.getState();
+    const { conference } = state['features/base/conference'];
+    conference.finalizeRandomSelection(selectedParticipantDisplayName);
+}

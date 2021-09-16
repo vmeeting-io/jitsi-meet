@@ -695,6 +695,9 @@
         "raiseHandAction": "손들기",
         "randomSelection": "랜덤 지목",
         "randomSelectionInitiatedBy": "{{initiator}}님에 의해 임의 참석자를 지목합니다.",
+        "timerTitle": "타이머 설정",
+        "timerInitiatedBy": "{{initiator}}님에 의해 타이머가 시작되었습니다.",
+        "timerFinishedBy": "{{initiator}}님에 의해 타이머가 해제되었습니다.",
         "groupTitle": "알림"
     },
     "participantsPane": {

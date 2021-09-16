@@ -35,3 +35,12 @@ export const notifyRandomSelectionStarted = (initiator) => {
     const { conference } = state['features/base/conference'];
     conference.startRandomSelection(initiator);
 };
+
+/**
+ * Action to display notification for starting timer
+ */
+ export const notifyTimerStarted = (initiator) => {
+    const state = APP.store.getState();
+    const { conference } = state['features/base/conference'];
+    conference.startTimer(initiator);
+};

@@ -2250,6 +2250,26 @@ export default {
                 }
             });
 
+        room.on(JitsiConferenceEvents.NOTIFY_TIMER_STARTED,
+            nick => {
+                APP.store.dispatch(showNotification({
+                    descriptionArguments: { initiator: nick },
+                    descriptionKey: 'notify.timerInitiatedBy',
+                    titleKey: 'notify.timerTitle'
+                },
+                5000)); // hard-coded the duration of notification bubble to 5 seconds
+            });
+
+        room.on(JitsiConferenceEvents.NOTIFY_TIMER_FINISHED,
+            nick => {
+                APP.store.dispatch(showNotification({
+                    descriptionArguments: { initiator: nick },
+                    descriptionKey: 'notify.timerFinishedBy',
+                    titleKey: 'notify.timerTitle'
+                },
+                5000)); // hard-coded the duration of notification bubble to 5 seconds
+            });
+
 
         room.on(JitsiConferenceEvents.NOTIFY_RANDOM_SELECTION_STARTED,
             nick => {

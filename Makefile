@@ -123,6 +123,7 @@ dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-mode
 
 dev-start:
 	./cssmon.sh ./css &
+	$(MAKE) deploy-css
 	$(WEBPACK_DEV_SERVER)
 
 source-package:

@@ -30,6 +30,7 @@ import {
     notifyRandomSelectionStarted,
     notifyTimerStarted
 } from '../actions.any';
+import { initAnalytics } from '../../analytics';
 
 const useStyles = makeStyles(() => {
     return {
@@ -90,8 +91,7 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
 
     const startTimer = useCallback(
         () => {
-                notifyTimerStarted(initiator);
-                // dispatch(openDialog(TimerDialog, { timerDuration: 1123 }))
+                dispatch(openDialog(TimerDialog, { initiator: initiator }))
             }
     );
 

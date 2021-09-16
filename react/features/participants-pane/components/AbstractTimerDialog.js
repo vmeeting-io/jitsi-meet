@@ -1,6 +1,9 @@
 // @flow
 
 import { Component } from 'react';
+import {
+    notifyTimerStarted
+} from '../actions.any';
 
 
 /**
@@ -15,9 +18,9 @@ export type Props = {
     dispatch: Function,
 
     /**
-     * The ID of the remote participant to be muted.
+     * The name of the participant who initiated the timer.
      */
-    timerDuration: Integer,
+    initiator: string,
 
     /**
      * Function to translate i18n labels.
@@ -54,9 +57,10 @@ export default class AbstractTimerDialog<P:Props = Props>
      * @returns {boolean} - True (to note that the modal should be closed).
      */
     _onSubmit() {
-        const { dispatch, timerDuration } = this.props;
+        const { dispatch, initiator } = this.props;
 
-        alert("_onSubmit Button Clicked. Timer Length: " + timerDuration )
+        notifyTimerStarted(initiator);
+        // alert("_onSubmit Button Clicked. Timer Length: " + timerDuration )
         return true;
     }
 }

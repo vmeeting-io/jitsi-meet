@@ -24,7 +24,8 @@ import {
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
     SET_START_MUTED_POLICY,
-    DEVICE_ACCESS_DISABLED
+    DEVICE_ACCESS_DISABLED,
+    START_RANDOM_SELECTION_COUNTDOWN
 } from './actionTypes';
 import { isRoomValid } from './functions';
 
@@ -112,6 +113,13 @@ ReducerRegistry.register(
                     userDeviceAccessDisabled: action.userDeviceAccessDisabled },
                 userDeviceAccessDisabled: action.userDeviceAccessDisabled
             };
+
+        case START_RANDOM_SELECTION_COUNTDOWN:
+            return {
+                ...state,
+                countdownRemained: action.countdownRemained,
+                startCountdown: action.startCountdown
+            }
 
         case SET_PUBLIC_SCOPE_ENABLED:
             return set(

@@ -28,7 +28,8 @@ import {
 
 import {
     notifyRandomSelectionStarted,
-    notifyTimerStarted
+    randomlySelectFromAllParticipants,
+    notifyRandomSelectionCompleted
 } from '../actions.any';
 import { initAnalytics } from '../../analytics';
 
@@ -84,8 +85,20 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
 
     const startRandomSelection = useCallback(
         () => {
+            // function that notifies random selection procedure has now started
             notifyRandomSelectionStarted(initiator);
-            console.log("Add additional logic for randomly selecting all participants below here");
+
+            // set a timeout of 5 seconds before executing rest of the code
+            setTimeout(function() {
+                // randomly selects a participant from allParticipants and get its display name
+                const randomParticipantID = randomlySelectFromAllParticipants();
+                const selectedParticipantDisplayName = getParticipantDisplayName(APP.store.getState(), randomParticipantID);
+
+                console.log("Randomly selected participant is: ", selectedParticipantDisplayName);
+                // notify the selection of participant
+                notifyRandomSelectionCompleted(selectedParticipantDisplayName);
+            }, 5000);
+
         }
     )
 

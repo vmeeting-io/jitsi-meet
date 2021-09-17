@@ -694,6 +694,7 @@
         "moderationToggleDescription": "{{participantDisplayName}}님에 의해",
         "raiseHandAction": "손들기",
         "randomSelection": "랜덤 지목",
+        "randomSelectionCompleted": "축하합니다. \n{{selectedParticipant}} 님이 지목되었습니다",
         "randomSelectionInitiatedBy": "{{initiator}}님에 의해 임의 참석자를 지목합니다.",
         "timerTitle": "타이머 설정",
         "timerInitiatedBy": "{{initiator}}님에 의해 타이머가 시작되었습니다.",

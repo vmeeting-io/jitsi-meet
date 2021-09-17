@@ -25,19 +25,27 @@
                 Component: JitsiMeetJS.app.entryPoints.APP
             })
 
-            // const isElectron = navigator.userAgent.includes('Electron');
-            // const shouldRegisterWorker = !isElectron && 'serviceWorker' in navigator;
+            const inIframe = () => {
+                try {
+                    return window.self !== window.top;
+                } catch (e) {
+                    return true;
+                }
+            };
 
-            // if (shouldRegisterWorker) {
-            //     navigator.serviceWorker
-            //         .register(window.location.origin + '/pwa-worker.js')
-            //         .then(reg => {
-            //             console.log('Service worker registered.', reg);
-            //         })
-            //         .catch(err => {
-            //             console.log(err);
-            //         });
-            // }
+            const isElectron = navigator.userAgent.includes('Electron');
+            const shouldRegisterWorker = !isElectron && !inIframe() && 'serviceWorker' in navigator;
+
+            if (shouldRegisterWorker) {
+                navigator.serviceWorker
+                    .register(window.location.origin + '/pwa-worker.js')
+                    .then(reg => {
+                        console.log('Service worker registered.', reg);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+            }
         });
     </script>
     <script>

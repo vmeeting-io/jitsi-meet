@@ -55,9 +55,6 @@ var config = {
     // Websocket URL
     websocket: 'wss://jitsi-meet.example.com/xmpp-websocket',
 
-    // The name of client node advertised in XEP-0115 'c' stanza
-    clientNode: 'http://jitsi.org/jitsimeet',
-
     // The real JID of focus participant - can be overridden here
     // Do not change username - FIXME: Make focus username configurable
     // https://github.com/jitsi/jitsi-meet/issues/7376
@@ -104,7 +101,10 @@ var config = {
     },
 
     // Enables reactions feature.
-    // enableReactions: false,
+    enableReactions: true,
+
+    // Disables polls feature.
+    // disablePolls: false,
 
     // Disables ICE/UDP by filtering out local and remote UDP candidates in
     // signalling.
@@ -177,6 +177,9 @@ var config = {
 
     // Sets the preferred resolution (height) for local video. Defaults to 720.
     resolution: 720,
+
+    // Specifies whether there will be a search field in speaker stats or not
+    // disableSpeakerStatsSearch: false,
 
     // How many participants while in the tile view mode, before the receiving video quality is reduced from HD to SD.
     // Use -1 to disable.
@@ -269,6 +272,17 @@ var config = {
     // Transcription (in interface_config,
     // subtitles and buttons can be configured)
     // transcribingEnabled: false,
+
+    // If true transcriber will use the application language.
+    // The application language is either explicitly set by participants in their settings or automatically
+    // detected based on the environment, e.g. if the app is opened in a chrome instance which is using french as its
+    // default language then transcriptions for that participant will be in french.
+    // Defaults to true.
+    // transcribeWithAppLanguage: true,
+
+    // Transcriber language. This settings will only work if "transcribeWithAppLanguage" is explicitly set to false.
+    // Available languages can be found in lang/language.json.
+    // preferredTranscribeLanguage: 'en',
 
     // Enables automatic turning on captions when recording is started
     // autoCaptionOnRecord: false,
@@ -412,6 +426,11 @@ var config = {
     // bridge itself is reachable via UDP)
     // useTurnUdp: false
 
+    // Enable support for encoded transform in supported browsers. This allows
+    // E2EE to work in Safari if the corresponding flag is enabled in the browser.
+    // Experimental.
+    // enableEncodedTransformSupport: false,
+
     // UI
     //
 
@@ -420,6 +439,9 @@ var config = {
 
     // Hides lobby button
     // hideLobbyButton: false,
+
+    // Hides add breakout room button
+    // hideAddRoomButton: false,
 
     // Require users to always specify a display name.
     // requireDisplayName: true,
@@ -544,6 +566,10 @@ var config = {
        '__end'
     ],
 
+    // List of pre meeting screens buttons to hide. The values must be one or more of the 5 allowed buttons:
+    // 'microphone', 'camera', 'select-background', 'invite', 'settings'
+    // hiddenPremeetingButtons: [],
+
     // Stats
     //
 
@@ -560,6 +586,28 @@ var config = {
     // Application ID and Secret.
     // callStatsID: '',
     // callStatsSecret: '',
+
+    // The callstats initialize config params as described in the API:
+    // https://docs.callstats.io/docs/javascript#callstatsinitialize-with-app-secret
+    // callStatsConfigParams: {
+    //     disableBeforeUnloadHandler: true, // disables callstats.js's window.onbeforeunload parameter.
+    //     applicationVersion: "app_version", // Application version specified by the developer.
+    //     disablePrecalltest: true, // disables the pre-call test, it is enabled by default.
+    //     siteID: "siteID", // The name/ID of the site/campus from where the call/pre-call test is made.
+    //     additionalIDs: { // additionalIDs object, contains application related IDs.
+    //         customerID: "Customer Identifier. Example, walmart.",
+    //         tenantID: "Tenant Identifier. Example, monster.",
+    //         productName: "Product Name. Example, Jitsi.",
+    //         meetingsName: "Meeting Name. Example, Jitsi loves callstats.",
+    //         serverName: "Server/MiddleBox Name. Example, jvb-prod-us-east-mlkncws12.",
+    //         pbxID: "PBX Identifier. Example, walmart.",
+    //         pbxExtensionID: "PBX Extension Identifier. Example, 5625.",
+    //         fqExtensionID: "Fully qualified Extension Identifier. Example, +71 (US) +5625.",
+    //         sessionID: "Session Identifier. Example, session-12-34"
+    //     },
+    //     collectLegacyStats: true, //enables the collection of legacy stats in chrome browser
+    //     collectIP: true //enables the collection localIP address
+    // },
 
     // Enables sending participants' display names to callstats
     // enableDisplayNameInStats: false,
@@ -632,6 +680,9 @@ var config = {
     },
 
     analytics: {
+        // True if the analytics should be disabled
+        // disabled: false,
+
         // The Google Analytics Tracking ID:
         // googleAnalyticsTrackingId: 'your-tracking-id-UA-123456-1'
 
@@ -798,7 +849,11 @@ var config = {
          // The anchor url used when clicking the logo image
          logoClickUrl: 'https://example-company.org',
          // The url used for the image used as logo
-         logoImageUrl: 'https://example.com/logo-img.png'
+         logoImageUrl: 'https://example.com/logo-img.png',
+         // Overwrite for pool of background images for avatars
+         avatarBackgrounds: ['url(https://example.com/avatar-background-1.png)', '#FFF'],
+         // The lobby/prejoin screen background
+         premeetingBackground: 'url(https://example.com/premeeting-background.png)'
      }
     */
     // dynamicBrandingUrl: '',
@@ -1009,6 +1064,11 @@ var config = {
     //     'notify.invitedThreePlusMembers', // shown when 3+ participants have been invited
     //     'notify.invitedTwoMembers', // shown when 2 participants have been invited
     //     'notify.kickParticipant', // shown when a participant is kicked
+    //     'notify.moderationStartedTitle', // shown when AV moderation is activated
+    //     'notify.moderationStoppedTitle', // shown when AV moderation is deactivated
+    //     'notify.moderationInEffectTitle', // shown when user attempts to unmute audio during AV moderation
+    //     'notify.moderationInEffectVideoTitle', // shown when user attempts to enable video during AV moderation
+    //     'notify.moderationInEffectCSTitle', // shown when user attempts to share content during AV moderation
     //     'notify.mutedRemotelyTitle', // shown when user is muted by a remote party
     //     'notify.mutedTitle', // shown when user has been muted upon joining,
     //     'notify.newDeviceAudioTitle', // prompts the user to use a newly detected audio device
@@ -1017,6 +1077,7 @@ var config = {
     //     'notify.passwordSetRemotely', // shown when a password has been set remotely
     //     'notify.raisedHand', // shown when a partcipant used raise hand,
     //     'notify.startSilentTitle', // shown when user joined with no audio
+    //     'notify.unmute', // shown to moderator when user raises hand during AV moderation
     //     'prejoin.errorDialOut',
     //     'prejoin.errorDialOutDisconnected',
     //     'prejoin.errorDialOutFailed',

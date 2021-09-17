@@ -80,6 +80,7 @@ export default function({
                     { <NotificationButton
                         action = { onReject }
                         className = 'borderLess'
+                        id = 'dismiss-button'
                         participant = { p }
                         testId = { `${testIdPrefix}.reject` }>
                         { rejectButtonText }

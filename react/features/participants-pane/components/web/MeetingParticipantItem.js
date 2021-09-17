@@ -137,7 +137,7 @@ function MeetingParticipantItem({
     participantActionEllipsisLabel,
     youText
 }: Props) {
-    return (
+    return !_participant ? null : (
         <ParticipantItem
             actionsTrigger = { ACTION_TRIGGER.HOVER }
             audioMediaState = { _audioMediaState }

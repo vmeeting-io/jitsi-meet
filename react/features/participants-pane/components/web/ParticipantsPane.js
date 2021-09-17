@@ -5,11 +5,10 @@ import { ThemeProvider } from 'styled-components';
 
 import { openDialog } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
-import {
-    getParticipantCount,
-    isLocalParticipantModerator
-} from '../../../base/participants';
+import { isLocalParticipantModerator } from '../../../base/participants';
 import { connect } from '../../../base/redux';
+import { AddBreakoutRoomButton } from '../../../breakout-rooms/components/web/AddBreakoutRoomButton';
+import { RoomList } from '../../../breakout-rooms/components/web/RoomList';
 import { MuteEveryoneDialog } from '../../../video-menu/components/';
 import { close } from '../../actions';
 import { classList, findStyledAncestor, getParticipantsPaneOpen } from '../../functions';
@@ -17,7 +16,7 @@ import theme from '../../theme.json';
 import { FooterContextMenu } from '../FooterContextMenu';
 
 import { LobbyParticipantList } from './LobbyParticipantList';
-import { MeetingParticipantList } from './MeetingParticipantList';
+import MeetingParticipantList from './MeetingParticipantList';
 import {
     AntiCollapse,
     Close,
@@ -41,14 +40,14 @@ import InviteButton from './InviteButton';
 type Props = {
 
     /**
+     * Should the add breakout room button be displayed?
+     */
+    _showAddRoomButton: boolean,
+
+    /**
      * Is the participants pane open.
      */
     _paneOpen: boolean,
-
-    /**
-     * Whether to show context menu.
-     */
-    _showContextMenu: boolean,
 
     /**
      * Whether to show the footer menu.
@@ -127,8 +126,8 @@ class ParticipantsPane extends Component<Props, State> {
      */
     render() {
         const {
+            _showAddRoomButton,
             _paneOpen,
-            _showContextMenu,
             _showFooter,
             t
         } = this.props;
@@ -152,22 +151,24 @@ class ParticipantsPane extends Component<Props, State> {
                                 tabIndex = { 0 } />
                         </Header>
                         <Container>
-                            <ParticipantList />
+                            <LobbyParticipantList />
+                            <AntiCollapse />
+                            <MeetingParticipantList />
+                            <RoomList />
+                            {_showAddRoomButton && <AddBreakoutRoomButton />}
                         </Container>
                         {_showFooter && (
                             <Footer>
                                 <FooterButton onClick = { this._onMuteAll }>
                                     {t('participantsPane.actions.muteAll')}
                                 </FooterButton>
-                                {_showContextMenu && (
-                                    <FooterEllipsisContainer>
-                                        <FooterEllipsisButton
-                                            id = 'participants-pane-context-menu'
-                                            onClick = { this._onToggleContext } />
-                                        {this.state.contextOpen
-                                            && <FooterContextMenu onMouseLeave = { this._onToggleContext } />}
-                                    </FooterEllipsisContainer>
-                                )}
+                                <FooterEllipsisContainer>
+                                    <FooterEllipsisButton
+                                        id = 'participants-pane-context-menu'
+                                        onClick = { this._onToggleContext } />
+                                    {this.state.contextOpen
+                                        && <FooterContextMenu onMouseLeave = { this._onToggleContext } />}
+                                </FooterEllipsisContainer>
                             </Footer>
                         )}
                     </div>
@@ -253,16 +254,17 @@ class ParticipantsPane extends Component<Props, State> {
  * @protected
  * @returns {{
  *     _paneOpen: boolean,
- *     _showContextMenu: boolean,
  *     _showFooter: boolean
  * }}
  */
 function _mapStateToProps(state: Object) {
     const isPaneOpen = getParticipantsPaneOpen(state);
+    const { hideAddRoomButton } = state['features/base/config'];
+    const _isLocalParticipantModerator = isLocalParticipantModerator(state);
 
     return {
+        _showAddRoomButton: !hideAddRoomButton && _isLocalParticipantModerator,
         _paneOpen: isPaneOpen,
-        _showContextMenu: isPaneOpen && getParticipantCount(state) > 2,
         _showFooter: isPaneOpen && isLocalParticipantModerator(state)
     };
 }

@@ -4,17 +4,16 @@ import React, { type Node } from 'react';
 
 import { Avatar } from '../../../base/avatar';
 import {
-    Icon,
-    IconCameraEmpty,
-    IconCameraEmptyDisabled,
-    IconMicrophoneEmpty,
-    IconMicrophoneEmptySlash
-} from '../../../base/icons';
-import { ACTION_TRIGGER, MEDIA_STATE, type ActionTrigger, type MediaState } from '../../constants';
+    ACTION_TRIGGER,
+    AudioStateIcons,
+    MEDIA_STATE,
+    type ActionTrigger,
+    type MediaState,
+    VideoStateIcons
+} from '../../constants';
 
 import { RaisedHandIndicator } from './RaisedHandIndicator';
 import {
-    ColoredIcon,
     ParticipantActionsHover,
     ParticipantActionsPermanent,
     ParticipantContainer,
@@ -32,70 +31,22 @@ const Actions = {
     [ACTION_TRIGGER.PERMANENT]: ParticipantActionsPermanent
 };
 
-/**
- * Icon mapping for possible participant audio states.
- */
-const AudioStateIcons: {[MediaState]: React$Element<any> | null} = {
-    [MEDIA_STATE.FORCE_MUTED]: (
-        <ColoredIcon color = '#E04757'>
-            <Icon
-                size = { 16 }
-                src = { IconMicrophoneEmptySlash } />
-        </ColoredIcon>
-    ),
-    [MEDIA_STATE.MUTED]: (
-        <Icon
-            size = { 16 }
-            src = { IconMicrophoneEmptySlash } />
-    ),
-    [MEDIA_STATE.UNMUTED]: (
-        <ColoredIcon color = '#1EC26A'>
-            <Icon
-                size = { 16 }
-                src = { IconMicrophoneEmpty } />
-        </ColoredIcon>
-    ),
-    [MEDIA_STATE.NONE]: null
-};
-
-/**
- * Icon mapping for possible participant video states.
- */
-const VideoStateIcons = {
-    [MEDIA_STATE.FORCE_MUTED]: (
-        <Icon
-            size = { 16 }
-            src = { IconCameraEmptyDisabled } />
-    ),
-    [MEDIA_STATE.MUTED]: (
-        <Icon
-            size = { 16 }
-            src = { IconCameraEmptyDisabled } />
-    ),
-    [MEDIA_STATE.UNMUTED]: (
-        <Icon
-            size = { 16 }
-            src = { IconCameraEmpty } />
-    ),
-    [MEDIA_STATE.NONE]: null
-};
-
 type Props = {
 
     /**
      * Type of trigger for the participant actions
      */
-    actionsTrigger: ActionTrigger,
+    actionsTrigger?: ActionTrigger,
 
     /**
      * Media state for audio
      */
-    audioMediaState: MediaState,
+    audioMediaState?: MediaState,
 
     /**
      * React children
      */
-    children: Node,
+    children?: Node,
 
     /**
      * The name of the participant. Used for showing lobby names.
@@ -125,17 +76,17 @@ type Props = {
     /**
      * True if the participant have raised hand.
      */
-    raisedHand: boolean,
+    raisedHand?: boolean,
 
     /**
      * Media state for video
      */
-    videoMuteState: MediaState,
+    videoMuteState?: MediaState,
 
     /**
      * The translated "you" text.
      */
-    youText: string
+    youText?: string
 }
 
 /**
@@ -161,7 +112,9 @@ export default function ParticipantItem({
 
     return (
         <ParticipantContainer
+            id = { `participant-item-${participantID}` }
             isHighlighted = { isHighlighted }
+            $local = { local }
             onMouseLeave = { onLeave }
             trigger = { actionsTrigger }>
             <Avatar

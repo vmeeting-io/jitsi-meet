@@ -106,11 +106,13 @@ class ReactionsMenu extends Component<Props> {
      * @returns {void}
      */
     _onToolbarToggleRaiseHand() {
+        const { dispatch, _raisedHand } = this.props;
+
         sendAnalytics(createToolbarEvent(
             'raise.hand',
-            { enable: !this.props._raisedHand }));
+            { enable: !_raisedHand }));
         this._doToggleRaiseHand();
-        this.props.dispatch(toggleReactionsMenuVisibility());
+        dispatch(toggleReactionsMenuVisibility());
     }
 
     /**
@@ -139,6 +141,21 @@ class ReactionsMenu extends Component<Props> {
     }
 
     /**
+     * Sends reaction message.
+     *
+     * @returns {void}
+     */
+    doSendReaction(key) {
+        const { dispatch } = this.props;
+
+        return () => {
+            dispatch(addReactionToBuffer(key));
+            dispatch(toggleReactionsMenuVisibility());
+            sendAnalytics(createReactionMenuEvent(key));
+        }
+    }
+
+    /**
      * Returns the emoji reaction buttons.
      *
      * @returns {Array}
@@ -154,21 +171,11 @@ class ReactionsMenu extends Component<Props> {
         }
 
         return Object.keys(REACTIONS).map(key => {
-            /**
-             * Sends reaction message.
-             *
-             * @returns {void}
-             */
-            function doSendReaction() {
-                dispatch(addReactionToBuffer(key));
-                sendAnalytics(createReactionMenuEvent(key));
-            }
-
             return (<ReactionButton
                 accessibilityLabel = { t(`toolbar.accessibilityLabel.${key}`) }
                 icon = { REACTIONS[key].emoji }
                 key = { key }
-                onClick = { doSendReaction }
+                onClick = { this.doSendReaction(key) }
                 toggled = { false }
                 tooltip = { `${t(`toolbar.${key}`)} (${modifierKey} + ${REACTIONS[key].shortcutChar})` } />);
         });

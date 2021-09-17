@@ -4,12 +4,16 @@ import { translate } from '../../base/i18n';
 import { IconParticipants } from '../../base/icons';
 import { connect } from '../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
-import { getParticipantsPaneOpen } from '../functions';
 
 /**
  * The type of the React {@code Component} props of {@link ParticipantsPaneButton}.
  */
 type Props = AbstractButtonProps & {
+
+    /**
+     * Whether or not the participants pane is open.
+     */
+    _isOpen: boolean,
 
     /**
      * External handler for click action.
@@ -36,21 +40,30 @@ class ParticipantsPaneButton extends AbstractButton<Props, *> {
         this.props.handleClick();
     }
 
+    /**
+     * Indicates whether this button is in toggled state or not.
+     *
+     * @override
+     * @protected
+     * @returns {boolean}
+     */
     _isToggled() {
-        return this.props._participantsPaneOpen;
+        return this.props._isOpen;
     }
 }
 
 /**
- * Function that maps parts of Redux state tree into component props.
+ * Maps part of the Redux state to the props of this component.
  *
- * @param {Object} state - Redux state.
- * @returns {Object}
+ * @param {Object} state - The Redux state.
+ * @returns {Props}
  */
-const mapStateToProps = state => {
+function mapStateToProps(state) {
+    const { isOpen } = state['features/participants-pane'];
+
     return {
-        _participantsPaneOpen: getParticipantsPaneOpen(state)
+        _isOpen: isOpen
     };
-};
+}
 
 export default translate(connect(mapStateToProps)(ParticipantsPaneButton));

@@ -50,7 +50,8 @@ import {
     setStartMutedPolicy,
     conferenceTimeRemained,
     setNoticeMessage,
-    deviceAccessDisabled
+    deviceAccessDisabled,
+    nonParticipantMessageReceived
 } from './react/features/base/conference';
 import { getReplaceParticipant } from './react/features/base/config/functions';
 import {
@@ -62,6 +63,7 @@ import {
     setAudioOutputDeviceId,
     updateDeviceList
 } from './react/features/base/devices';
+import { isIosMobileBrowser } from './react/features/base/environment/utils';
 import {
     browser,
     isFatalJitsiConnectionError,
@@ -846,7 +848,13 @@ export default {
         this._initDeviceList(true);
 
         if (initialOptions.startWithAudioMuted) {
-            localTracks = localTracks.filter(track => track.getType() !== MEDIA_TYPE.AUDIO);
+            // Always add the audio track to the peer connection and then mute the track on mobile Safari
+            // because of a known issue where audio playout doesn't happen if the user joins audio and video muted.
+            if (isIosMobileBrowser()) {
+                this.muteAudio(true, true);
+            } else {
+                localTracks = localTracks.filter(track => track.getType() !== MEDIA_TYPE.AUDIO);
+            }
         }
 
         return this.startConference(con, localTracks);
@@ -1326,6 +1334,26 @@ export default {
         }
     },
 
+    async joinRoom(roomName) {
+        this.roomName = roomName;
+
+        const { tryCreateLocalTracks, errors } = this.createInitialLocalTracks();
+        const localTracks = await tryCreateLocalTracks;
+
+        this._displayErrorsForCreateInitialLocalTracks(errors);
+        localTracks.forEach(track => {
+            if ((track.isAudioTrack() && this.isLocalAudioMuted())
+                || (track.isVideoTrack() && this.isLocalVideoMuted())) {
+                track.mute();
+            }
+        });
+        this._createRoom(localTracks);
+
+        return new Promise((resolve, reject) => {
+            (new ConferenceConnector(resolve, reject)).connect();
+        });
+    },
+
     _createRoom(localTracks) {
         room
             = connection.initJitsiConference(
@@ -1334,8 +1362,8 @@ export default {
 
         APP.store.dispatch(conferenceWillJoin(room));
 
-        // Filter out the tracks that are muted.
-        const tracks = localTracks.filter(track => !track.isMuted());
+        // Filter out the tracks that are muted (except on mobile Safari).
+        const tracks = isIosMobileBrowser() ? localTracks : localTracks.filter(track => !track.isMuted());
 
         this._setLocalAudioVideoStreams(tracks);
         this._room = room; // FIXME do not use this
@@ -2268,7 +2296,7 @@ export default {
 
         room.on(
             JitsiConferenceEvents.DOMINANT_SPEAKER_CHANGED,
-            id => APP.store.dispatch(dominantSpeakerChanged(id, room)));
+            (dominant, previous) => APP.store.dispatch(dominantSpeakerChanged(dominant, previous, room)));
 
         room.on(
             JitsiConferenceEvents.CONFERENCE_CREATED_TIMESTAMP,
@@ -2334,6 +2362,10 @@ export default {
                     }
                 }
             });
+
+        room.on(
+            JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED,
+            (...args) => APP.store.dispatch(nonParticipantMessageReceived(...args)));
 
         room.on(
             JitsiConferenceEvents.LOCK_STATE_CHANGED,
@@ -2440,7 +2472,9 @@ export default {
 
             // Remove the tracks from the peerconnection.
             for (const track of localTracks) {
-                if (audioMuted && track.jitsiTrack?.getType() === MEDIA_TYPE.AUDIO) {
+                // Always add the track on mobile Safari because of a known issue where audio playout doesn't happen
+                // if the user joins audio and video muted.
+                if (audioMuted && track.jitsiTrack?.getType() === MEDIA_TYPE.AUDIO && !isIosMobileBrowser()) {
                     promises.push(this.useAudioStream(null));
                 }
                 if (videoMuted && track.jitsiTrack?.getType() === MEDIA_TYPE.VIDEO) {
@@ -3024,6 +3058,17 @@ export default {
             }
             APP.store.dispatch(maybeRedirectToWelcomePage(values[0]));
         });
+    },
+
+    /**
+     * Leaves the room.
+     *
+     * @returns {Promise}
+     */
+    leaveRoom() {
+        if (room && room.isJoined()) {
+            return room.leave();
+        }
     },
 
     /**

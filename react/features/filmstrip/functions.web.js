@@ -32,6 +32,8 @@ import {
     VERTICAL_FILMSTRIP_MIN_HORIZONTAL_MARGIN
 } from './constants';
 
+export * from './functions.any';
+
 declare var interfaceConfig: Object;
 
 /**
@@ -186,7 +188,7 @@ export function calculateThumbnailSizeForTileView({
         aspectRatio = SQUARE_TILE_ASPECT_RATIO;
     }
 
-    const viewWidth = clientWidth - (columns * TILE_HORIZONTAL_MARGIN);
+    const viewWidth = clientWidth - (columns * TILE_HORIZONTAL_MARGIN) - (rows > minVisibleRows ? SCROLL_SIZE : 0);
     const viewHeight = clientHeight - (minVisibleRows * TILE_VERTICAL_MARGIN);
     const initialWidth = viewWidth / columns;
     const initialHeight = viewHeight / minVisibleRows;
@@ -195,18 +197,18 @@ export function calculateThumbnailSizeForTileView({
     let height = initialHeight;
     let width = initialWidth;
 
-    if (height > noScrollHeight && width > scrollInitialWidth) { // we will have scroll and we need more space for it.
-        const scrollAspectRatioHeight = scrollInitialWidth / aspectRatio;
+    // if (height > noScrollHeight && width > scrollInitialWidth) { // we will have scroll and we need more space for it.
+    //     const scrollAspectRatioHeight = scrollInitialWidth / aspectRatio;
 
-        // Recalculating width/height to fit the available space when a scroll is displayed.
-        // NOTE: Math.min(scrollAspectRatioHeight, initialHeight) would be enough to recalculate but since the new
-        // height value can theoretically be dramatically smaller and the scroll may not be neccessary anymore we need
-        // to compare it with noScrollHeight( the optimal height to fit all thumbnails without scroll) and get the
-        // bigger one. This way we ensure that we always strech the thumbnails as close as we can to the edges of the
-        // window.
-        height = Math.floor(Math.max(Math.min(scrollAspectRatioHeight, initialHeight), noScrollHeight));
-        width = Math.floor(aspectRatio * height);
-    }
+    //     // Recalculating width/height to fit the available space when a scroll is displayed.
+    //     // NOTE: Math.min(scrollAspectRatioHeight, initialHeight) would be enough to recalculate but since the new
+    //     // height value can theoretically be dramatically smaller and the scroll may not be neccessary anymore we need
+    //     // to compare it with noScrollHeight( the optimal height to fit all thumbnails without scroll) and get the
+    //     // bigger one. This way we ensure that we always strech the thumbnails as close as we can to the edges of the
+    //     // window.
+    //     height = Math.floor(Math.max(Math.min(scrollAspectRatioHeight, initialHeight), noScrollHeight));
+    //     width = Math.floor(aspectRatio * height);
+    // }
 
 
     return {

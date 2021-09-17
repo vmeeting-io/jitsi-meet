@@ -29,11 +29,27 @@ type Props = AbstractToolbarButtonProps & {
 };
 
 /**
+ * The type of the React {@code Component} state of {@link ReactionButton}.
+ */
+type State = {
+
+    /**
+     * Used to determine zoom level on reaction burst.
+     */
+    increaseLevel: number,
+
+    /**
+     * Timeout ID to reset reaction burst.
+     */
+    increaseTimeout: TimeoutID | null
+}
+
+/**
  * Represents a button in the reactions menu.
  *
  * @extends AbstractToolbarButton
  */
-class ReactionButton extends AbstractToolbarButton<Props> {
+class ReactionButton extends AbstractToolbarButton<Props, State> {
     /**
      * Default values for {@code ReactionButton} component's properties.
      *
@@ -52,9 +68,17 @@ class ReactionButton extends AbstractToolbarButton<Props> {
         super(props);
 
         this._onKeyDown = this._onKeyDown.bind(this);
+        this._onClickHandler = this._onClickHandler.bind(this);
+
+        this.state = {
+            increaseLevel: 0,
+            increaseTimeout: null
+        };
     }
 
     _onKeyDown: (Object) => void;
+
+    _onClickHandler: () => void;
 
     /**
      * Handles 'Enter' key on the button to trigger onClick for accessibility.
@@ -79,6 +103,15 @@ class ReactionButton extends AbstractToolbarButton<Props> {
     }
 
     /**
+     * Handles reaction button click.
+     *
+     * @returns {void}
+     */
+    _onClickHandler() {
+        this.props.onClick();
+    }
+
+    /**
      * Renders the button of this {@code ReactionButton}.
      *
      * @param {Object} children - The children, if any, to be rendered inside
@@ -92,7 +125,7 @@ class ReactionButton extends AbstractToolbarButton<Props> {
                 aria-label = { this.props.accessibilityLabel }
                 aria-pressed = { this.props.toggled }
                 className = 'toolbox-button'
-                onClick = { this.props.onClick }
+                onClick = { this._onClickHandler }
                 onKeyDown = { this._onKeyDown }
                 role = 'button'
                 tabIndex = { 0 }>
@@ -113,10 +146,13 @@ class ReactionButton extends AbstractToolbarButton<Props> {
      * @inheritdoc
      */
     _renderIcon() {
+        const { toggled, icon, label } = this.props;
+        const { increaseLevel } = this.state;
+
         return (
-            <div className = { `toolbox-icon ${this.props.toggled ? 'toggled' : ''}` }>
-                <span className = 'emoji'>{this.props.icon}</span>
-                {this.props.label && <span className = 'text'>{this.props.label}</span>}
+            <div className = { `toolbox-icon ${toggled ? 'toggled' : ''}` }>
+                <span className = { `emoji increase-${increaseLevel > 12 ? 12 : increaseLevel}` }>{icon}</span>
+                {label && <span className = 'text'>{label}</span>}
             </div>
         );
     }

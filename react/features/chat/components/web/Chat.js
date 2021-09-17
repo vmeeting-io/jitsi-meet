@@ -10,6 +10,7 @@ import { translate } from '../../../base/i18n';
 import { Icon, IconClose, IconMenu, IconMenuThumb, IconSearch } from '../../../base/icons';
 import { connect } from '../../../base/redux';
 import { Tooltip } from '../../../base/tooltip';
+import { PollsPane } from '../../../polls/components';
 import { toggleChat } from '../../actions.web';
 import AbstractChat, {
     _mapStateToProps,
@@ -26,6 +27,7 @@ import MessageRecipient from './MessageRecipient';
 import InlineDialog from '@atlaskit/inline-dialog/dist/cjs/InlineDialog';
 import { getLocalParticipant } from '../../../base/participants';
 import ChatDisableButtonForAll from './ChatDisableButtonForAll';
+import TouchmoveHack from './TouchmoveHack';
 
 import s from './Chat.module.scss';
 import { openDialog } from '../../../base/dialog';
@@ -232,11 +234,24 @@ class Chat extends AbstractChat<Props> {
             this.props.dispatch(setPrivateMessageRecipient());
         }
 
+        if (this.props._isPollsTabFocused) {
+            return (
+                <>
+                    { this.props._isPollsEnabled && this._renderTabs()}
+                    <PollsPane />
+                    <KeyboardAvoider />
+                </>
+            );
+        }
+
         return (
             <>
-                <MessageContainer
-                    messages = { this.props._messages }
-                    ref = { this._messageContainerRef } />
+                {this.props._isPollsEnabled && this._renderTabs()}
+                <TouchmoveHack isModal = { this.props._isModal }>
+                    <MessageContainer
+                        messages = { this.props._messages }
+                        ref = { this._messageContainerRef } />
+                </TouchmoveHack>
                 { _showMessageRecipient && <MessageRecipient /> }
                 { _showChatInput && (
                     <>
@@ -275,6 +290,50 @@ class Chat extends AbstractChat<Props> {
                     <CrossCircleIcon size = 'small' />
                 </div>
             </div>                        
+        );
+    }
+
+    /**
+     * Returns a React Element showing the Chat and Polls tab.
+     *
+     * @private
+     * @returns {ReactElement}
+     */
+    _renderTabs() {
+
+        return (
+            <div className = { 'chat-tabs-container' }>
+                <div
+                    className = { `chat-tab ${
+                        this.props._isPollsTabFocused ? '' : 'chat-tab-focus'
+                    }` }
+                    onClick = { this._onToggleChatTab }>
+                    <span className = { 'chat-tab-title' }>
+                        {this.props.t('chat.tabs.chat')}
+                    </span>
+                    {this.props._isPollsTabFocused
+                        && this.props._nbUnreadMessages > 0 && (
+                        <span className = { 'chat-tab-badge' }>
+                            {this.props._nbUnreadMessages}
+                        </span>
+                    )}
+                </div>
+                <div
+                    className = { `chat-tab ${
+                        this.props._isPollsTabFocused ? 'chat-tab-focus' : ''
+                    }` }
+                    onClick = { this._onTogglePollsTab }>
+                    <span className = { 'chat-tab-title' }>
+                        {this.props.t('chat.tabs.polls')}
+                    </span>
+                    {!this.props._isPollsTabFocused
+                        && this.props._nbUnreadPolls > 0 && (
+                        <span className = { 'chat-tab-badge' }>
+                            {this.props._nbUnreadPolls}
+                        </span>
+                    )}
+                </div>
+            </div>
         );
     }
 
@@ -608,6 +667,8 @@ class Chat extends AbstractChat<Props> {
     _onToggleChat() {
         this.props.dispatch(toggleChat());
     }
+    _onTogglePollsTab: () => void;
+    _onToggleChatTab: () => void;
 
 }
 

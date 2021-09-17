@@ -50,7 +50,8 @@ import {
     setStartMutedPolicy,
     conferenceTimeRemained,
     setNoticeMessage,
-    deviceAccessDisabled
+    deviceAccessDisabled,
+    startRandomSelectionCountdown
 } from './react/features/base/conference';
 import { getReplaceParticipant } from './react/features/base/config/functions';
 import {
@@ -2248,6 +2249,11 @@ export default {
                         title: i18next.t('dialog.deviceAccessReEnabled')
                     });
                 }
+            });
+
+        room.on(JitsiConferenceEvents.RANDOM_SELECTION_COUNTDOWN,
+            (countdownRemained, startCountdown) => {
+                APP.store.dispatch(startRandomSelectionCountdown(countdownRemained, startCountdown));
             });
 
 

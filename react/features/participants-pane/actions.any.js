@@ -62,6 +62,9 @@ export const randomlySelectFromAllParticipants = () => {
 
 }
 
+/**
+ * Action to display notification when completing random selection
+ */
 export const notifyRandomSelectionCompleted = (selectedParticipantDisplayName) => {
     const state = APP.store.getState();
     const { conference } = state['features/base/conference'];

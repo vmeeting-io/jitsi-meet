@@ -53,7 +53,8 @@ import {
     CONFERENCE_TIME_REMAINED,
     SET_NOTICE_MESSAGE,
     SET_USER_DEVICE_ACCESS_DISABLED,
-    DEVICE_ACCESS_DISABLED
+    DEVICE_ACCESS_DISABLED,
+    START_RANDOM_SELECTION_COUNTDOWN
 } from './actionTypes';
 import {
     AVATAR_URL_COMMAND,
@@ -898,6 +899,20 @@ export function deviceAccessDisabled(userDeviceAccessDisabled: boolean) {
     }
 }
 // end of added portion
+
+/**
+ * Function that begins reverse count down of timer when random selection is initiated
+ * @param {number} countdownRemained - the number of seconds from which countdown starts
+ * @param {boolean} startCountdown - must be true to begin countdown
+ * @returns
+ */
+export function startRandomSelectionCountdown(countdownRemained: Number, startCountdown: boolean) {
+    return {
+        type: START_RANDOM_SELECTION_COUNTDOWN,
+        countdownRemained,
+        startCountdown
+    }
+}
 
 /**
  * Changing conference subject.

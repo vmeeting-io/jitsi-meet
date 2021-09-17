@@ -18,6 +18,7 @@ import { getSessionStatusToShow, RecordingLabel } from '../../../recording';
 import { isToolboxVisible } from '../../../toolbox/functions.web';
 import { TranscribingLabel } from '../../../transcribing';
 import { VideoQualityLabel } from '../../../video-quality';
+import { TimerLabel } from '../../../Timer';
 import ConferenceTimer from '../ConferenceTimer';
 import { PARTICIPANT_ROLE } from '../../../base/participants';
 
@@ -179,6 +180,7 @@ function ConferenceInfo(props: Props) {
                     <TranscribingLabel />
                     <VideoQualityLabel />
                     <InsecureRoomNameLabel />
+                    <TimerLabel />
                 </div>
             </div>
         </div>

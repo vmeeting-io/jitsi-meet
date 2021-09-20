@@ -1,8 +1,8 @@
 // @flow
 
-import React from 'react';
+import React,{Component} from 'react';
 
-import { translate } from '../../base/i18n';
+import { getLocalizedDurationFormatter , translate } from '../../base/i18n';
 import { Label } from '../../base/label';
 import { IconStopWatch } from '../../base/icons';
 import { connect } from '../../base/redux';
@@ -13,7 +13,6 @@ import AbstractTimerLabel, {
     type Props as AbstractProps
 } from './AbstractTimerLabel';
 
-declare var interfaceConfig: Object;
 
 type Props = AbstractProps & {
 
@@ -35,8 +34,26 @@ type Props = AbstractProps & {
  * remaining timer for the currently enabled timer.
  * 
  */
-export class TimerLabel extends AbstractTimerLabel<Props> {
+export class TimerLabel extends Component<Props> {
 
+    constructor(props: Props) {
+        super(props);
+
+        this.state = {
+            timerValue: "",
+            className: 'label--green'
+        };
+    }
+    
+    _startTimer(endTime) {
+       
+        setTimeout(()=>{
+            const dt = new Date();
+            const delta = endTime - dt.getTime();
+            this.setState({ timerValue: getLocalizedDurationFormatter(delta) });
+        },500);
+    }
+    
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -54,23 +71,27 @@ export class TimerLabel extends AbstractTimerLabel<Props> {
 
         className = 'label--green'; //TODO: Make it blinking based on remaining time.
         labelContent = t(_labelKey);
-        labelContent = "Timer 00:00"; //TODO: Remove hard-coded string. 
+        const endTime = this.props.endTime;
+        
+        const dt = new Date();
+        labelContent = getLocalizedDurationFormatter(endTime - dt.getTime()); 
+        this._startTimer(this.props.endTime);
         tooltipKey = _tooltipKey;
 
         return (
-            <Tooltip
+            this.props.timerStarted!= undefined && this.props.timerStarted && <Tooltip
                 content = { t(tooltipKey) }
                 position = { 'bottom' }>
                 <Label
-                    className = { className }
+                    className = { this.state.className }
                     icon = { IconStopWatch }
                     id = 'timerLabel'
-                    text = { labelContent } />
+                    text = { "Timer " + this.state.timerValue } />
             </Tooltip>
         );
     }
 }
 
 
-export default translate(connect()(TimerLabel));
+export default translate(connect(_abstractMapStateToProps)(TimerLabel));
 

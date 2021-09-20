@@ -34,11 +34,13 @@ import {
     conferenceJoined,
     conferenceLeft,
     conferenceSubjectChanged,
+    conferenceTimeRemained,
     conferenceTimestampChanged,
     conferenceUniqueIdSet,
     conferenceWillJoin,
     conferenceWillLeave,
     dataChannelOpened,
+    deviceAccessDisabled,
     getConferenceOptions,
     kickedOut,
     participantChatDisabled,
@@ -48,10 +50,9 @@ import {
     p2pStatusChanged,
     sendLocalParticipant,
     setStartMutedPolicy,
-    conferenceTimeRemained,
     setNoticeMessage,
-    deviceAccessDisabled,
-    startRandomSelectionCountdown
+    startRandomSelectionCountdown,
+    startTimer
 } from './react/features/base/conference';
 import { getReplaceParticipant } from './react/features/base/config/functions';
 import {
@@ -2252,7 +2253,9 @@ export default {
             });
 
         room.on(JitsiConferenceEvents.NOTIFY_TIMER_STARTED,
-            nick => {
+            (nick,endTime) => {
+                APP.store.dispatch(startTimer(endTime,true));
+                
                 APP.store.dispatch(showNotification({
                     descriptionArguments: { initiator: nick },
                     descriptionKey: 'notify.timerInitiatedBy',
@@ -2263,6 +2266,7 @@ export default {
 
         room.on(JitsiConferenceEvents.NOTIFY_TIMER_FINISHED,
             nick => {
+                APP.store.dispatch(startTimer("",false));
                 APP.store.dispatch(showNotification({
                     descriptionArguments: { initiator: nick },
                     descriptionKey: 'notify.timerFinishedBy',

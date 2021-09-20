@@ -405,6 +405,8 @@
         "timerBodyMessage": "When the timer is set and started, it counts down, and when it ends, a notification is displayed.", 
         "timerSimpleSetup": "Quick Setup",
         "timerStart": "Start",
+        "timerStop": "Are you sure to cancel the timer ?",
+        "timerStopOK": "Yes",
         "timerTitle": "Timer Setting",
         "timerMin": "min",
         "timerSec": "sec",
@@ -731,6 +733,7 @@
             "startModeration": "Unmute themselves or start video",
             "startRandomSelection": "Random Selection",
             "startTimer": "Timer",
+            "stopTimer": "Stop Timer",
             "stopEveryonesVideo": "Mute everyone's video",
             "stopVideo": "Mute video",
             "unblockEveryoneMicCamera": "Unblock everyone's mic and camera"

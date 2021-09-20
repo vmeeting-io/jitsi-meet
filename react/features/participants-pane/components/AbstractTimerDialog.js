@@ -2,7 +2,8 @@
 
 import { Component } from 'react';
 import {
-    notifyTimerStarted
+    notifyTimerStarted,
+    notifyTimerStopped
 } from '../actions.any';
 
 
@@ -35,6 +36,9 @@ export type Props = {
  */
 export default class AbstractTimerDialog<P:Props = Props>
     extends Component<P> {
+    
+   
+    
     /**
      * Initializes a new {@code AbstractTimerDialog} instance.
      *
@@ -43,12 +47,18 @@ export default class AbstractTimerDialog<P:Props = Props>
      */
     constructor(props: P) {
         super(props);
+        
+        this.state = {
+            min: 0,
+            seconds:9
+        };
 
         // Bind event handlers so they are only bound once per instance.
         this._onSubmit = this._onSubmit.bind(this);
+        this._onStopped = this._onStopped.bind(this);
     }
 
-    _onSubmit: () => boolean;
+    _onSubmit: string => boolean;
 
     /**
      * Handles the submit button action.
@@ -56,11 +66,35 @@ export default class AbstractTimerDialog<P:Props = Props>
      * @private
      * @returns {boolean} - True (to note that the modal should be closed).
      */
-    _onSubmit() {
+    _onSubmit(duration) {
         const { dispatch, initiator } = this.props;
+        duration = JSON.parse(duration);
+        
+        duration.min = duration.min > 59 ? 59 : duration.min;
+        duration.seconds = duration.seconds > 59 ? 59 : duration.seconds;
 
-        notifyTimerStarted(initiator);
+        //DUMMY TIME TO BE SENT...
+        var currentDateTime = new Date();
+        currentDateTime.setMinutes( currentDateTime.getMinutes() + duration.min ); // TODO: hard-coded get from form
+        currentDateTime.setSeconds( currentDateTime.getSeconds() + duration.seconds ); // TODO: hard-coded get from form
+        const endUNIXTime = currentDateTime.getTime();
+
+        notifyTimerStarted(initiator,endUNIXTime);
         // alert("_onSubmit Button Clicked. Timer Length: " + timerDuration )
+        return true;
+    }
+    
+    _onStopped: () => boolean;
+
+    /**
+     * Handles the cancel button action.
+     *
+     * @private
+     * @returns {boolean} - True (to note that the modal should be closed).
+     */
+    _onStopped() {
+        const { dispatch, initiator } = this.props;
+        notifyTimerStopped(initiator);
         return true;
     }
 }

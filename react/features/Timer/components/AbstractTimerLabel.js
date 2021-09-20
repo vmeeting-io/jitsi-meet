@@ -5,22 +5,16 @@ import { Component } from 'react';
 export type Prop = {
 
     /**
-     * Whether or not the conference is in audio only mode.
+     * End time of the timer.
      */
-    _audioOnly: boolean,
+    endTime: Number,
 
     /**
-     * Invoked to obtain translated strings.
+     * Flag that specifies if the timer is set or not.
+     * 
      */
-    t: Function
+    timerStarted: boolean
 };
-
-/**
- * Abstract class for the {@code TimerLabel} component.
- */
-export default class AbstractTimerLabel<P: Props> extends Component<P> {
-
-}
 
 /**
  * Maps (parts of) the Redux state to the associated
@@ -29,14 +23,15 @@ export default class AbstractTimerLabel<P: Props> extends Component<P> {
  * @param {Object} state - The Redux state.
  * @private
  * @returns {{
- *     _audioOnly: boolean
+ *     _endTime: Number
+ *     _timerStarted: boolean
  * }}
  */
 export function _abstractMapStateToProps(state: Object) {
-    const { enabled: audioOnly } = state['features/base/audio-only'];
 
     return {
-        _audioOnly: audioOnly
+        timerStarted: state['features/base/conference'].timerStarted,
+        endTime: state['features/base/conference'].endTime
     };
 }
 

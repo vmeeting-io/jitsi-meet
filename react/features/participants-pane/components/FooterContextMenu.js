@@ -19,7 +19,7 @@ import {
     isEveryoneModerator
 } from '../../base/participants';
 import { MuteEveryonesVideoDialog } from '../../video-menu/components';
-import {TimerDialog} from './web'
+import {TimerDialog,TimerCancelDialog} from './web'
 
 import {
     ContextMenu,
@@ -29,7 +29,8 @@ import {
 import {
     notifyRandomSelectionStarted,
     randomlySelectFromAllParticipants,
-    notifyRandomSelectionCompleted
+    notifyRandomSelectionCompleted,
+    notifyTimerStopped
 } from '../actions.any';
 import { initAnalytics } from '../../analytics';
 
@@ -107,6 +108,12 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
                 dispatch(openDialog(TimerDialog, { initiator: initiator }))
             }
     );
+    
+    const endTimer = useCallback(
+        () => {
+            dispatch(openDialog(TimerCancelDialog, { initiator: initiator }))
+        }
+    );
 
     return (
         <ContextMenu
@@ -124,14 +131,24 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
             </ContextMenuItem>
 
             {/* context menu item for timer function */}
-            <ContextMenuItem
+            {!APP.store.getState()["features/base/conference"].timerStarted &&  <ContextMenuItem
                 id = 'participants-pane-context-menu-timer'
                 onClick = { startTimer }>
                 <Icon
                     size = { 18 }
                     src = { IconStopWatch } />
                 <span>{ t('participantsPane.actions.startTimer') }</span>
-            </ContextMenuItem>
+            </ContextMenuItem>}
+            
+            {APP.store.getState()["features/base/conference"].timerStarted && <ContextMenuItem
+                id = 'participants-pane-context-menu-timer'
+                onClick = { endTimer }>
+                <Icon
+                    size = { 18 }
+                    src = { IconStopWatch } />
+                <span>{ t('participantsPane.actions.stopTimer') }</span>
+            </ContextMenuItem>}
+
 
             <ContextMenuItem
                 id = 'participants-pane-context-menu-stop-video'

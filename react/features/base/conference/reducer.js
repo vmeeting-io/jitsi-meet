@@ -16,6 +16,7 @@ import {
     CONFERENCE_TIME_REMAINED,
     CONFERENCE_WILL_JOIN,
     CONFERENCE_WILL_LEAVE,
+    DEVICE_ACCESS_DISABLED,
     LOCK_STATE_CHANGED,
     P2P_STATUS_CHANGED,
     SET_FOLLOW_ME,
@@ -24,8 +25,8 @@ import {
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
     SET_START_MUTED_POLICY,
-    DEVICE_ACCESS_DISABLED,
-    START_RANDOM_SELECTION_COUNTDOWN
+    START_RANDOM_SELECTION_COUNTDOWN,
+    START_TIMER
 } from './actionTypes';
 import { isRoomValid } from './functions';
 
@@ -114,6 +115,13 @@ ReducerRegistry.register(
                 userDeviceAccessDisabled: action.userDeviceAccessDisabled
             };
 
+        case START_TIMER:
+            return {
+                ...state,
+                endTime: action.endTime,
+                timerStarted: action.timerStarted
+            }
+        
         case START_RANDOM_SELECTION_COUNTDOWN:
             return {
                 ...state,

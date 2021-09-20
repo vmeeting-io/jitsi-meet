@@ -43,12 +43,21 @@ export const notifyRandomSelectionStarted = (initiator) => {
 };
 
 /**
- * Action to display notification for starting timer
+ * Action to display notification for stopping timer
  */
- export const notifyTimerStarted = (initiator) => {
+ export const notifyTimerStarted = (initiator,endUNIXTime) => {
     const state = APP.store.getState();
     const { conference } = state['features/base/conference'];
-    conference.startTimer(initiator);
+    conference.startTimer(initiator,endUNIXTime);
+};
+
+/**
+ * Action to display notification for starting timer
+ */
+ export const notifyTimerStopped = (initiator) => {
+    const state = APP.store.getState();
+    const { conference } = state['features/base/conference'];
+    conference.stopTimer(initiator);
 };
 
 /** 

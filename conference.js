@@ -99,6 +99,7 @@ import {
     participantPresenceChanged,
     participantRoleChanged,
     participantUpdated,
+    pinParticipant,
     updateRemoteParticipantFeatures
 } from './react/features/base/participants';
 import {
@@ -2279,6 +2280,11 @@ export default {
             (countdownRemained, startCountdown) => {
                 APP.store.dispatch(startRandomSelectionCountdown(countdownRemained, startCountdown));
             });
+
+        room.on(JitsiConferenceEvents.PIN_RANDOM_PARTICIPANT,
+            randomSelectedID => {
+                APP.store.dispatch(pinParticipant(randomSelectedID));
+            })
 
 
         room.on(JitsiConferenceEvents.NOTIFY_RANDOM_SELECTION_STARTED,

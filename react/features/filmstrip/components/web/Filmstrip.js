@@ -199,10 +199,7 @@ class Filmstrip extends PureComponent <Props> {
             <div
                 className = { `filmstrip ${this.props._className}` }
                 style = { filmstripStyle }>
-                    <div className = 'filmstrip__countdown' id='filmstrip__countdown'>
-                        {/* should call the function that automatically blinks the text and runs a timer */}
-                        { 5 }
-                    </div>
+
                 { toolbar }
                 <div
                     className = { this.props._videosClassName }

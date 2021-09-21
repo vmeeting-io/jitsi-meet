@@ -94,9 +94,8 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
                 const randomParticipantID = randomlySelectFromAllParticipants();
                 const selectedParticipantDisplayName = getParticipantDisplayName(APP.store.getState(), randomParticipantID);
 
-                console.log("Randomly selected participant is: ", selectedParticipantDisplayName);
-                // notify the selection of participant
-                notifyRandomSelectionCompleted(selectedParticipantDisplayName);
+                // notify the selection of participant and propagate randomParticipantID which will be used during pinning the participant
+                notifyRandomSelectionCompleted(selectedParticipantDisplayName, randomParticipantID);
             }, 5000);
 
         }

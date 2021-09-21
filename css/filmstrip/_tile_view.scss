@@ -48,7 +48,6 @@
         position: absolute;
         top: 0;
         width: 100%;
-        z-index: 0;
 
         @media (min-width: 581px) {
             &.shift-right {
@@ -59,14 +58,6 @@
                     width: calc(100vw - #{$sidebarWidth});
                 }
             }
-        }
-
-        .filmstrip__countdown {
-            right: 50%;
-            bottom: 50%;
-            z-index: 1;
-            font-size: 120px;
-            position: absolute;
         }
 
         &.collapse {

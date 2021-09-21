@@ -7,6 +7,8 @@ import { Label } from '../../base/label';
 import { IconStopWatch } from '../../base/icons';
 import { connect } from '../../base/redux';
 import { Tooltip } from '../../base/tooltip';
+import { playSound } from '../../base/sounds';
+import {TIMER_OFF_SOUND_ID} from '../constants';
 
 import AbstractTimerLabel, {
     _abstractMapStateToProps,
@@ -53,12 +55,12 @@ export class TimerLabel extends Component<Props> {
             const dt = new Date();
             const delta = this.props.timerEndTime - dt.getTime();
             if (delta<0){
-                
+                APP.store.dispatch(playSound(TIMER_OFF_SOUND_ID));                
                 // Display for timer for 10 seconds and complete the timer.
                 // Display gif and audio.
                 setTimeout(()=>{
                     notifyTimerStopped("Completed!");
-                },100000);
+                },2000);
 
                 this.setState({ timerValue: getLocalizedDurationFormatter(0), 
                     className: 'label--red',

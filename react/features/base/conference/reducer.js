@@ -118,7 +118,7 @@ ReducerRegistry.register(
         case START_TIMER:
             return {
                 ...state,
-                endTime: action.endTime,
+                timerEndTime: action.endTime,
                 timerStarted: action.timerStarted
             }
         

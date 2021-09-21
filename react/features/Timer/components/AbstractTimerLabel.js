@@ -7,7 +7,7 @@ export type Prop = {
     /**
      * End time of the timer.
      */
-    endTime: Number,
+    timerEndTime: Number,
 
     /**
      * Flag that specifies if the timer is set or not.
@@ -31,7 +31,7 @@ export function _abstractMapStateToProps(state: Object) {
 
     return {
         timerStarted: state['features/base/conference'].timerStarted,
-        endTime: state['features/base/conference'].endTime
+        timerEndTime: state['features/base/conference'].timerEndTime
     };
 }
 

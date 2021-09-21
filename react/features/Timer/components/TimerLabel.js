@@ -51,7 +51,7 @@ export class TimerLabel extends Component<Props> {
     componentDidMount() {
         const interval = setInterval(()=>{
             const dt = new Date();
-            const delta = this.props.endTime - dt.getTime();
+            const delta = this.props.timerEndTime - dt.getTime();
             if (delta<0){
                 
                 // Display for timer for 10 seconds and complete the timer.

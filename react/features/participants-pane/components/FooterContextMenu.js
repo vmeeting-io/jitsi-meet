@@ -30,7 +30,6 @@ import {
     notifyRandomSelectionStarted,
     randomlySelectFromAllParticipants,
     notifyRandomSelectionCompleted,
-    notifyTimerStopped
 } from '../actions.any';
 import { initAnalytics } from '../../analytics';
 

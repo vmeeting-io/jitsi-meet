@@ -73,14 +73,12 @@ export default class AbstractTimerDialog<P:Props = Props>
         duration.min = duration.min > 59 ? 59 : duration.min;
         duration.seconds = duration.seconds > 59 ? 59 : duration.seconds;
 
-        //DUMMY TIME TO BE SENT...
         var currentDateTime = new Date();
-        currentDateTime.setMinutes( currentDateTime.getMinutes() + duration.min ); // TODO: hard-coded get from form
-        currentDateTime.setSeconds( currentDateTime.getSeconds() + duration.seconds ); // TODO: hard-coded get from form
+        currentDateTime.setMinutes( currentDateTime.getMinutes() + duration.min ); 
+        currentDateTime.setSeconds( currentDateTime.getSeconds() + duration.seconds ); 
         const endUNIXTime = currentDateTime.getTime();
 
         notifyTimerStarted(initiator,endUNIXTime);
-        // alert("_onSubmit Button Clicked. Timer Length: " + timerDuration )
         return true;
     }
     

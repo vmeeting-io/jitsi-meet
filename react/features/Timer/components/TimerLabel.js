@@ -13,6 +13,8 @@ import AbstractTimerLabel, {
     type Props as AbstractProps
 } from './AbstractTimerLabel';
 
+import { notifyTimerStopped } from '../../participants-pane/actions.any'
+import s from './TimerLabel.module.scss';
 
 type Props = AbstractProps & {
 
@@ -41,16 +43,32 @@ export class TimerLabel extends Component<Props> {
 
         this.state = {
             timerValue: "",
-            className: 'label--green'
+            className: 'label--green',
+            ended: false
         };
     }
     
-    _startTimer(endTime) {
-       
-        setTimeout(()=>{
+    componentDidMount() {
+        const interval = setInterval(()=>{
             const dt = new Date();
-            const delta = endTime - dt.getTime();
-            this.setState({ timerValue: getLocalizedDurationFormatter(delta) });
+            const delta = this.props.endTime - dt.getTime();
+            if (delta<0){
+                
+                // Display for timer for 10 seconds and complete the timer.
+                // Display gif and audio.
+                setTimeout(()=>{
+                    notifyTimerStopped("Completed!");
+                },100000);
+
+                this.setState({ timerValue: getLocalizedDurationFormatter(0), 
+                    className: 'label--red',
+                    ended: true
+                    });
+                clearInterval(interval);
+                
+            }else{
+                this.setState({ timerValue: getLocalizedDurationFormatter(delta) });
+            }
         },500);
     }
     
@@ -62,32 +80,24 @@ export class TimerLabel extends Component<Props> {
      */
     render() {
         const {
-            _labelKey,
-            _tooltipKey,
             t
         } = this.props;
 
-        let className, labelContent, tooltipKey;
-
-        className = 'label--green'; //TODO: Make it blinking based on remaining time.
-        labelContent = t(_labelKey);
-        const endTime = this.props.endTime;
-        
-        const dt = new Date();
-        labelContent = getLocalizedDurationFormatter(endTime - dt.getTime()); 
-        this._startTimer(this.props.endTime);
-        tooltipKey = _tooltipKey;
-
         return (
-            this.props.timerStarted!= undefined && this.props.timerStarted && <Tooltip
-                content = { t(tooltipKey) }
-                position = { 'bottom' }>
-                <Label
-                    className = { this.state.className }
-                    icon = { IconStopWatch }
-                    id = 'timerLabel'
-                    text = { "Timer " + this.state.timerValue } />
-            </Tooltip>
+            <>
+                <Tooltip
+                    position = { 'bottom' }>
+                    <Label
+                        className = { this.state.className }
+                        icon = { IconStopWatch }
+                        id = 'timerLabel'
+                        text = { "Timer " + this.state.timerValue } />
+                </Tooltip>
+
+                { this.state.ended && <div className={s.imgWrap} id='timer-end-clock'>
+                    <img className={s.gif} src='/static/clock-buzz.gif'/>
+                </div> }
+            </>
         );
     }
 }

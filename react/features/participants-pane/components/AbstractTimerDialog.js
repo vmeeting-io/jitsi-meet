@@ -68,13 +68,12 @@ export default class AbstractTimerDialog<P:Props = Props>
      */
     _onSubmit(duration) {
         const { dispatch, initiator } = this.props;
-        
         duration.min = duration.min > 59 ? 59 : duration.min;
         duration.seconds = duration.seconds > 59 ? 59 : duration.seconds;
 
         var currentDateTime = new Date();
         currentDateTime.setMinutes( currentDateTime.getMinutes() + duration.min ); 
-        currentDateTime.setSeconds( currentDateTime.getSeconds() + duration.seconds ); 
+        currentDateTime.setSeconds( currentDateTime.getSeconds() + duration.seconds + 1 ); 
         const endUNIXTime = currentDateTime.getTime();
 
         notifyTimerStarted(initiator,endUNIXTime);

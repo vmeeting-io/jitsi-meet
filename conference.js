@@ -2268,7 +2268,7 @@ export default {
         room.on(JitsiConferenceEvents.NOTIFY_TIMER_FINISHED,
             nick => {
                 APP.store.dispatch(startTimer("",false));
-                APP.store.dispatch(showNotification({
+                nick != "Completed!" && APP.store.dispatch(showNotification({
                     descriptionArguments: { initiator: nick },
                     descriptionKey: 'notify.timerFinishedBy',
                     titleKey: 'notify.timerTitle'

@@ -44,14 +44,20 @@ export class TimerLabel extends Component<Props> {
         super(props);
 
         this.state = {
-            timerValue: "",
+            timerValue: getLocalizedDurationFormatter(0),
             className: 'label--green',
             ended: false
         };
+
+        let interval;
     }
     
-    componentDidMount() {
-        const interval = setInterval(()=>{
+    componentWillUnmount() {
+        clearInterval(this.interval);
+    }
+
+    componentWillMount() {
+        this.interval = setInterval(()=>{
             const dt = new Date();
             const delta = this.props.timerEndTime - dt.getTime();
             if (delta<0){
@@ -66,7 +72,7 @@ export class TimerLabel extends Component<Props> {
                     className: 'label--red',
                     ended: true
                     });
-                clearInterval(interval);
+                clearInterval(this.interval);
                 
             }else{
                 this.setState({ timerValue: getLocalizedDurationFormatter(delta) });

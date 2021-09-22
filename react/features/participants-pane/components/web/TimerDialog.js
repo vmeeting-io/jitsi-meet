@@ -119,7 +119,7 @@ class TimerDialog extends AbstractTimerDialog {
         this.setState({ seconds: e.target.value })
     }
 
-    _onSubmit: string => boolean;
+    _onSubmit: Object => boolean;
 
     /**
      * 
@@ -128,7 +128,8 @@ class TimerDialog extends AbstractTimerDialog {
      * @returns boolean
      */
     _onSubmitForm(e: Object) {
-        const time = "{\"min\":" + this.state.min + ",\"seconds\":" + this.state.seconds + "}";
+        const time = {"min":  this.state.min ,
+                      "seconds": this.state.seconds };
         this._onSubmit(time);
         return true;
     }

@@ -58,7 +58,7 @@ export default class AbstractTimerDialog<P:Props = Props>
         this._onStopped = this._onStopped.bind(this);
     }
 
-    _onSubmit: string => boolean;
+    _onSubmit: Object => boolean;
 
     /**
      * Handles the submit button action.
@@ -68,7 +68,6 @@ export default class AbstractTimerDialog<P:Props = Props>
      */
     _onSubmit(duration) {
         const { dispatch, initiator } = this.props;
-        duration = JSON.parse(duration);
         
         duration.min = duration.min > 59 ? 59 : duration.min;
         duration.seconds = duration.seconds > 59 ? 59 : duration.seconds;

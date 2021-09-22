@@ -10,6 +10,13 @@
     text-align: center;
 }
 
+.settingHeader{
+    margin-top: 10px;
+}
+.settingHeader span{
+    font-weight: bold;
+}
+
 .col {
     margin-right: 20px;
     flex: 1;
@@ -18,5 +25,7 @@
 .buttonGroup{
     margin-top: 20px;
     margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
 }
 

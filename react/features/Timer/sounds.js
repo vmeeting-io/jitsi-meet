@@ -3,4 +3,4 @@
  *
  * @type {string}
  */
-export const TIMER_OFF_SOUND_FILE = 'timerOff.mp3';
+export const TIMER_OFF_SOUND_FILE = 'timerOff.wav';

@@ -732,7 +732,7 @@
             "muteEveryoneElse": "Mute everyone else",
             "startModeration": "Unmute themselves or start video",
             "startRandomSelection": "Random Selection",
-            "startTimer": "Timer",
+            "startTimerLabel": "Timer",
             "stopTimer": "Stop Timer",
             "stopEveryonesVideo": "Mute everyone's video",
             "stopVideo": "Mute video",

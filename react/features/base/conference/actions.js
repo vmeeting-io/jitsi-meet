@@ -910,7 +910,7 @@ export function deviceAccessDisabled(userDeviceAccessDisabled: boolean) {
  * @returns
  * 
  **/
- export function startTimer(endTime: Number, timerStarted: boolean) {
+ export function Timer(endTime: Number, timerStarted: boolean) {
     return {
         type: START_TIMER,
         endTime,

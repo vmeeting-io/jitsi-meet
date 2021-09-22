@@ -101,13 +101,13 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
         }
     )
 
-    const startTimer = useCallback(
+    const _onStartTimerClick = useCallback(
         () => {
                 dispatch(openDialog(TimerDialog, { initiator: initiator }))
             }
     );
     
-    const endTimer = useCallback(
+    const _onEndTimerClick = useCallback(
         () => {
             dispatch(openDialog(TimerCancelDialog, { initiator: initiator }))
         }
@@ -131,16 +131,16 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
             {/* context menu item for timer function */}
             {!APP.store.getState()["features/base/conference"].timerStarted &&  <ContextMenuItem
                 id = 'participants-pane-context-menu-timer'
-                onClick = { startTimer }>
+                onClick = { _onStartTimerClick }>
                 <Icon
                     size = { 18 }
                     src = { IconStopWatch } />
-                <span>{ t('participantsPane.actions.startTimer') }</span>
+                <span>{ t('participantsPane.actions.startTimerLabel') }</span>
             </ContextMenuItem>}
             
             {APP.store.getState()["features/base/conference"].timerStarted && <ContextMenuItem
                 id = 'participants-pane-context-menu-timer'
-                onClick = { endTimer }>
+                onClick = { _onEndTimerClick }>
                 <Icon
                     size = { 18 }
                     src = { IconStopWatch } />

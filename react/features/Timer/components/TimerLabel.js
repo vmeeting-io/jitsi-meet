@@ -65,7 +65,7 @@ export class TimerLabel extends Component<Props> {
                 // Display for timer for 10 seconds and complete the timer.
                 // Display gif and audio.
                 setTimeout(()=>{
-                    notifyTimerStopped("Completed!");
+                    notifyTimerStopped("TIMER_OFF");
                 },2000);
 
                 this.setState({ timerValue: getLocalizedDurationFormatter(0), 

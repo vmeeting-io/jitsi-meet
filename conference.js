@@ -52,7 +52,7 @@ import {
     setStartMutedPolicy,
     setNoticeMessage,
     startRandomSelectionCountdown,
-    startTimer
+    Timer
 } from './react/features/base/conference';
 import { getReplaceParticipant } from './react/features/base/config/functions';
 import {
@@ -2255,7 +2255,7 @@ export default {
 
         room.on(JitsiConferenceEvents.NOTIFY_TIMER_STARTED,
             (nick,endTime) => {
-                APP.store.dispatch(startTimer(endTime,true));
+                APP.store.dispatch(Timer(endTime,true));
                 
                 APP.store.dispatch(showNotification({
                     descriptionArguments: { initiator: nick },
@@ -2267,8 +2267,8 @@ export default {
 
         room.on(JitsiConferenceEvents.NOTIFY_TIMER_FINISHED,
             nick => {
-                APP.store.dispatch(startTimer("",false));
-                nick != "Completed!" && APP.store.dispatch(showNotification({
+                APP.store.dispatch(Timer("",false));
+                nick != "TIMER_OFF" && APP.store.dispatch(showNotification({
                     descriptionArguments: { initiator: nick },
                     descriptionKey: 'notify.timerFinishedBy',
                     titleKey: 'notify.timerTitle'

@@ -721,7 +721,7 @@
             "muteEveryoneElse": "이외 모두 음소거",
             "startModeration": "마이크 또는 카메라 켜기",
             "startRandomSelection": "랜덤 지목",
-            "startTimer": "타이머",
+            "startTimerLabel": "타이머",
             "stopTimer": "타이머 해제",
             "stopEveryonesVideo": "카메라 모두 끄기",
             "stopVideo": "카메라 끄기",

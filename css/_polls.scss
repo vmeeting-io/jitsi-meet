@@ -207,7 +207,7 @@ a.poll-detail-link, a.poll-change-vote-link {
     display: flex;
     flex-direction: column;
     font-weight: 600;
-    height: 85%;
+    flex-grow: 1;
     align-items: stretch;
 }
 
@@ -303,7 +303,7 @@ a.poll-detail-link, a.poll-change-vote-link {
 .poll-footer {
     display: flex;
     justify-content: flex-end;
-    padding: 8px 16px;
+    padding: 16px;
     height: 40px;
     align-items: stretch;
 

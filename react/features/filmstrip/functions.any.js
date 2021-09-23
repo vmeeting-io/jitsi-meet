@@ -35,26 +35,27 @@ export function updateRemoteParticipants(store: Object, participantId: ?number) 
     const remoteParticipants = new Map(sortedRemoteParticipants);
     const screenShares = new Map(sortedRemoteScreenshares);
     const sharedVideos = fakeParticipants ? Array.from(fakeParticipants.keys()) : [];
-    const speakers = new Map(speakersList);
+    // const speakers = new Map(speakersList);
 
     console.log('updateRemoteParticipants: before', remoteParticipants);
     for (const screenshare of screenShares.keys()) {
         remoteParticipants.delete(screenshare);
-        speakers.delete(screenshare);
+        // speakers.delete(screenshare);
     }
     for (const sharedVideo of sharedVideos) {
         remoteParticipants.delete(sharedVideo);
-        speakers.delete(sharedVideo);
+        // speakers.delete(sharedVideo);
     }
-    for (const speaker of speakers.keys()) {
-        remoteParticipants.delete(speaker);
-    }
+    // do not sort for speakers
+    // for (const speaker of speakers.keys()) {
+    //     remoteParticipants.delete(speaker);
+    // }
 
     // Always update the order of the thumnails.
     reorderedParticipants = [
         ...Array.from(screenShares.keys()),
         ...sharedVideos,
-        ...Array.from(speakers.keys()),
+        // ...Array.from(speakers.keys()),
         ...Array.from(remoteParticipants.keys())
     ];
 

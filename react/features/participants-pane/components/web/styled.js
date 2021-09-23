@@ -4,6 +4,8 @@ import styled from 'styled-components';
 import { Icon, IconHorizontalPoints } from '../../../base/icons';
 import { ACTION_TRIGGER } from '../../constants';
 
+const MD_BREAKPOINT = '580px';
+
 export const ignoredChildClassName = 'ignore-child';
 
 export const AntiCollapse = styled.br`
@@ -38,9 +40,9 @@ export const QuickActionButton = styled(Button)`
 export const Container = styled.div`
   box-sizing: border-box;
   flex: 1;
-
+  overflow-y: auto;
   position: relative;
-  
+  padding: 0 ${props => props.theme.panePadding}px;
 
   & > * + *:not(.${ignoredChildClassName}) {
     margin-top: 16px;
@@ -89,7 +91,7 @@ export const ContextMenuIcon = styled(Icon).attrs({
     size: 20
 })`
   & > svg {
-    fill: #a4b8d1;
+    fill: #ffffff;
   }
 `;
 
@@ -162,6 +164,12 @@ export const FooterButton = styled(Button)`
   height: 40px;
   font-size: 15px;
   padding: 0 16px;
+
+  @media (max-width: ${MD_BREAKPOINT}) {
+    font-size: 16px;
+    height: 48px;
+    min-width: 48px;
+  }
 `;
 
 export const FooterEllipsisButton = styled(FooterButton).attrs({
@@ -188,6 +196,10 @@ export const Heading = styled.div`
   font-size: 15px;
   line-height: 24px;
   margin: 8px 0 ${props => props.theme.panePadding}px;
+
+  @media (max-width: ${MD_BREAKPOINT}) {
+    font-size: 16px;
+  }
 `;
 
 export const ParticipantActionButton = styled(Button)`
@@ -270,9 +282,16 @@ export const ParticipantContainer = styled.div`
   color: white;
   display: flex;
   font-size: 13px;
+  font-weight: normal;
   height: ${props => props.theme.participantItemHeight}px;
+  margin: 0 -${props => props.theme.panePadding}px;
   padding-left: ${props => props.theme.panePadding}px;
   position: relative;
+
+  @media (max-width: ${MD_BREAKPOINT}) {
+    font-size: 16px;
+    height: 64px;
+  }
 
   &:hover {
     ${ParticipantStates} {
@@ -292,6 +311,10 @@ export const ParticipantContainer = styled.div`
     & ${ParticipantContent} {
       box-shadow: none;
     }
+
+    & ${ParticipantStates} {
+      display: none;
+    }
   ${props => !props.isHighlighted && '}'}
 `;
 
@@ -301,9 +324,14 @@ export const ParticipantInviteButton = styled(Button).attrs({
   font-size: 15px;
   height: 40px;
   width: 100%;
-  
+
   & > *:not(:last-child) {
     margin-right: 8px;
+  }
+
+  @media (max-width: ${MD_BREAKPOINT}) {
+    font-size: 16px;
+    height: 48px;
   }
 `;
 
@@ -316,8 +344,22 @@ export const ParticipantName = styled.div`
 export const ParticipantNameContainer = styled.div`
   display: flex;
   flex: 1;
+  overflow: hidden;
+`;
+
+export const ModeratorLabel = styled.div`
+  font-size: 12px;
+  line-height: 16px;
+  color: #858585;
+`;
+
+export const ParticipantDetailsContainer = styled.div`
+  display: flex;
+  flex: 1;
   margin-right: 8px;
   overflow: hidden;
+  flex-direction: column;
+  justify-content: flex-start;
 `;
 
 export const RaisedHandIndicatorBackground = styled.div`

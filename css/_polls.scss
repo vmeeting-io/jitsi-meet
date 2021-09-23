@@ -209,6 +209,7 @@ a.poll-detail-link, a.poll-change-vote-link {
     font-weight: 600;
     flex-grow: 1;
     align-items: stretch;
+    overflow-y: auto;
 }
 
 .pane-content{

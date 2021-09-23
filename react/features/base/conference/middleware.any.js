@@ -38,6 +38,7 @@ import {
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
     SET_USER_DEVICE_ACCESS_DISABLED,
+    START_TIMER
 } from './actionTypes';
 import {
     conferenceFailed,
@@ -49,7 +50,8 @@ import {
     _addLocalTracksToConference,
     _removeLocalTracksFromConference,
     forEachConference,
-    getCurrentConference
+    getCurrentConference,
+    getRoomInfo
 } from './functions';
 import logger from './logger';
 import { appNavigate } from '../../app/actions';
@@ -104,30 +106,32 @@ MiddlewareRegistry.register(store => next => action => {
     case SET_ROOM:
         return _setRoom(store, next, action);
 
-    case SET_USER_DEVICE_ACCESS_DISABLED:
-        // retrieve JitsiConference object
-        const { conference } = store.getState()['features/base/conference'];
-
-        // update conference database information to set userDeviceAccessDisabled field
-        const room = store.getState()['features/base/conference'].roomInfo;
-        const baseURL = store.getState()['features/base/connection'].locationURL;
-        const config = {
-            headers: { Authorization: `Bearer ${process.env.VMEETING_API_TOKEN}`}
-          };
-        const AUTH_API_BASE = process.env.VMEETING_API_BASE;
-        const apiBaseUrl = `${baseURL.origin}${AUTH_API_BASE}`;
-        let data;
+    case START_TIMER:
+        const info = getRoomInfo(store);
+        
+        console.log("ANIS: 1" + JSON.stringify(action));
         try {
-            axios.patch(`${apiBaseUrl}/conferences/${room._id}`, { userDeviceAccessDisabled: String(action.userDeviceAccessDisabled) }, config).then((resp) => {
+            axios.patch(`${info.apiBaseUrl}/conferences/${info.room._id}`, { timerEndTime: String(action.endTime) }, info.config).then((resp) => {
                 console.log("Response data is: ", resp.data);
-                data = resp.data;
+            });
+        } catch(err) {
+            console.log(err);
+        }
+        break;
+
+    
+    case SET_USER_DEVICE_ACCESS_DISABLED:
+        const info2 = getRoomInfo(store);        
+        try {
+            axios.patch(`${info2.apiBaseUrl}/conferences/${info2.room._id}`, { userDeviceAccessDisabled: String(action.userDeviceAccessDisabled) }, info2.config).then((resp) => {
+                console.log("Response data is: ", resp.data);
             });
         } catch(err) {
             console.log(err);
         }
 
         // call a function from JitsiConference that sends userDeviceAccessConfiguration as a message
-        conference.sendUserDeviceAccessConfiguration(action.userDeviceAccessDisabled);
+        info2.conference.sendUserDeviceAccessConfiguration(action.userDeviceAccessDisabled);
         break;
 
     case TRACK_ADDED:

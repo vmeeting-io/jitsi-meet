@@ -44,6 +44,15 @@ const useStyles = makeStyles(() => {
             transform: 'translateY(-100%)',
             width: '238px'
         },
+        menudisabled: {
+            pointerEvents: 'none',
+            cursor: 'not-allowed',
+            opacity: 0.65,
+            filter: 'alpha(opacity=65)',
+            WebkitBoxShadow: 'none',
+            BoxShadow: 'none',
+        },
+
         text: {
             marginLeft: '52px',
             lineHeight: '40px'
@@ -79,6 +88,8 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
     const enable = useCallback(() => dispatch(requestEnableModeration()), [ dispatch ]);
 
     const classes = useStyles();
+    let isRandomSelectionRunning = (APP.store.getState()['features/base/conference'].startCountdown === true) ? true : false;
+    const randomselectionClass = isRandomSelectionRunning ? classes.menudisabled : '';
 
     const muteAllVideo = useCallback(
         () => dispatch(openDialog(MuteEveryonesVideoDialog, { exclude: [ id ] })), [ dispatch ]);
@@ -120,6 +131,7 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
 
             {/* context menu item for random selection */}
             <ContextMenuItem
+                className = { randomselectionClass }
                 id = 'participants-pane-context-menu-random-selection'
                 onClick = { startRandomSelection }>
                 <Icon

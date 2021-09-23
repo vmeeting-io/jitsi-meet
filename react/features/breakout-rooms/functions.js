@@ -2,7 +2,7 @@
 
 import _ from 'lodash';
 
-import { getCurrentConference } from '../base/conference';
+import { getConferenceOptions, getCurrentConference } from '../base/conference';
 import { toState } from '../base/redux';
 
 import { FEATURE_KEY } from './constants';
@@ -72,3 +72,21 @@ export const getRoomParticipants = (stateful: Function | Object, roomId: string)
  */
 export const isInBreakoutRoom = (stateful: Function | Object) =>
     /_[-\da-f]{36}$/.test(getCurrentRoomId(stateful));
+
+
+export const getRoomJidByParticipantId = (stateful: Function | Object, participantId: string) => {
+    const found = _.find(getRooms(stateful), room => {
+        return Boolean(room.participants[participantId])
+    });
+
+    if (!found) {
+        const conferenceOptions = getConferenceOptions(stateful);
+
+        return `${getCurrentRoomId(stateful)}@${isInBreakoutRoom(stateful)
+            ? `breakout.${conferenceOptions.hosts.domain}`
+            : conferenceOptions.hosts.muc
+        }`;
+    }
+
+    return found.jid;
+}

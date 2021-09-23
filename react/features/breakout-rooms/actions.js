@@ -1,23 +1,18 @@
 // @flow
 
-import axios from 'axios';
 import i18next from 'i18next';
 import _ from 'lodash';
 import type { Dispatch } from 'redux';
-import { getAuthUrl } from '../../api/url';
 
 import {
     conferenceLeft,
     conferenceWillLeave,
     createConference,
-    getConferenceOptions,
     getCurrentConference,
     setRoom
 } from '../base/conference';
-import { configureInitialDevices } from '../base/devices';
 import { setAudioMuted, setVideoMuted } from '../base/media';
 import { getRemoteParticipants } from '../base/participants';
-import { parseURIString } from '../base/util';
 import { clearNotifications } from '../notifications';
 
 import { UPDATE_BREAKOUT_ROOMS } from './actionTypes';
@@ -28,9 +23,8 @@ import {
 } from './constants';
 import {
     getBreakoutRooms,
-    getCurrentRoomId,
     getMainRoomId,
-    isInBreakoutRoom
+    getRoomJidByParticipantId,
 } from './functions';
 import logger from './logger';
 
@@ -129,13 +123,9 @@ export function autoAssignToBreakoutRooms() {
  */
 export function sendParticipantToRoom(participantId: string, roomId: string) {
     return (dispatch: Dispatch<any>, getState: Function) => {
-        const conferenceOptions = getConferenceOptions(getState);
         const fullJid = participantId.indexOf('@') >= 0
             ? participantId
-            : `${getCurrentRoomId(getState)}@${isInBreakoutRoom(getState)
-                ? `breakout.${conferenceOptions.hosts.domain}`
-                : conferenceOptions.hosts.muc
-            }/${participantId}`;
+            : `${getRoomJidByParticipantId(getState, participantId)}/${participantId}`;
         const message = {
             type: JSON_TYPE_MOVE_TO_ROOM_REQUEST,
             roomId

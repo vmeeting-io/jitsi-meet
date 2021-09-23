@@ -76,16 +76,16 @@ export function isForceMuted(participant: Object, mediaType: MediaType, state: O
 export function getParticipantAudioMediaState(participant: Object, muted: Boolean, state: Object) {
     const dominantSpeaker = getDominantSpeakerParticipant(state);
 
-    if (participant === dominantSpeaker) {
-        return MEDIA_STATE.DOMINANT_SPEAKER;
-    }
-
     if (muted) {
         if (isForceMuted(participant, MEDIA_TYPE.AUDIO, state)) {
             return MEDIA_STATE.FORCE_MUTED;
         }
 
         return MEDIA_STATE.MUTED;
+    }
+
+    if (participant === dominantSpeaker) {
+        return MEDIA_STATE.DOMINANT_SPEAKER;
     }
 
     return MEDIA_STATE.UNMUTED;

@@ -109,7 +109,6 @@ MiddlewareRegistry.register(store => next => action => {
     case START_TIMER:
         const info = getRoomInfo(store);
         
-        console.log("ANIS: 1" + JSON.stringify(action));
         try {
             axios.patch(`${info.apiBaseUrl}/conferences/${info.room._id}`, { timerEndTime: String(action.endTime) }, info.config).then((resp) => {
                 console.log("Response data is: ", resp.data);

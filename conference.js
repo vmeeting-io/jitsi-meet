@@ -22,6 +22,7 @@ import {
 import {
     maybeRedirectToWelcomePage,
     redirectToStaticPage,
+    redirectWithStoredParams,
     reloadWithStoredParams
 } from './react/features/app/actions';
 import {
@@ -127,7 +128,7 @@ import {
     submitFeedback
 } from './react/features/feedback';
 import { toggleLobbyMode } from './react/features/lobby/actions';
-import { showConfirmDialog, showNotification, showToast } from './react/features/notifications';
+import { saveErrorNotification, showConfirmDialog, showNotification, showToast } from './react/features/notifications';
 import { mediaPermissionPromptVisibilityChanged, toggleSlowGUMOverlay } from './react/features/overlay';
 import { suspendDetected } from './react/features/power-monitor';
 import {
@@ -366,11 +367,6 @@ class ConferenceConnector {
             // the app. Both the errors above are unrecoverable from the library
             // perspective.
             room.leave().then(() => connection.disconnect());
-            break;
-
-        case JitsiConferenceErrors.CONFERENCE_MAX_USERS:
-            connection.disconnect();
-            APP.UI.notifyMaxUsersLimitReached();
             break;
 
         case JitsiConferenceErrors.INCOMPATIBLE_SERVER_VERSIONS:

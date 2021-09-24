@@ -10,7 +10,7 @@ import {
     createToolbarEvent,
     sendAnalytics
 } from '../../analytics';
-import { reloadNow } from '../../app/actions';
+import { redirectWithStoredParams, reloadNow } from '../../app/actions';
 import { openDisplayNamePrompt } from '../../display-name';
 import { saveErrorNotification, showErrorNotification } from '../../notifications';
 import { CONNECTION_ESTABLISHED, CONNECTION_FAILED, connectionDisconnected } from '../connection';
@@ -204,6 +204,18 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
     }
     case JitsiConferenceErrors.OFFER_ANSWER_FAILED:
         sendAnalytics(createOfferAnswerFailedEvent());
+        break;
+    case JitsiConferenceErrors.CONFERENCE_MAX_USERS:
+        if (browser.isReactNative()) {
+            dispatch(appNavigate(undefined));
+        } else {
+            dispatch(disconnect(false));
+        }
+        dispatch(saveErrorNotification({
+            titleKey: 'dialog.LicenseError',
+            descriptionKey: 'dialog.MaxedLicense',
+        }));
+        dispatch(redirectWithStoredParams('/'));
         break;
     }
 

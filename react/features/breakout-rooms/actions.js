@@ -166,7 +166,7 @@ export function moveToRoom(roomId?: string) {
         } else {
             APP.conference.leaveRoom()
             .finally(() => {
-                APP.conference.joinRoom(_roomId)
+                APP.conference.joinRoom(_roomId, _roomId === roomId /* isBreakoutRoom */)
             });
         }
     };

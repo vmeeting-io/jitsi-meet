@@ -34,6 +34,11 @@ import {
 type Props = {
 
     /**
+     * Whether there is backend support for Breakout Rooms.
+     */
+    _isBreakoutRoomsSupported: Boolean,
+
+    /**
      * Should the add breakout room button be displayed?
      */
     _showAddRoomButton: boolean,
@@ -120,6 +125,7 @@ class ParticipantsPane extends Component<Props, State> {
      */
     render() {
         const {
+            _isBreakoutRoomsSupported,
             _showAddRoomButton,
             _paneOpen,
             _showFooter,
@@ -148,7 +154,7 @@ class ParticipantsPane extends Component<Props, State> {
                             <LobbyParticipantList />
                             <AntiCollapse />
                             <MeetingParticipantList />
-                            <RoomList />
+                            {_isBreakoutRoomsSupported && <RoomList />}
                             {_showAddRoomButton && <AddBreakoutRoomButton />}
                         </Container>
                         {_showFooter && (
@@ -246,18 +252,18 @@ class ParticipantsPane extends Component<Props, State> {
  *
  * @param {Object} state - The redux state.
  * @protected
- * @returns {{
- *     _paneOpen: boolean,
- *     _showFooter: boolean
- * }}
+ * @returns {Props}
  */
 function _mapStateToProps(state: Object) {
     const isPaneOpen = getParticipantsPaneOpen(state);
     const { hideAddRoomButton } = state['features/base/config'];
+    const { conference } = state['features/base/conference'];
+    const _isBreakoutRoomsSupported = Boolean(conference && conference.isBreakoutRoomsSupported());
     const _isLocalParticipantModerator = isLocalParticipantModerator(state);
 
     return {
-        _showAddRoomButton: !hideAddRoomButton && _isLocalParticipantModerator,
+        _isBreakoutRoomsSupported,
+        _showAddRoomButton: _isBreakoutRoomsSupported && !hideAddRoomButton && _isLocalParticipantModerator,
         _paneOpen: isPaneOpen,
         _showFooter: isPaneOpen && isLocalParticipantModerator(state)
     };

@@ -118,7 +118,6 @@ export const Heading = styled.div`
   font-style: normal;
   font-size: 15px;
   line-height: 24px;
-  margin: 8px 0 ${props => props.theme.panePadding}px;
 `;
 
 export const RoomActionButton = styled(Button)`

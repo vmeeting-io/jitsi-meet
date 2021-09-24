@@ -97,6 +97,10 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
             // function that notifies random selection procedure has now started
             notifyRandomSelectionStarted(initiator);
 
+            // toggling of menu option is also being handled by 'onMouseLeave' which toggles the display menu
+            // thus, we use the existing function to imitate action to hide the menu option after the option was clicked
+            onMouseLeave();
+
             // set a timeout of 5 seconds before executing rest of the code
             setTimeout(function() {
                 // randomly selects a participant from allParticipants and get its display name

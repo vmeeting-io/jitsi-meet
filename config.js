@@ -8,12 +8,12 @@ var config = {
     //Download Links
     features:{
         learnMore:{
-            enLink: "https://sites.google.com/kedutech.kr/en-vmeeting-guide-v1/ko-home",
-            krLink : "https://sites.google.com/kedutech.kr/ko-vmeeting-guide-v1/home"
+            enLink: "https://sites.google.com/kedutech.kr/en-vmeeting-guide-v2",
+            krLink : "https://sites.google.com/kedutech.kr/ko-vmeeting-guide-v2"
         },
         download:{
-            krLink : "/static/doc/manual/Vmeeting_Manual_KO.pdf",
-            enLink : "/static/doc/manual/Vmeeting_Manual_EN.pdf"
+            krLink : "/static/doc/manual/Vmeeting_Manual_KO_v2.pdf",
+            enLink : "/static/doc/manual/Vmeeting_Manual_EN_v2.pdf"
         }
     },
     //Capatcha Configs

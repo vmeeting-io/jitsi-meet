@@ -233,7 +233,13 @@ class WelcomePage extends AbstractWelcomePage {
         const krLink = window.config.features.download.krLink;
         const enLink = window.config.features.download.enLink;
         const selectedLang =  localStorage.language == "ko" ? krLink:enLink;
-        window.open(selectedLang);
+        
+        var a = document.createElement('A');
+        a.href = selectedLang;
+        a.download = selectedLang.substr(selectedLang.lastIndexOf('/') + 1);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
     /***

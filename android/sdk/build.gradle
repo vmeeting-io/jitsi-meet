@@ -44,7 +44,7 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation 'org.webkit:android-jsc:+'
 
-    implementation 'com.dropbox.core:dropbox-core-sdk:3.0.8'
+    implementation 'com.dropbox.core:dropbox-core-sdk:4.0.1'
     implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation 'com.squareup.duktape:duktape-android:1.3.0'
     implementation 'com.google.code.gson:gson:2.8.6'
@@ -56,7 +56,7 @@ dependencies {
             exclude group: 'com.android.installreferrer'
         }
     } else {
-        implementation project(':amplitudereactnative')
+        implementation project(':react-native-amplitude')
         implementation project(':react-native-device-info')
         implementation(project(":react-native-google-signin")) {
             exclude group: 'com.google.android.gms'

@@ -1,6 +1,6 @@
 // @flow
 
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 
 import keyboardShortcut from '../../../../../modules/keyboardshortcut/keyboardshortcut';
 import {
@@ -235,6 +235,11 @@ type Props = {
     dispatch: Function,
 
     /**
+     * If the dominant speaker name should be displayed or not.
+     */
+    showDominantSpeakerName?: boolean,
+
+    /**
      * Invoked to obtain translated strings.
      */
     t: Function,
@@ -243,6 +248,7 @@ type Props = {
      * Explicitly passed array with the buttons which this Toolbox should display.
      */
     toolbarButtons: Array<string>,
+
 };
 
 declare var APP: Object;
@@ -1238,6 +1244,7 @@ class Toolbox extends Component<Props, State> {
             _isMobile,
             _overflowMenuVisible,
             _toolbarButtons,
+            showDominantSpeakerName,
             t,
             _reactionsEnabled
         } = this.props;
@@ -1256,7 +1263,9 @@ class Toolbox extends Component<Props, State> {
                         onMouseOut: this._onMouseOut,
                         onMouseOver: this._onMouseOver
                     }) }>
-                    <DominantSpeakerName />
+
+                    { showDominantSpeakerName && <DominantSpeakerName /> }
+
                     <div className = 'toolbox-content-items'>
                         {mainMenuButtons.map(({ Content, key, ...rest }) => Content !== Separator && (
                             <Content
@@ -1282,13 +1291,13 @@ class Toolbox extends Component<Props, State> {
                                         const showSeparator = index > 0 && arr[index - 1].group !== group;
 
                                         return (key !== 'raisehand' || !_reactionsEnabled)
-                                            && <React.Fragment key = {index}>
+                                            && <Fragment key = { `f${key}` }>
                                                 {showSeparator && <Separator key = { `hr${group}` } />}
                                                 <Content
                                                     { ...rest }
                                                     key = { key }
                                                     showLabel = { true } />
-                                            </React.Fragment>
+                                            </Fragment>
                                         ;
                                     })}
                                 </ul>

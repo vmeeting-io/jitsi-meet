@@ -1,8 +1,9 @@
 // @flow
 
-import React, { type Node } from 'react';
+import React, { type Node, useCallback } from 'react';
 
 import { Avatar } from '../../../base/avatar';
+import { translate } from '../../../base/i18n';
 import {
     ACTION_TRIGGER,
     AudioStateIcons,
@@ -14,10 +15,12 @@ import {
 
 import { RaisedHandIndicator } from './RaisedHandIndicator';
 import {
+    ModeratorLabel,
     ParticipantActionsHover,
     ParticipantActionsPermanent,
     ParticipantContainer,
     ParticipantContent,
+    ParticipantDetailsContainer,
     ParticipantName,
     ParticipantNameContainer,
     ParticipantStates
@@ -59,14 +62,29 @@ type Props = {
     isHighlighted?: boolean,
 
     /**
+     * Whether or not the participant is a moderator.
+     */
+    isModerator: boolean,
+
+    /**
      * True if the participant is local.
      */
-    local: boolean,
+    local: Boolean,
+
+    /**
+     * Opens a drawer with participant actions.
+     */
+    openDrawerForParticipant: Function,
 
     /**
      * Callback for when the mouse leaves this component
      */
     onLeave?: Function,
+
+    /**
+     * If an overflow drawer can be opened.
+     */
+    overflowDrawer?: boolean,
 
     /**
      * The ID of the participant.
@@ -81,7 +99,12 @@ type Props = {
     /**
      * Media state for video
      */
-    videoMuteState?: MediaState,
+    videoMediaState: MediaState,
+
+    /**
+     * Invoked to obtain translated strings.
+     */
+    t: Function,
 
     /**
      * The translated "you" text.
@@ -95,26 +118,36 @@ type Props = {
  * @param {Props} props - The props of the component.
  * @returns {ReactNode}
  */
-export default function ParticipantItem({
+function ParticipantItem({
     children,
     isHighlighted,
+    isModerator,
     onLeave,
     actionsTrigger = ACTION_TRIGGER.HOVER,
     audioMediaState = MEDIA_STATE.NONE,
-    videoMuteState = MEDIA_STATE.NONE,
+    videoMediaState = MEDIA_STATE.NONE,
     displayName,
     participantID,
     local,
+    openDrawerForParticipant,
+    overflowDrawer,
     raisedHand,
+    t,
     youText
 }: Props) {
     const ParticipantActions = Actions[actionsTrigger];
+    const onClick = useCallback(
+        () => openDrawerForParticipant({
+            participantID,
+            displayName
+        }));
 
     return (
         <ParticipantContainer
             id = { `participant-item-${participantID}` }
             isHighlighted = { isHighlighted }
             $local = { local }
+            onClick = { !local && overflowDrawer ? onClick : undefined }
             onMouseLeave = { onLeave }
             trigger = { actionsTrigger }>
             <Avatar
@@ -122,19 +155,26 @@ export default function ParticipantItem({
                 participantId = { participantID }
                 size = { 32 } />
             <ParticipantContent>
-                <ParticipantNameContainer>
-                    <ParticipantName>
-                        { displayName }
-                    </ParticipantName>
-                    { local ? <span>&nbsp;({ youText })</span> : null }
-                </ParticipantNameContainer>
+                <ParticipantDetailsContainer>
+                    <ParticipantNameContainer>
+                        <ParticipantName>
+                            { displayName }
+                        </ParticipantName>
+                        { local ? <span>&nbsp;({ youText })</span> : null }
+                    </ParticipantNameContainer>
+                    {isModerator && <ModeratorLabel>
+                        {t('videothumbnail.moderator')}
+                    </ModeratorLabel>}
+                </ParticipantDetailsContainer>
                 { !local && <ParticipantActions children = { children } /> }
                 <ParticipantStates>
                     { raisedHand && <RaisedHandIndicator /> }
-                    { VideoStateIcons[videoMuteState] }
+                    { VideoStateIcons[videoMediaState] }
                     { AudioStateIcons[audioMediaState] }
                 </ParticipantStates>
             </ParticipantContent>
         </ParticipantContainer>
     );
 }
+
+export default translate(ParticipantItem);

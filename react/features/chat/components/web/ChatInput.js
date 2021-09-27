@@ -7,9 +7,10 @@ import type { Dispatch } from 'redux';
 
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
-import { getLocalParticipant, getParticipants, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
+import { getLocalParticipant, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
 import { Icon, IconPlane, IconSmile } from '../../../base/icons';
 import { connect } from '../../../base/redux';
+import { areSmileysDisabled } from '../../functions';
 
 import { setPrivateMessageRecipient } from '../../actions';
 
@@ -40,7 +41,13 @@ type Props = {
     /**
      * Invoked to obtain translated strings.
      */
-    t: Function
+    t: Function,
+
+    /**
+     * Whether chat emoticons are disabled.
+     */
+    _areSmileysDisabled: boolean
+
 };
 
 /**
@@ -131,28 +138,31 @@ class ChatInput extends Component<Props, State> {
         return (
             <div className = { `chat-input-container${this.state.message.trim().length ? ' populated' : ''}` }>
                 <div id = 'chat-input' >
-                    <div className = 'smiley-input'>
-                        <div id = 'smileysarea'>
-                            <div id = 'smileys'>
-                                <div
-                                    aria-expanded = { this.state.showSmileysPanel }
-                                    aria-haspopup = 'smileysContainer'
-                                    aria-label = { this.props.t('chat.smileysPanel') }
-                                    className = 'smiley-button'
-                                    onClick = { this._onToggleSmileysPanel }
-                                    onKeyDown = { this._onEscHandler }
-                                    onKeyPress = { this._onToggleSmileysPanelKeyPress }
-                                    role = 'button'
-                                    tabIndex = { 0 }>
-                                    <Icon src = { IconSmile } />
+                    { this.props._areSmileysDisabled ? null : (
+                        <div className = 'smiley-input'>
+                            <div id = 'smileysarea'>
+                                <div id = 'smileys'>
+                                    <div
+                                        aria-expanded = { this.state.showSmileysPanel }
+                                        aria-haspopup = 'smileysContainer'
+                                        aria-label = { this.props.t('chat.smileysPanel') }
+                                        className = 'smiley-button'
+                                        onClick = { this._onToggleSmileysPanel }
+                                        onKeyDown = { this._onEscHandler }
+                                        onKeyPress = { this._onToggleSmileysPanelKeyPress }
+                                        role = 'button'
+                                        tabIndex = { 0 }>
+                                        <Icon src = { IconSmile } />
+                                    </div>
                                 </div>
                             </div>
+                            <div
+                                className = { smileysPanelClassName } >
+                                <SmileysPanel
+                                    onSmileySelect = { this._onSmileySelect } />
+                            </div>
                         </div>
-                        <div className = { smileysPanelClassName }>
-                            <SmileysPanel
-                                onSmileySelect = { this._onSmileySelect } />
-                        </div>
-                    </div>
+                    )}
 
                     {/* this code will render a list containing chatroom participants */}
                     { this._renderChatRoomParticipantsList() }
@@ -448,6 +458,7 @@ class ChatInput extends Component<Props, State> {
  */
 export function _mapStateToProps(state) {
     return {
+        _areSmileysDisabled: areSmileysDisabled(state),
         _participantCount: getParticipantCount(state),
         _remoteParticipants: getRemoteParticipants(state),
         _localParticipant: getLocalParticipant(state)

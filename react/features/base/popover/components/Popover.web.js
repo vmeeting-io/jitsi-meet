@@ -4,7 +4,6 @@ import InlineDialog from '@atlaskit/inline-dialog';
 import React, { Component } from 'react';
 
 import { Drawer, DrawerPortal } from '../../../toolbox/components/web';
-import { isMobileBrowser } from '../../environment/utils';
 
 /**
  * A map of dialog positions, relative to trigger, to css classes used to
@@ -115,9 +114,10 @@ class Popover extends Component<Props, State> {
     };
 
     /**
-     * Reference to the Popover that is meant to open as a drawer.
+     * Reference to the dialog container.
      */
-    _drawerContainerRef: Object;
+    _containerRef: Object;
+
 
     /**
      * Initializes a new {@code Popover} instance.
@@ -136,8 +136,10 @@ class Popover extends Component<Props, State> {
         this._onHideDialog = this._onHideDialog.bind(this);
         this._onShowDialog = this._onShowDialog.bind(this);
         this._onKeyPress = this._onKeyPress.bind(this);
-        this._drawerContainerRef = React.createRef();
+        this._containerRef = React.createRef();
         this._onEscKey = this._onEscKey.bind(this);
+        this._onThumbClick = this._onThumbClick.bind(this);
+        this._onTouchStart = this._onTouchStart.bind(this);
     }
 
     /**
@@ -147,23 +149,17 @@ class Popover extends Component<Props, State> {
      * @public
      */
     showDialog() {
-        this.setState({ showDialog: true });
+        this._onShowDialog();
     }
 
     /**
-     * Sets up an event listener to open a drawer when clicking, rather than entering the
-     * overflow area.
-     *
-     * TODO: This should be done by setting an {@code onClick} handler on the div, but for some
-     * reason that doesn't seem to work whatsoever.
+     * Sets up a touch event listener to attach.
      *
      * @inheritdoc
      * @returns {void}
      */
     componentDidMount() {
-        if (this._drawerContainerRef && this._drawerContainerRef.current && !isMobileBrowser()) {
-            this._drawerContainerRef.current.addEventListener('click', this._onShowDialog);
-        }
+        window.addEventListener('touchstart', this._onTouchStart);
     }
 
     /**
@@ -173,25 +169,7 @@ class Popover extends Component<Props, State> {
      * @returns {void}
      */
     componentWillUnmount() {
-        if (this._drawerContainerRef && this._drawerContainerRef.current) {
-            this._drawerContainerRef.current.removeEventListener('click', this._onShowDialog);
-        }
-    }
-
-    /**
-     * Implements React Component's componentDidUpdate.
-     *
-     * @inheritdoc
-     */
-    componentDidUpdate(prevProps: Props) {
-        if (prevProps.overflowDrawer !== this.props.overflowDrawer) {
-            // Make sure the listeners are set up when resizing the screen past the drawer threshold.
-            if (this.props.overflowDrawer) {
-                this.componentDidMount();
-            } else {
-                this.componentWillUnmount();
-            }
-        }
+        window.removeEventListener('touchstart', this._onTouchStart);
     }
 
     /**
@@ -208,7 +186,7 @@ class Popover extends Component<Props, State> {
                 <div
                     className = { className }
                     id = { id }
-                    ref = { this._drawerContainerRef }>
+                    onClick = { this._onShowDialog }>
                     { children }
                     <DrawerPortal>
                         <Drawer
@@ -225,9 +203,11 @@ class Popover extends Component<Props, State> {
             <div
                 className = { className }
                 id = { id }
+                onClick = { this._onThumbClick }
                 onKeyPress = { this._onKeyPress }
                 onMouseEnter = { this._onShowDialog }
-                onMouseLeave = { this._onHideDialog }>
+                onMouseLeave = { this._onHideDialog }
+                ref = { this._containerRef }>
                 <InlineDialog
                     content = { this._renderContent() }
                     isOpen = { this.state.showDialog }
@@ -236,6 +216,25 @@ class Popover extends Component<Props, State> {
                 </InlineDialog>
             </div>
         );
+    }
+
+    _onTouchStart: (event: TouchEvent) => void;
+
+    /**
+     * Hide dialog on touch outside of the context menu.
+     *
+     * @param {TouchEvent} event - The touch event.
+     * @private
+     * @returns {void}
+     */
+    _onTouchStart(event) {
+        if (this.state.showDialog
+            && !this.props.overflowDrawer
+            && this._containerRef
+            && this._containerRef.current
+            && !this._containerRef.current.contains(event.target)) {
+            this._onHideDialog();
+        }
     }
 
     _onHideDialog: () => void;
@@ -265,7 +264,7 @@ class Popover extends Component<Props, State> {
      * @returns {void}
      */
     _onShowDialog(event) {
-        event.stopPropagation();
+        event && event.stopPropagation();
         if (!this.props.disablePopover) {
             this.setState({ showDialog: true });
 
@@ -273,6 +272,20 @@ class Popover extends Component<Props, State> {
                 this.props.onPopoverOpen(this._onHideDialog);
             }
         }
+    }
+
+    _onThumbClick: (Object) => void;
+
+    /**
+     * Prevents switching from tile view to stage view on accidentally clicking
+     * the popover thumbs.
+     *
+     * @param {Object} event - The mouse event or the keypress event to intercept.
+     * @private
+     * @returns {void}
+     */
+    _onThumbClick(event) {
+        event.stopPropagation();
     }
 
     _onKeyPress: (Object) => void;

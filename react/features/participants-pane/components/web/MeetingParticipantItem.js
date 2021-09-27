@@ -1,16 +1,28 @@
 // @flow
 
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
+import { JitsiTrackEvents } from '../../../base/lib-jitsi-meet';
+import { MEDIA_TYPE } from '../../../base/media';
 import {
     getLocalParticipant,
     getParticipantByIdOrUndefined,
-    getParticipantDisplayName
+    getParticipantDisplayName,
+    isParticipantModerator
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
-import { isParticipantAudioMuted, isParticipantVideoMuted } from '../../../base/tracks';
-import { ACTION_TRIGGER, MEDIA_STATE, type MediaState } from '../../constants';
-import { getParticipantAudioMediaState, getQuickActionButtonType } from '../../functions';
+import {
+    getLocalAudioTrack,
+    getTrackByMediaTypeAndParticipant,
+    isParticipantAudioMuted,
+    isParticipantVideoMuted
+} from '../../../base/tracks';
+import { ACTION_TRIGGER, type MediaState, MEDIA_STATE } from '../../constants';
+import {
+    getParticipantAudioMediaState,
+    getParticipantVideoMediaState,
+    getQuickActionButtonType
+} from '../../functions';
 import ParticipantQuickAction from '../ParticipantQuickAction';
 
 import ParticipantItem from './ParticipantItem';
@@ -24,19 +36,25 @@ type Props = {
     _audioMediaState: MediaState,
 
     /**
+     * The audio track related to the participant.
+     */
+    _audioTrack: ?Object,
+
+    /**
+     * Media state for video.
+     */
+    _videoMediaState: MediaState,
+
+
+    /**
      * The display name of the participant.
      */
     _displayName: string,
 
     /**
-     * True if the participant is video muted.
-     */
-    _isVideoMuted: boolean,
-
-    /**
      * True if the participant is the local participant.
      */
-    _local: boolean,
+    _local: Boolean,
 
     /**
      * Shared video local participant owner.
@@ -97,6 +115,17 @@ type Props = {
     onLeave: Function,
 
     /**
+     * Callback used to open an actions drawer for a participant.
+     */
+    openDrawerForParticipant: Function,
+
+    /**
+     * True if an overflow drawer should be displayed.
+     */
+    overflowDrawer: boolean,
+
+
+    /**
      * The aria-label for the ellipsis action.
      */
     participantActionEllipsisLabel: string,
@@ -120,57 +149,94 @@ type Props = {
  */
 function MeetingParticipantItem({
     _audioMediaState,
+    _audioTrack,
+    _videoMediaState,
     _displayName,
-    _isVideoMuted,
-    _localVideoOwner,
     _local,
+    _localVideoOwner,
     _participant,
     _participantID,
     _quickActionButtonType,
     _raisedHand,
     askUnmuteText,
     isHighlighted,
-    onContextMenu,
-    onLeave,
     muteAudio,
     muteParticipantButtonText,
+    onContextMenu,
+    onLeave,
+    openDrawerForParticipant,
+    overflowDrawer,
     participantActionEllipsisLabel,
     youText
 }: Props) {
-    return !_participant ? null : (
+
+    const [ hasAudioLevels, setHasAudioLevel ] = useState(false);
+    const [ registeredEvent, setRegisteredEvent ] = useState(false);
+
+    const _updateAudioLevel = useCallback(level => {
+        const audioLevel = typeof level === 'number' && !isNaN(level)
+            ? level : 0;
+
+        setHasAudioLevel(audioLevel > 0.009);
+    }, []);
+
+    useEffect(() => {
+        if (_audioTrack && !registeredEvent) {
+            const { jitsiTrack } = _audioTrack;
+
+            if (jitsiTrack) {
+                jitsiTrack.on(JitsiTrackEvents.TRACK_AUDIO_LEVEL_CHANGED, _updateAudioLevel);
+                setRegisteredEvent(true);
+            }
+        }
+
+        return () => {
+            if (_audioTrack && registeredEvent) {
+                const { jitsiTrack } = _audioTrack;
+
+                jitsiTrack && jitsiTrack.off(JitsiTrackEvents.TRACK_AUDIO_LEVEL_CHANGED, _updateAudioLevel);
+            }
+        };
+    }, [ _audioTrack ]);
+
+    const audioMediaState = _audioMediaState === MEDIA_STATE.UNMUTED && hasAudioLevels
+        ? MEDIA_STATE.DOMINANT_SPEAKER : _audioMediaState;
+
+    return (
         <ParticipantItem
             actionsTrigger = { ACTION_TRIGGER.HOVER }
-            audioMediaState = { _audioMediaState }
+            audioMediaState = { audioMediaState }
             displayName = { _displayName }
             isHighlighted = { isHighlighted }
+            isModerator = { isParticipantModerator(_participant) }
             local = { _local }
             onLeave = { onLeave }
+            openDrawerForParticipant = { openDrawerForParticipant }
+            overflowDrawer = { overflowDrawer }
             participantID = { _participantID }
             raisedHand = { _raisedHand }
-            videoMuteState = { _isVideoMuted ? MEDIA_STATE.MUTED : MEDIA_STATE.UNMUTED }
+            videoMediaState = { _videoMediaState }
             youText = { youText }>
-            {
-                !_participant.isFakeParticipant && (
-                    <>
-                        <ParticipantQuickAction
-                            askUnmuteText = { askUnmuteText }
-                            buttonType = { _quickActionButtonType }
-                            muteAudio = { muteAudio }
-                            muteParticipantButtonText = { muteParticipantButtonText }
-                            participantID = { _participantID } />
-                        <ParticipantActionEllipsis
-                            aria-label = { participantActionEllipsisLabel }
-                            onClick = { onContextMenu } />
-                    </>
-                )
-            }
-            {
-                _participant.isFakeParticipant && _localVideoOwner && (
+
+            {!overflowDrawer && !_participant?.isFakeParticipant
+                && <>
+                    <ParticipantQuickAction
+                        askUnmuteText = { askUnmuteText }
+                        buttonType = { _quickActionButtonType }
+                        muteAudio = { muteAudio }
+                        muteParticipantButtonText = { muteParticipantButtonText }
+                        participantID = { _participantID } />
                     <ParticipantActionEllipsis
                         aria-label = { participantActionEllipsisLabel }
                         onClick = { onContextMenu } />
-                )
+                </>
             }
+
+            {!overflowDrawer && _localVideoOwner && _participant?.isFakeParticipant && (
+                <ParticipantActionEllipsis
+                    aria-label = { participantActionEllipsisLabel }
+                    onClick = { onContextMenu } />
+            )}
         </ParticipantItem>
     );
 }
@@ -193,13 +259,18 @@ function _mapStateToProps(state, ownProps): Object {
     const _isAudioMuted = isParticipantAudioMuted(participant, state);
     const _isVideoMuted = isParticipantVideoMuted(participant, state);
     const _audioMediaState = getParticipantAudioMediaState(participant, _isAudioMuted, state);
+    const _videoMediaState = getParticipantVideoMediaState(participant, _isVideoMuted, state);
     const _quickActionButtonType = getQuickActionButtonType(participant, _isAudioMuted, state);
+
+    const tracks = state['features/base/tracks'];
+    const _audioTrack = participantID === localParticipantId
+        ? getLocalAudioTrack(tracks) : getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.AUDIO, participantID);
 
     return {
         _audioMediaState,
+        _audioTrack,
+        _videoMediaState,
         _displayName: getParticipantDisplayName(state, participant?.id),
-        _isAudioMuted,
-        _isVideoMuted,
         _local: Boolean(participant?.local),
         _localVideoOwner: Boolean(ownerId === localParticipantId),
         _participant: participant,

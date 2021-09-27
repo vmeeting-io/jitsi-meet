@@ -19,6 +19,7 @@ export default [
     'apiLogLevels',
     'avgRtpStatsN',
     'backgroundAlpha',
+    'buttonsWithNotifyClick',
 
     /**
      * The display name of the CallKit call representing the conference/meeting
@@ -70,6 +71,7 @@ export default [
     'callUUID',
 
     'channelLastN',
+    'connectionIndicators',
     'constraints',
     'brandingRoomAlias',
     'debug',
@@ -82,7 +84,9 @@ export default [
     'disableAGC',
     'disableAP',
     'disableAudioLevels',
+    'disableChatSmileys',
     'disableDeepLinking',
+    'disabledSounds',
     'disableFilmstripAutohiding',
     'disableInitialGUM',
     'disableH264',
@@ -101,7 +105,9 @@ export default [
     'disableRtx',
     'disableShortcuts',
     'disableShowMoreStats',
+    'disableRemoveRaisedHandOnFocus',
     'disableSpeakerStatsSearch',
+    'speakerStatsOrder',
     'disableSimulcast',
     'disableThirdPartyRequests',
     'disableTileView',
@@ -109,7 +115,7 @@ export default [
     'doNotStoreRoom',
     'doNotFlipLocalVideo',
     'dropbox',
-    'e2eeLabel',
+    'e2eeLabels',
     'e2eping',
     'enableDisplayNameInStats',
     'enableEmailInStats',
@@ -124,6 +130,7 @@ export default [
     'enableSaveLogs',
     'enableScreenshotCapture',
     'enableTalkWhileMuted',
+    'enableUnifiedOnChrome',
     'enableNoAudioDetection',
     'enableNoisyMicDetection',
     'enableTcc',

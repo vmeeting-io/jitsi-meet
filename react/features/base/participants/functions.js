@@ -469,7 +469,7 @@ async function _getFirstLoadableAvatarUrl(participant, store) {
  * {@code getState} function to be used to retrieve the state features/base/participants.
  * @returns {Array<string>}
  */
- export function getSortedParticipantIds(stateful: Object | Function): Array<string> {
+export function getSortedParticipantIds(stateful: Object | Function): Array<string> {
     const { id } = getLocalParticipant(stateful);
     const remoteParticipants = getRemoteParticipantsSorted(stateful);
     const reorderedParticipants = new Set(remoteParticipants);
@@ -496,15 +496,15 @@ async function _getFirstLoadableAvatarUrl(participant, store) {
 }
 
 /**
- * Selector for retrieving ids of alphabetically sorted participants by name.
+ * Get the participants queue with raised hands.
  *
  * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
  * {@code getState} function to be used to retrieve the state
  * features/base/participants.
  * @returns {Array<string>}
  */
-export function getSortedParticipantIds(stateful: Object | Function): Array<string> {
-    const participantIds = getSortedParticipants(stateful).map((p): Object => p.id);
+export function getRaiseHandsQueue(stateful: Object | Function): Array<string> {
+    const { raisedHandsQueue } = toState(stateful)['features/base/participants'];
 
-    return participantIds;
+    return raisedHandsQueue;
 }

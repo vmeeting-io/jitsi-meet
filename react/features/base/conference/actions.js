@@ -33,28 +33,30 @@ import {
     CONFERENCE_JOINED,
     CONFERENCE_LEFT,
     CONFERENCE_SUBJECT_CHANGED,
+    CONFERENCE_TIME_REMAINED,
     CONFERENCE_TIMESTAMP_CHANGED,
     CONFERENCE_UNIQUE_ID_SET,
     CONFERENCE_WILL_JOIN,
     CONFERENCE_WILL_LEAVE,
     DATA_CHANNEL_OPENED,
+    DEVICE_ACCESS_DISABLED,
     KICKED_OUT,
     LOCK_STATE_CHANGED,
     NON_PARTICIPANT_MESSAGE_RECEIVED,
+    PARTICIPANT_CHAT_DISABLED,
+    PARTICIPANT_CHAT_ENABLED,
     P2P_STATUS_CHANGED,
     SEND_TONES,
     SET_FOLLOW_ME,
+    SET_NOTICE_MESSAGE,
     SET_PASSWORD,
     SET_PASSWORD_FAILED,
     SET_ROOM,
     SET_PENDING_SUBJECT_CHANGE,
     SET_START_MUTED_POLICY,
-    PARTICIPANT_CHAT_DISABLED,
-    PARTICIPANT_CHAT_ENABLED,
-    CONFERENCE_TIME_REMAINED,
-    SET_NOTICE_MESSAGE,
     SET_USER_DEVICE_ACCESS_DISABLED,
-    DEVICE_ACCESS_DISABLED
+    START_RANDOM_SELECTION_COUNTDOWN,
+    START_TIMER 
 } from './actionTypes';
 import {
     AVATAR_URL_COMMAND,
@@ -922,6 +924,38 @@ export function deviceAccessDisabled(userDeviceAccessDisabled: boolean) {
     }
 }
 // end of added portion
+
+/**
+ * Function that begins a countdown timer during a meeting.
+ * 
+ * @param {number} endTime - end time of timer in UNIX time.
+ * @param {boolean} timerStarted - will be true after the timer is started.
+ * 
+ * @returns
+ * 
+ **/
+ export function Timer(endTime: Number, timerStarted: boolean) {
+    return {
+        type: START_TIMER,
+        endTime,
+        timerStarted
+    }
+}
+
+
+/**
+ * Function that begins reverse count down of timer when random selection is initiated
+ * @param {number} countdownRemained - the number of seconds from which countdown starts
+ * @param {boolean} startCountdown - must be true to begin countdown
+ * @returns
+ */
+export function startRandomSelectionCountdown(countdownRemained: Number, startCountdown: boolean) {
+    return {
+        type: START_RANDOM_SELECTION_COUNTDOWN,
+        countdownRemained,
+        startCountdown
+    }
+}
 
 /**
  * Changing conference subject.

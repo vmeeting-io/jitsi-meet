@@ -17,19 +17,29 @@ import {
     isSupported as isAvModerationSupported
 } from '../../av-moderation/functions';
 import { openDialog } from '../../base/dialog';
-import { Icon, IconCheck, IconVideoOff } from '../../base/icons';
+import { Icon, IconCheck, IconVideoOff, IconAnnouncement, IconStopWatch } from '../../base/icons';
 import { MEDIA_TYPE } from '../../base/media';
 import {
+    getLocalParticipant,
     getParticipantCount,
+    getParticipantDisplayName,
     isEveryoneModerator
 } from '../../base/participants';
 import { MuteEveryonesVideoDialog } from '../../video-menu/components';
+import {TimerDialog,TimerCancelDialog} from './web'
 
 import {
     ContextMenu,
     ContextMenuItem,
     ContextMenuItemGroup
 } from './web/styled';
+
+import {
+    notifyRandomSelectionStarted,
+    randomlySelectFromAllParticipants,
+    notifyRandomSelectionCompleted,
+} from '../actions.any';
+import { initAnalytics } from '../../analytics';
 
 const useStyles = makeStyles(() => {
     return {
@@ -53,6 +63,15 @@ const useStyles = makeStyles(() => {
                 lineHeight: '32px'
             }
         },
+        menudisabled: {
+            pointerEvents: 'none',
+            cursor: 'not-allowed',
+            opacity: 0.65,
+            filter: 'alpha(opacity=65)',
+            WebkitBoxShadow: 'none',
+            BoxShadow: 'none',
+        },
+
         text: {
             color: '#C2C2C2',
             padding: '10px 16px'
@@ -80,9 +99,13 @@ export const FooterContextMenu = ({ inDrawer, onMouseLeave }: Props) => {
     const dispatch = useDispatch();
     const isModerationSupported = useSelector(isAvModerationSupported());
     const allModerators = useSelector(isEveryoneModerator);
-    const participantCount = useSelector(getParticipantCount);
     const isAudioModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.AUDIO));
     const isVideoModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.VIDEO));
+    const isModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.AUDIO));
+    const { id } = useSelector(getLocalParticipant);
+
+    // gets the display name of the participant who clicked on the FooterContextMenu
+    const initiator = getParticipantDisplayName(APP.store.getState(), id);
 
     const { t } = useTranslation();
 
@@ -95,26 +118,99 @@ export const FooterContextMenu = ({ inDrawer, onMouseLeave }: Props) => {
     const enableVideoModeration = useCallback(() => dispatch(requestEnableVideoModeration()), [ dispatch ]);
 
     const classes = useStyles();
+    let isRandomSelectionRunning = (APP.store.getState()['features/base/conference'].startCountdown === true) ? true : false;
+    const randomselectionClass = isRandomSelectionRunning ? classes.menudisabled : '';
+
+    const participantCount = getParticipantCount(APP.store.getState());
 
     const muteAllVideo = useCallback(
         () => dispatch(openDialog(MuteEveryonesVideoDialog)), [ dispatch ]);
+
+    const startRandomSelection = useCallback(
+        () => {
+            // function that notifies random selection procedure has now started
+            notifyRandomSelectionStarted(initiator);
+
+            // toggling of menu option is also being handled by 'onMouseLeave' which toggles the display menu
+            // thus, we use the existing function to imitate action to hide the menu option after the option was clicked
+            onMouseLeave();
+
+            // set a timeout of 5 seconds before executing rest of the code
+            setTimeout(function() {
+                // randomly selects a participant from allParticipants and get its display name
+                const randomParticipantID = randomlySelectFromAllParticipants();
+                const selectedParticipantDisplayName = getParticipantDisplayName(APP.store.getState(), randomParticipantID);
+
+                // notify the selection of participant and propagate randomParticipantID which will be used during pinning the participant
+                notifyRandomSelectionCompleted(selectedParticipantDisplayName, randomParticipantID);
+            }, 5000);
+
+        }
+    )
+
+    const _onStartTimerClick = useCallback(
+        () => {
+                dispatch(openDialog(TimerDialog, { initiator: initiator }))
+            }
+    );
+    
+    const _onEndTimerClick = useCallback(
+        () => {
+            dispatch(openDialog(TimerCancelDialog, { initiator: initiator }))
+        }
+    );
 
     return (
         <ContextMenu
             className = { clsx(classes.contextMenu, inDrawer && clsx(classes.drawer)) }
             onMouseLeave = { onMouseLeave }>
-            <ContextMenuItemGroup>
-                <ContextMenuItem
-                    id = 'participants-pane-context-menu-stop-video'
-                    onClick = { muteAllVideo }>
-                    <Icon
-                        size = { 20 }
-                        src = { IconVideoOff } />
-                    <span>{ t('participantsPane.actions.stopEveryonesVideo') }</span>
+
+            {/* context menu item for random selection */}
+            { 
+                participantCount >= 3 
+                ? <ContextMenuItem
+                        className = { randomselectionClass }
+                        id = 'participants-pane-context-menu-random-selection'
+                        onClick = { startRandomSelection }>
+                        <Icon
+                            size = { 18 }
+                            src = { IconAnnouncement } />
+                        <span>{ t('participantsPane.actions.startRandomSelection') }</span>
                 </ContextMenuItem>
-            </ContextMenuItemGroup>
-            {isModerationSupported && (participantCount === 1 || !allModerators) ? (
-                <ContextMenuItemGroup>
+                : <></>
+            }
+
+            {/* context menu item for timer function */}
+            {!APP.store.getState()["features/base/conference"].timerStarted &&  <ContextMenuItem
+                id = 'participants-pane-context-menu-timer'
+                onClick = { _onStartTimerClick }>
+                <Icon
+                    size = { 18 }
+                    src = { IconStopWatch } />
+                <span>{ t('participantsPane.actions.startTimerLabel') }</span>
+            </ContextMenuItem>}
+            
+            {APP.store.getState()["features/base/conference"].timerStarted && <ContextMenuItem
+                id = 'participants-pane-context-menu-timer'
+                onClick = { _onEndTimerClick }>
+                <Icon
+                    size = { 18 }
+                    src = { IconStopWatch } />
+                <span>{ t('participantsPane.actions.stopTimer') }</span>
+            </ContextMenuItem>}
+
+
+            <ContextMenuItem
+                id = 'participants-pane-context-menu-stop-video'
+                onClick = { muteAllVideo }>
+                <Icon
+                    size = { 20 }
+                    src = { IconVideoOff } />
+                <span>{ t('participantsPane.actions.stopEveryonesVideo') }</span>
+            </ContextMenuItem>
+
+            { isModerationSupported && !allModerators ? (
+                <>
                     <div className = { classes.text }>
                         {t('participantsPane.actions.allow')}
                     </div>
@@ -154,7 +250,7 @@ export const FooterContextMenu = ({ inDrawer, onMouseLeave }: Props) => {
                             <span>{t('participantsPane.actions.videoModeration')}</span>
                         </ContextMenuItem>
                     )}
-                </ContextMenuItemGroup>
+                </>
             ) : undefined
             }
         </ContextMenu>

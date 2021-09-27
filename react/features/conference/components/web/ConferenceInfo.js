@@ -18,6 +18,7 @@ import { getSessionStatusToShow, RecordingLabel } from '../../../recording';
 import { isToolboxVisible } from '../../../toolbox/functions.web';
 import { TranscribingLabel } from '../../../transcribing';
 import { VideoQualityLabel } from '../../../video-quality';
+import { TimerLabel } from '../../../Timer';
 import ConferenceTimer from '../ConferenceTimer';
 import { PARTICIPANT_ROLE } from '../../../base/participants';
 
@@ -101,7 +102,8 @@ function ConferenceInfo(props: Props) {
         _visible,
         _recordingLabel,
         _isModerator,
-        _timeRemained
+        _timeRemained,
+        _timerStarted
     } = props;
     const dispatch = useDispatch();
     const { t } = useTranslation();
@@ -126,7 +128,8 @@ function ConferenceInfo(props: Props) {
 
     // change _isModerator to _isHost to only allow person who made the room to edit room subject
     return (
-        <div className = { `subject ${_recordingLabel ? 'recording' : ''} ${_visible ? 'visible' : ''}` }>
+        <>
+        <div className = { `subject ${_recordingLabel ? 'recording' : ''} ${_visible||_timerStarted ? 'visible' : ''}` }>
             <div
                 className = { `subject-info-container${_fullWidth ? ' subject-info-container--full-width' : ''}` }
                 id = 'subject-container'>
@@ -179,9 +182,21 @@ function ConferenceInfo(props: Props) {
                     <TranscribingLabel />
                     <VideoQualityLabel />
                     <InsecureRoomNameLabel />
+                    
                 </div>
             </div>
         </div>
+        <div className = { 'subject visible'} >
+            <div
+                className = { `subject-info-container${_fullWidth ? ' subject-info-container--full-width' : ''}` }
+                id = 'timer-container'
+                style = {{
+                    marginTop: '30px'
+                }}>
+                {_timerStarted && <TimerLabel />}
+            </div>
+        </div>
+        </>
     );
 }
 
@@ -232,6 +247,7 @@ function _mapStateToProps(state) {
         _recordingLabel: (isFileRecording || isStreamRecording || isEngaged) && !shouldHideRecordingLabel,
         _isModerator: isModerator,
         _timeRemained: timeRemained,
+        _timerStarted: state['features/base/conference'].timerStarted,
     };
 }
 

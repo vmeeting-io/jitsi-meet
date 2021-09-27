@@ -148,4 +148,6 @@ export { default as IconWifi3Bars } from './wifi-3.svg';
 export { default as IconYahoo } from './yahoo.svg';
 export { default as IconChatDisabled } from './chat-disabled.svg';
 export { default as IconChatEnabled } from './chat-enabled.svg';
+export { default as IconAnnouncement } from './bullhorn.svg';
+export { default as IconStopWatch } from './timer.svg';
 export { default as IconSip } from './sip.svg';

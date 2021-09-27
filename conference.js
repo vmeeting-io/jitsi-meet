@@ -37,11 +37,13 @@ import {
     conferenceJoined,
     conferenceLeft,
     conferenceSubjectChanged,
+    conferenceTimeRemained,
     conferenceTimestampChanged,
     conferenceUniqueIdSet,
     conferenceWillJoin,
     conferenceWillLeave,
     dataChannelOpened,
+    deviceAccessDisabled,
     getConferenceOptions,
     kickedOut,
     participantChatDisabled,
@@ -51,11 +53,11 @@ import {
     p2pStatusChanged,
     sendLocalParticipant,
     setStartMutedPolicy,
-    conferenceTimeRemained,
     setNoticeMessage,
-    deviceAccessDisabled,
     nonParticipantMessageReceived,
-    _conferenceWillJoin
+    _conferenceWillJoin,
+    startRandomSelectionCountdown,
+    Timer
 } from './react/features/base/conference';
 import { getReplaceParticipant } from './react/features/base/config/functions';
 import {
@@ -103,6 +105,7 @@ import {
     participantPresenceChanged,
     participantRoleChanged,
     participantUpdated,
+    pinParticipant,
     updateRemoteParticipantFeatures
 } from './react/features/base/participants';
 import {
@@ -2288,6 +2291,60 @@ export default {
                         title: i18next.t('dialog.deviceAccessReEnabled')
                     });
                 }
+            });
+
+        room.on(JitsiConferenceEvents.NOTIFY_TIMER_STARTED,
+            (nick,endTime) => {
+                APP.store.dispatch(Timer(endTime,true));
+                
+                APP.store.dispatch(showNotification({
+                    descriptionArguments: { initiator: nick },
+                    descriptionKey: 'notify.timerInitiatedBy',
+                    titleKey: 'notify.timerTitle'
+                },
+                5000)); // hard-coded the duration of notification bubble to 5 seconds
+            });
+
+        room.on(JitsiConferenceEvents.NOTIFY_TIMER_FINISHED,
+            nick => {
+                APP.store.dispatch(Timer("",false));
+                nick != "TIMER_OFF" && APP.store.dispatch(showNotification({
+                    descriptionArguments: { initiator: nick },
+                    descriptionKey: 'notify.timerFinishedBy',
+                    titleKey: 'notify.timerTitle'
+                },
+                5000)); // hard-coded the duration of notification bubble to 5 seconds
+            });
+        
+        room.on(JitsiConferenceEvents.RANDOM_SELECTION_COUNTDOWN,
+            (countdownRemained, startCountdown) => {
+                APP.store.dispatch(startRandomSelectionCountdown(countdownRemained, startCountdown));
+            });
+
+        room.on(JitsiConferenceEvents.PIN_RANDOM_PARTICIPANT,
+            randomSelectedID => {
+                APP.store.dispatch(pinParticipant(randomSelectedID));
+            })
+
+
+        room.on(JitsiConferenceEvents.NOTIFY_RANDOM_SELECTION_STARTED,
+            nick => {
+                APP.store.dispatch(showNotification({
+                    descriptionArguments: { initiator: nick },
+                    descriptionKey: 'notify.randomSelectionInitiatedBy',
+                    titleKey: 'notify.randomSelection'
+                },
+                5000)); // hard-coded the duration of notification bubble to 5 seconds
+            });
+
+        room.on(JitsiConferenceEvents.NOTIFY_RANDOM_SELECTION_FINISHED,
+            nick => {
+                APP.store.dispatch(showNotification({
+                    descriptionArguments: { selectedParticipant: nick },
+                    descriptionKey: 'notify.randomSelectionCompleted',
+                    titleKey: 'notify.randomSelection'
+                },
+                5000)); // hard-coded the duration of notification bubble to 5 seconds
             });
         // end of added portion
 

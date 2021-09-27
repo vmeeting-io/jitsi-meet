@@ -5,7 +5,7 @@ import { ThemeProvider } from 'styled-components';
 
 import { openDialog } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
-import { isLocalParticipantModerator } from '../../../base/participants';
+import { isLocalParticipantModerator, getParticipantCount} from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { AddBreakoutRoomButton } from '../../../breakout-rooms/components/web/AddBreakoutRoomButton';
 import { RoomList } from '../../../breakout-rooms/components/web/RoomList';
@@ -299,6 +299,7 @@ function _mapStateToProps(state: Object) {
         _showAddRoomButton: _isBreakoutRoomsSupported && !hideAddRoomButton && _isLocalParticipantModerator,
         _overflowDrawer: showOverflowDrawer(state),
         _paneOpen: isPaneOpen,
+        _showContextMenu: isPaneOpen && getParticipantCount(state) > 1,
         _showFooter: isPaneOpen && isLocalParticipantModerator(state)
     };
 }

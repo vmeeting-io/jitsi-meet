@@ -209,6 +209,7 @@ class Filmstrip extends PureComponent <Props> {
             <div
                 className = { `filmstrip ${this.props._className}` }
                 style = { filmstripStyle }>
+
                 { toolbar }
                 <div
                     className = { this.props._videosClassName }

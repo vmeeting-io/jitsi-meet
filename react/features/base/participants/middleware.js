@@ -1,5 +1,6 @@
 // @flow
 
+import { omit } from 'lodash';
 import { batch } from 'react-redux';
 
 import UIEvents from '../../../../service/UI/UIEvents';
@@ -9,6 +10,7 @@ import { NOTIFICATION_TIMEOUT, showNotification } from '../../notifications';
 import { isForceMuted } from '../../participants-pane/functions';
 import { CALLING, INVITED } from '../../presence-status';
 import { RAISE_HAND_SOUND_ID } from '../../reactions/constants';
+import { isRecording } from '../../recording';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../app';
 import {
     CONFERENCE_JOINED,
@@ -68,9 +70,6 @@ import {
     isLocalParticipantModerator
 } from './functions';
 import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
-import { isRecording } from '../../recording';
-import { omit } from 'lodash';
-import { MEDIA_TYPE } from '../media';
 
 declare var APP: Object;
 

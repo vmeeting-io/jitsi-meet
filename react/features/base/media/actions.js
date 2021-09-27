@@ -4,7 +4,7 @@ import type { Dispatch } from 'redux';
 
 import { showModeratedNotification } from '../../av-moderation/actions';
 import { shouldShowModeratedNotification } from '../../av-moderation/functions';
-import { isModerationNotificationDisplayed } from '../../notifications';
+import { isModerationNotificationDisplayed } from '../../notifications/functions.any';
 
 import {
     SET_AUDIO_MUTED,

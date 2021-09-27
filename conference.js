@@ -131,7 +131,8 @@ import {
     submitFeedback
 } from './react/features/feedback';
 import { toggleLobbyMode } from './react/features/lobby/actions';
-import { isModerationNotificationDisplayed, showConfirmDialog, showNotification, showToast } from './react/features/notifications';
+import { showConfirmDialog, showNotification, showToast } from './react/features/notifications';
+import { isModerationNotificationDisplayed } from './react/features/notifications/functions.any';
 import { mediaPermissionPromptVisibilityChanged, toggleSlowGUMOverlay } from './react/features/overlay';
 import { suspendDetected } from './react/features/power-monitor';
 import {

@@ -585,10 +585,6 @@ function _mapStateToProps(state, ownProps): Object {
     const id = participant?.id;
     const isLocal = participant?.local ?? true;
 
-    const { participantsVolume } = state['features/filmstrip'];
-    const id = participant?.id;
-    const isLocal = participant?.local ?? true;
-
     return {
         _currentRoomId,
         _isLocalModerator,

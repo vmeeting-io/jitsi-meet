@@ -23,7 +23,7 @@ import {
     getRemoteParticipants,
     muteRemoteParticipant
 } from '../base/participants';
-import { isModerationNotificationDisplayed } from '../notifications';
+import { isModerationNotificationDisplayed } from '../notifications/functions.any';
 
 declare var APP: Object;
 

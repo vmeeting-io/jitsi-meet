@@ -12,7 +12,6 @@ import {
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { getCurrentRoomId, getRooms, isInBreakoutRoom } from '../../../breakout-rooms/functions';
-import MuteRemoteParticipantDialog from '../../../video-menu/components/web/MuteRemoteParticipantDialog';
 import { showOverflowDrawer } from '../../../toolbox/functions';
 import { muteRemote } from '../../../video-menu/actions.any';
 import { findStyledAncestor, shouldRenderInviteButton } from '../../functions';
@@ -53,7 +52,7 @@ const initialState = Object.freeze(Object.create(null));
  *
  * @returns {ReactNode} - The component.
  */
-function MeetingParticipantList({
+function MeetingParticipants({
     currentRoom,
     inBreakoutRoom,
     participantsCount,
@@ -137,7 +136,19 @@ function MeetingParticipantList({
             </Heading>
             {!inBreakoutRoom && showInviteButton && <InviteButton />}
             <div>
-                {sortedParticipantIds.map(renderParticipant)}
+            <MeetingParticipantItems
+                askUnmuteText = { askUnmuteText }
+                lowerMenu = { lowerMenu }
+                muteAudio = { muteAudio }
+                muteParticipantButtonText = { muteParticipantButtonText }
+                openDrawerForParticipant = { openDrawerForParticipant }
+                overflowDrawer = { overflowDrawer }
+                participantActionEllipsisLabel = { participantActionEllipsisLabel }
+                participantIds = { sortedParticipantIds }
+                participantsCount = { participantsCount }
+                raiseContextId = { raiseContext.participantID }
+                toggleMenu = { toggleMenu }
+                youText = { youText } />
             </div>
             <MeetingParticipantContextMenu
                 muteAudio = { muteAudio }

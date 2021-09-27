@@ -3,7 +3,8 @@
 import UIEvents from '../../../../service/UI/UIEvents';
 import { showModeratedNotification } from '../../av-moderation/actions';
 import { shouldShowModeratedNotification } from '../../av-moderation/functions';
-import { hideNotification, isModerationNotificationDisplayed } from '../../notifications';
+import { hideNotification } from '../../notifications';
+import { isModerationNotificationDisplayed } from '../../notifications/functions.any';
 import { isPrejoinPageVisible } from '../../prejoin/functions';
 import { getAvailableDevices } from '../devices/actions';
 import {

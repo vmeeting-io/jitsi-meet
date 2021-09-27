@@ -141,23 +141,21 @@ class TimerDialog extends AbstractTimerDialog {
                 okKey='dialog.timerStart'
                 onSubmit={this._onSubmitForm}
                 titleKey='dialog.timerTitle'
-                width='medium'>
+                width='small'>
                 <div>
                     <span>
                         {t('dialog.timerBodyMessage')}
                     </span>
                     <div className={s.row}>
                         <div className={s.col}>
+                        </div>
+                        <div className={s.col}>
                             <FieldTextStateless
                                 autoFocus={true}
                                 className='input-control'
-                                compact={true}
                                 label={t('dialog.timerMin')}
                                 name="durantionMinute"
                                 placeholder="00"
-                                min={0}
-                                max={59}
-                                shouldFitContainer={false}
                                 type="number"
                                 onChange={this._onMinValChange}
                                 value={this.state.min}
@@ -167,18 +165,25 @@ class TimerDialog extends AbstractTimerDialog {
                         <div className={s.col}>
                             <FieldTextStateless
                                 className='input-control'
-                                compact={true}
                                 label={t('dialog.timerSec')}
                                 name="durationSeconds"
                                 placeholder="00"
-                                min={0}
-                                max={59}
-                                shouldFitContainer={false}
                                 type="number"
                                 onChange={this._onSecondsValChange}
                                 value={this.state.seconds}
                                 isInvalid={this.state.seconds > 59}
                             />
+                        </div>
+                        <div className={s.col, s.resetButtonContainer}>
+                            <div className={ s.resetButton }>
+                                <Button
+                                    onClick={this._reset}
+                                    appearance='warning'>
+                                    {t('dialog.timerReset')}
+                                </Button>
+                            </div>
+                        </div>
+                        <div className={s.coll}>
                         </div>
                     </div>
 
@@ -212,20 +217,14 @@ class TimerDialog extends AbstractTimerDialog {
                                         + 1 {t('dialog.timerMin')}
                                     </Button>
                                 </div>
-                                <div className={s.col}>
+                                <div className={s.coll}>
                                     <Button
                                         onClick={this._add30Sec}
                                         appearance='primary'>
                                         + 30 {t('dialog.timerSec')}
                                     </Button>
                                 </div>
-                                <div className={s.col}>
-                                    <Button
-                                        onClick={this._reset}
-                                        appearance='warning'>
-                                        {t('dialog.timerReset')}
-                                    </Button>
-                                </div>
+                               
                             </ButtonGroup>
                         </div>
                     </div>

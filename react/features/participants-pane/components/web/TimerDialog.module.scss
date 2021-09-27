@@ -10,6 +10,15 @@
     text-align: center;
 }
 
+.resetButtonContainer {
+    position: relative;
+}
+
+.resetButton{
+    position: absolute;
+    bottom: 3px;
+}
+
 .settingHeader{
     margin-top: 10px;
 }
@@ -18,8 +27,13 @@
 }
 
 .col {
-    margin-right: 20px;
+    margin-right: 10px;
     flex: 1;
+}
+
+.coll {
+    margin-right: 10px;
+    flex: 2;
 }
 
 .buttonGroup{

@@ -1796,6 +1796,45 @@ export default {
     },
 
     /**
+     * Get the desktop resize contraints
+     * @param {number} height - the original height of video or desktop track
+     * @param {number} width - the original width of video or desktop track
+     * @returns {map} the constraints, or null if no constraints should be applied
+     *
+     * @private
+     */
+    _getDesktopResizeConstraints(height, width) {
+        const isPortrait = height >= width;
+        const DESKTOP_STREAM_CAP = 720;
+
+        const highResolutionTrack
+            = (isPortrait && width > DESKTOP_STREAM_CAP) || (!isPortrait && height > DESKTOP_STREAM_CAP);
+
+        // Resizing the desktop track for presenter is causing blurriness of the desktop share on chrome.
+        // Disable resizing by default, enable it only when config.js setting is enabled.
+        const resizeDesktopStream = highResolutionTrack && config.videoQuality?.resizeDesktopForPresenter;
+        if (resizeDesktopStream) {
+            let desktopResizeConstraints = {};
+
+            if (height && width) {
+                const advancedConstraints = [{ aspectRatio: (width / height).toPrecision(4) }];
+                const constraint = isPortrait ? { width: DESKTOP_STREAM_CAP } : { height: DESKTOP_STREAM_CAP };
+
+                advancedConstraints.push(constraint);
+                desktopResizeConstraints.advanced = advancedConstraints;
+            } else {
+                desktopResizeConstraints = {
+                    width: 1280,
+                    height: 720
+                };
+            }
+            return desktopResizeConstraints;
+        } else {
+            return null;
+        }
+    },
+
+    /**
      * Tries to turn the presenter video track on or off. If a presenter track
      * doesn't exist, a new video track is created.
      *
@@ -1820,32 +1859,8 @@ export default {
         // Create a new presenter track and apply the presenter effect.
         if (!this.localPresenterVideo && !mute) {
             const { height, width } = this.localVideo.track.getSettings() ?? this.localVideo.track.getConstraints();
-            const isPortrait = height >= width;
-            const DESKTOP_STREAM_CAP = 720;
-
-            const highResolutionTrack
-                = (isPortrait && width > DESKTOP_STREAM_CAP) || (!isPortrait && height > DESKTOP_STREAM_CAP);
-
-            // Resizing the desktop track for presenter is causing blurriness of the desktop share on chrome.
-            // Disable resizing by default, enable it only when config.js setting is enabled.
-            const resizeDesktopStream = highResolutionTrack && config.videoQuality?.resizeDesktopForPresenter;
-
-            if (resizeDesktopStream) {
-                let desktopResizeConstraints = {};
-
-                if (height && width) {
-                    const advancedConstraints = [ { aspectRatio: (width / height).toPrecision(4) } ];
-                    const constraint = isPortrait ? { width: DESKTOP_STREAM_CAP } : { height: DESKTOP_STREAM_CAP };
-
-                    advancedConstraints.push(constraint);
-                    desktopResizeConstraints.advanced = advancedConstraints;
-                } else {
-                    desktopResizeConstraints = {
-                        width: 1280,
-                        height: 720
-                    };
-                }
-
+            let desktopResizeConstraints = this._getDesktopResizeConstraints(height, width);
+            if (desktopResizeConstraints){
                 // Apply the constraints on the desktop track.
                 try {
                     await this.localVideo.track.applyConstraints(desktopResizeConstraints);
@@ -1855,7 +1870,7 @@ export default {
                     return;
                 }
             }
-            const trackHeight = resizeDesktopStream
+            const trackHeight = desktopResizeConstraints
                 ? this.localVideo.track.getSettings().height ?? DESKTOP_STREAM_CAP
                 : height;
             let effect;
@@ -1923,6 +1938,12 @@ export default {
 
                 if (desktopVideoStream) {
                     logger.debug(`_switchToScreenSharing is using ${desktopVideoStream} for useVideoStream`);
+
+                    const { height, width } = desktopVideoStream.track.getSettings() ?? desktopVideoStream.track.getConstraints();
+                    let desktopResizeConstraints = this._getDesktopResizeConstraints(height, width);
+                    if (desktopResizeConstraints) {
+                        await desktopVideoStream.track.applyConstraints(desktopResizeConstraints);
+                    }
                     await this.useVideoStream(desktopVideoStream);
                 }
 

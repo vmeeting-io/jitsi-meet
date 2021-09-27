@@ -309,6 +309,33 @@
     "documentSharing": {
         "title": "Document partagé"
     },
+    "e2ee": {
+        "labelToolTip": "L'audio et la vidéo de cette conférence sont chiffrés de Bout-en-Bout"
+    },
+    "embedMeeting": {
+        "title": "Intégrer cette réunion"
+    },
+    "virtualBackground": {
+        "apply": "Appliquer",
+        "title": "Arrière-plan virtuel",
+        "blur": "Flou",
+        "slightBlur": "Léger flou",
+        "removeBackground": "Supprimer l'arrière-plan",
+        "addBackground": "Ajouter un arrière-plan",
+        "pleaseWait": "Veuillez patienter...",
+        "none": "Rien",
+        "uploadedImage": "Image téléversée {{index}}",
+        "deleteImage": "Supprimer l'image",
+        "image1" : "Plage",
+        "image2" : "Mur blanc neutre",
+        "image3" : "Pièce vide blanche",
+        "image4" : "Lampadaire noir",
+        "image5" : "Montagne",
+        "image6" : "Forêt ",
+        "image7" : "Lever du soleil",
+        "desktopShareError": "Impossible de créer le partage de bureau",
+        "desktopShare":"Partage de bureau"
+    },
     "feedback": {
         "average": "Moyen",
         "bad": "Mauvais",

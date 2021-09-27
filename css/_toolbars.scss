@@ -35,6 +35,7 @@
 
     &.visible {
         opacity: 1;
+        background: rgba(0,0,0,0.5);
 
         .toolbox-content,
         .toolbox-content-items {
@@ -68,6 +69,10 @@
     .button-group-right {
         display: flex;
         width: 33%;
+
+        &>div {
+            margin-left: 8px;
+        }
     }
 
     .button-group-center {

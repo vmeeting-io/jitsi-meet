@@ -390,6 +390,16 @@
     "embedMeeting": {
         "title": "Embed this meeting"
     },    
+    "virtualBackground": {
+        "apply": "適用",
+        "title": "背景バーチャル",
+        "blur": "ぼかし",
+        "slightBlur": "少しぼかし",
+        "removeBackground": "背景削除",
+        "addBackground": "背景追加",
+        "none": "無し",
+        "desktopShareError": "デクストップ共有を作成できませんでした"
+    },
     "feedback": {
         "average": "普通",
         "bad": "悪い",

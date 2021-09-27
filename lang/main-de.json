@@ -315,10 +315,32 @@
         "title": "Freigegebenes Dokument"
     },
     "e2ee": {
-        "labelToolTip": "Audio- und Videodaten dieser Unterhaltung sind jetzt zwischen den Teilnehmern verschlüsselt"
+        "labelToolTip": "Audio- und Videodaten dieser Unterhaltung sind jetzt zwischen den Personen verschlüsselt"
     },
     "embedMeeting": {
         "title": "Diese Konferenz einbetten"
+    },
+    "virtualBackground": {
+        "apply": "Anwenden",
+        "title": "Hintergründe",
+        "blur": "Hintergrund unscharf",
+        "slightBlur": "Hintergrund leicht unscharf",
+        "removeBackground": "Hintergrund entfernen",
+        "addBackground": "Hintergrund hinzufügen",
+        "pleaseWait": "Bitte warten...",
+        "none": "keiner",
+        "uploadedImage": "Hochgeladenes Bild {{index}}",
+        "deleteImage": "Bild löschen",
+        "image1" : "Strand",
+        "image2" : "Weiße neutrale Wand",
+        "image3" : "Weißer leerer Raum",
+        "image4" : "Schwarze Stehlampe",
+        "image5" : "Berg",
+        "image6" : "Wald",
+        "image7" : "Sonnenaufgang",
+        "desktopShareError": "Desktop konnte nicht freigegeben werden",
+        "desktopShare": "Desktopfreigabe",
+        "webAssemblyWarning": "WebAssembly wird nicht unterstützt"
     },
     "feedback": {
         "average": "Durchschnittlich",

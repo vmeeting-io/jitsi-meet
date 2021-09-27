@@ -286,6 +286,34 @@
     "documentSharing": {
         "title": "分享的文件"
     },
+    "e2ee": {
+        "labelToolTip": "此通話的音訊及視訊皆已使用端對端加密"
+    },
+    "embedMeeting": {
+        "title": "嵌入此會議"
+    },
+    "virtualBackground": {
+        "apply": "套用",
+        "title": "虛擬背景",
+        "blur": "模糊",
+        "slightBlur": "稍微模糊",
+        "removeBackground": "移除背景",
+        "addBackground": "新增背景",
+        "pleaseWait": "請稍候...",
+        "none": "無",
+        "uploadedImage": "上傳圖片 {{index}}",
+        "deleteImage": "刪除圖片",
+        "image1" : "海灘",
+        "image2" : "牆壁 (白)",
+        "image3" : "空房間 (白)",
+        "image4" : "落地燈 (黑)",
+        "image5" : "山岳",
+        "image6" : "森林",
+        "image7" : "日出",
+        "desktopShareError": "無法建立桌面分享",
+        "desktopShare":"桌面分享",
+        "webAssemblyWarning": "不支援 WebAssembly"
+    },
     "feedback": {
         "average": "普通中等",
         "bad": "很差",

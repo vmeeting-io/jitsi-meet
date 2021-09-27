@@ -274,6 +274,12 @@
     "documentSharing": {
         "title": ""
     },
+    "e2ee": {
+        "labelToolTip": "此呼叫上的音频和视频通信已进行端到端加密"
+    },
+    "embedMeeting": {
+        "title": "嵌入会议"
+    },
     "feedback": {
         "average": "平均",
         "bad": "差",

@@ -70,9 +70,16 @@ var config = {
         // issues related to insertable streams.
         disableE2EE: true,
 
+        // Enables/disables thumbnail reordering in the filmstrip. It is enabled by default unless explicitly
+        // disabled by the below option.
+        // enableThumbnailReordering: true,
+
+        // Enables XMPP WebSocket (as opposed to BOSH) for the given amount of users.
+        // mobileXmppWsThreshold: 10 // enable XMPP WebSockets on mobile for 10% of the users
+
         // P2P test mode disables automatic switching to P2P when there are 2
         // participants in the conference.
-        p2pTestMode: false,
+        // p2pTestMode: false,
 
         // enable octo
         octo: {
@@ -178,8 +185,18 @@ var config = {
     // Sets the preferred resolution (height) for local video. Defaults to 720.
     resolution: 720,
 
+    // Specifies whether the raised hand will hide when someone becomes a dominant speaker or not
+    // disableRemoveRaisedHandOnFocus: false,
+
     // Specifies whether there will be a search field in speaker stats or not
     // disableSpeakerStatsSearch: false,
+
+    // Specifies whether participants in speaker stats should be ordered or not, and with what priority
+    // speakerStatsOrder: [
+    //  'role', <- Moderators on top
+    //  'name', <- Alphabetically by name
+    //  'hasLeft', <- The ones that have left in the bottom
+    // ] <- the order of the array elements determines priority
 
     // How many participants while in the tile view mode, before the receiving video quality is reduced from HD to SD.
     // Use -1 to disable.
@@ -281,8 +298,9 @@ var config = {
     // transcribeWithAppLanguage: true,
 
     // Transcriber language. This settings will only work if "transcribeWithAppLanguage" is explicitly set to false.
-    // Available languages can be found in lang/language.json.
-    // preferredTranscribeLanguage: 'en',
+    // Available languages can be found in
+    // ./src/react/features/transcribing/transcriber-langs.json.
+    // preferredTranscribeLanguage: 'en-US',
 
     // Enables automatic turning on captions when recording is started
     // autoCaptionOnRecord: false,
@@ -292,8 +310,13 @@ var config = {
     // Default value for the channel "last N" attribute. -1 for unlimited.
     channelLastN: -1,
 
-    // debounce timeout for sending message to jvb about in viewport endpoints to recv video from
-    inViewportDebounceTimeout: 200,
+    // Connection indicators
+    // connectionIndicators: {
+    //     autoHide: true,
+    //     autoHideTimeout: 5000,
+    //     disabled: false,
+    //     inactiveDisabled: false
+    // },
 
     // Provides a way for the lastN value to be controlled through the UI.
     // When startLastN is present, conference starts with a last-n value of startLastN and channelLastN
@@ -566,6 +589,43 @@ var config = {
        '__end'
     ],
 
+    // Toolbar buttons which have their click event exposed through the API on
+    // `toolbarButtonClicked` event instead of executing the normal click routine.
+    // buttonsWithNotifyClick: [
+    //    'camera',
+    //    'chat',
+    //    'closedcaptions',
+    //    'desktop',
+    //    'download',
+    //    'embedmeeting',
+    //    'etherpad',
+    //    'feedback',
+    //    'filmstrip',
+    //    'fullscreen',
+    //    'hangup',
+    //    'help',
+    //    'invite',
+    //    'livestreaming',
+    //    'microphone',
+    //    'mute-everyone',
+    //    'mute-video-everyone',
+    //    'participants-pane',
+    //    'profile',
+    //    'raisehand',
+    //    'recording',
+    //    'security',
+    //    'select-background',
+    //    'settings',
+    //    'shareaudio',
+    //    'sharedvideo',
+    //    'shortcuts',
+    //    'stats',
+    //    'tileview',
+    //    'toggle-camera',
+    //    'videoquality',
+    //    '__end'
+    // ],
+
     // List of pre meeting screens buttons to hide. The values must be one or more of the 5 allowed buttons:
     // 'microphone', 'camera', 'select-background', 'invite', 'settings'
     // hiddenPremeetingButtons: [],
@@ -726,13 +786,39 @@ var config = {
         // userRegion: "asia"
     },
 
+    // Array<string> of disabled sounds.
+    // Possible values:
+    // - 'ASKED_TO_UNMUTE_SOUND'
+    // - 'E2EE_OFF_SOUND'
+    // - 'E2EE_ON_SOUND'
+    // - 'INCOMING_MSG_SOUND'
+    // - 'KNOCKING_PARTICIPANT_SOUND'
+    // - 'LIVE_STREAMING_OFF_SOUND'
+    // - 'LIVE_STREAMING_ON_SOUND'
+    // - 'NO_AUDIO_SIGNAL_SOUND'
+    // - 'NOISY_AUDIO_INPUT_SOUND'
+    // - 'OUTGOING_CALL_EXPIRED_SOUND'
+    // - 'OUTGOING_CALL_REJECTED_SOUND'
+    // - 'OUTGOING_CALL_RINGING_SOUND'
+    // - 'OUTGOING_CALL_START_SOUND'
+    // - 'PARTICIPANT_JOINED_SOUND'
+    // - 'PARTICIPANT_LEFT_SOUND'
+    // - 'RAISE_HAND_SOUND'
+    // - 'RECORDING_OFF_SOUND'
+    // - 'RECORDING_ON_SOUND'
+    // - 'TALK_WHILE_MUTED_SOUND'
+    // disabledSounds: [],
+
+    // DEPRECATED! Use `disabledSounds` instead.
     // Decides whether the start/stop recording audio notifications should play on record.
     disableRecordAudioNotification: true,
 
+    // DEPRECATED! Use `disabledSounds` instead.
     // Disables the sounds that play when other participants join or leave the
     // conference (if set to true, these sounds will not be played).
     // disableJoinLeaveSounds: false,
 
+    // DEPRECATED! Use `disabledSounds` instead.
     // Disables the sounds that play when a chat message is received.
     // disableIncomingMessageSound: false,
 
@@ -914,6 +1000,7 @@ var config = {
      disableRemoteControl
      displayJids
      externalConnectUrl
+     e2eeLabels
      firefox_fake_device
      googleApiApplicationClientID
      iAmRecorder
@@ -1059,6 +1146,9 @@ var config = {
     //     'lobby.notificationTitle', // shown when lobby is toggled and when join requests are allowed / denied
     //     'localRecording.localRecording', // shown when a local recording is started
     //     'notify.disconnected', // shown when a participant has left
+    //     'notify.connectedOneMember', // show when a participant joined
+    //     'notify.connectedTwoMembers', // show when two participants joined simultaneously
+    //     'notify.connectedThreePlusMembers', // show when more than 2 participants joined simultaneously
     //     'notify.grantedTo', // shown when moderator rights were granted to a participant
     //     'notify.invitedOneMember', // shown when 1 participant has been invited
     //     'notify.invitedThreePlusMembers', // shown when 3+ participants have been invited
@@ -1095,6 +1185,9 @@ var config = {
 
     // Prevent the filmstrip from autohiding when screen width is under a certain threshold
     // disableFilmstripAutohiding: false,
+
+    // Specifies whether the chat emoticons are disabled or not
+    // disableChatSmileys: false,
 
     // Allow all above example options to include a trailing comma and
     // prevent fear when commenting out the last value.

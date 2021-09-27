@@ -3,8 +3,9 @@
 import React from 'react';
 
 import { InputDialog } from '../../../base/dialog';
+import { translate } from '../../../base/i18n';
 import { connect } from '../../../base/redux';
-import { defaultSharedVideoLink } from '../../constants';
+import { ColorPalette } from '../../../base/styles';
 import AbstractSharedVideoDialog from '../AbstractSharedVideoDialog';
 
 /**
@@ -40,15 +41,20 @@ class SharedVideoDialog extends AbstractSharedVideoDialog<*> {
      * @inheritdoc
      */
     render() {
+        const { t } = this.props;
+
         return (
             <InputDialog
                 contentKey = 'dialog.shareVideoTitle'
                 onSubmit = { this._onSubmitValue }
                 textInputProps = {{
-                    placeholder: defaultSharedVideoLink
+                    autoCapitalize: 'none',
+                    autoCorrect: false,
+                    placeholder: t('dialog.sharedVideoLinkPlaceholder'),
+                    placeholderTextColor: ColorPalette.lightGrey
                 }} />
         );
     }
 }
 
-export default connect()(SharedVideoDialog);
+export default translate(connect()(SharedVideoDialog));

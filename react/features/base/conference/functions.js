@@ -444,3 +444,25 @@ function safeStartCase(s = '') {
         (result, word, index) => result + (index ? ' ' : '') + _.upperFirst(word)
         , '');
 }
+
+
+/**
+ * Returns room info and base url of the ongoing conference.
+ * @param {Object} store global redux store   
+ * @returns JSON Object with room information
+ */
+export function getRoomInfo(store){
+    return {
+        // retrieve JitsiConference object
+        conference: store.getState()['features/base/conference'],
+        room: store.getState()['features/base/conference'].roomInfo,
+
+        // update conference database information to set 
+        // 1. userDeviceAccessDisabled fieldroom: store.getState()['features/base/conference'].roomInfo,
+        // 2. timerEndTime: End time of timerclock.
+        config:{
+            headers: { Authorization: `Bearer ${process.env.VMEETING_API_TOKEN}`}
+        },
+        apiBaseUrl : `${store.getState()['features/base/connection'].locationURL.origin}${process.env.VMEETING_API_BASE}`,
+    };
+}

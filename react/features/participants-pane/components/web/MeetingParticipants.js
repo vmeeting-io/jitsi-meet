@@ -5,37 +5,39 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
 import { isToolbarButtonEnabled } from '../../../base/config/functions.web';
-import { openDialog } from '../../../base/dialog';
+import { MEDIA_TYPE } from '../../../base/media';
 import {
     getParticipantCountWithFake,
     getSortedParticipantIds
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { getCurrentRoomId, getRooms, isInBreakoutRoom } from '../../../breakout-rooms/functions';
-import MuteRemoteParticipantDialog from '../../../video-menu/components/web/MuteRemoteParticipantDialog';
+import { showOverflowDrawer } from '../../../toolbox/functions';
+import { muteRemote } from '../../../video-menu/actions.any';
 import { findStyledAncestor, shouldRenderInviteButton } from '../../functions';
+import { useParticipantDrawer } from '../../hooks';
 
 import { InviteButton } from './InviteButton';
 import MeetingParticipantContextMenu from './MeetingParticipantContextMenu';
-import MeetingParticipantItem from './MeetingParticipantItem';
+import MeetingParticipantItems from './MeetingParticipantItems';
 import { Heading, ParticipantContainer } from './styled';
 
 type NullProto = {
-  [key: string]: any,
-  __proto__: null
+    [key: string]: any,
+    __proto__: null
 };
 
 type RaiseContext = NullProto | {|
 
-  /**
-   * Target elements against which positioning calculations are made.
-   */
-  offsetTarget?: HTMLElement,
+    /**
+     * Target elements against which positioning calculations are made.
+     */
+    offsetTarget?: HTMLElement,
 
-  /**
-   * The ID of the participant.
-   */
-  participantID?: String,
+    /**
+     * The ID of the participant.
+     */
+    participantID ?: string,
 |};
 
 const initialState = Object.freeze(Object.create(null));
@@ -50,17 +52,18 @@ const initialState = Object.freeze(Object.create(null));
  *
  * @returns {ReactNode} - The component.
  */
-function MeetingParticipantList({
+function MeetingParticipants({
     currentRoom,
     inBreakoutRoom,
     participantsCount,
     showInviteButton,
+    overflowDrawer,
     sortedParticipantIds = []
 }) {
     const dispatch = useDispatch();
     const isMouseOverMenu = useRef(false);
 
-    const [ raiseContext, setRaiseContext ] = useState<RaiseContext>(initialState);
+    const [ raiseContext, setRaiseContext ] = useState < RaiseContext >(initialState);
     const { t } = useTranslation();
 
     const lowerMenu = useCallback(() => {
@@ -108,8 +111,9 @@ function MeetingParticipantList({
     }, [ lowerMenu ]);
 
     const muteAudio = useCallback(id => () => {
-        dispatch(openDialog(MuteRemoteParticipantDialog, { participantID: id }));
-    });
+        dispatch(muteRemote(id, MEDIA_TYPE.AUDIO));
+    }, [ dispatch ]);
+    const [ drawerParticipant, closeDrawer, openDrawerForParticipant ] = useParticipantDrawer();
 
     // FIXME:
     // It seems that useTranslation is not very scallable. Unmount 500 components that have the useTranslation hook is
@@ -122,39 +126,37 @@ function MeetingParticipantList({
     const askUnmuteText = t('participantsPane.actions.askUnmute');
     const muteParticipantButtonText = t('dialog.muteParticipantButton');
 
-    const renderParticipant = id => (
-        <MeetingParticipantItem
-            askUnmuteText = { askUnmuteText }
-            isHighlighted = { raiseContext.participantID === id }
-            key = { id }
-            muteAudio = { muteAudio }
-            muteParticipantButtonText = { muteParticipantButtonText }
-            onContextMenu = { toggleMenu(id) }
-            onLeave = { lowerMenu }
-            participantActionEllipsisLabel = { participantActionEllipsisLabel }
-            participantID = { id }
-            youText = { youText } />
-    );
-
     return (
-    <>
-        <Heading> {
-            currentRoom?.name
-                ? `${currentRoom.name} (${participantsCount})`
-                : t('participantsPane.headings.mainRoom', { count: participantsCount })
-        }
-        </Heading>
-        {!inBreakoutRoom && showInviteButton && <InviteButton />}
-        <div>
-            {sortedParticipantIds.map(renderParticipant)}
-        </div>
-        <MeetingParticipantContextMenu
-            muteAudio = { muteAudio }
-            onEnter = { menuEnter }
-            onLeave = { menuLeave }
-            onSelect = { lowerMenu }
-            { ...raiseContext } />
-    </>
+        <>
+            <Heading> {
+                currentRoom?.name
+                    ? `${currentRoom.name} (${participantsCount})`
+                    : t('participantsPane.headings.mainRoom', { count: participantsCount })
+            }
+            </Heading>
+            {!inBreakoutRoom && showInviteButton && <InviteButton />}
+            <div>
+            <MeetingParticipantItems
+                askUnmuteText = { askUnmuteText }
+                lowerMenu = { lowerMenu }
+                muteAudio = { muteAudio }
+                muteParticipantButtonText = { muteParticipantButtonText }
+                openDrawerForParticipant = { openDrawerForParticipant }
+                overflowDrawer = { overflowDrawer }
+                participantActionEllipsisLabel = { participantActionEllipsisLabel }
+                participantIds = { sortedParticipantIds }
+                participantsCount = { participantsCount }
+                raiseContextId = { raiseContext.participantID }
+                toggleMenu = { toggleMenu }
+                youText = { youText } />
+            </div>
+            <MeetingParticipantContextMenu
+                muteAudio = { muteAudio }
+                onEnter = { menuEnter }
+                onLeave = { menuLeave }
+                onSelect = { lowerMenu }
+                { ...raiseContext } />
+        </>
     );
 }
 
@@ -178,14 +180,16 @@ function _mapStateToProps(state): Object {
     const currentRoomId = getCurrentRoomId(state);
     const { [currentRoomId]: currentRoom } = getRooms(state);
     const inBreakoutRoom = isInBreakoutRoom(state);
+    const overflowDrawer = showOverflowDrawer(state);
 
     return {
         currentRoom,
         inBreakoutRoom,
         participantsCount,
         showInviteButton,
-        sortedParticipantIds
+        sortedParticipantIds,
+        overflowDrawer
     };
 }
 
-export default connect(_mapStateToProps)(MeetingParticipantList);
+export default connect(_mapStateToProps)(MeetingParticipants);

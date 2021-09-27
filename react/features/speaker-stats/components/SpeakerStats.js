@@ -8,6 +8,7 @@ import {
 import Spinner from '@atlaskit/spinner';
 import { filter, keyBy, map } from 'lodash';
 import React, { Component } from 'react';
+import type { Dispatch } from 'redux';
 
 import { Dialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
@@ -33,18 +34,17 @@ type Props = {
     /**
      * The JitsiConference from which stats will be pulled.
      */
-    conference: Object,
+    _stats: Object,
 
     /**
-     * The function to translate human-readable text.
+     * The search criteria.
      */
-    t: Function
-};
+    _criteria: string,
 
-/**
- * The type of the React {@code Component} state of {@link SpeakerStats}.
- */
-type State = {
+    /**
+     * The JitsiConference from which stats will be pulled.
+     */
+    conference: Object,
 
     loading: Boolean,
 

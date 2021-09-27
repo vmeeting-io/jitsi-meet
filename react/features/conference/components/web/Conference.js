@@ -4,7 +4,6 @@ import _ from 'lodash';
 import React from 'react';
 
 import VideoLayout from '../../../../../modules/UI/videolayout/VideoLayout';
-import AudioModerationNotifications from '../../../av-moderation/components/AudioModerationNotifications';
 import { getConferenceNameForTitle } from '../../../base/conference';
 import { connect, disconnect } from '../../../base/connection';
 import { translate } from '../../../base/i18n';
@@ -25,7 +24,7 @@ import { getReactionsQueue } from '../../../reactions/functions.any';
 import { fullScreenChanged, showToolbox } from '../../../toolbox/actions.web';
 import { Toolbox } from '../../../toolbox/components/web';
 import { LAYOUTS, getCurrentLayout } from '../../../video-layout';
-import { maybeShowSuboptimalExperienceNotification } from '../../functions';
+import { maybeShowSuboptimalExperienceNotification, reduceRandomSelectionCountdown } from '../../functions';
 import {
     AbstractConference,
     abstractMapStateToProps
@@ -126,6 +125,7 @@ class Conference extends AbstractConference<Props, *> {
     _originalOnMouseMove: Function;
     _originalOnShowToolbar: Function;
     _setBackground: Function;
+    _renderRandomSelectionCountdown: Function;
 
     /**
      * Initializes a new Conference instance.
@@ -162,6 +162,7 @@ class Conference extends AbstractConference<Props, *> {
         // Bind event handler so it is only bound once for every instance.
         this._onFullScreenChange = this._onFullScreenChange.bind(this);
         this._setBackground = this._setBackground.bind(this);
+        this._renderRandomSelectionCountdown = this._renderRandomSelectionCountdown.bind(this);
     }
 
     /**
@@ -242,12 +243,12 @@ class Conference extends AbstractConference<Props, *> {
                         {!_isParticipantsPaneVisible
                          && <div id = 'notification-participant-list'>
                              <KnockingParticipantList />
-                             <AudioModerationNotifications />
                          </div>}
                         <Filmstrip />
+                        { this._renderRandomSelectionCountdown() }
                     </div>
 
-                    { _showPrejoin || _showLobby || <Toolbox /> }
+                    { _showPrejoin || _showLobby || <Toolbox showDominantSpeakerName = { true } /> }
                     <Chat />
 
                     { this.renderNotificationsContainer() }
@@ -266,6 +267,18 @@ class Conference extends AbstractConference<Props, *> {
                 <ParticipantsPane />
             </div>
         );
+    }
+
+    _renderRandomSelectionCountdown() {
+        if(this.props._startCountdown === true) {
+            return(
+            <div className = 'videospace_countdown' id = 'videospace_countdown'>
+                { reduceRandomSelectionCountdown(this.props._startCountdownFrom) }
+            </div>
+            );
+        } else {
+            return <></>;
+        }
     }
 
     /**
@@ -386,6 +399,12 @@ class Conference extends AbstractConference<Props, *> {
 function _mapStateToProps(state) {
     const { backgroundAlpha, mouseMoveCallbackInterval } = state['features/base/config'];
 
+    // variable that identifies whether or not random selection has been initiated or not
+    const startCountdown = state['features/base/conference'].startCountdown;
+
+    // variable that identifies the countdown before random selection is finalized
+    const startCountdownFrom = state['features/base/conference'].countdownRemained;
+
     return {
         ...abstractMapStateToProps(state),
         _backgroundAlpha: backgroundAlpha,
@@ -395,7 +414,10 @@ function _mapStateToProps(state) {
         _reactionsQueue: getReactionsQueue(state),
         _roomName: getConferenceNameForTitle(state),
         _showLobby: getIsLobbyVisible(state),
-        _showPrejoin: isPrejoinPageVisible(state) || isPrejoinPageLoading(state)
+        _showPrejoin: isPrejoinPageVisible(state) || isPrejoinPageLoading(state),
+        _startCountdown: startCountdown,
+        _startCountdownFrom: startCountdownFrom,
+        _showPrejoin: isPrejoinPageVisible(state)
     };
 }
 

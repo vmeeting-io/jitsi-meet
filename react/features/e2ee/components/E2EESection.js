@@ -13,6 +13,11 @@ import { doesEveryoneSupportE2EE } from '../functions';
 type Props = {
 
     /**
+     * Custom e2ee labels.
+     */
+    _e2eeLabels: Object,
+
+    /**
      * Whether E2EE is currently enabled or not.
      */
     _enabled: boolean,
@@ -87,9 +92,11 @@ class E2EESection extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { _everyoneSupportE2EE, t } = this.props;
+        const { _e2eeLabels, _everyoneSupportE2EE, t } = this.props;
         const { enabled } = this.state;
-        const description = t('dialog.e2eeDescription');
+        const description = _e2eeLabels?.description || t('dialog.e2eeDescription');
+        const label = _e2eeLabels?.label || t('dialog.e2eeLabel');
+        const warning = _e2eeLabels?.warning || t('dialog.e2eeWarning');
 
         return (
             <div id = 'e2ee-section'>
@@ -99,11 +106,11 @@ class E2EESection extends Component<Props, State> {
                     id = 'e2ee-section-description'>
                     { description }
                     { !_everyoneSupportE2EE && <br /> }
-                    { !_everyoneSupportE2EE && t('dialog.e2eeWarning') }
+                    { !_everyoneSupportE2EE && warning }
                 </p>
                 <div className = 'control-row'>
                     <label htmlFor = 'e2ee-section-switch'>
-                        { t('dialog.e2eeLabel') }
+                        { label }
                     </label>
                     <Switch
                         id = 'e2ee-section-switch'
@@ -143,8 +150,10 @@ class E2EESection extends Component<Props, State> {
  */
 function mapStateToProps(state) {
     const { enabled } = state['features/e2ee'];
+    const { e2eeLabels } = state['features/base/config'];
 
     return {
+        _e2eeLabels: e2eeLabels,
         _enabled: enabled,
         _everyoneSupportE2EE: doesEveryoneSupportE2EE(state)
     };

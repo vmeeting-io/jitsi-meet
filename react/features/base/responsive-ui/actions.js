@@ -1,12 +1,13 @@
 // @flow
 
+import { batch } from 'react-redux';
 import type { Dispatch } from 'redux';
 
 import { CHAT_SIZE } from '../../chat/constants';
 import { getParticipantsPaneOpen } from '../../participants-pane/functions';
 import theme from '../../participants-pane/theme.json';
 
-import { CLIENT_RESIZED, SET_ASPECT_RATIO, SET_REDUCED_UI } from './actionTypes';
+import { CLIENT_RESIZED, SET_ASPECT_RATIO, SET_CONTEXT_MENU_OPEN, SET_REDUCED_UI } from './actionTypes';
 import { ASPECT_RATIO_NARROW, ASPECT_RATIO_WIDE } from './constants';
 
 /**
@@ -45,10 +46,13 @@ export function clientResized(clientWidth: number, clientHeight: number) {
             }
         }
 
-        return dispatch({
-            type: CLIENT_RESIZED,
-            clientHeight,
-            clientWidth: availableWidth
+        batch(() => {
+            dispatch({
+                type: CLIENT_RESIZED,
+                clientHeight,
+                clientWidth: availableWidth
+            });
+            dispatch(setAspectRatio(clientWidth, clientHeight));
         });
     };
 }
@@ -104,5 +108,18 @@ export function setReducedUI(width: number, height: number): Function {
                 reducedUI
             });
         }
+    };
+}
+
+/**
+ * Sets whether the local or remote participant context menu is open.
+ *
+ * @param {boolean} isOpen - Whether local or remote context menu is open.
+ * @returns {Object}
+ */
+export function setParticipantContextMenuOpen(isOpen: boolean) {
+    return {
+        type: SET_CONTEXT_MENU_OPEN,
+        isOpen
     };
 }

@@ -46,6 +46,7 @@ const commands = {
     sendTones: 'send-tones',
     setFollowMe: 'set-follow-me',
     setLargeVideoParticipant: 'set-large-video-participant',
+    setParticipantVolume: 'set-participant-volume',
     setTileView: 'set-tile-view',
     setVideoQuality: 'set-video-quality',
     startRecording: 'start-recording',
@@ -81,7 +82,7 @@ const events = {
     'device-list-changed': 'deviceListChanged',
     'display-name-change': 'displayNameChange',
     'email-change': 'emailChange',
-    'error': 'error',
+    'error-occurred': 'errorOccurred',
     'endpoint-text-message-received': 'endpointTextMessageReceived',
     'feedback-submitted': 'feedbackSubmitted',
     'feedback-prompt-displayed': 'feedbackPromptDisplayed',
@@ -111,7 +112,8 @@ const events = {
     'dominant-speaker-changed': 'dominantSpeakerChanged',
     'subject-change': 'subjectChange',
     'suspend-detected': 'suspendDetected',
-    'tile-view-changed': 'tileViewChanged'
+    'tile-view-changed': 'tileViewChanged',
+    'toolbar-button-clicked': 'toolbarButtonClicked'
 };
 
 /**

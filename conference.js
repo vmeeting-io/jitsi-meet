@@ -1901,7 +1901,6 @@ export default {
         }
 
         this.videoSwitchInProgress = true;
-        const _isLocalVideoMuted = this.isLocalVideoMuted();
 
         return this._createDesktopTrack(options)
             .then(async streams => {
@@ -1950,17 +1949,6 @@ export default {
                 }
                 sendAnalytics(createScreenSharingEvent('started'));
                 logger.log('Screen sharing started');
-
-                const { startEnabled } = config.presenter || {};
-                if (startEnabled && !_isLocalVideoMuted) {
-                    setTimeout(() => {
-                        // send camera toggle shortcut key 'V' event
-                        $.event.trigger({
-                            type: 'keyup',
-                            which: 'V'.charCodeAt(0)
-                        });
-                    }, 1000);
-                }
             })
             .catch(error => {
                 this.videoSwitchInProgress = false;

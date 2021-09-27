@@ -15,6 +15,7 @@ import { Icon, IconCheck, IconVideoOff, IconAnnouncement, IconStopWatch } from '
 import { MEDIA_TYPE } from '../../base/media';
 import {
     getLocalParticipant,
+    getParticipantCount,
     getParticipantDisplayName,
     isEveryoneModerator
 } from '../../base/participants';
@@ -91,6 +92,8 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
     let isRandomSelectionRunning = (APP.store.getState()['features/base/conference'].startCountdown === true) ? true : false;
     const randomselectionClass = isRandomSelectionRunning ? classes.menudisabled : '';
 
+    const participantCount = getParticipantCount(APP.store.getState());
+
     const muteAllVideo = useCallback(
         () => dispatch(openDialog(MuteEveryonesVideoDialog, { exclude: [ id ] })), [ dispatch ]);
 
@@ -98,6 +101,10 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
         () => {
             // function that notifies random selection procedure has now started
             notifyRandomSelectionStarted(initiator);
+
+            // toggling of menu option is also being handled by 'onMouseLeave' which toggles the display menu
+            // thus, we use the existing function to imitate action to hide the menu option after the option was clicked
+            onMouseLeave();
 
             // set a timeout of 5 seconds before executing rest of the code
             setTimeout(function() {
@@ -130,15 +137,19 @@ export const FooterContextMenu = ({ onMouseLeave }: Props) => {
             onMouseLeave = { onMouseLeave }>
 
             {/* context menu item for random selection */}
-            <ContextMenuItem
-                className = { randomselectionClass }
-                id = 'participants-pane-context-menu-random-selection'
-                onClick = { startRandomSelection }>
-                <Icon
-                    size = { 18 }
-                    src = { IconAnnouncement } />
-                <span>{ t('participantsPane.actions.startRandomSelection') }</span>
-            </ContextMenuItem>
+            { 
+                participantCount >= 3 
+                ? <ContextMenuItem
+                        className = { randomselectionClass }
+                        id = 'participants-pane-context-menu-random-selection'
+                        onClick = { startRandomSelection }>
+                        <Icon
+                            size = { 18 }
+                            src = { IconAnnouncement } />
+                        <span>{ t('participantsPane.actions.startRandomSelection') }</span>
+                </ContextMenuItem>
+                : <></>
+            }
 
             {/* context menu item for timer function */}
             {!APP.store.getState()["features/base/conference"].timerStarted &&  <ContextMenuItem

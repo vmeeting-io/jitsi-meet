@@ -68,10 +68,11 @@ export const randomlySelectFromAllParticipants = () => {
 
     // get remote participants' IDs and localParticipant's ID
     const remoteParticipantIDs = getRemoteParticipants(state).keys();
-    const localParticipantID = getLocalParticipant(state).id;
 
     // initialize an array to store all participants IDs
-    const allParticipantsID = [localParticipantID, ...remoteParticipantIDs]
+    // we don't want the initiator/moderator who initiated the function to be included in random selection
+    // so we include only remote participants
+    const allParticipantsID = [...remoteParticipantIDs];
 
     // randomly select an ID from allParticipantsID array
     const randomlySelectedID = allParticipantsID[Math.floor(Math.random() * allParticipantsID.length)];

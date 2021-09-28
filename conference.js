@@ -1794,6 +1794,45 @@ export default {
     },
 
     /**
+     * Get the desktop resize contraints
+     * @param {number} height - the original height of video or desktop track
+     * @param {number} width - the original width of video or desktop track
+     * @returns {map} the constraints, or null if no constraints should be applied
+     *
+     * @private
+     */
+    _getDesktopResizeConstraints(height, width) {
+        const isPortrait = height >= width;
+        const DESKTOP_STREAM_CAP = 720;
+
+        const highResolutionTrack
+            = (isPortrait && width > DESKTOP_STREAM_CAP) || (!isPortrait && height > DESKTOP_STREAM_CAP);
+
+        // Resizing the desktop track for presenter is causing blurriness of the desktop share on chrome.
+        // Disable resizing by default, enable it only when config.js setting is enabled.
+        const resizeDesktopStream = highResolutionTrack && config.videoQuality?.resizeDesktopForPresenter;
+        if (resizeDesktopStream) {
+            let desktopResizeConstraints = {};
+
+            if (height && width) {
+                const advancedConstraints = [{ aspectRatio: (width / height).toPrecision(4) }];
+                const constraint = isPortrait ? { width: DESKTOP_STREAM_CAP } : { height: DESKTOP_STREAM_CAP };
+
+                advancedConstraints.push(constraint);
+                desktopResizeConstraints.advanced = advancedConstraints;
+            } else {
+                desktopResizeConstraints = {
+                    width: 1280,
+                    height: 720
+                };
+            }
+            return desktopResizeConstraints;
+        } else {
+            return null;
+        }
+    },
+
+    /**
      * Tries to turn the presenter video track on or off. If a presenter track
      * doesn't exist, a new video track is created.
      *
@@ -1819,32 +1858,8 @@ export default {
         if (!this.localPresenterVideo && !mute) {
             const localVideo = getLocalJitsiVideoTrack(APP.store.getState());
             const { height, width } = localVideo.track.getSettings() ?? localVideo.track.getConstraints();
-            const isPortrait = height >= width;
-            const DESKTOP_STREAM_CAP = 720;
-
-            const highResolutionTrack
-                = (isPortrait && width > DESKTOP_STREAM_CAP) || (!isPortrait && height > DESKTOP_STREAM_CAP);
-
-            // Resizing the desktop track for presenter is causing blurriness of the desktop share on chrome.
-            // Disable resizing by default, enable it only when config.js setting is enabled.
-            const resizeDesktopStream = highResolutionTrack && config.videoQuality?.resizeDesktopForPresenter;
-
-            if (resizeDesktopStream) {
-                let desktopResizeConstraints = {};
-
-                if (height && width) {
-                    const advancedConstraints = [ { aspectRatio: (width / height).toPrecision(4) } ];
-                    const constraint = isPortrait ? { width: DESKTOP_STREAM_CAP } : { height: DESKTOP_STREAM_CAP };
-
-                    advancedConstraints.push(constraint);
-                    desktopResizeConstraints.advanced = advancedConstraints;
-                } else {
-                    desktopResizeConstraints = {
-                        width: 1280,
-                        height: 720
-                    };
-                }
-
+            let desktopResizeConstraints = this._getDesktopResizeConstraints(height, width);
+            if (desktopResizeConstraints){
                 // Apply the constraints on the desktop track.
                 try {
                     await localVideo.track.applyConstraints(desktopResizeConstraints);
@@ -1854,7 +1869,7 @@ export default {
                     return;
                 }
             }
-            const trackHeight = resizeDesktopStream
+            const trackHeight = desktopResizeConstraints
                 ? localVideo.track.getSettings().height ?? DESKTOP_STREAM_CAP
                 : height;
             let effect;
@@ -1900,7 +1915,6 @@ export default {
         }
 
         this.videoSwitchInProgress = true;
-        const _isLocalVideoMuted = this.isLocalVideoMuted();
 
         return this._createDesktopTrack(options)
             .then(async streams => {
@@ -1923,6 +1937,12 @@ export default {
 
                 if (desktopVideoStream) {
                     logger.debug(`_switchToScreenSharing is using ${desktopVideoStream} for useVideoStream`);
+
+                    const { height, width } = desktopVideoStream.track.getSettings() ?? desktopVideoStream.track.getConstraints();
+                    let desktopResizeConstraints = this._getDesktopResizeConstraints(height, width);
+                    if (desktopResizeConstraints) {
+                        await desktopVideoStream.track.applyConstraints(desktopResizeConstraints);
+                    }
                     await this.useVideoStream(desktopVideoStream);
                 }
 
@@ -1951,17 +1971,6 @@ export default {
                 }
                 sendAnalytics(createScreenSharingEvent('started'));
                 logger.log('Screen sharing started');
-
-                const { startEnabled } = config.presenter || {};
-                if (startEnabled && !_isLocalVideoMuted) {
-                    setTimeout(() => {
-                        // send camera toggle shortcut key 'V' event
-                        $.event.trigger({
-                            type: 'keyup',
-                            which: 'V'.charCodeAt(0)
-                        });
-                    }, 1000);
-                }
             })
             .catch(error => {
                 this.videoSwitchInProgress = false;
@@ -2296,7 +2305,7 @@ export default {
         room.on(JitsiConferenceEvents.NOTIFY_TIMER_STARTED,
             (nick,endTime) => {
                 APP.store.dispatch(Timer(endTime,true));
-                
+
                 APP.store.dispatch(showNotification({
                     descriptionArguments: { initiator: nick },
                     descriptionKey: 'notify.timerInitiatedBy',
@@ -2315,7 +2324,7 @@ export default {
                 },
                 5000)); // hard-coded the duration of notification bubble to 5 seconds
             });
-        
+
         room.on(JitsiConferenceEvents.RANDOM_SELECTION_COUNTDOWN,
             (countdownRemained, startCountdown) => {
                 APP.store.dispatch(startRandomSelectionCountdown(countdownRemained, startCountdown));

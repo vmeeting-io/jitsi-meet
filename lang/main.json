@@ -765,7 +765,7 @@
             "startTimerLabel": "Timer",
             "stopTimer": "Stop Timer",
             "stopEveryonesVideo": "Mute everyone's video",
-            "stopVideo": "Mute video",
+            "stopVideo": "Disable video",
             "unblockEveryoneMicCamera": "Unblock everyone's mic and camera"
         }
     },

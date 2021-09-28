@@ -181,6 +181,8 @@ export const FooterContextMenu = ({ inDrawer, onMouseLeave }: Props) => {
             }
 
             {/* context menu item for timer function */}
+            { participantCount > 1 ? 
+            <>
             {!APP.store.getState()["features/base/conference"].timerStarted &&  <ContextMenuItem
                 id = 'participants-pane-context-menu-timer'
                 onClick = { _onStartTimerClick }>
@@ -198,7 +200,8 @@ export const FooterContextMenu = ({ inDrawer, onMouseLeave }: Props) => {
                     src = { IconStopWatch } />
                 <span>{ t('participantsPane.actions.stopTimer') }</span>
             </ContextMenuItem>}
-
+            </>:<></>
+            } 
 
             <ContextMenuItem
                 id = 'participants-pane-context-menu-stop-video'

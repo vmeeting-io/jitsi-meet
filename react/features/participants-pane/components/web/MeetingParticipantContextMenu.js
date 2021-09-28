@@ -495,16 +495,17 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                             <ContextMenuIcon src = { IconCloseCircle } />
                                             <span>{ t('videothumbnail.kick') }</span>
                                         </ContextMenuItem>
-                                        
-                                        {
-                                        true && <ContextMenuItem onClick = { this._onBirthdayHat }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
-                                            <ContextMenuIcon src = { IconBirthdayHat } />
-                                            <span>{ "Birthday Hat" }</span>
-                                        </ContextMenuItem>
-                                        }
                                     </>
                             )
                         }
+                            
+                        {
+                            true && <ContextMenuItem onClick = { this._onBirthdayHat }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ "Birthday Hat" }</span>
+                            </ContextMenuItem>
+                        }
+
                         {
                             _isChatButtonEnabled && (
                                 <ContextMenuItem onClick = { this._onSendPrivateMessage }>

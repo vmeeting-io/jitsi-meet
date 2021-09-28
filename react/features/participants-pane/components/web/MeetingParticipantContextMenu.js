@@ -8,6 +8,7 @@ import { openDialog } from '../../../base/dialog';
 import { isIosMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import {
+    IconBirthdayHat,
     IconCloseCircle,
     IconCrown,
     IconMeetingUnlocked,
@@ -256,6 +257,16 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
         }));
     }
 
+    /**
+     * 
+     * Put a birthday hat on the participant.
+     * 
+     * @returns {void}
+     */
+    _onBirthdayHat(){
+        alert("Birthday Hat"); // TODO-ANIS: Call the birthday hat function
+    }
+
     _onStopSharedVideo: () => void;
 
     /**
@@ -484,6 +495,13 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                             <ContextMenuIcon src = { IconCloseCircle } />
                                             <span>{ t('videothumbnail.kick') }</span>
                                         </ContextMenuItem>
+                                        
+                                        {
+                                        true && <ContextMenuItem onClick = { this._onBirthdayHat }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
+                                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                            <span>{ "Birthday Hat" }</span>
+                                        </ContextMenuItem>
+                                        }
                                     </>
                             )
                         }

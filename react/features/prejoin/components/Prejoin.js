@@ -1,7 +1,10 @@
 // @flow
 
 import InlineDialog from '@atlaskit/inline-dialog';
+import axios from 'axios';
 import React, { Component } from 'react';
+
+import { getAuthUrl } from '../../../api/url';
 
 import { getRoomName } from '../../base/conference';
 import { getToolbarButtons } from '../../base/config';
@@ -186,7 +189,24 @@ class Prejoin extends Component<Props, State> {
         this._onJoinConferenceWithoutAudioKeyPress = this._onJoinConferenceWithoutAudioKeyPress.bind(this);
         this._showDialogKeyPress = this._showDialogKeyPress.bind(this);
         this._onJoinKeyPress = this._onJoinKeyPress.bind(this);
+        this.beforeUnloadHandler = this.beforeUnloadHandler.bind(this);
+
+        window.addEventListener('beforeunload', this.beforeUnloadHandler);
     }
+
+    beforeUnloadHandler() {
+        const { roomInfo } = this.props.conference;
+        console.log('Prejoin.beforeUnloadHandler:', roomInfo);
+        if (roomInfo) {
+            const { _apiBase, _tenant } = this.props;
+            axios.delete(`${_apiBase}/sites/${_tenant}/conferences/${roomInfo._id}`);
+        }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+    }
+
     _onJoinButtonClick: () => void;
 
     /**
@@ -511,6 +531,9 @@ function mapStateToProps(state, ownProps): Object {
             : false;
 
     return {
+        _apiBase: getAuthUrl(state),
+        _tenant: state['features/base/jwt'].tenant,
+        conference: state['features/base/conference'],
         buttonIsToggled: isPrejoinSkipped(state),
         name,
         deviceStatusVisible: isDeviceStatusVisible(state),

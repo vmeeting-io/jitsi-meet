@@ -132,12 +132,12 @@ import {
     isPrejoinPageVisible,
     makePrecallTest
 } from './react/features/prejoin';
-import { createRnnoiseProcessorPromise } from './react/features/rnnoise';
 import { endRoomLockRequest } from './react/features/room-lock/actions';
 import { toggleScreenshotCaptureEffect } from './react/features/screenshot-capture';
 import { setSharedVideoStatus } from './react/features/shared-video';
 import { AudioMixerEffect } from './react/features/stream-effects/audio-mixer/AudioMixerEffect';
 import { createPresenterEffect } from './react/features/stream-effects/presenter';
+import { createRnnoiseProcessor } from './react/features/stream-effects/rnnoise';
 import { endpointMessageReceived } from './react/features/subtitles';
 import UIEvents from './service/UI/UIEvents';
 import * as RemoteControlEvents
@@ -1367,7 +1367,7 @@ export default {
 
         options.applicationName = interfaceConfig.APP_NAME;
         options.getWiFiStatsMethod = this._getWiFiStatsMethod;
-        options.createVADProcessor = createRnnoiseProcessorPromise;
+        options.createVADProcessor = createRnnoiseProcessor;
 
         // Disable CallStats, if requessted.
         if (options.disableThirdPartyRequests) {

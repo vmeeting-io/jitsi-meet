@@ -1307,6 +1307,7 @@
     },
     "lobby": {
         "admit": "수락",
+        "admitAll": "모두 수략",
         "knockingParticipantList": "참가 요청",
         "allow": "수락",
         "backToKnockModeButton": "암호 없음, 대신 가입 요청",

@@ -3296,6 +3296,29 @@ export default {
     },
 
     /**
+     * Changes the display name for the local user
+     * @param nickname {string} the new display name
+     */
+    changeBirthDate(bDate = '') {
+        const { id, birthDate } = getLocalParticipant(APP.store.getState());
+        if (birthDate === bDate) {
+            return;
+        }
+
+        // this will dispatch a function that will update featues/base/participants redux
+        APP.store.dispatch(participantUpdated({
+            id,
+            local: true,
+            birthDate: bDate
+        }));
+
+        // update birthDate for settings reducer on changing birthDate too
+        APP.store.dispatch(updateSettings({
+            birthDate: bDate
+        }));
+    },
+
+    /**
      * Callback invoked by the external api create or update a direct connection
      * from the local client to an external client.
      *

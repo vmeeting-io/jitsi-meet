@@ -23,6 +23,7 @@ const DEFAULT_STATE = {
     disableP2P: undefined,
     displayName: undefined,
     email: undefined,
+    birthDate: undefined,
     localFlipX: true,
     micDeviceId: undefined,
     serverURL: 'https://vmeeting.io',

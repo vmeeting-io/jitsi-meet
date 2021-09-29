@@ -933,6 +933,7 @@
         "participantJoined": "참가자 참가시",
         "participantLeft": "참가자 퇴장시",
         "playSounds": "알림음 재생",
+        "reactions": "리액션",
         "sameAsSystem": "시스템과 동일 ({{label}})",
         "selectAudioOutput": "오디오 출력",
         "selectCamera": "카메라",

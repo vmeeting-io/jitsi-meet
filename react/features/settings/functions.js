@@ -127,6 +127,7 @@ export function getMoreTabProps(stateful: Object | Function) {
         showLanguageSettings: configuredTabs.includes('language'),
         showModeratorSettings,
         showPrejoinSettings: state['features/base/config'].prejoinPageEnabled,
+        showShortcutSettings: !Boolean(state['features/base/config'].disableShortcuts),
         enableUserDeviceAccessDisabledOption: state['features/base/config'].enableUserDeviceAccessDisabledOption,
         showPrejoinPage: !state['features/base/settings'].userSelectedSkipPrejoin,
         startAudioMuted: Boolean(conference && startAudioMutedPolicy),

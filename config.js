@@ -1087,7 +1087,6 @@ var config = {
     // followMeEnabled: false,
     // disableGrantModerator: false,
     // disableDesktopSharing: false,    // true, false, 'guest'
-    // disableShortcut: false,
 
     // If true, tile view will not be enabled automatically when the participants count threshold is reached.
     // disableTileView: true,           // true, false, 'guest'

@@ -510,6 +510,7 @@ class MoreTab extends AbstractDialogTab<Props, State> {
 
         return (
             <div
+                key = 'more-tab-right'
                 className = 'settings-sub-pane right'>
                 { showLanguageSettings && this._renderLanguageSelect() }
                 { this._renderFramerateSelect() }
@@ -523,13 +524,17 @@ class MoreTab extends AbstractDialogTab<Props, State> {
      * @returns {ReactElement}
      */
     _renderSettingsLeft() {
-        const { showPrejoinSettings, showModeratorSettings } = this.props;
+        const { showPrejoinSettings, showModeratorSettings, showShortcutSettings } = this.props;
+
+        if (!showPrejoinSettings && !showModeratorSettings && !showShortcutSettings)
+            return null;
 
         return (
             <div
+                key = 'more-tab-left'
                 className = 'settings-sub-pane left'>
                 { showPrejoinSettings && this._renderPrejoinScreenSettings() }
-                { this._renderKeyboardShortcutCheckbox() }
+                { showShortcutSettings && this._renderKeyboardShortcutCheckbox() }
                 { showModeratorSettings && this._renderModeratorSettings() }
             </div>
         );

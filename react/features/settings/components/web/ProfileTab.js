@@ -15,6 +15,10 @@ import { translate } from '../../../base/i18n';
 import { openLogoutDialog } from '../../actions';
 import { getLocalParticipant} from '../../../base/participants';
 import tokenLocalStorage from '../../../../api/tokenLocalStorage';
+import { DatePicker } from '@atlaskit/datetime-picker';
+import { Label } from '@atlaskit/field-base';
+
+import { getTodaysDate } from '../../functions';
 
 declare var APP: Object;
 
@@ -45,6 +49,11 @@ export type Props = {
     email: string,
 
     /**
+     * The birthdate of the local participant;
+     */
+    birthDate: string,
+
+    /**
      * Invoked to obtain translated strings.
      */
     t: Function
@@ -58,7 +67,8 @@ export type Props = {
 class ProfileTab extends AbstractDialogTab<Props> {
     static defaultProps = {
         displayName: '',
-        email: ''
+        email: '',
+        birthDate: getTodaysDate()
     };
 
     /**
@@ -69,11 +79,15 @@ class ProfileTab extends AbstractDialogTab<Props> {
      */
     constructor(props: Props) {
         super(props);
+        this.state = {
+            birthdate: this.props.birthDate, //should get the birthdate from JWT token
+        }
 
         // Bind event handlers so they are only bound once for every instance.
         this._onAuthToggle = this._onAuthToggle.bind(this);
         this._onDisplayNameChange = this._onDisplayNameChange.bind(this);
         this._onEmailChange = this._onEmailChange.bind(this);
+        this._onBirthDateChange = this._onBirthDateChange.bind(this);
     }
 
     _onDisplayNameChange: (Object) => void;
@@ -102,6 +116,13 @@ class ProfileTab extends AbstractDialogTab<Props> {
         super._onChange({ email: value });
     }
 
+    _onBirthDateChange: (Object) => void;
+
+    _onBirthDateChange(newBirthDate) {
+        this.setState({ birthdate: newBirthDate });
+        super._onChange({ birthdate: newBirthDate });
+    }
+
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -113,6 +134,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
             authEnabled,
             displayName,
             email,
+            birthDate,
             t
         } = this.props;
 
@@ -141,6 +163,18 @@ class ProfileTab extends AbstractDialogTab<Props> {
                             shouldFitContainer = { true }
                             type = 'text'
                             value = { email } />
+                    </div>
+                </div>
+
+                <div className = 'birthday-edit'>
+                    <div className = 'birthday-edit-field'>
+                        <Label label = "Birthday" />
+                        <DatePicker
+                            dateFormat = "YYYY-MM-DD"
+                            defaultValue = { this.state.birthdate }
+                            id = 'birthdatepicker'
+                            onChange = { this._onBirthDateChange }
+                        />
                     </div>
                 </div>
                 { authEnabled && this._renderAuth() }

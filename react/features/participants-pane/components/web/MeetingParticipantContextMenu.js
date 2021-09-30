@@ -218,7 +218,8 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
         this._onSendToRoom = this._onSendToRoom.bind(this);
         this._position = this._position.bind(this);
         this._onVolumeChange = this._onVolumeChange.bind(this);
-        this._onBirthdayHat = this._onBirthdayHat.bind(this);
+        this._onBirthdayHatOn = this._onBirthdayHatOn.bind(this);
+        this._onBirthdayHatOff = this._onBirthdayHatOff.bind(this);
     }
 
     _getCurrentParticipantId: () => string;
@@ -266,12 +267,22 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
      * 
      * @returns {void}
      */
-    _onBirthdayHat(){
+    _onBirthdayHatOn(){
         this.props.dispatch(arApprovalDialog(true));
         enableARHat(this.props.dispatch,true); 
-        
         // Show approval dialog for participant to enable/disable birthday hat.
         this.props.dispatch(openDialog(BirthdayHatApprove));
+    }
+    
+    /**
+     * 
+     * Put birthday hat off the participant.
+     * 
+     * @returns {void}
+     */
+    _onBirthdayHatOff(){
+        this.props.dispatch(arApprovalDialog(false));
+        enableARHat(this.props.dispatch,false); 
     }
 
     _onStopSharedVideo: () => void;
@@ -507,9 +518,16 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                         }
                             
                         {
-                            true && <ContextMenuItem onClick = { this._onBirthdayHat }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
+                            !Boolean(APP.store.getState()['features/ar-effect'].arEffectEnabled) && <ContextMenuItem onClick = { this._onBirthdayHatOn }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
                             <ContextMenuIcon src = { IconBirthdayHat } />
                                 <span>{ "Birthday Hat" }</span>
+                            </ContextMenuItem>
+                        }
+                        
+                        {
+                            Boolean(APP.store.getState()['features/ar-effect'].arEffectEnabled) && <ContextMenuItem onClick = { this._onBirthdayHatOff }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ "Remove Birthday Hat" }</span>
                             </ContextMenuItem>
                         }
 

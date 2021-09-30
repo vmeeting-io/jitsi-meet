@@ -9,8 +9,7 @@ import AbstractBirthdayHatApprove, {
     mapStateToProps as abstractMapStateToProps,
     type Props as AbstractProps
 } from '../AbstractBirthdayHatApprove';
-import { arApprovalDialog, toggleAREffect } from '../actions';
-import BirthdayApprove from './BirthdayApprove';
+import BirthdayApproveDialog from './BirthdayApproveDialog';
 
 type Props = AbstractProps & {
 
@@ -27,34 +26,6 @@ class BirthdayHatApprove extends AbstractBirthdayHatApprove<Props> {
 
     constructor(props) {
         super(props)
-
-        this._onApprove = this._onApprove.bind(this);
-        this._onReject = this._onReject.bind(this);
-        this._enableARHat = this._enableARHat.bind(this);
-    }
-
-
-    componentDidMount(){
-        this._enableARHat(true)
-    }
-
-    _enableARHat(enabled){
-        const option = {
-            enabled: enabled,
-            arSource: ''
-        }
-        this.props.dispatch(toggleAREffect(option, this.props._jitsiTrack));
-    }
-
-    _onApprove() {
-        this._enableARHat(true);
-        this.props.dispatch(arApprovalDialog(false));
-
-    }
-
-    _onReject() {
-        this._enableARHat(false);
-        this.props.dispatch(arApprovalDialog(false));
     }
 
     /**
@@ -63,15 +34,15 @@ class BirthdayHatApprove extends AbstractBirthdayHatApprove<Props> {
      * @inheritdoc
      */
     render() {
-        const { _participants, _isARApprvalDialogVisible, t ,_isAREnabled} = this.props;
+        const { _isARApprvalDialogVisible, t } = this.props;
         if (!_isARApprvalDialogVisible) {
             return null;
         }
 
         return (
-            <BirthdayApprove
-                onApprove={this._onApprove}
-                onReject={this._onReject} />
+            <BirthdayApproveDialog
+                onApprove={this._onRespondToParticipant(true)}
+                onReject={this._onRespondToParticipant(false)} />
         );
     }
 

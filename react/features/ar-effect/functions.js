@@ -3,6 +3,7 @@
 import { getAuthUrl } from '../../api/url';
 import { JitsiTrackEvents } from '../base/lib-jitsi-meet';
 import { updateSettings } from '../base/settings';
+import { getLocalVideoTrack } from '../base/tracks';
 
 import { toggleAREffect } from './actions';
 let filterSupport;
@@ -130,4 +131,21 @@ export function getRemoteImageUrl(image, resolution = 'hd') {
 
     const apiBase = getAuthUrl(APP.store.getState());
     return `${apiBase}/backgrounds/${image._id}/${resolution}`;
+}
+
+
+/**
+ * 
+ * @param {Function} dispatch Function for dispatching events. 
+ * @param {boolean} enabled Boolean flag to enable/disable ARHat
+ * 
+ * @return None
+ */
+export function enableARHat(dispatch: Function ,enabled){
+    const option = {
+        enabled: enabled,
+        arSource: ''
+    }
+    const _jitsiTrack = getLocalVideoTrack(APP.store.getState()['features/base/tracks'])?.jitsiTrack;
+    dispatch(toggleAREffect(option, _jitsiTrack));
 }

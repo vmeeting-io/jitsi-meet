@@ -2,7 +2,7 @@
 import { withStyles } from '@material-ui/core/styles';
 import React, { Component } from 'react';
 
-import { arApprovalDialog } from '../../../ar-effect';
+import { arApprovalDialog, enableARHat } from '../../../ar-effect';
 import { Avatar } from '../../../base/avatar';
 import { isToolbarButtonEnabled } from '../../../base/config/functions.web';
 import { openDialog } from '../../../base/dialog';
@@ -27,7 +27,7 @@ import {
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { withPixelLineHeight } from '../../../base/styles/functions.web';
-import { isParticipantAudioMuted, isParticipantVideoMuted, getLocalVideoTrack } from '../../../base/tracks';
+import { isParticipantAudioMuted, isParticipantVideoMuted } from '../../../base/tracks';
 import { sendParticipantToRoom } from '../../../breakout-rooms/actions';
 import { getCurrentRoomId, getRooms } from '../../../breakout-rooms/functions';
 import { openChatById } from '../../../chat/actions';
@@ -38,7 +38,6 @@ import { VolumeSlider } from '../../../video-menu/components/web';
 import MuteRemoteParticipantsVideoDialog from '../../../video-menu/components/web/MuteRemoteParticipantsVideoDialog';
 import { getComputedOuterHeight } from '../../functions';
 import BirthdayHatApprove from '../../../ar-effect/components/BirthdayHatApprove';
-import {toggleAREffect } from '../../../ar-effect/actions';
 
 import {
     ContextMenu,
@@ -269,13 +268,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
      */
     _onBirthdayHat(){
         this.props.dispatch(arApprovalDialog(true));
-        
-        const option = {
-            enabled: true,
-            arSource: ''
-        }
-        const _jitsiTrack = getLocalVideoTrack(APP.store.getState()['features/base/tracks'])?.jitsiTrack;
-        this.props.dispatch(toggleAREffect(option, _jitsiTrack));
+        enableARHat(this.props.dispatch,true); 
         
         // Show approval dialog for participant to enable/disable birthday hat.
         this.props.dispatch(openDialog(BirthdayHatApprove));

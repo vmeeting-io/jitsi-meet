@@ -1,7 +1,8 @@
 // @flow
 
 import { PureComponent } from 'react';
-import { getLocalVideoTrack } from '../base/tracks';
+import { arApprovalDialog } from './actions';
+import { enableARHat } from './functions';
 
 export type Props = {
 
@@ -43,13 +44,16 @@ export default class AbstractBirthdayHatApprove<P: Props = Props> extends PureCo
     /**
      * Function that constructs a callback for the response handler button.
      *
-     * @param {boolean} approve - The response for putting hat.
+     * @param {boolean} approved - Flag with response for putting hat.
      * @returns {Function}
      */
-    _onRespondToParticipant(approve) {
+    _onRespondToParticipant(approved) {
         return () => {
-            // console.log("TODO-ANIS: Trigger the action on approval button." + approve);
-            // this.props.dispatch(setKnockingParticipantApproval(id, approve));
+            if (!approved)
+            {
+                enableARHat(this.props.dispatch,false);
+            }
+            this.props.dispatch(arApprovalDialog(false));
         };
     }
 }
@@ -64,7 +68,6 @@ export function mapStateToProps(state: Object): $Shape<Props> {
 
     return {
         _isAREnabled: Boolean(state['features/ar-effect'].arEffectEnabled),
-        _jitsiTrack: getLocalVideoTrack(state['features/base/tracks'])?.jitsiTrack,
         _isARApprvalDialogVisible: Boolean(state['features/ar-effect'].arApprovalDialog)
     };
 }

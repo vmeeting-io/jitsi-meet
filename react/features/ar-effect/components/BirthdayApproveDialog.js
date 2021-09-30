@@ -1,11 +1,11 @@
 // @flow
 
-import React, { useState, Component } from 'react';
+import React, { Component } from 'react';
 
 /**
  * Abstract class to encapsulate the platform common code of the {@code BirthdayApprove}.
  */
-class BirthdayApprove extends Component {
+class BirthdayApproveDialog extends Component {
     constructor(props){
         super(props);
     }
@@ -27,4 +27,4 @@ class BirthdayApprove extends Component {
     }
 }
 
-export default BirthdayApprove;
+export default BirthdayApproveDialog;

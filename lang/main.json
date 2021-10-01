@@ -712,6 +712,8 @@
         "timerTitle": "Timer Setting",
         "timerInitiatedBy": "The timer has been started by {{initiator}}.",
         "timerFinishedBy": "The timer has been stopped by {{initiator}}.",
+        "birthdayHatOn": "{{initiator}} has applied a birthday hat to {{participant}}.",
+        "birthdayHatOnTitle": "AR Birthday Hat",
         "unmute": "Unmute",
         "unmuteByHost": "Host would like you unmute.",
         "unmuteVideoByHost": "Host would like you unmute video.",

@@ -67,7 +67,6 @@ ReducerRegistry.register(STORE_NAME, (state = {}, action) => {
         };
     }
     case AR_APPROVAL_DIALOG: {
-        console.log("ANIS: REDUCER");
         return {
             ...state,
             arApprovalDialog

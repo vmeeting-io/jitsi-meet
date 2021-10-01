@@ -21,6 +21,7 @@ import {
 } from '../../../base/icons';
 import {
     getLocalParticipant,
+    getLocalParticipantDisplayName,
     getParticipantByIdOrUndefined,
     isLocalParticipantModerator,
     isParticipantModerator
@@ -46,6 +47,7 @@ import {
     ContextMenuItemGroup,
     ignoredChildClassName
 } from './styled';
+import { notifyBirthdayHatOn } from '../../actions.any';
 
 type Props = {
 
@@ -268,10 +270,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
      * @returns {void}
      */
     _onBirthdayHatOn(){
-        this.props.dispatch(arApprovalDialog(true));
-        enableARHat(this.props.dispatch,true); 
-        // Show approval dialog for participant to enable/disable birthday hat.
-        this.props.dispatch(openDialog(BirthdayHatApprove));
+        notifyBirthdayHatOn(getLocalParticipant(APP.store.getState()).name,this._getCurrentParticipantId());
     }
     
     /**

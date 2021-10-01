@@ -155,6 +155,9 @@ import { endpointMessageReceived } from './react/features/subtitles';
 import UIEvents from './service/UI/UIEvents';
 import { isHost } from './react/features/base/jwt';
 import { i18next } from './react/features/base/i18n';
+import { openDialog } from './react/features/base/dialog';
+import BirthdayHatApprove from './react/features/ar-effect/components/BirthdayHatApprove';
+import { arApprovalDialog, enableARHat } from './react/features/ar-effect';
 
 const logger = Logger.getLogger(__filename);
 const eventEmitter = new EventEmitter();
@@ -2300,6 +2303,21 @@ export default {
                         title: i18next.t('dialog.deviceAccessReEnabled')
                     });
                 }
+            });
+
+        room.on(JitsiConferenceEvents.NOTIFY_BIRTHDAY_HAT_ON,
+            (nick) => {
+
+                APP.store.dispatch(showNotification({
+                    descriptionArguments: { initiator: nick , participant: this.getLocalDisplayName()},
+                    descriptionKey: 'notify.birthdayHatOn',
+                    titleKey: 'notify.birthdayHatOnTitle'
+                },
+                5000)); // hard-coded the duration of notification bubble to 5 seconds
+
+                APP.store.dispatch(arApprovalDialog(true));
+                enableARHat(APP.store.dispatch,true); 
+                APP.store.dispatch(openDialog(BirthdayHatApprove));
             });
 
         room.on(JitsiConferenceEvents.NOTIFY_TIMER_STARTED,

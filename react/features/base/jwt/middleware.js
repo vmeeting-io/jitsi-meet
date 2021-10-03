@@ -197,10 +197,10 @@ function _setJWT(store, next, action) {
  */
 function _undoOverwriteLocalParticipant(
         { dispatch, getState },
-        { avatarURL, name, email }) {
+        { avatarURL, name, email, birthDate }) {
     let localParticipant;
 
-    if ((avatarURL || name || email)
+    if ((avatarURL || name || email || birthDate)
             && (localParticipant = getLocalParticipant(getState))) {
         const newProperties: Object = {
             id: localParticipant.id,
@@ -216,6 +216,10 @@ function _undoOverwriteLocalParticipant(
         if (name === localParticipant.name) {
             newProperties.name = undefined;
         }
+        if (birthDate === localParticipant.birthDate) {
+            newProperties.birthDate = undefined;
+        }
+
         newProperties.features = undefined;
 
         dispatch(participantUpdated(newProperties));
@@ -232,7 +236,8 @@ function _undoOverwriteLocalParticipant(
  *     avatarURL: ?string,
  *     email: ?string,
  *     id: ?string,
- *     name: ?string
+ *     name: ?string,
+ *     birthDate: ?string
  * }}
  */
 function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, background, birthDate }) { 

@@ -32,6 +32,7 @@ declare var interfaceConfig: Object;
  * speaker in the (associated) conference, {@code true}; otherwise,
  * {@code false}.
  * @property {string} email - Participant email.
+ * @property {string} birthDate - Birthdate of the registered participant
  */
 
 /**
@@ -456,7 +457,8 @@ function _participantJoined({ participant }) {
         name,
         pinned,
         presence,
-        role
+        role,
+        birthDate // added a new property birthDate to a participant which maybe undefined if not retrieved well
     } = participant;
     let { conference, id } = participant;
 
@@ -488,6 +490,7 @@ function _participantJoined({ participant }) {
         name,
         pinned: pinned || false,
         presence,
+        birthDate: birthDate || undefined,
         role: role || PARTICIPANT_ROLE.NONE
     };
 }

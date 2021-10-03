@@ -61,6 +61,7 @@ import {
 import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
+    BIRTHDATE_COMMAND,
     JITSI_CONFERENCE_URL_KEY
 } from './constants';
 import {
@@ -244,6 +245,16 @@ function _addConferenceListeners(conference, dispatch, state) {
             conference,
             id,
             email: data.value
+        })));
+    
+    // send birthDate info to other participants as presence message using sendCommand
+    // when participant's birthdate info is updated
+    conference.addCommandListener(
+        BIRTHDATE_COMMAND,
+        (data, id) => dispatch(participantUpdated({
+            conference,
+            id,
+            birthDate: data.value
         })));
 
     conference.on(

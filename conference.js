@@ -30,6 +30,7 @@ import { shouldShowModeratedNotification } from './react/features/av-moderation/
 import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
+    BIRTHDATE_COMMAND,
     authStatusChanged,
     commonUserJoinedHandling,
     commonUserLeftHandling,
@@ -197,6 +198,7 @@ const commands = {
     AVATAR_URL: AVATAR_URL_COMMAND,
     CUSTOM_ROLE: 'custom-role',
     EMAIL: EMAIL_COMMAND,
+    BIRTHDATE: BIRTHDATE_COMMAND,
     ETHERPAD: 'etherpad'
 };
 
@@ -2529,6 +2531,21 @@ export default {
                     }));
             });
 
+        APP.UI.addListener(UIEvents.BIRTHDATE_CHANGED,
+            this.changeBirthDate.bind(this));
+        room.addCommandListener(
+            this.commands.defaults.BIRTHDATE,
+            (data, from) => {
+                APP.store.dispatch(
+                    participantUpdated({
+                        conference: room,
+                        id: from,
+                        birthDate: data.value
+                    })
+                );
+            }
+        );
+
         APP.UI.addListener(UIEvents.NICKNAME_CHANGED,
             this.changeLocalDisplayName.bind(this));
 
@@ -3296,8 +3313,8 @@ export default {
     },
 
     /**
-     * Changes the display name for the local user
-     * @param nickname {string} the new display name
+     * Changes the birthdate for the local user
+     * @param bDate {string} the new display name
      */
     changeBirthDate(bDate = '') {
         const { id, birthDate } = getLocalParticipant(APP.store.getState());
@@ -3316,6 +3333,10 @@ export default {
         APP.store.dispatch(updateSettings({
             birthDate: bDate
         }));
+
+        // XMPP helper function that sends birthdate info to other participants 
+        // as presence message
+        sendData(commands.BIRTHDATE, bDate);
     },
 
     /**

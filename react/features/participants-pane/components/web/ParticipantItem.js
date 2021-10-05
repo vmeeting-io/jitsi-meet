@@ -48,6 +48,11 @@ type Props = {
     audioMediaState?: MediaState,
 
     /**
+     * Whether or not today is meeting participant's birthday
+     */
+    isParticipantBirthday: Boolean,
+
+    /**
      * React children
      */
     children?: Node,
@@ -120,6 +125,7 @@ type Props = {
  * @returns {ReactNode}
  */
 function ParticipantItem({
+    isParticipantBirthday,
     children,
     isHighlighted,
     isModerator,
@@ -169,7 +175,7 @@ function ParticipantItem({
                 </ParticipantDetailsContainer>
                 { !local && <ParticipantActions children = { children } /> }
                 <ParticipantStates>
-                    { true && <BirthdayIndicator /> } {/* TODO-ANIS: */}
+                    { isParticipantBirthday && <BirthdayIndicator /> }
                     { raisedHand && <RaisedHandIndicator /> }
                     { VideoStateIcons[videoMediaState] }
                     { AudioStateIcons[audioMediaState] }

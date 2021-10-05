@@ -21,7 +21,8 @@ import { ACTION_TRIGGER, type MediaState, MEDIA_STATE } from '../../constants';
 import {
     getParticipantAudioMediaState,
     getParticipantVideoMediaState,
-    getQuickActionButtonType
+    getQuickActionButtonType,
+    isTodayParticipantBirthday
 } from '../../functions';
 import ParticipantQuickAction from '../ParticipantQuickAction';
 
@@ -39,6 +40,11 @@ type Props = {
      * The audio track related to the participant.
      */
     _audioTrack: ?Object,
+
+    /**
+     * Boolean value that denotes whether or not today is participant's birthday
+     */
+    _isParticipantBirthday: Boolean,
 
     /**
      * Media state for video.
@@ -150,6 +156,7 @@ type Props = {
 function MeetingParticipantItem({
     _audioMediaState,
     _audioTrack,
+    _isParticipantBirthday,
     _videoMediaState,
     _displayName,
     _local,
@@ -206,6 +213,7 @@ function MeetingParticipantItem({
         <ParticipantItem
             actionsTrigger = { ACTION_TRIGGER.HOVER }
             audioMediaState = { audioMediaState }
+            isParticipantBirthday = { _isParticipantBirthday }
             displayName = { _displayName }
             isHighlighted = { isHighlighted }
             isModerator = { isParticipantModerator(_participant) }
@@ -261,7 +269,7 @@ function _mapStateToProps(state, ownProps): Object {
     const _audioMediaState = getParticipantAudioMediaState(participant, _isAudioMuted, state);
     const _videoMediaState = getParticipantVideoMediaState(participant, _isVideoMuted, state);
     const _quickActionButtonType = getQuickActionButtonType(participant, _isAudioMuted, state);
-
+    const isParticipantBirthday = isTodayParticipantBirthday(participant);
     const tracks = state['features/base/tracks'];
     const _audioTrack = participantID === localParticipantId
         ? getLocalAudioTrack(tracks) : getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.AUDIO, participantID);
@@ -276,6 +284,7 @@ function _mapStateToProps(state, ownProps): Object {
         _participant: participant,
         _participantID: participant?.id,
         _quickActionButtonType,
+        _isParticipantBirthday: isParticipantBirthday,
         _raisedHand: Boolean(participant?.raisedHand)
     };
 }

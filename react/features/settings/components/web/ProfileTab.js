@@ -134,9 +134,14 @@ class ProfileTab extends AbstractDialogTab<Props> {
             authEnabled,
             displayName,
             email,
-            birthDate,
             t
         } = this.props;
+
+        let showFootNote = false;
+
+        if(this.state.birthdate === DEFAULT_BIRTHDATE) {
+            showFootNote = true;
+        }
 
         return (
             <div>
@@ -177,6 +182,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
                         />
                     </div>
                 </div>
+                { showFootNote && this._renderFootNote() }
                 { authEnabled && this._renderAuth() }
             </div>
         );
@@ -203,6 +209,15 @@ class ProfileTab extends AbstractDialogTab<Props> {
 
             APP.UI.emitEvent(UIEvents.AUTH_CLICKED);
         }
+    }
+
+    _renderFootNote() {
+        const { t } = this.props;
+        return(
+            <span className='birthday-footnote'>
+                { t('profile.birthDayFootNote') } 
+            </span>
+        );
     }
 
     /**

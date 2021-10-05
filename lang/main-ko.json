@@ -860,7 +860,8 @@
         "setDisplayNameLabel": "이름 설정",
         "setEmailInput": "이메일 입력",
         "setEmailLabel": "이메일 설정",
-        "title": "프로필"
+        "title": "프로필",
+        "birthDayFootNote": "1980-01-01은 기본 생년월일이며 수동으로 변경하지 않는 한 경우에 AR 모자를 사용되지 않습니다."
     },
     "raisedHand": "말하기 요청",
     "recording": {

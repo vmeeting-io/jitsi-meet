@@ -18,6 +18,7 @@ import { getBackendSafePath, getJitsiMeetGlobalNS, safeDecodeURIComponent } from
 import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
+    BIRTHDATE_COMMAND,
     JITSI_CONFERENCE_URL_KEY
 } from './constants';
 import logger from './logger';
@@ -411,6 +412,7 @@ export function sendLocalParticipant(
     const {
         avatarURL,
         email,
+        birthDate,
         features,
         name
     } = getLocalParticipant(stateful);
@@ -420,6 +422,11 @@ export function sendLocalParticipant(
     });
     email && conference.sendCommand(EMAIL_COMMAND, {
         value: email
+    });
+    
+    // code block for sending birthDate info about local participant
+    birthDate && conference.sendCommand(BIRTHDATE_COMMAND, {
+        value: birthDate
     });
 
     if (features && features['screen-sharing'] === 'true') {

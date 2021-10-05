@@ -880,7 +880,8 @@
         "setDisplayNameLabel": "Set your display name",
         "setEmailInput": "Enter e-mail",
         "setEmailLabel": "Set your email",
-        "title": "Profile"
+        "title": "Profile",
+        "birthDayFootNote": "*1980-01-01 is the default birth date and is not used for AR hat unless changed manually."
     },
     "raisedHand": "Would like to speak",
     "recording": {

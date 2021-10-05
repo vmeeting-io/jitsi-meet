@@ -438,7 +438,8 @@ function _localParticipantJoined({ getState, dispatch }, next, action) {
     dispatch(localParticipantJoined({
         avatarURL: settings.avatarURL,
         email: settings.email,
-        name: settings.displayName
+        name: settings.displayName,
+        birthDate: settings.birthDate // added birthDate field to local participant retrieved from settings
     }));
 
     return result;

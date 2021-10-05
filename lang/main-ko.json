@@ -723,6 +723,8 @@
         "timerTitle": "타이머 설정",
         "timerInitiatedBy": "{{initiator}}님에 의해 타이머가 시작되었습니다.",
         "timerFinishedBy": "{{initiator}}님에 의해 타이머가 해제되었습니다.",
+        "birthdayHatOn": "{{initiator}}님이 {{participant}}님에게 생일모자을 적용했습니다.",
+        "birthdayHatOnTitle": "생일 모자 AR",
         "groupTitle": "알림"
     },
     "participantsPane": {

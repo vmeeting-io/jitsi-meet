@@ -14,6 +14,7 @@ import {
 } from '../../constants';
 
 import { RaisedHandIndicator } from './RaisedHandIndicator';
+import { BirthdayIndicator } from './BirthdayIndicator';
 import {
     ModeratorLabel,
     ParticipantActionsHover,
@@ -168,6 +169,7 @@ function ParticipantItem({
                 </ParticipantDetailsContainer>
                 { !local && <ParticipantActions children = { children } /> }
                 <ParticipantStates>
+                    { true && <BirthdayIndicator /> } {/* TODO-ANIS: */}
                     { raisedHand && <RaisedHandIndicator /> }
                     { VideoStateIcons[videoMediaState] }
                     { AudioStateIcons[audioMediaState] }

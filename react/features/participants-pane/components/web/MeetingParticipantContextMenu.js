@@ -2,12 +2,14 @@
 import { withStyles } from '@material-ui/core/styles';
 import React, { Component } from 'react';
 
+import { arApprovalDialog, enableARHat } from '../../../ar-effect';
 import { Avatar } from '../../../base/avatar';
 import { isToolbarButtonEnabled } from '../../../base/config/functions.web';
 import { openDialog } from '../../../base/dialog';
 import { isIosMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import {
+    IconBirthdayHat,
     IconCloseCircle,
     IconCrown,
     IconMeetingUnlocked,
@@ -19,6 +21,7 @@ import {
 } from '../../../base/icons';
 import {
     getLocalParticipant,
+    getLocalParticipantDisplayName,
     getParticipantByIdOrUndefined,
     isLocalParticipantModerator,
     isParticipantModerator
@@ -35,6 +38,7 @@ import { GrantModeratorDialog, KickRemoteParticipantDialog, MuteEveryoneDialog }
 import { VolumeSlider } from '../../../video-menu/components/web';
 import MuteRemoteParticipantsVideoDialog from '../../../video-menu/components/web/MuteRemoteParticipantsVideoDialog';
 import { getComputedOuterHeight } from '../../functions';
+import BirthdayHatApprove from '../../../ar-effect/components/BirthdayHatApprove';
 
 import {
     ContextMenu,
@@ -43,6 +47,7 @@ import {
     ContextMenuItemGroup,
     ignoredChildClassName
 } from './styled';
+import { notifyBirthdayHatOn } from '../../actions.any';
 
 type Props = {
 
@@ -215,6 +220,8 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
         this._onSendToRoom = this._onSendToRoom.bind(this);
         this._position = this._position.bind(this);
         this._onVolumeChange = this._onVolumeChange.bind(this);
+        this._onBirthdayHatOn = this._onBirthdayHatOn.bind(this);
+        this._onBirthdayHatOff = this._onBirthdayHatOff.bind(this);
     }
 
     _getCurrentParticipantId: () => string;
@@ -254,6 +261,27 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
         this.props.dispatch(openDialog(KickRemoteParticipantDialog, {
             participantID: this._getCurrentParticipantId()
         }));
+    }
+
+    /**
+     * 
+     * Put a birthday hat on the participant.
+     * 
+     * @returns {void}
+     */
+    _onBirthdayHatOn(){
+        notifyBirthdayHatOn(getLocalParticipant(APP.store.getState()).name,this._getCurrentParticipantId());
+    }
+    
+    /**
+     * 
+     * Put birthday hat off the participant.
+     * 
+     * @returns {void}
+     */
+    _onBirthdayHatOff(){
+        this.props.dispatch(arApprovalDialog(false));
+        enableARHat(this.props.dispatch,false); 
     }
 
     _onStopSharedVideo: () => void;
@@ -487,6 +515,21 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                     </>
                             )
                         }
+                            
+                        {
+                            !Boolean(APP.store.getState()['features/ar-effect'].arEffectEnabled) && <ContextMenuItem onClick = { this._onBirthdayHatOn }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ "Birthday Hat" }</span>
+                            </ContextMenuItem>
+                        }
+                        
+                        {
+                            Boolean(APP.store.getState()['features/ar-effect'].arEffectEnabled) && <ContextMenuItem onClick = { this._onBirthdayHatOff }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ "Remove Birthday Hat" }</span>
+                            </ContextMenuItem>
+                        }
+
                         {
                             _isChatButtonEnabled && (
                                 <ContextMenuItem onClick = { this._onSendPrivateMessage }>

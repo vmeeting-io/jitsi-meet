@@ -18,7 +18,7 @@ import tokenLocalStorage from '../../../../api/tokenLocalStorage';
 import { DatePicker } from '@atlaskit/datetime-picker';
 import { Label } from '@atlaskit/field-base';
 
-import { getTodaysDate } from '../../functions';
+import { DEFAULT_BIRTHDATE } from '../../../base/participants/constants';
 
 declare var APP: Object;
 
@@ -68,7 +68,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
     static defaultProps = {
         displayName: '',
         email: '',
-        birthDate: getTodaysDate()
+        birthDate: DEFAULT_BIRTHDATE
     };
 
     /**

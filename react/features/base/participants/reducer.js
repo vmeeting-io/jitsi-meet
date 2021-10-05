@@ -490,6 +490,8 @@ function _participantJoined({ participant }) {
         name,
         pinned: pinned || false,
         presence,
+        // we set undefined here for the birthDate here, 
+        // because this assumes the default date, 1980-01-01, and we don't want to propagate it
         birthDate: birthDate || undefined,
         role: role || PARTICIPANT_ROLE.NONE
     };

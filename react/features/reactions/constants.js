@@ -30,6 +30,16 @@ export const REACTIONS = {
         message: ':party_popper:',
         emoji: '🎉',
         shortcutChar: 'P'
+    },
+    silence: {
+        message: ':shushing_face:',
+        emoji:  '🤫',
+        shortcutChar: 'S'
+    },
+    birthday: {
+        message: ':partying_face:',
+        emoji: '🥳',
+        shortcutChar: 'P'
     }
 };
 

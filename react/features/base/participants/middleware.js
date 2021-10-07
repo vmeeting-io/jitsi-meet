@@ -111,6 +111,22 @@ MiddlewareRegistry.register(store => next => action => {
 
             // 내가 방장이면 자동으로 레코딩이 시작되도록...
             const conference = getCurrentConference(state);
+
+            // code portion to show notification about own birthday when joining conference.
+            const bDate = participant.birthDate;
+            if(bDate) {
+                const hasBirthday = isTodayParticipantBirthday(participant);
+                if(hasBirthday) {
+                    // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
+                    store.dispatch(showNotification({
+                        descriptionArguments: { bParticipant: participant.name},
+                        descriptionKey: 'notify.birthDayAlertMessage',
+                        titleKey: 'notify.birthDayAlert'
+                    },
+                    5000))
+                }
+            }
+
             if (conference && isHost && !isRecording(state) && autoRecord) {
                 recorder_user = state['features/base/jwt'].user;
                 conference.startRecording({
@@ -255,18 +271,22 @@ MiddlewareRegistry.register(store => next => action => {
     }
 
     case PARTICIPANT_JOINED: {
-        const { conference } = store.getState()['features/base/conference'];
-        if(conference !== undefined) {
-            const participant = action.participant;
-            const bDate = participant.birthDate;
+        const participant = action.participant;
+        const bDate = participant.birthDate;
 
-            if(bDate) {
-                const hasBirthday = isTodayParticipantBirthday(participant);
-                if(hasBirthday) {
-                    conference.showBirthdayNotification('showalert', participant.name);
-                }
+        if(bDate) {
+            const hasBirthday = isTodayParticipantBirthday(participant);
+            if(hasBirthday) {
+                // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
+                store.dispatch(showNotification({
+                    descriptionArguments: { bParticipant: participant.name},
+                    descriptionKey: 'notify.birthDayAlertMessage',
+                    titleKey: 'notify.birthDayAlert'
+                },
+                5000))
             }
         }
+
         _maybePlaySounds(store, action);
         const result = _participantJoinedOrUpdated(store, next, action);
         return result;

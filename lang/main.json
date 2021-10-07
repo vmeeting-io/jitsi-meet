@@ -713,7 +713,7 @@
         "timerInitiatedBy": "The timer has been started by {{initiator}}.",
         "timerFinishedBy": "The timer has been stopped by {{initiator}}.",
         "birthDayAlert": "Birthday Alert",
-        "birthDayAlertMessage": "Today is the birthday of {{bParticipant}}",
+        "birthDayAlertMessage": "Happy Birthday {{bParticipant}}",
         "birthdayHatOn": "{{initiator}} has applied a birthday hat to {{participant}}.",
         "birthdayHatOnTitle": "AR Birthday Hat",
         "unmute": "Unmute",
@@ -768,7 +768,7 @@
             "startRandomSelection": "Random Selection",
             "startTimerLabel": "Timer",
             "stopTimer": "Stop Timer",
-            "stopEveryonesVideo": "Mute everyone's video",
+            "stopEveryonesVideo": "Disable everyone's video",
             "stopVideo": "Disable video",
             "unblockEveryoneMicCamera": "Unblock everyone's mic and camera"
         }

@@ -434,6 +434,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
             _currentRoomId,
             _isLocalModerator,
             _isChatButtonEnabled,
+            _isHatOn,
             _isParticipantBirthday,
             _isParticipantModerator,
             _isParticipantVideoMuted,
@@ -524,7 +525,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                         }
                             
                         {
-                            _isParticipantBirthday && !Boolean(APP.store.getState()['features/ar-effect'].arEffectEnabled) && <ContextMenuItem onClick = { this._onBirthdayHatOn }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
+                            _isParticipantBirthday && !_isHatOn && <ContextMenuItem onClick = { this._onBirthdayHatOn }>
                             <ContextMenuIcon src = { IconBirthdayHat } />
                                 <span>{ "Birthday Hat" }</span>
                             </ContextMenuItem>
@@ -541,10 +542,19 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                     </ContextMenuItemGroup>}
                     
                     {!isRemote && <ContextMenuItemGroup>
+                        {/* Code portion to self-remove AR hat */}
                         {
-                            _isParticipantBirthday && Boolean(APP.store.getState()['features/ar-effect'].arEffectEnabled) && <ContextMenuItem onClick = { this._onBirthdayHatOff }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
+                            _isParticipantBirthday && _isHatOn && <ContextMenuItem onClick = { this._onBirthdayHatOff }>
                             <ContextMenuIcon src = { IconBirthdayHat } />
                                 <span>{ "Remove Birthday Hat" }</span>
+                            </ContextMenuItem>
+                        }
+
+                        {/* Code portion to self-apply AR hat */}
+                        {
+                            _isParticipantBirthday && !_isHatOn && <ContextMenuItem onClick = { this._onBirthdayHatOn }>
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ "Birthday Hat" }</span>
                             </ContextMenuItem>
                         }
                     </ContextMenuItemGroup>}
@@ -626,6 +636,7 @@ function _mapStateToProps(state, ownProps): Object {
     const participant = getParticipantByIdOrUndefined(state,
         overflowDrawer ? drawerParticipant?.participantID : participantID);
 
+    const isHatOn = Boolean(state['features/ar-effect'].arEffectEnabled);
     const _currentRoomId = getCurrentRoomId(state);
     const _isLocalModerator = isLocalParticipantModerator(state);
     const _isChatButtonEnabled = isToolbarButtonEnabled('chat', state);
@@ -649,6 +660,7 @@ function _mapStateToProps(state, ownProps): Object {
         _localVideoOwner: Boolean(ownerId === localParticipantId),
         _participant: participant,
         _isParticipantBirthday,
+        _isHatOn: isHatOn,
         _rooms,
         _volume: isLocal ? undefined : id ? participantsVolume[id] : undefined
     };

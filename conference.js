@@ -2353,6 +2353,16 @@ export default {
         room.on(JitsiConferenceEvents.PIN_RANDOM_PARTICIPANT,
             randomSelectedID => {
                 APP.store.dispatch(pinParticipant(randomSelectedID));
+            });
+
+        room.on(JitsiConferenceEvents.SHOW_BIRTHDAY_ALERT,
+            bParticipant => {
+                APP.store.dispatch(showNotification({
+                    descriptionArguments: { bParticipant: bParticipant},
+                    descriptionKey: 'notify.birthDayAlertMessage',
+                    titleKey: 'notify.birthDayAlert'
+                },
+                5000))
             })
 
 

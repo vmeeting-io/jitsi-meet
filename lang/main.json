@@ -712,6 +712,8 @@
         "timerTitle": "Timer Setting",
         "timerInitiatedBy": "The timer has been started by {{initiator}}.",
         "timerFinishedBy": "The timer has been stopped by {{initiator}}.",
+        "birthDayAlert": "Birthday Alert",
+        "birthDayAlertMessage": "Today is the birthday of {{bParticipant}}",
         "birthdayHatOn": "{{initiator}} has applied a birthday hat to {{participant}}.",
         "birthdayHatOnTitle": "AR Birthday Hat",
         "unmute": "Unmute",

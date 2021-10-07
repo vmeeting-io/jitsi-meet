@@ -215,7 +215,7 @@ export const shouldRenderInviteButton = (state: Object) => {
  * @returns {boolean} true if participant's birthday is today, else returns false
  */
 export function isTodayParticipantBirthday(participant: Object) {
-    let birthDate = participant.birthDate
+    let birthDate = participant.birthDate;
     if(birthDate === undefined) {
         return false;
     }

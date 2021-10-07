@@ -100,6 +100,7 @@ export function commonUserJoinedHandling(
             name: displayName,
             presence: user.getStatus(),
             role: user.getRole(),
+            birthDate: user.getbDate(),
             isReplacing
         }));
     }

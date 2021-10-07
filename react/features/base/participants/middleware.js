@@ -7,7 +7,7 @@ import UIEvents from '../../../../service/UI/UIEvents';
 import { approveParticipant } from '../../av-moderation/actions';
 import { toggleE2EE } from '../../e2ee/actions';
 import { NOTIFICATION_TIMEOUT, showNotification } from '../../notifications';
-import { isForceMuted } from '../../participants-pane/functions';
+import { isForceMuted, isTodayParticipantBirthday } from '../../participants-pane/functions';
 import { CALLING, INVITED } from '../../presence-status';
 import { RAISE_HAND_SOUND_ID } from '../../reactions/constants';
 import { isRecording } from '../../recording';
@@ -255,6 +255,18 @@ MiddlewareRegistry.register(store => next => action => {
     }
 
     case PARTICIPANT_JOINED: {
+        const { conference } = store.getState()['features/base/conference'];
+        if(conference !== undefined) {
+            const participant = action.participant;
+            const bDate = participant.birthDate;
+
+            if(bDate) {
+                const hasBirthday = isTodayParticipantBirthday(participant);
+                if(hasBirthday) {
+                    conference.showBirthdayNotification('showalert', participant.name);
+                }
+            }
+        }
         _maybePlaySounds(store, action);
         const result = _participantJoinedOrUpdated(store, next, action);
         return result;

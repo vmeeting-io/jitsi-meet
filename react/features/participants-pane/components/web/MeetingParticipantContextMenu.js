@@ -461,7 +461,8 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
               && overflowDrawer
               && typeof _volume === 'number'
               && !isNaN(_volume);
-
+        const isRemote = !(APP.store.getState()["features/base/participants"].local.id == _participant?.id);
+    
         const actions
             = _participant?.isFakeParticipant ? (
                 <>
@@ -474,7 +475,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                 </>
             ) : (
                 <>
-                    {_isLocalModerator && (
+                    {_isLocalModerator && isRemote && (
                         <ContextMenuItemGroup>
                             <>
                                 {
@@ -502,7 +503,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                         </ContextMenuItemGroup>
                     )}
 
-                    <ContextMenuItemGroup>
+                    { isRemote && <ContextMenuItemGroup>
                         {
                             _isLocalModerator && (
                                     <>
@@ -530,13 +531,6 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                         }
                         
                         {
-                            _isParticipantBirthday && Boolean(APP.store.getState()['features/ar-effect'].arEffectEnabled) && <ContextMenuItem onClick = { this._onBirthdayHatOff }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
-                            <ContextMenuIcon src = { IconBirthdayHat } />
-                                <span>{ "Remove Birthday Hat" }</span>
-                            </ContextMenuItem>
-                        }
-
-                        {
                             _isChatButtonEnabled && (
                                 <ContextMenuItem onClick = { this._onSendPrivateMessage }>
                                     <ContextMenuIcon src = { IconMessage } />
@@ -544,7 +538,17 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                 </ContextMenuItem>
                             )
                         }
-                    </ContextMenuItemGroup>
+                    </ContextMenuItemGroup>}
+                    
+                    {!isRemote && <ContextMenuItemGroup>
+                        {
+                            _isParticipantBirthday && Boolean(APP.store.getState()['features/ar-effect'].arEffectEnabled) && <ContextMenuItem onClick = { this._onBirthdayHatOff }> {/* TODO-ANIS: Set show/hide based on variable in redux store */}
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ "Remove Birthday Hat" }</span>
+                            </ContextMenuItem>
+                        }
+                    </ContextMenuItemGroup>}
+
                     { showVolumeSlider
                         && <ContextMenuItemGroup>
                             <VolumeSlider

@@ -173,7 +173,7 @@ function ParticipantItem({
                         {t('videothumbnail.moderator')}
                     </ModeratorLabel>}
                 </ParticipantDetailsContainer>
-                { !local && <ParticipantActions children = { children } /> }
+                { <ParticipantActions children = { children } /> }
                 <ParticipantStates>
                     { isParticipantBirthday && <BirthdayIndicator /> }
                     { raisedHand && <RaisedHandIndicator /> }

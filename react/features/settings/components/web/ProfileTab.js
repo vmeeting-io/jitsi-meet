@@ -138,6 +138,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
         } = this.props;
 
         let showFootNote = false;
+        let userLoggedIn = tokenLocalStorage.getItem(APP.store.getState());
 
         if(this.state.birthdate === DEFAULT_BIRTHDATE) {
             showFootNote = true;
@@ -171,7 +172,8 @@ class ProfileTab extends AbstractDialogTab<Props> {
                     </div>
                 </div>
 
-                <div className = 'birthday-edit'>
+                {/* display the date picker field and corresponding footnote only if the user has logged in */}
+                { userLoggedIn && <div className = 'birthday-edit'>
                     <div className = 'birthday-edit-field'>
                         <Label label = "Birthday" />
                         <DatePicker
@@ -181,8 +183,8 @@ class ProfileTab extends AbstractDialogTab<Props> {
                             onChange = { this._onBirthDateChange }
                         />
                     </div>
-                </div>
-                { showFootNote && this._renderFootNote() }
+                </div> }
+                { userLoggedIn && showFootNote && this._renderFootNote() }
                 { authEnabled && this._renderAuth() }
             </div>
         );

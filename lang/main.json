@@ -680,6 +680,8 @@
         "focus": "Conference focus",
         "focusFail": "{{component}} not available - retry in {{ms}} sec",
         "hostAskedUnmute": "The moderator would like you to speak",
+        "invalidTimer": "Invalid Timer Settings",
+        "invalidTimerDescription": "Please add minutes or seconds before starting the timer",
         "invitedOneMember": "{{name}} has been invited",
         "invitedThreePlusMembers": "{{name}} and {{count}} others have been invited",
         "invitedTwoMembers": "{{first}} and {{second}} have been invited",

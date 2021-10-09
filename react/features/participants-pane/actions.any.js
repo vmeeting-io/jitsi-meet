@@ -11,6 +11,9 @@ import {
     getRemoteParticipants
 } from '../base/participants';
 
+import { COMMAND_TIMER_END_TIME
+} from './constants';
+
 /**
  * Action to close the participants pane.
  *
@@ -49,6 +52,13 @@ export const notifyRandomSelectionStarted = (initiator) => {
     const state = APP.store.getState();
     const { conference } = state['features/base/conference'];
     conference.startTimer(initiator,endUNIXTime);
+    
+    // Send message to XMPP module
+    conference.sendMessage({
+        type: COMMAND_TIMER_END_TIME,
+        timerEndTime: endUNIXTime,
+        senderName: initiator
+    });
 };
 
 /**

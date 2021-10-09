@@ -310,9 +310,9 @@ class Toolbox extends Component<Props, State> {
      * @returns {void}
      */
     componentDidMount() {
-        const { _disableShortcut, _toolbarButtons, t, dispatch, _reactionsEnabled, _participantCount } = this.props;
+        const { _disableShortcuts, _toolbarButtons, t, dispatch, _reactionsEnabled, _participantCount } = this.props;
 
-        if (_disableShortcut) {
+        if (_disableShortcuts) {
             return;
         }
 
@@ -844,7 +844,6 @@ class Toolbox extends Component<Props, State> {
             etherpad,
             virtualBackground,
             speakerStats,
-            arFeature,
             settings,
             shortcuts,
             embed,
@@ -1360,6 +1359,7 @@ function _mapStateToProps(state, ownProps) {
     const {
         callStatsID,
         disableProfile,
+        disableShortcuts,
         enableFeaturesBasedOnToken,
         buttonsWithNotifyClick
     } = state['features/base/config'];
@@ -1401,6 +1401,7 @@ function _mapStateToProps(state, ownProps) {
         _desktopSharingEnabled: desktopSharingEnabled,
         _desktopSharingDisabledTooltipKey: desktopSharingDisabledTooltipKey,
         _dialog: Boolean(state['features/base/dialog'].component),
+        _disableShortcuts: Boolean(disableShortcuts),
         _feedbackConfigured: Boolean(callStatsID),
         _fullScreen: fullScreen,
         _isProfileDisabled: Boolean(disableProfile),

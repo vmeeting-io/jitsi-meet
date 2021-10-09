@@ -45,13 +45,13 @@
     background-color: $newToolbarBackgroundColor;
     // border: 1px solid rgba(255, 255, 255, .4);
     border-radius: 8px;
-    left: 0;
+    left: 5px;
     margin: 20px;
     max-height: 600px;
     overflow: hidden;
     overflow-y: auto;
     position: fixed;
-    top: 30px;
+    top: 45px;
     z-index: $toolbarZ + 1;
 
     &:empty {
@@ -89,6 +89,16 @@
 
         &.borderLess {
             background-color: transparent;
+            border-width: 0;
+        }
+
+        &.reject {
+            background-color: #dd3849;
+            border-width: 0;
+        }
+        
+        &.accept {
+            background-color: #1ec26a;
             border-width: 0;
         }
 

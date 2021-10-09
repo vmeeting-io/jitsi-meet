@@ -23,13 +23,14 @@ const DEFAULT_STATE = {
     disableP2P: undefined,
     displayName: undefined,
     email: undefined,
+    birthDate: undefined,
     localFlipX: true,
     micDeviceId: undefined,
     serverURL: 'https://vmeeting.io',
     hideShareAudioHelper: false,
-    soundsIncomingMessage: true,
-    soundsParticipantJoined: true,
-    soundsParticipantLeft: true,
+    soundsIncomingMessage: false,
+    soundsParticipantJoined: false,
+    soundsParticipantLeft: false,
     soundsTalkWhileMuted: true,
     soundsReactions: false,
     startAudioOnly: false,
@@ -62,6 +63,9 @@ filterSubtree.audioOutputDeviceId = false;
 filterSubtree.cameraDeviceId = false;
 filterSubtree.micDeviceId = false;
 filterSubtree.soundsReactions = false;
+filterSubtree.soundsIncomingMessage = false;
+filterSubtree.soundsParticipantJoined = false;
+filterSubtree.soundsParticipantLeft = false;
 
 PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
 

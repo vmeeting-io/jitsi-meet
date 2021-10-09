@@ -7,6 +7,11 @@ export default {
     EMAIL_CHANGED: 'UI.email_changed',
 
     /**
+     * Notifies that local user changed birthDate.
+     */
+    BIRTHDATE_CHANGED: 'UI_birthdate_changed',
+
+    /**
      * Notifies that "start muted" settings changed.
      */
     AUDIO_MUTED: 'UI.audio_muted',

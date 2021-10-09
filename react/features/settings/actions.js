@@ -173,6 +173,21 @@ export function submitProfileTab(newState: Object): Function {
 
             }
             
+            // patching changes to the birthdate information
+            if (newState.birthdate !== currentState.birthdate) {
+                APP.conference.changeBirthDate(newState.birthdate)
+                try {
+                    axios.patch(`${_apiBase}/account`, { birthDate: String(newState.birthdate) }, config).then((resp) => {
+                        const token = resp.data;
+                        tokenLocalStorage.setItem(token, APP.store.getState());
+                        // update the JWT token when birthday information is updated
+                        dispatch(setJWT(resp.data));
+                    });
+                } catch(err) {
+                    console.log(err);
+                }
+            }
+            
             // previously hideDialog was called on every onSubmit Button, but here we check the above condition
             // and only dispatch hideDialog if there is a value set for profile name
             dispatch(hideDialog());

@@ -46,6 +46,18 @@ export const notifyRandomSelectionStarted = (initiator) => {
 };
 
 /**
+ * 
+ * @param {string} initiator Person to put hat on the participant. 
+ * @param {string} remoteParticipantIDs Id of the remote participant to
+ * wear birthday hat. 
+ */
+ export const notifyBirthdayHatOn = (initiator,remoteParticipantID) => {
+    const state = APP.store.getState();
+    const { conference } = state['features/base/conference'];
+    conference.notifyBirthdayHatOn(initiator,remoteParticipantID);
+};
+
+/**
  * Action to display notification for stopping timer
  */
  export const notifyTimerStarted = (initiator,endUNIXTime) => {

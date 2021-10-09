@@ -14,6 +14,7 @@ import {
 } from '../../constants';
 
 import { RaisedHandIndicator } from './RaisedHandIndicator';
+import { BirthdayIndicator } from './BirthdayIndicator';
 import {
     ModeratorLabel,
     ParticipantActionsHover,
@@ -45,6 +46,11 @@ type Props = {
      * Media state for audio
      */
     audioMediaState?: MediaState,
+
+    /**
+     * Whether or not today is meeting participant's birthday
+     */
+    isParticipantBirthday: Boolean,
 
     /**
      * React children
@@ -119,6 +125,7 @@ type Props = {
  * @returns {ReactNode}
  */
 function ParticipantItem({
+    isParticipantBirthday,
     children,
     isHighlighted,
     isModerator,
@@ -166,8 +173,9 @@ function ParticipantItem({
                         {t('videothumbnail.moderator')}
                     </ModeratorLabel>}
                 </ParticipantDetailsContainer>
-                { !local && <ParticipantActions children = { children } /> }
+                { <ParticipantActions children = { children } /> }
                 <ParticipantStates>
+                    { isParticipantBirthday && <BirthdayIndicator /> }
                     { raisedHand && <RaisedHandIndicator /> }
                     { VideoStateIcons[videoMediaState] }
                     { AudioStateIcons[audioMediaState] }

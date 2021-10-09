@@ -680,6 +680,8 @@
         "focus": "Conference focus",
         "focusFail": "{{component}} not available - retry in {{ms}} sec",
         "hostAskedUnmute": "The moderator would like you to speak",
+        "invalidTimer": "Invalid Timer Settings",
+        "invalidTimerDescription": "Please add minutes or seconds before starting the timer",
         "invitedOneMember": "{{name}} has been invited",
         "invitedThreePlusMembers": "{{name}} and {{count}} others have been invited",
         "invitedTwoMembers": "{{first}} and {{second}} have been invited",
@@ -712,6 +714,10 @@
         "timerTitle": "Timer Setting",
         "timerInitiatedBy": "The timer has been started by {{initiator}}.",
         "timerFinishedBy": "The timer has been stopped by {{initiator}}.",
+        "birthDayAlert": "Birthday Alert",
+        "birthDayAlertMessage": "Happy Birthday {{bParticipant}}",
+        "birthdayHatOn": "{{initiator}} has applied a birthday hat to {{participant}}.",
+        "birthdayHatOnTitle": "AR Birthday Hat",
         "unmute": "Unmute",
         "unmuteByHost": "Host would like you unmute.",
         "unmuteVideoByHost": "Host would like you unmute video.",
@@ -764,7 +770,7 @@
             "startRandomSelection": "Random Selection",
             "startTimerLabel": "Timer",
             "stopTimer": "Stop Timer",
-            "stopEveryonesVideo": "Mute everyone's video",
+            "stopEveryonesVideo": "Disable everyone's video",
             "stopVideo": "Disable video",
             "unblockEveryoneMicCamera": "Unblock everyone's mic and camera"
         }
@@ -878,7 +884,8 @@
         "setDisplayNameLabel": "Set your display name",
         "setEmailInput": "Enter e-mail",
         "setEmailLabel": "Set your email",
-        "title": "Profile"
+        "title": "Profile",
+        "birthDayFootNote": "*1980-01-01 is the default birth date and is not used for AR hat unless changed manually."
     },
     "raisedHand": "Would like to speak",
     "recording": {

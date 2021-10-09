@@ -7,7 +7,7 @@ import UIEvents from '../../../../service/UI/UIEvents';
 import { approveParticipant } from '../../av-moderation/actions';
 import { toggleE2EE } from '../../e2ee/actions';
 import { NOTIFICATION_TIMEOUT, showNotification } from '../../notifications';
-import { isForceMuted } from '../../participants-pane/functions';
+import { isForceMuted, isTodayParticipantBirthday } from '../../participants-pane/functions';
 import { CALLING, INVITED } from '../../presence-status';
 import { RAISE_HAND_SOUND_ID } from '../../reactions/constants';
 import { isRecording } from '../../recording';
@@ -111,6 +111,22 @@ MiddlewareRegistry.register(store => next => action => {
 
             // 내가 방장이면 자동으로 레코딩이 시작되도록...
             const conference = getCurrentConference(state);
+
+            // code portion to show notification about own birthday when joining conference.
+            const bDate = participant.birthDate;
+            if(bDate) {
+                const hasBirthday = isTodayParticipantBirthday(participant);
+                if(hasBirthday) {
+                    // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
+                    store.dispatch(showNotification({
+                        descriptionArguments: { bParticipant: participant.name},
+                        descriptionKey: 'notify.birthDayAlertMessage',
+                        titleKey: 'notify.birthDayAlert'
+                    },
+                    5000))
+                }
+            }
+
             if (conference && isHost && !isRecording(state) && autoRecord) {
                 recorder_user = state['features/base/jwt'].user;
                 conference.startRecording({
@@ -255,6 +271,22 @@ MiddlewareRegistry.register(store => next => action => {
     }
 
     case PARTICIPANT_JOINED: {
+        const participant = action.participant;
+        const bDate = participant.birthDate;
+
+        if(bDate) {
+            const hasBirthday = isTodayParticipantBirthday(participant);
+            if(hasBirthday) {
+                // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
+                store.dispatch(showNotification({
+                    descriptionArguments: { bParticipant: participant.name},
+                    descriptionKey: 'notify.birthDayAlertMessage',
+                    titleKey: 'notify.birthDayAlert'
+                },
+                5000))
+            }
+        }
+
         _maybePlaySounds(store, action);
         const result = _participantJoinedOrUpdated(store, next, action);
         return result;
@@ -438,7 +470,8 @@ function _localParticipantJoined({ getState, dispatch }, next, action) {
     dispatch(localParticipantJoined({
         avatarURL: settings.avatarURL,
         email: settings.email,
-        name: settings.displayName
+        name: settings.displayName,
+        birthDate: settings.birthDate // added birthDate field to local participant retrieved from settings
     }));
 
     return result;

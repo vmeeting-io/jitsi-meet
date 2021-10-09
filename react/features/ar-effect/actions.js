@@ -1,7 +1,7 @@
 // @flow
 import { createAREffect } from '../stream-effects/ar-effect';
 
-import { AR_ENABLED, SET_AR } from './actionTypes';
+import { AR_ENABLED, SET_AR, AR_APPROVAL_DIALOG } from './actionTypes';
 import logger from './logger';
 
 /**
@@ -67,3 +67,20 @@ export function arEnabled(arEffectEnabled: boolean) {
         arEffectEnabled
     };
 }
+
+/**
+ * Signals the local participant to display AR Approval Dialog.
+ *
+ * @param {boolean} arApprovalDialog - Indicate if AR approval dialog is enabled.
+ * @returns {{
+ *      type: AR_APPROVAL_DIALOG,
+ *      arApprovalDialog: boolean
+ * }}
+ */
+export function arApprovalDialog(arApprovalDialog: boolean) {
+    return {
+        type: AR_APPROVAL_DIALOG,
+        arApprovalDialog
+    };
+}
+

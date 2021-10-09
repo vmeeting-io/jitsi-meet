@@ -24,6 +24,8 @@ export { default as IconAudioOnlyOff } from './visibility-off.svg';
 export { default as IconAudioRoute } from './volume.svg';
 export { default as IconPlusCalendar } from './calendar-plus.svg';
 export { default as IconPlusCircle } from './plus-circle.svg';
+export { default as IconBirthdayCake } from './birthday-cake.svg';
+export { default as IconBirthdayHat } from './birthday-hat.svg';
 export { default as IconBlurBackground } from './blur-background.svg';
 export { default as IconCamera } from './camera.svg';
 export { default as IconCameraDisabled } from './camera-disabled.svg';

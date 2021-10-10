@@ -1031,6 +1031,7 @@
         "accessibilityLabel": {
             "audioOnly": "Toggle audio only",
             "audioRoute": "Select the sound device",
+            "birthday": "Congrats",
             "boo": "Boo",
             "breakoutRoom": "Join/leave breakout room",
             "callQuality": "Manage video quality",
@@ -1107,6 +1108,7 @@
         "audioOnlyOn": "Enable low bandwidth mode",
         "audioRoute": "Select the sound device",
         "authenticate": "Authenticate",
+        "birthday": "Congrats",
         "boo": "Boo",
         "callQuality": "Manage video quality",
         "chat": "Open / Close chat",

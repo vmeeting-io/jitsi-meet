@@ -525,9 +525,9 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                         }
                             
                         {
-                            _isParticipantBirthday && !_isHatOn && <ContextMenuItem onClick = { this._onBirthdayHatOn }>
+                            _isParticipantBirthday && config.enableBirthdayARHat && !_isHatOn && <ContextMenuItem onClick = { this._onBirthdayHatOn }>
                             <ContextMenuIcon src = { IconBirthdayHat } />
-                                <span>{ "Birthday Hat" }</span>
+                                <span>{ t('participantsPane.actions.applyBirthdayARHat') }</span>
                             </ContextMenuItem>
                         }
                         
@@ -544,17 +544,17 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                     {!isRemote && <ContextMenuItemGroup>
                         {/* Code portion to self-remove AR hat */}
                         {
-                            _isParticipantBirthday && _isHatOn && <ContextMenuItem onClick = { this._onBirthdayHatOff }>
+                            _isParticipantBirthday && _isHatOn && config.enableBirthdayARHat && <ContextMenuItem onClick = { this._onBirthdayHatOff }>
                             <ContextMenuIcon src = { IconBirthdayHat } />
-                                <span>{ "Remove Birthday Hat" }</span>
+                                <span>{ t('participantsPane.actions.removeBirthdayARHat') }</span>
                             </ContextMenuItem>
                         }
 
                         {/* Code portion to self-apply AR hat */}
                         {
-                            _isParticipantBirthday && !_isHatOn && <ContextMenuItem onClick = { this._onBirthdayHatOn }>
+                            _isParticipantBirthday && !_isHatOn && config.enableBirthdayARHat && <ContextMenuItem onClick = { this._onBirthdayHatOn }>
                             <ContextMenuIcon src = { IconBirthdayHat } />
-                                <span>{ "Birthday Hat" }</span>
+                                <span>{ t('participantsPane.actions.applyBirthdayARHat') }</span>
                             </ContextMenuItem>
                         }
                     </ContextMenuItemGroup>}

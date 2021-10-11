@@ -116,7 +116,7 @@ MiddlewareRegistry.register(store => next => action => {
             const bDate = participant.birthDate;
             if(bDate) {
                 const hasBirthday = isTodayParticipantBirthday(participant);
-                if(hasBirthday) {
+                if(hasBirthday && config.enableBirthdayARHat) {
                     // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
                     store.dispatch(showNotification({
                         descriptionArguments: { bParticipant: participant.name},
@@ -276,7 +276,7 @@ MiddlewareRegistry.register(store => next => action => {
 
         if(bDate) {
             const hasBirthday = isTodayParticipantBirthday(participant);
-            if(hasBirthday) {
+            if(hasBirthday && config.enableBirthdayARHat) {
                 // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
                 store.dispatch(showNotification({
                     descriptionArguments: { bParticipant: participant.name},

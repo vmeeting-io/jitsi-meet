@@ -2355,15 +2355,18 @@ export default {
                 APP.store.dispatch(pinParticipant(randomSelectedID));
             });
 
-        room.on(JitsiConferenceEvents.SHOW_BIRTHDAY_ALERT,
-            bParticipant => {
-                APP.store.dispatch(showNotification({
-                    descriptionArguments: { bParticipant: bParticipant},
-                    descriptionKey: 'notify.birthDayAlertMessage',
-                    titleKey: 'notify.birthDayAlert'
-                },
-                5000))
-            })
+        if(config.enableBirthdayARHat) {
+            room.on(JitsiConferenceEvents.SHOW_BIRTHDAY_ALERT,
+                bParticipant => {
+                    APP.store.dispatch(showNotification({
+                        descriptionArguments: { bParticipant: bParticipant},
+                        descriptionKey: 'notify.birthDayAlertMessage',
+                        titleKey: 'notify.birthDayAlert'
+                    },
+                    5000))
+                });
+        }
+        
 
 
         room.on(JitsiConferenceEvents.NOTIFY_RANDOM_SELECTION_STARTED,

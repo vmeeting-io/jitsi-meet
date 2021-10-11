@@ -175,7 +175,7 @@ function ParticipantItem({
                 </ParticipantDetailsContainer>
                 { <ParticipantActions children = { children } /> }
                 <ParticipantStates>
-                    { isParticipantBirthday && <BirthdayIndicator /> }
+                    { isParticipantBirthday && config.enableBirthdayARHat && <BirthdayIndicator /> }
                     { raisedHand && <RaisedHandIndicator /> }
                     { VideoStateIcons[videoMediaState] }
                     { AudioStateIcons[audioMediaState] }

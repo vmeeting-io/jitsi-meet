@@ -29,6 +29,9 @@ var config = {
         noOfFailedLoginAttemptsAllowed: 5  //no of failed login attempt allowed with captcha disabled.
     },
 
+    // whether or not we want to use the birthday AR hat feature
+    enableBirthdayARHat: true,
+
     // whether or not to allow moderator to disable other participant's device
     enableUserDeviceAccessDisabledOption: false,
 

@@ -740,6 +740,8 @@
         },
         "actions": {
             "allow": "참가자에게 아래와 같이 허용:",
+            "applyBirthdayARHat": "생일 모자 AR 켜기",
+            "removeBirthdayARHat": "생일 모자 AR 끄기",
             "blockEveryoneMicCamera": "마이크와 카메라 모두 차단",
             "invite": "초대하기",
             "askUnmute": "음소거 해제 요청",
@@ -1320,6 +1322,9 @@
         "knockingParticipantList": "참가 요청",
         "allow": "수락",
         "backToKnockModeButton": "암호 없음, 대신 가입 요청",
+        "birthdayARHat": "생일 모자 AR",
+        "birthdayARHatKeep": "유지",
+        "birthdayARHatReject": "해제",
         "dialogTitle": "로비 모드",
         "disableDialogContent": "현재 로비 모드가 활성화되어 있습니다. 이 기능은 원치 않는 참가자가 회의에 참가할 수 없도록합니다. 비활성화 하시겠습니까?",
         "disableDialogSubmit": "비활성화",

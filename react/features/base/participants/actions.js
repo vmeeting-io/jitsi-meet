@@ -20,7 +20,8 @@ import {
     PARTICIPANT_UPDATED,
     PIN_PARTICIPANT,
     SET_LOADABLE_AVATAR_URL,
-    RAISE_HAND_UPDATED
+    RAISE_HAND_UPDATED,
+    PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED
 } from './actionTypes';
 import {
     DISCO_REMOTE_CONTROL_FEATURE
@@ -643,4 +644,19 @@ export function raiseHandUpdateQueue(participant) {
         type: RAISE_HAND_UPDATED,
         participant
     };
+}
+
+/**
+ * Update the flag hatOn for a participant identified by id
+ * 
+ * @param {Object/Number} id - id of the participant for whom we want to update the birthday hat flag
+ * @param {Boolean} hatOn - the value to be updated for the participant's birthday hat flag
+ * @returns 
+ */
+export function updateParticipantBirthdayHatFlag(id, hatOn) {
+    return {
+        type: PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED,
+        id,
+        hatOn
+    }
 }

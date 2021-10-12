@@ -42,7 +42,8 @@ import {
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED,
-    RAISE_HAND_UPDATED
+    RAISE_HAND_UPDATED,
+    PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED
 } from './actionTypes';
 import {
     localParticipantIdChanged,
@@ -199,6 +200,13 @@ MiddlewareRegistry.register(store => next => action => {
     case ENABLE_CHAT_PARTICIPANT: {
         const { conference } = store.getState()['features/base/conference'];
         conference.enableChatForParticipant(action.id);
+        break;
+    }
+
+    case PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED: {
+        const { id, hatOn } = action;
+        const { conference } = store.getState()['features/base/conference'];
+        conference.updateParticipantBirthdayHatFlag(id, hatOn);
         break;
     }
 

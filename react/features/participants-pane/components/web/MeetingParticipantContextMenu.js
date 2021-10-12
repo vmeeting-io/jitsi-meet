@@ -24,7 +24,8 @@ import {
     getLocalParticipantDisplayName,
     getParticipantByIdOrUndefined,
     isLocalParticipantModerator,
-    isParticipantModerator
+    isParticipantModerator,
+    updateParticipantBirthdayHatFlag
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { withPixelLineHeight } from '../../../base/styles/functions.web';
@@ -275,6 +276,8 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
      * @returns {void}
      */
     _onBirthdayHatOn(){
+        const selectedParticipantID = this._getCurrentParticipantId();
+        this.props.dispatch(updateParticipantBirthdayHatFlag(selectedParticipantID, true));
         notifyBirthdayHatOn(getLocalParticipant(APP.store.getState()).name,this._getCurrentParticipantId());
     }
     
@@ -285,6 +288,8 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
      * @returns {void}
      */
     _onBirthdayHatOff(){
+        const selectedParticipantID = this._getCurrentParticipantId();
+        this.props.dispatch(updateParticipantBirthdayHatFlag(selectedParticipantID, false));
         this.props.dispatch(arApprovalDialog(false));
         enableARHat(this.props.dispatch,false); 
     }
@@ -636,7 +641,7 @@ function _mapStateToProps(state, ownProps): Object {
     const participant = getParticipantByIdOrUndefined(state,
         overflowDrawer ? drawerParticipant?.participantID : participantID);
 
-    const isHatOn = Boolean(state['features/ar-effect'].arEffectEnabled);
+    const isHatOn = participant.hatOn;
     const _currentRoomId = getCurrentRoomId(state);
     const _isLocalModerator = isLocalParticipantModerator(state);
     const _isChatButtonEnabled = isToolbarButtonEnabled('chat', state);

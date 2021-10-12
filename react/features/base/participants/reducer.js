@@ -458,7 +458,8 @@ function _participantJoined({ participant }) {
         pinned,
         presence,
         role,
-        birthDate // added a new property birthDate to a participant which maybe undefined if not retrieved well
+        birthDate, // added a new property birthDate to a participant which maybe undefined if not retrieved well
+        hatOn
     } = participant;
     let { conference, id } = participant;
 
@@ -493,6 +494,7 @@ function _participantJoined({ participant }) {
         // we set undefined here for the birthDate here, 
         // because this assumes the default date, 1980-01-01, and we don't want to propagate it
         birthDate: birthDate || undefined,
+        hatOn: hatOn || false,
         role: role || PARTICIPANT_ROLE.NONE
     };
 }

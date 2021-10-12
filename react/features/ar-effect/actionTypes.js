@@ -12,6 +12,17 @@
 export const AR_ENABLED = 'AR_ENABLED';
 
 /**
+ * The type of redux action dispatched which represents if AR_APPROVAL_DIALOG
+ * is displayed or not.
+ *
+ * @returns {{
+ *     type: AR_APPROVAL_DIALOG,
+ *     arApprovalDialog: boolean
+ * }}
+ */
+export const AR_APPROVAL_DIALOG = 'AR_APPROVAL_DIALOG';
+
+/**
  * The type of the action which enables or disables virtual background
  *
  * @returns {{

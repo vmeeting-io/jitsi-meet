@@ -110,3 +110,5 @@ export const VideoStateIcons = {
     ),
     [MEDIA_STATE.NONE]: null
 };
+
+export const COMMAND_TIMER_END_TIME = 'timer-end-time';

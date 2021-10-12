@@ -369,6 +369,13 @@ export const RaisedHandIndicatorBackground = styled.div`
   width: 24px;
 `;
 
+export const BirthdayIndicatorBackground = styled.div`
+  background-color: #ffffff;
+  border-radius: 3px;
+  height: 24px;
+  width: 24px;
+`;
+
 export const VolumeInput = styled.input.attrs({
     type: 'range'
 })`

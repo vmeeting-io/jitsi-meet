@@ -2,12 +2,14 @@
 import { withStyles } from '@material-ui/core/styles';
 import React, { Component } from 'react';
 
+import { arApprovalDialog, enableARHat } from '../../../ar-effect';
 import { Avatar } from '../../../base/avatar';
 import { isToolbarButtonEnabled } from '../../../base/config/functions.web';
 import { openDialog } from '../../../base/dialog';
 import { isIosMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import {
+    IconBirthdayHat,
     IconCloseCircle,
     IconCrown,
     IconMeetingUnlocked,
@@ -19,6 +21,7 @@ import {
 } from '../../../base/icons';
 import {
     getLocalParticipant,
+    getLocalParticipantDisplayName,
     getParticipantByIdOrUndefined,
     isLocalParticipantModerator,
     isParticipantModerator
@@ -34,7 +37,8 @@ import { Drawer, DrawerPortal } from '../../../toolbox/components/web';
 import { GrantModeratorDialog, KickRemoteParticipantDialog, MuteEveryoneDialog } from '../../../video-menu';
 import { VolumeSlider } from '../../../video-menu/components/web';
 import MuteRemoteParticipantsVideoDialog from '../../../video-menu/components/web/MuteRemoteParticipantsVideoDialog';
-import { getComputedOuterHeight } from '../../functions';
+import { getComputedOuterHeight, isTodayParticipantBirthday } from '../../functions';
+import BirthdayHatApprove from '../../../ar-effect/components/BirthdayHatApprove';
 
 import {
     ContextMenu,
@@ -43,6 +47,7 @@ import {
     ContextMenuItemGroup,
     ignoredChildClassName
 } from './styled';
+import { notifyBirthdayHatOn } from '../../actions.any';
 
 type Props = {
 
@@ -60,6 +65,11 @@ type Props = {
      * True if the chat button is enabled and false otherwise.
      */
     _isChatButtonEnabled: boolean,
+
+    /**
+     * True if today is participant's birthday
+     */
+    _isParticipantBirthday: Boolean,
 
     /**
      * True if the participant is moderator and false otherwise.
@@ -215,6 +225,8 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
         this._onSendToRoom = this._onSendToRoom.bind(this);
         this._position = this._position.bind(this);
         this._onVolumeChange = this._onVolumeChange.bind(this);
+        this._onBirthdayHatOn = this._onBirthdayHatOn.bind(this);
+        this._onBirthdayHatOff = this._onBirthdayHatOff.bind(this);
     }
 
     _getCurrentParticipantId: () => string;
@@ -254,6 +266,27 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
         this.props.dispatch(openDialog(KickRemoteParticipantDialog, {
             participantID: this._getCurrentParticipantId()
         }));
+    }
+
+    /**
+     * 
+     * Put a birthday hat on the participant.
+     * 
+     * @returns {void}
+     */
+    _onBirthdayHatOn(){
+        notifyBirthdayHatOn(getLocalParticipant(APP.store.getState()).name,this._getCurrentParticipantId());
+    }
+    
+    /**
+     * 
+     * Put birthday hat off the participant.
+     * 
+     * @returns {void}
+     */
+    _onBirthdayHatOff(){
+        this.props.dispatch(arApprovalDialog(false));
+        enableARHat(this.props.dispatch,false); 
     }
 
     _onStopSharedVideo: () => void;
@@ -401,6 +434,8 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
             _currentRoomId,
             _isLocalModerator,
             _isChatButtonEnabled,
+            _isHatOn,
+            _isParticipantBirthday,
             _isParticipantModerator,
             _isParticipantVideoMuted,
             _isParticipantAudioMuted,
@@ -427,7 +462,8 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
               && overflowDrawer
               && typeof _volume === 'number'
               && !isNaN(_volume);
-
+        const isRemote = !(APP.store.getState()["features/base/participants"].local.id == _participant?.id);
+    
         const actions
             = _participant?.isFakeParticipant ? (
                 <>
@@ -440,7 +476,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                 </>
             ) : (
                 <>
-                    {_isLocalModerator && (
+                    {_isLocalModerator && isRemote && (
                         <ContextMenuItemGroup>
                             <>
                                 {
@@ -468,7 +504,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                         </ContextMenuItemGroup>
                     )}
 
-                    <ContextMenuItemGroup>
+                    { isRemote && <ContextMenuItemGroup>
                         {
                             _isLocalModerator && (
                                     <>
@@ -487,6 +523,14 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                     </>
                             )
                         }
+                            
+                        {
+                            _isParticipantBirthday && config.enableBirthdayARHat && !_isHatOn && <ContextMenuItem onClick = { this._onBirthdayHatOn }>
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ t('participantsPane.actions.applyBirthdayARHat') }</span>
+                            </ContextMenuItem>
+                        }
+                        
                         {
                             _isChatButtonEnabled && (
                                 <ContextMenuItem onClick = { this._onSendPrivateMessage }>
@@ -495,7 +539,26 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                 </ContextMenuItem>
                             )
                         }
-                    </ContextMenuItemGroup>
+                    </ContextMenuItemGroup>}
+                    
+                    {!isRemote && <ContextMenuItemGroup>
+                        {/* Code portion to self-remove AR hat */}
+                        {
+                            _isParticipantBirthday && _isHatOn && config.enableBirthdayARHat && <ContextMenuItem onClick = { this._onBirthdayHatOff }>
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ t('participantsPane.actions.removeBirthdayARHat') }</span>
+                            </ContextMenuItem>
+                        }
+
+                        {/* Code portion to self-apply AR hat */}
+                        {
+                            _isParticipantBirthday && !_isHatOn && config.enableBirthdayARHat && <ContextMenuItem onClick = { this._onBirthdayHatOn }>
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ t('participantsPane.actions.applyBirthdayARHat') }</span>
+                            </ContextMenuItem>
+                        }
+                    </ContextMenuItemGroup>}
+
                     { showVolumeSlider
                         && <ContextMenuItemGroup>
                             <VolumeSlider
@@ -573,9 +636,11 @@ function _mapStateToProps(state, ownProps): Object {
     const participant = getParticipantByIdOrUndefined(state,
         overflowDrawer ? drawerParticipant?.participantID : participantID);
 
+    const isHatOn = Boolean(state['features/ar-effect'].arEffectEnabled);
     const _currentRoomId = getCurrentRoomId(state);
     const _isLocalModerator = isLocalParticipantModerator(state);
     const _isChatButtonEnabled = isToolbarButtonEnabled('chat', state);
+    const _isParticipantBirthday = isTodayParticipantBirthday(participant);
     const _isParticipantVideoMuted = isParticipantVideoMuted(participant, state);
     const _isParticipantAudioMuted = isParticipantAudioMuted(participant, state);
     const _isParticipantModerator = isParticipantModerator(participant);
@@ -594,6 +659,8 @@ function _mapStateToProps(state, ownProps): Object {
         _isParticipantAudioMuted,
         _localVideoOwner: Boolean(ownerId === localParticipantId),
         _participant: participant,
+        _isParticipantBirthday,
+        _isHatOn: isHatOn,
         _rooms,
         _volume: isLocal ? undefined : id ? participantsVolume[id] : undefined
     };

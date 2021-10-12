@@ -158,7 +158,8 @@ export function getProfileTabProps(stateful: Object | Function) {
         authEnabled: Boolean(conference && authEnabled),
         authLogin,
         displayName: localParticipant.name,
-        email: localParticipant.email
+        email: localParticipant.email,
+        birthDate: localParticipant.birthDate
     };
 }
 
@@ -272,3 +273,4 @@ export function getAudioSettingsVisibility(state: Object) {
 export function getVideoSettingsVisibility(state: Object) {
     return state['features/settings'].videoSettingsVisible;
 }
+

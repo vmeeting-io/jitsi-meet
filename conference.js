@@ -30,6 +30,7 @@ import { shouldShowModeratedNotification } from './react/features/av-moderation/
 import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
+    BIRTHDATE_COMMAND,
     authStatusChanged,
     commonUserJoinedHandling,
     commonUserLeftHandling,
@@ -155,6 +156,9 @@ import { endpointMessageReceived } from './react/features/subtitles';
 import UIEvents from './service/UI/UIEvents';
 import { isHost } from './react/features/base/jwt';
 import { i18next } from './react/features/base/i18n';
+import { openDialog } from './react/features/base/dialog';
+import BirthdayHatApprove from './react/features/ar-effect/components/BirthdayHatApprove';
+import { arApprovalDialog, enableARHat } from './react/features/ar-effect';
 
 const logger = Logger.getLogger(__filename);
 const eventEmitter = new EventEmitter();
@@ -197,6 +201,7 @@ const commands = {
     AVATAR_URL: AVATAR_URL_COMMAND,
     CUSTOM_ROLE: 'custom-role',
     EMAIL: EMAIL_COMMAND,
+    BIRTHDATE: BIRTHDATE_COMMAND,
     ETHERPAD: 'etherpad'
 };
 
@@ -2302,6 +2307,21 @@ export default {
                 }
             });
 
+        room.on(JitsiConferenceEvents.NOTIFY_BIRTHDAY_HAT_ON,
+            (nick) => {
+
+                APP.store.dispatch(showNotification({
+                    descriptionArguments: { initiator: nick , participant: this.getLocalDisplayName()},
+                    descriptionKey: 'notify.birthdayHatOn',
+                    titleKey: 'notify.birthdayHatOnTitle'
+                },
+                5000)); // hard-coded the duration of notification bubble to 5 seconds
+
+                APP.store.dispatch(arApprovalDialog(true));
+                enableARHat(APP.store.dispatch,true); 
+                APP.store.dispatch(openDialog(BirthdayHatApprove));
+            });
+
         room.on(JitsiConferenceEvents.NOTIFY_TIMER_STARTED,
             (nick,endTime) => {
                 APP.store.dispatch(Timer(endTime,true));
@@ -2333,7 +2353,20 @@ export default {
         room.on(JitsiConferenceEvents.PIN_RANDOM_PARTICIPANT,
             randomSelectedID => {
                 APP.store.dispatch(pinParticipant(randomSelectedID));
-            })
+            });
+
+        if(config.enableBirthdayARHat) {
+            room.on(JitsiConferenceEvents.SHOW_BIRTHDAY_ALERT,
+                bParticipant => {
+                    APP.store.dispatch(showNotification({
+                        descriptionArguments: { bParticipant: bParticipant},
+                        descriptionKey: 'notify.birthDayAlertMessage',
+                        titleKey: 'notify.birthDayAlert'
+                    },
+                    5000))
+                });
+        }
+        
 
 
         room.on(JitsiConferenceEvents.NOTIFY_RANDOM_SELECTION_STARTED,
@@ -2528,6 +2561,21 @@ export default {
                         avatarURL: data.value
                     }));
             });
+
+        APP.UI.addListener(UIEvents.BIRTHDATE_CHANGED,
+            this.changeBirthDate.bind(this));
+        room.addCommandListener(
+            this.commands.defaults.BIRTHDATE,
+            (data, from) => {
+                APP.store.dispatch(
+                    participantUpdated({
+                        conference: room,
+                        id: from,
+                        birthDate: data.value
+                    })
+                );
+            }
+        );
 
         APP.UI.addListener(UIEvents.NICKNAME_CHANGED,
             this.changeLocalDisplayName.bind(this));
@@ -3293,6 +3341,33 @@ export default {
         APP.store.dispatch(updateSettings({
             displayName: formattedNickname
         }));
+    },
+
+    /**
+     * Changes the birthdate for the local user
+     * @param bDate {string} the new display name
+     */
+    changeBirthDate(bDate = '') {
+        const { id, birthDate } = getLocalParticipant(APP.store.getState());
+        if (birthDate === bDate) {
+            return;
+        }
+
+        // this will dispatch a function that will update featues/base/participants redux
+        APP.store.dispatch(participantUpdated({
+            id,
+            local: true,
+            birthDate: bDate
+        }));
+
+        // update birthDate for settings reducer on changing birthDate too
+        APP.store.dispatch(updateSettings({
+            birthDate: bDate
+        }));
+
+        // XMPP helper function that sends birthdate info to other participants 
+        // as presence message
+        sendData(commands.BIRTHDATE, bDate);
     },
 
     /**

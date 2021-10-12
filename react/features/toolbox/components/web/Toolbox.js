@@ -844,7 +844,6 @@ class Toolbox extends Component<Props, State> {
             etherpad,
             virtualBackground,
             speakerStats,
-            arFeature,
             settings,
             shortcuts,
             embed,

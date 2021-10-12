@@ -31,6 +31,7 @@ import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
     BIRTHDATE_COMMAND,
+    HAT_COMMAND,
     authStatusChanged,
     commonUserJoinedHandling,
     commonUserLeftHandling,
@@ -202,6 +203,7 @@ const commands = {
     CUSTOM_ROLE: 'custom-role',
     EMAIL: EMAIL_COMMAND,
     BIRTHDATE: BIRTHDATE_COMMAND,
+    HATON: HAT_COMMAND,
     ETHERPAD: 'etherpad'
 };
 
@@ -2366,6 +2368,21 @@ export default {
                     5000))
                 });
         }
+
+        room.on(JitsiConferenceEvents.PARTICIPANT_BIRTHDAY_FLAG_UPDATED,
+            (pID, hatOn) => {
+                APP.store.dispatch(participantUpdated({
+                    conference: room,
+                    id: pID,
+                    hatOn: hatOn
+                }));
+
+                // only that participant whose flag was updated should send presence message
+                const localParticipantID = getLocalParticipant(APP.store.getState()).id;
+                if(localParticipantID === pID) {
+                    sendData(commands.HATON, hatOn);
+                }
+            })
         
 
 

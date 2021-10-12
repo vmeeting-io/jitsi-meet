@@ -32,7 +32,9 @@ Object.keys(DEFAULT_STATE).forEach(key => {
 // filterSubtree.cameraDeviceId = false;
 // filterSubtree.micDeviceId = false;
 
-PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
+// commented out persistence registry because we don't want ar-effect to be stored within the browser's local storage
+// PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
+
 /**
  * Reduces redux actions which activate/deactivate virtual background image, or
  * indicate if the virtual image background is activated/deactivated. The
@@ -50,7 +52,9 @@ ReducerRegistry.register(STORE_NAME, (state = {}, action) => {
     /**
      * Sets up the persistence of the feature {@code virtual-background}.
      */
-    PersistenceRegistry.register(STORE_NAME);
+
+    // commented out persistence registry because we don't want ar-effect to be stored within the browser's local storage
+    // PersistenceRegistry.register(STORE_NAME); 
 
     switch (action.type) {
     case SET_AR: {

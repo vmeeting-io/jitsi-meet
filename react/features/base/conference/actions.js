@@ -62,6 +62,7 @@ import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
     BIRTHDATE_COMMAND,
+    HAT_COMMAND,
     JITSI_CONFERENCE_URL_KEY
 } from './constants';
 import {
@@ -255,6 +256,14 @@ function _addConferenceListeners(conference, dispatch, state) {
             conference,
             id,
             birthDate: data.value
+        })));
+
+    conference.addCommandListener(
+        HAT_COMMAND,
+        (data, id) => dispatch(participantUpdated({
+            conference,
+            id,
+            hatOn: data.value
         })));
 
     conference.on(

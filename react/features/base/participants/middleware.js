@@ -42,7 +42,8 @@ import {
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED,
-    RAISE_HAND_UPDATED
+    RAISE_HAND_UPDATED,
+    PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED
 } from './actionTypes';
 import {
     localParticipantIdChanged,
@@ -116,7 +117,7 @@ MiddlewareRegistry.register(store => next => action => {
             const bDate = participant.birthDate;
             if(bDate) {
                 const hasBirthday = isTodayParticipantBirthday(participant);
-                if(hasBirthday) {
+                if(hasBirthday && config.enableBirthdayARHat) {
                     // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
                     store.dispatch(showNotification({
                         descriptionArguments: { bParticipant: participant.name},
@@ -202,6 +203,13 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
 
+    case PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED: {
+        const { id, hatOn } = action;
+        const { conference } = store.getState()['features/base/conference'];
+        conference.updateParticipantBirthdayHatFlag(id, hatOn);
+        break;
+    }
+
     case ENABLE_CHAT_FOR_ALL: {
         const { conference } = store.getState()['features/base/conference'];
         conference.enableChatForAll();
@@ -276,7 +284,7 @@ MiddlewareRegistry.register(store => next => action => {
 
         if(bDate) {
             const hasBirthday = isTodayParticipantBirthday(participant);
-            if(hasBirthday) {
+            if(hasBirthday && config.enableBirthdayARHat) {
                 // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
                 store.dispatch(showNotification({
                     descriptionArguments: { bParticipant: participant.name},

@@ -2,6 +2,7 @@
 
 import React, { Component } from 'react';
 
+import { translate } from '../../base/i18n';
 /**
  * Abstract class to encapsulate the platform common code of the {@code BirthdayApprove}.
  */
@@ -11,14 +12,15 @@ class BirthdayApproveDialog extends Component {
     }
 
     render(){
+        const { t } = this.props;
         return (
             <div id="notification-participant-list">
                 <div className="knocking-participant-list">
-                    <div className="title">Wear AR Birthday hat</div>
+                    <div className="title">{ t('lobby.birthdayARHat') }</div>
                     <ul className="knocking-participants-container">
                         <li className="knocking-participant">
-                            <button className="reject" onClick={this.props.onReject}>Reject</button>
-                            <button className="accept" onClick={this.props.onApprove}>Approve</button>
+                            <button className="accept" onClick={this.props.onApprove}> { t('lobby.birthdayARHatKeep') } </button>
+                            <button className="reject" onClick={this.props.onReject}> { t('lobby.birthdayARHatReject') } </button>
                         </li>
                     </ul>
                 </div>
@@ -27,4 +29,4 @@ class BirthdayApproveDialog extends Component {
     }
 }
 
-export default BirthdayApproveDialog;
+export default translate(BirthdayApproveDialog);

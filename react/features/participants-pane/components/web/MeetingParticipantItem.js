@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { translate } from '../../../base/i18n';
 import { JitsiTrackEvents } from '../../../base/lib-jitsi-meet';
 import { MEDIA_TYPE } from '../../../base/media';
 import {
@@ -42,6 +43,11 @@ type Props = {
     _audioTrack: ?Object,
 
     /**
+     * Whether or not to disable the moderator indicator.
+     */
+    _disableModeratorIndicator: boolean,
+
+    /**
      * Boolean value that denotes whether or not today is participant's birthday
      */
     _isParticipantBirthday: Boolean,
@@ -58,9 +64,19 @@ type Props = {
     _displayName: string,
 
     /**
+     * Whether or not moderation is supported.
+     */
+    _isModerationSupported: boolean,
+
+    /**
      * True if the participant is the local participant.
      */
     _local: Boolean,
+
+    /**
+     * Whether or not the local participant is moderator.
+     */
+    _localModerator: boolean,
 
     /**
      * Shared video local participant owner.
@@ -156,15 +172,16 @@ type Props = {
 function MeetingParticipantItem({
     _audioMediaState,
     _audioTrack,
-    _isParticipantBirthday,
-    _videoMediaState,
+    _disableModeratorIndicator,
     _displayName,
+    _isParticipantBirthday,
     _local,
     _localVideoOwner,
     _participant,
     _participantID,
     _quickActionButtonType,
     _raisedHand,
+    _videoMediaState,
     askUnmuteText,
     isHighlighted,
     muteAudio,
@@ -209,14 +226,21 @@ function MeetingParticipantItem({
     const audioMediaState = _audioMediaState === MEDIA_STATE.UNMUTED && hasAudioLevels
         ? MEDIA_STATE.DOMINANT_SPEAKER : _audioMediaState;
 
+    let askToUnmuteText = askUnmuteText;
+
+    if (_audioMediaState !== MEDIA_STATE.FORCE_MUTED && _videoMediaState === MEDIA_STATE.FORCE_MUTED) {
+        askToUnmuteText = t('participantsPane.actions.allowVideo');
+    }
+
     return (
         <ParticipantItem
             actionsTrigger = { ACTION_TRIGGER.HOVER }
             audioMediaState = { audioMediaState }
-            isParticipantBirthday = { _isParticipantBirthday }
+            disableModeratorIndicator = { _disableModeratorIndicator }
             displayName = { _displayName }
             isHighlighted = { isHighlighted }
             isModerator = { isParticipantModerator(_participant) }
+            isParticipantBirthday = { _isParticipantBirthday }
             local = { _local }
             onLeave = { onLeave }
             openDrawerForParticipant = { openDrawerForParticipant }
@@ -229,7 +253,7 @@ function MeetingParticipantItem({
             {!overflowDrawer && !_participant?.isFakeParticipant
                 && <>
                     <ParticipantQuickAction
-                        askUnmuteText = { askUnmuteText }
+                        askUnmuteText = { askToUnmuteText }
                         buttonType = { _quickActionButtonType }
                         muteAudio = { muteAudio }
                         muteParticipantButtonText = { muteParticipantButtonText }
@@ -269,15 +293,18 @@ function _mapStateToProps(state, ownProps): Object {
     const _audioMediaState = getParticipantAudioMediaState(participant, _isAudioMuted, state);
     const _videoMediaState = getParticipantVideoMediaState(participant, _isVideoMuted, state);
     const _quickActionButtonType = getQuickActionButtonType(participant, _isAudioMuted, state);
+
     const isParticipantBirthday = isTodayParticipantBirthday(participant);
     const tracks = state['features/base/tracks'];
     const _audioTrack = participantID === localParticipantId
         ? getLocalAudioTrack(tracks) : getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.AUDIO, participantID);
 
+    const { disableModeratorIndicator } = state['features/base/config'];
+
     return {
         _audioMediaState,
         _audioTrack,
-        _videoMediaState,
+        _disableModeratorIndicator: disableModeratorIndicator,
         _displayName: getParticipantDisplayName(state, participant?.id),
         _local: Boolean(participant?.local),
         _localVideoOwner: Boolean(ownerId === localParticipantId),
@@ -285,8 +312,9 @@ function _mapStateToProps(state, ownProps): Object {
         _participantID: participant?.id,
         _quickActionButtonType,
         _isParticipantBirthday: isParticipantBirthday,
-        _raisedHand: Boolean(participant?.raisedHand)
+        _raisedHand: Boolean(participant?.raisedHand),
+        _videoMediaState
     };
 }
 
-export default connect(_mapStateToProps)(MeetingParticipantItem);
+export default translate(connect(_mapStateToProps)(MeetingParticipantItem));

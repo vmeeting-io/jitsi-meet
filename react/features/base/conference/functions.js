@@ -18,6 +18,7 @@ import { getBackendSafePath, getJitsiMeetGlobalNS, safeDecodeURIComponent } from
 import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
+    HAT_COMMAND,
     BIRTHDATE_COMMAND,
     JITSI_CONFERENCE_URL_KEY
 } from './constants';
@@ -101,6 +102,7 @@ export function commonUserJoinedHandling(
             presence: user.getStatus(),
             role: user.getRole(),
             birthDate: user.getbDate(),
+            hatOn: user.getHatOn(), // default flag value 'false' that denotes the participant has not put on the birthday hat
             isReplacing
         }));
     }
@@ -414,6 +416,7 @@ export function sendLocalParticipant(
         avatarURL,
         email,
         birthDate,
+        hatOn,
         features,
         name
     } = getLocalParticipant(stateful);
@@ -424,7 +427,13 @@ export function sendLocalParticipant(
     email && conference.sendCommand(EMAIL_COMMAND, {
         value: email
     });
-    
+
+    if (hatOn !== undefined) {
+        conference.sendCommand(HAT_COMMAND, {
+            value: hatOn
+        });
+    }
+
     // code block for sending birthDate info about local participant
     birthDate && conference.sendCommand(BIRTHDATE_COMMAND, {
         value: birthDate

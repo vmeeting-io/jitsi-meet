@@ -20,6 +20,13 @@ export const EMAIL_COMMAND = 'email';
 export const BIRTHDATE_COMMAND = 'birthDate';
 
 /**
+ * The command type for updating a participant's hatOn variable.
+ * 
+ * @type {string}
+ */
+export const HAT_COMMAND = 'hatOn';
+
+/**
  * The name of the {@code JitsiConference} property which identifies the URL of
  * the conference represented by the {@code JitsiConference} instance.
  *

@@ -758,6 +758,8 @@
         },
         "actions": {
             "allow": "Allow attendees to:",
+            "applyBirthdayARHat": "Birthday Hat ON",
+            "removeBirthdayARHat": "Birthday Hat OFF",
             "audioModeration": "Unmute themselves",
             "blockEveryoneMicCamera": "Block everyone's mic and camera",
             "invite": "Invite Someone",
@@ -1363,6 +1365,9 @@
         "knockingParticipantList": "Knocking participant list",
         "allow": "Allow",
         "backToKnockModeButton": "Ask to join",
+        "birthdayARHat": "Birthday AR Hat",
+        "birthdayARHatKeep": "Keep",
+        "birthdayARHatReject": "Reject",
         "dialogTitle": "Lobby mode",
         "disableDialogContent": "Lobby mode is currently enabled. This feature ensures that unwanted participants can't join your meeting. Do you want to disable it?",
         "disableDialogSubmit": "Disable",

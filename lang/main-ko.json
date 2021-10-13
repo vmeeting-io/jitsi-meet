@@ -728,7 +728,7 @@
         "birthDayAlert": "생일 알림",
         "birthDayAlertMessage": "{{bParticipant}}님의 생일을 축하합니다",
         "birthdayHatOn": "{{initiator}}님이 {{participant}}님에게 생일모자을 적용했습니다.",
-        "birthdayHatOnTitle": "생일 모자 AR",
+        "birthdayHatOnTitle": "생일 모자",
         "groupTitle": "알림"
     },
     "participantsPane": {
@@ -742,8 +742,8 @@
         },
         "actions": {
             "allow": "참가자에게 아래와 같이 허용:",
-            "applyBirthdayARHat": "생일 모자 AR 켜기",
-            "removeBirthdayARHat": "생일 모자 AR 끄기",
+            "applyBirthdayARHat": "생일 모자 켜기",
+            "removeBirthdayARHat": "생일 모자 끄기",
             "blockEveryoneMicCamera": "마이크와 카메라 모두 차단",
             "invite": "초대하기",
             "askUnmute": "음소거 해제 요청",
@@ -1324,7 +1324,7 @@
         "knockingParticipantList": "참가 요청",
         "allow": "수락",
         "backToKnockModeButton": "암호 없음, 대신 가입 요청",
-        "birthdayARHat": "생일 모자 AR",
+        "birthdayARHat": "생일 모자",
         "birthdayARHatKeep": "유지",
         "birthdayARHatReject": "해제",
         "dialogTitle": "로비 모드",

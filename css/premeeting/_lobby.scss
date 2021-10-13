@@ -92,6 +92,11 @@
             border-width: 0;
         }
 
+        &.addedLeftMargin {
+            margin-left: 120px;
+            z-index: $toolbarZ + 1;
+        }
+
         &.reject {
             background-color: #dd3849;
             border-width: 0;

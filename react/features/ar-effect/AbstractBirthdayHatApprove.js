@@ -1,6 +1,7 @@
 // @flow
 
 import { PureComponent } from 'react';
+import { getLocalParticipant, updateParticipantBirthdayHatFlag } from '../base/participants';
 import { arApprovalDialog } from './actions';
 import { enableARHat } from './functions';
 
@@ -49,11 +50,15 @@ export default class AbstractBirthdayHatApprove<P: Props = Props> extends PureCo
      */
     _onRespondToParticipant(approved) {
         return () => {
+            const { _participantId } = this.props;
             if (!approved)
             {
                 enableARHat(this.props.dispatch,false);
             }
             this.props.dispatch(arApprovalDialog(false));
+
+            // depending on the value of the approved flag, we require to update presence for birthday hat flag
+            this.props.dispatch(updateParticipantBirthdayHatFlag(_participantId, approved));
         };
     }
 }
@@ -67,6 +72,7 @@ export default class AbstractBirthdayHatApprove<P: Props = Props> extends PureCo
 export function mapStateToProps(state: Object): $Shape<Props> {
 
     return {
+        _participantId: getLocalParticipant(APP.store.getState()).id,
         _isAREnabled: Boolean(state['features/ar-effect'].arEffectEnabled),
         _isARApprvalDialogVisible: Boolean(state['features/ar-effect'].arApprovalDialog)
     };

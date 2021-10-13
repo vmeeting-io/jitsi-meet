@@ -758,8 +758,8 @@
         },
         "actions": {
             "allow": "Allow attendees to:",
-            "applyBirthdayARHat": "Apply Birthday AR Hat",
-            "removeBirthdayARHat": "Remove Birthday AR Hat",
+            "applyBirthdayARHat": "Birthday Hat ON",
+            "removeBirthdayARHat": "Birthday Hat OFF",
             "audioModeration": "Unmute themselves",
             "blockEveryoneMicCamera": "Block everyone's mic and camera",
             "invite": "Invite Someone",

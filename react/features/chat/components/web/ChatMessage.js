@@ -3,7 +3,18 @@
 import DropdownMenu, { DropdownItem, DropdownItemGroup } from '@atlaskit/dropdown-menu';
 import React from 'react';
 import { toArray } from 'react-emoji-render';
-import { Icon, IconMenuThumb, IconShareDoc } from '../../../base/icons';
+import { 
+    Icon,
+    IconMenuThumb,
+    IconShareDoc,
+    IconShareExcel,
+    IconShareHTML,
+    IconShareMP3,
+    IconShareMP4,
+    IconSharePDF,
+    IconShareWord,
+    IconShareZip
+} from '../../../base/icons';
 import { translate } from '../../../base/i18n';
 import { Linkify } from '../../../base/react';
 import { connect } from '../../../base/redux';
@@ -48,7 +59,6 @@ class ChatMessage extends AbstractChatMessage<Props> {
     render() {
         const { message, t } = this.props;
         const processedMessage = [];
-        let _uploadedFileIsImage = undefined;
 
         const txt = this._getMessageText();
 
@@ -70,29 +80,46 @@ class ChatMessage extends AbstractChatMessage<Props> {
         }
 
         content.forEach(msg => {
-
-            if(msg.startsWith(getBaseUrl())) {
-                // poetic way to check whether the uploaded file is image or not
-                _uploadedFileIsImage = /\.(jpe?g|png|gif|bmp)$/i.test(msg) ? true : false
-            }
-
-            if (typeof msg === 'string') {
-                // uploaded file is an image
-                if(_uploadedFileIsImage === true) {
-                    processedMessage.push(<a target="_blank" href={ msg }><img className = 'chatmessage-uploadedImage' key = {msg } src = { msg } /></a>)
-                } else if(!_uploadedFileIsImage && msg.startsWith(getBaseUrl())){
-                    // we can identify the name of the uploaded file by splitting the url of the received message
-                    // where id= follows the name of the file
-                    // TODO: this is a rudimentary method, need more definite method;
-                    let filename = msg.split('id=')[1];
-                    processedMessage.push(<Linkify key = { msg }> <Icon src={ IconShareDoc } size= { 60 } /> { filename }</Linkify>);
-                } else {
-                    processedMessage.push(msg);
+            let filename = msg.split('id=')[1];
+            if(msg.startsWith(getBaseUrl()) && (filename !== undefined)) {
+                // poetic way to check whether the file extension types
+                if(/\.(jpe?g|png|gif|bmp)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><img className = 'chatmessage-uploadedImage' key = {msg } src = { msg } /></a>);
                 }
-            } else {
+                else if(/\.(pdf)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconSharePDF } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(html|htm)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareHTML } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(doc|docx|hwp)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareWord } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(xls|xlsx)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareExcel } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(zip)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareZip } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(mp3)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareMP3 } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(mp4)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareMP4 } size= { 60 } /> { filename }</Linkify></a>);
+                }
+
+                // else it is an uploaded file but we don't have corresponding icon, we use the base icon
+                else {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareDoc } size= { 60 } /> { filename }</Linkify></a>);
+                }
+
+            }
+            else if (typeof msg === 'string' && msg !== ' ') {
+                processedMessage.push(<Linkify key = { msg }>{ msg }</Linkify>);
+            }
+            else {
                 processedMessage.push(msg);
             }
-            console.log("Size of processed message is: ", processedMessage.length);
         });
         return (
             <div

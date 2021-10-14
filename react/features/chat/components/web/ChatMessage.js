@@ -3,7 +3,7 @@
 import DropdownMenu, { DropdownItem, DropdownItemGroup } from '@atlaskit/dropdown-menu';
 import React from 'react';
 import { toArray } from 'react-emoji-render';
-import { Icon, IconMenuThumb } from '../../../base/icons';
+import { Icon, IconMenuThumb, IconShareDoc } from '../../../base/icons';
 import { translate } from '../../../base/i18n';
 import { Linkify } from '../../../base/react';
 import { connect } from '../../../base/redux';
@@ -80,11 +80,17 @@ class ChatMessage extends AbstractChatMessage<Props> {
                 // uploaded file is an image
                 if(_uploadedFileIsImage === true) {
                     processedMessage.push(<a target="_blank" href={ msg }><img className = 'chatmessage-uploadedImage' key = {msg } src = { msg } /></a>)
+                } else if(!_uploadedFileIsImage && msg.startsWith(getBaseUrl())){
+                    // we can identify the name of the uploaded file by splitting the url of the received message
+                    // where id= follows the name of the file
+                    // TODO: this is a rudimentary method, need more definite method;
+                    let filename = msg.split('id=')[1];
+                    processedMessage.push(<Linkify key = { msg }> <Icon src={ IconShareDoc } size= { 60 } /> { filename }</Linkify>);
                 } else {
-                    processedMessage.push(<Linkify key = { msg }>{ msg }</Linkify>);
+                    processedMessage.push(msg);
                 }
             } else {
-                processedMessage.push(i);
+                processedMessage.push(msg);
             }
             console.log("Size of processed message is: ", processedMessage.length);
         });

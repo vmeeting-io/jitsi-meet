@@ -6,8 +6,9 @@ import WebView from 'react-native-webview';
 import { JitsiModal } from '../../base/modal';
 import { connect } from '../../base/redux';
 import { HELP_VIEW_MODAL_ID } from '../constants';
+import { getHelpLink } from './functions';
 
-const DEFAULT_HELP_CENTRE_URL = 'https://vmeeting.io/auth/page/features';
+const DEFAULT_HELP_CENTRE_URL = getHelpLink();
 
 type Props = {
 

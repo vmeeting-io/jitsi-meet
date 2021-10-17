@@ -29,7 +29,7 @@ import { InsecureRoomNameLabel } from '.';
 import { setSubject } from '../../../base/conference';
 import { showConfirmDialog } from '../../../notifications/functions.web';
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
-import { TimerOffGif } from '../../../Timer/components/TimerOffGif';
+import { TimerOffGif } from '../../../Timer/components';
 
 /**
  * The type of the React {@code Component} props of {@link ConferenceInfo}.

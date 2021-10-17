@@ -153,10 +153,12 @@ export function getProfileTabProps(stateful: Object | Function) {
         conference
     } = state['features/base/conference'];
     const localParticipant = getLocalParticipant(state);
+    const language = i18next.language || DEFAULT_LANGUAGE;
 
     return {
         authEnabled: Boolean(conference && authEnabled),
         authLogin,
+        currentLanguage: language,
         displayName: localParticipant.name,
         email: localParticipant.email,
         birthDate: localParticipant.birthDate

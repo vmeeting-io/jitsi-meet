@@ -250,7 +250,7 @@ function MeetingParticipantItem({
             videoMediaState = { _videoMediaState }
             youText = { youText }>
 
-            {!overflowDrawer && !_participant?.isFakeParticipant
+            {!overflowDrawer && (_isParticipantBirthday || !_local) && !_participant?.isFakeParticipant
                 && <>
                     <ParticipantQuickAction
                         askUnmuteText = { askToUnmuteText }

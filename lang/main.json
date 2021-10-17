@@ -511,6 +511,9 @@
         "veryGood": "Very Good",
         "star": "Star"
     },
+    "fileupload": {
+        "error": "There was an error in uploading file"
+    },
     "footer": {
         "contactUs": "Contact Us",
         "copyright": "Copyright@2020 {{provider}}. ALL RIGHTS RESERVED.",
@@ -1365,8 +1368,8 @@
         "knockingParticipantList": "Knocking participant list",
         "allow": "Allow",
         "backToKnockModeButton": "Ask to join",
-        "birthdayARHat": "Birthday AR Hat",
-        "birthdayARHatKeep": "Keep",
+        "birthdayARHat": "Birthday Hat",
+        "birthdayARHatKeep": "Allow",
         "birthdayARHatReject": "Reject",
         "dialogTitle": "Lobby mode",
         "disableDialogContent": "Lobby mode is currently enabled. This feature ensures that unwanted participants can't join your meeting. Do you want to disable it?",

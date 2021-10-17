@@ -3,11 +3,23 @@
 import DropdownMenu, { DropdownItem, DropdownItemGroup } from '@atlaskit/dropdown-menu';
 import React from 'react';
 import { toArray } from 'react-emoji-render';
-import { Icon, IconMenuThumb } from '../../../base/icons';
+import { 
+    Icon,
+    IconMenuThumb,
+    IconShareDoc,
+    IconShareExcel,
+    IconShareHTML,
+    IconShareMP3,
+    IconShareMP4,
+    IconSharePDF,
+    IconShareWord,
+    IconShareZip
+} from '../../../base/icons';
 import { translate } from '../../../base/i18n';
 import { Linkify } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { MESSAGE_TYPE_LOCAL } from '../../constants';
+import { getBaseUrl } from '../../../base/util';
 // import BanRemoteParticipantDialog from '../../../video-menu/components/web/BanRemoteParticipantDialog';
 import KickRemoteParticipantDialog from '../../../video-menu/components/web/KickRemoteParticipantDialog';
 
@@ -67,14 +79,48 @@ class ChatMessage extends AbstractChatMessage<Props> {
             content.push(' ');
         }
 
-        content.forEach(i => {
-            if (typeof i === 'string' && i !== ' ') {
-                processedMessage.push(<Linkify key = { i }>{ i }</Linkify>);
-            } else {
-                processedMessage.push(i);
+        content.forEach(msg => {
+            let filename = msg.split('id=')[1];
+            if(msg.startsWith(getBaseUrl()) && (filename !== undefined)) {
+                // poetic way to check whether the file extension types
+                if(/\.(jpe?g|png|gif|bmp)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><img className = 'chatmessage-uploadedImage' key = {msg } src = { msg } /></a>);
+                }
+                else if(/\.(pdf)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconSharePDF } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(html|htm)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareHTML } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(doc|docx|hwp)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareWord } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(xls|xlsx)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareExcel } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(zip)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareZip } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(mp3)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareMP3 } size= { 60 } /> { filename }</Linkify></a>);
+                }
+                else if(/\.(mp4)$/i.test(msg)) {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareMP4 } size= { 60 } /> { filename }</Linkify></a>);
+                }
+
+                // else it is an uploaded file but we don't have corresponding icon, we use the base icon
+                else {
+                    processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareDoc } size= { 60 } /> { filename }</Linkify></a>);
+                }
+
+            }
+            else if (typeof msg === 'string' && msg !== ' ') {
+                processedMessage.push(<Linkify key = { msg }>{ msg }</Linkify>);
+            }
+            else {
+                processedMessage.push(msg);
             }
         });
-
         return (
             <div
                 className = {`chatmessage-wrapper ${message.messageType}`}

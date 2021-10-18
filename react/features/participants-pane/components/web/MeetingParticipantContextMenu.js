@@ -15,6 +15,7 @@ import {
     IconMeetingUnlocked,
     IconMessage,
     IconMicDisabled,
+    IconMicrophone,
     IconMuteEveryoneElse,
     IconShareVideo,
     IconVideoOff
@@ -23,6 +24,7 @@ import {
     getLocalParticipant,
     getLocalParticipantDisplayName,
     getParticipantByIdOrUndefined,
+    getParticipantCount,
     isLocalParticipantModerator,
     isParticipantModerator,
     updateParticipantBirthdayHatFlag
@@ -446,6 +448,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
             _isParticipantAudioMuted,
             _localVideoOwner,
             _participant,
+            _participantCount,
             _rooms,
             _volume = 1,
             classes,
@@ -467,7 +470,6 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
               && overflowDrawer
               && typeof _volume === 'number'
               && !isNaN(_volume);
-        const isRemote = !(APP.store.getState()["features/base/participants"].local.id == _participant?.id);
     
         const actions
             = _participant?.isFakeParticipant ? (
@@ -481,7 +483,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                 </>
             ) : (
                 <>
-                    {_isLocalModerator && isRemote && (
+                    {_isLocalModerator && (
                         <ContextMenuItemGroup>
                             <>
                                 {
@@ -492,14 +494,17 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                     </ContextMenuItem>
                                 }
 
-                                <ContextMenuItem onClick = { this._onMuteEveryoneElse }>
-                                    <ContextMenuIcon src = { IconMuteEveryoneElse } />
-                                    <span>{t('toolbar.accessibilityLabel.muteEveryoneElse')}</span>
-                                </ContextMenuItem>
+                                {
+                                    _participantCount > 1
+                                    && <ContextMenuItem onClick = { this._onMuteEveryoneElse }>
+                                        <ContextMenuIcon src = { IconMuteEveryoneElse } />
+                                        <span>{t('toolbar.accessibilityLabel.muteEveryoneElse')}</span>
+                                    </ContextMenuItem>
+                                }
                             </>
 
                             {
-                                _isParticipantVideoMuted || (
+                                (_participantCount === 1 || _isParticipantVideoMuted) || (
                                     <ContextMenuItem onClick = { this._onMuteVideo }>
                                         <ContextMenuIcon src = { IconVideoOff } />
                                         <span>{t('participantsPane.actions.stopVideo')}</span>
@@ -509,7 +514,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                         </ContextMenuItemGroup>
                     )}
 
-                    { isRemote && <ContextMenuItemGroup>
+                    <ContextMenuItemGroup>
                         {
                             _isLocalModerator && (
                                     <>
@@ -521,10 +526,13 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                                 </ContextMenuItem>
                                             )
                                         }
-                                        <ContextMenuItem onClick = { this._onKick }>
-                                            <ContextMenuIcon src = { IconCloseCircle } />
-                                            <span>{ t('videothumbnail.kick') }</span>
-                                        </ContextMenuItem>
+                                        {
+                                            _participantCount > 1
+                                            && <ContextMenuItem onClick = { this._onKick }>
+                                                <ContextMenuIcon src = { IconCloseCircle } />
+                                                <span>{ t('videothumbnail.kick') }</span>
+                                            </ContextMenuItem>
+                                        }
                                     </>
                             )
                         }
@@ -537,16 +545,16 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                         }
                         
                         {
-                            _isChatButtonEnabled && (
+                            (_participantCount > 1 && _isChatButtonEnabled) && (
                                 <ContextMenuItem onClick = { this._onSendPrivateMessage }>
                                     <ContextMenuIcon src = { IconMessage } />
                                     <span>{t('toolbar.accessibilityLabel.privateMessage')}</span>
                                 </ContextMenuItem>
                             )
                         }
-                    </ContextMenuItemGroup>}
+                    </ContextMenuItemGroup>
                     
-                    {!isRemote && <ContextMenuItemGroup>
+                    <ContextMenuItemGroup>
                         {/* Code portion to self-remove AR hat */}
                         {
                             _isParticipantBirthday && _isHatOn && config.enableBirthdayARHat && <ContextMenuItem onClick = { this._onBirthdayHatOff }>
@@ -562,7 +570,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                 <span>{ t('participantsPane.actions.applyBirthdayARHat') }</span>
                             </ContextMenuItem>
                         }
-                    </ContextMenuItemGroup>}
+                    </ContextMenuItemGroup>
 
                     { showVolumeSlider
                         && <ContextMenuItemGroup>
@@ -652,6 +660,7 @@ function _mapStateToProps(state, ownProps): Object {
     const _rooms = Object.values(getRooms(state));
 
     const { participantsVolume } = state['features/filmstrip'];
+    const _participantCount = getParticipantCount(state);
     const id = participant?.id;
     const isLocal = participant?.local ?? true;
 
@@ -664,6 +673,7 @@ function _mapStateToProps(state, ownProps): Object {
         _isParticipantAudioMuted,
         _localVideoOwner: Boolean(ownerId === localParticipantId),
         _participant: participant,
+        _participantCount,
         _isParticipantBirthday,
         _isHatOn: isHatOn,
         _rooms,

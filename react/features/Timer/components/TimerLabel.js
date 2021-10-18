@@ -45,7 +45,7 @@ export class TimerLabel extends Component<Props> {
 
         this.state = {
             timerValue: getLocalizedDurationFormatter(0),
-            className: 'label--green'
+            className: s.customLabel
         };
 
         let interval;
@@ -66,12 +66,12 @@ export class TimerLabel extends Component<Props> {
                 setTimeout(()=>{
                     notifyTimerStopped("TIMER_OFF");
                     this.props.displayTimerOffGif(false);
-                },2000);
+                },10000);
                 
                 this.props.displayTimerOffGif(true);
 
                 this.setState({ timerValue: getLocalizedDurationFormatter(0), 
-                    className: 'label--red'
+                    className: s.customLabelRed
                     });
                 clearInterval(this.interval);
                 
@@ -96,11 +96,13 @@ export class TimerLabel extends Component<Props> {
             <>
                 <Tooltip
                     position = { 'bottom' }>
-                    <Label
-                        className = { this.state.className }
-                        icon = { IconStopWatch }
-                        id = 'timerLabel'
-                        text = { "Timer " + this.state.timerValue } />
+                    <div className={s.labelContainer} >
+                        <Label
+                            className = { this.state.className}
+                            icon = { IconStopWatch }
+                            id = 'timerLabel'
+                            text = { "Timer " + this.state.timerValue } />
+                    </div>
                 </Tooltip>
                 
             </>

@@ -7,8 +7,9 @@ import type { Dispatch } from 'redux';
 
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
-import { getLocalParticipant, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
-import { Icon, IconPlane, IconSmile } from '../../../base/icons';
+import { getLocalParticipant, getParticipants, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
+import { Icon, IconPlane, IconSmile, IconShareDoc } from '../../../base/icons';
+import { FileUploadButton } from './FileUploadButton';
 import { connect } from '../../../base/redux';
 import { areSmileysDisabled } from '../../functions';
 
@@ -128,6 +129,7 @@ class ChatInput extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
+        const { t } = this.props;
         const smileysPanelClassName = `${this.state.showSmileysPanel
             ? 'show-smileys' : 'hide-smileys'} smileys-panel`;
         
@@ -138,6 +140,7 @@ class ChatInput extends Component<Props, State> {
         return (
             <div className = { `chat-input-container${this.state.message.trim().length ? ' populated' : ''}` }>
                 <div id = 'chat-input' >
+                    <FileUploadButton t = { t } visible = { true } />
                     { this.props._areSmileysDisabled ? null : (
                         <div className = 'smiley-input'>
                             <div id = 'smileysarea'>

@@ -48,7 +48,7 @@ export default class Label extends AbstractLabel<Props, *> {
                 className = { `label ${className}` }
                 id = { id }>
                 { icon && <Icon
-                    size = '16'
+                    size = '20'
                     src = { icon } /> }
                 { text && <span className = { labelClassName }>{text}</span> }
             </div>

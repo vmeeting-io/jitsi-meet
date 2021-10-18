@@ -1,7 +1,9 @@
 // @flow
 
 import Button from '@atlaskit/button/standard-button';
+import { Label } from '@atlaskit/field-base';
 import { FieldTextStateless } from '@atlaskit/field-text';
+import moment from 'moment';
 import React from 'react';
 
 import UIEvents from '../../../../../service/UI/UIEvents';
@@ -15,12 +17,17 @@ import { translate } from '../../../base/i18n';
 import { openLogoutDialog } from '../../actions';
 import { getLocalParticipant} from '../../../base/participants';
 import tokenLocalStorage from '../../../../api/tokenLocalStorage';
-import { DatePicker } from '@atlaskit/datetime-picker';
-import { Label } from '@atlaskit/field-base';
+import DatePicker from '../../../../components/DatePicker';
+import ko from '../../../../components/DatePicker/locale/ko_KR';
 
 import { DEFAULT_BIRTHDATE } from '../../../base/participants/constants';
 
 declare var APP: Object;
+
+const DATE_FORMAT = "YYYY-MM-DD";
+const locales = {
+    ko,
+};
 
 /**
  * The type of the React {@code Component} props of {@link ProfileTab}.
@@ -80,8 +87,9 @@ class ProfileTab extends AbstractDialogTab<Props> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            birthdate: this.props.birthDate, //should get the birthdate from JWT token
-        }
+            birthdate: moment(props.birthDate, DATE_FORMAT), //should get the birthdate from JWT token
+            locale: locales[props.currentLanguage] || undefined,
+        };
 
         // Bind event handlers so they are only bound once for every instance.
         this._onAuthToggle = this._onAuthToggle.bind(this);
@@ -118,9 +126,9 @@ class ProfileTab extends AbstractDialogTab<Props> {
 
     _onBirthDateChange: (Object) => void;
 
-    _onBirthDateChange(newBirthDate) {
+    _onBirthDateChange(newBirthDate, newBirthString) {
         this.setState({ birthdate: newBirthDate });
-        super._onChange({ birthdate: newBirthDate });
+        super._onChange({ birthdate: newBirthString });
     }
 
     /**
@@ -177,9 +185,10 @@ class ProfileTab extends AbstractDialogTab<Props> {
                     <div className = 'birthday-edit-field'>
                         <Label label = "Birthday" />
                         <DatePicker
-                            dateFormat = "YYYY-MM-DD"
+                            format = { DATE_FORMAT }
                             defaultValue = { this.state.birthdate }
                             id = 'birthdatepicker'
+                            locale = { this.state.locale }
                             onChange = { this._onBirthDateChange }
                         />
                     </div>

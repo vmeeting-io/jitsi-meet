@@ -19,8 +19,8 @@ class BirthdayApproveDialog extends Component {
                     <div className="title">{ t('lobby.birthdayARHat') }</div>
                     <ul className="knocking-participants-container">
                         <li className="knocking-participant">
-                            <button className="accept" onClick={this.props.onApprove}> { t('lobby.birthdayARHatKeep') } </button>
-                            <button className="reject" onClick={this.props.onReject}> { t('lobby.birthdayARHatReject') } </button>
+                            <button className="borderLess addedLeftMargin" onClick={this.props.onReject}> { t('lobby.birthdayARHatReject') } </button>
+                            <button className="primary" onClick={this.props.onApprove}> { t('lobby.birthdayARHatKeep') } </button>
                         </li>
                     </ul>
                 </div>

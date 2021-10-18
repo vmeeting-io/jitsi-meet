@@ -8,7 +8,7 @@ import { connect } from '../../base/redux';
 import { HELP_VIEW_MODAL_ID } from '../constants';
 import { getHelpLink } from './functions';
 
-const DEFAULT_HELP_CENTRE_URL = getHelpLink();
+let DEFAULT_HELP_CENTRE_URL = "";
 
 type Props = {
 
@@ -29,6 +29,7 @@ class HelpView extends PureComponent<Props> {
      * @returns {ReactElement}
      */
     render() {
+        DEFAULT_HELP_CENTRE_URL = getHelpLink();
         return (
             <JitsiModal
                 headerProps = {{

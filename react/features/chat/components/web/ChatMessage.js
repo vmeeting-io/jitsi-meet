@@ -80,31 +80,31 @@ class ChatMessage extends AbstractChatMessage<Props> {
         }
 
         content.forEach(msg => {
-            let filename = msg.split('id=')[1];
-            if(msg.startsWith(getBaseUrl()) && (filename !== undefined)) {
+            if(typeof msg === 'string' && msg.startsWith(getBaseUrl())) {
+                let filename = msg.split('id=')[1];
                 // poetic way to check whether the file extension types
-                if(/\.(jpe?g|png|gif|bmp)$/i.test(msg)) {
+                if(/\.(jpe?g|png|gif|bmp)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                     processedMessage.push(<a target="_blank" href={ msg }><img className = 'chatmessage-uploadedImage' key = {msg } src = { msg } /></a>);
                 }
-                else if(/\.(pdf)$/i.test(msg)) {
+                else if(/\.(pdf)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                     processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconSharePDF } size= { 60 } /> { filename }</Linkify></a>);
                 }
-                else if(/\.(html|htm)$/i.test(msg)) {
+                else if(/\.(html|htm)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                     processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareHTML } size= { 60 } /> { filename }</Linkify></a>);
                 }
-                else if(/\.(doc|docx|hwp)$/i.test(msg)) {
+                else if(/\.(doc|docx|hwp)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                     processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareWord } size= { 60 } /> { filename }</Linkify></a>);
                 }
-                else if(/\.(xls|xlsx)$/i.test(msg)) {
+                else if(/\.(xls|xlsx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                     processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareExcel } size= { 60 } /> { filename }</Linkify></a>);
                 }
-                else if(/\.(zip)$/i.test(msg)) {
+                else if(/\.(zip)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                     processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareZip } size= { 60 } /> { filename }</Linkify></a>);
                 }
-                else if(/\.(mp3)$/i.test(msg)) {
+                else if(/\.(mp3)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                     processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareMP3 } size= { 60 } /> { filename }</Linkify></a>);
                 }
-                else if(/\.(mp4)$/i.test(msg)) {
+                else if(/\.(mp4)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                     processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareMP4 } size= { 60 } /> { filename }</Linkify></a>);
                 }
 

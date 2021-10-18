@@ -666,6 +666,10 @@
         max-height: 500%;
     }
 
+    &.set-smileys-margin {
+        margin-left: -50px;
+    }
+
     #smileysContainer {
         background-color: $chatBackgroundColor;
         border-top: 1px solid $chatInputSeparatorColor;

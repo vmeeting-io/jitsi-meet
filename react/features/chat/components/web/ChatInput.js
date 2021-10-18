@@ -47,7 +47,12 @@ type Props = {
     /**
      * Whether chat emoticons are disabled.
      */
-    _areSmileysDisabled: boolean
+    _areSmileysDisabled: boolean,
+
+    /**
+     * Whether or not file upload element is visible or not.
+     */
+    _fileUploadExists: Boolean,
 
 };
 
@@ -129,10 +134,10 @@ class ChatInput extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { t } = this.props;
+        const { t, _fileUploadExists } = this.props;
         const smileysPanelClassName = `${this.state.showSmileysPanel
             ? 'show-smileys' : 'hide-smileys'} smileys-panel`;
-        
+        const smileysPanelMarginClassName = `${_fileUploadExists ? 'set-smileys-margin': '' }`;
         const { _localParticipant } = this.props;
         // let localParticipant = getLocalParticipant(APP.store.getState());
         let prole = _localParticipant.role;
@@ -160,7 +165,7 @@ class ChatInput extends Component<Props, State> {
                                 </div>
                             </div>
                             <div
-                                className = { smileysPanelClassName } >
+                                className = { `${smileysPanelClassName} ${smileysPanelMarginClassName}` } >
                                 <SmileysPanel
                                     onSmileySelect = { this._onSmileySelect } />
                             </div>
@@ -460,8 +465,15 @@ class ChatInput extends Component<Props, State> {
  * @returns {Props}
  */
 export function _mapStateToProps(state) {
+
+    const fileUploadElExists = document.getElementById('fileuploadarea');
+    let fileUploadExists = false;
+    if(fileUploadElExists !== null) {
+        fileUploadExists = true;
+    }
     return {
         _areSmileysDisabled: areSmileysDisabled(state),
+        _fileUploadExists: Boolean(fileUploadExists),
         _participantCount: getParticipantCount(state),
         _remoteParticipants: getRemoteParticipants(state),
         _localParticipant: getLocalParticipant(state)

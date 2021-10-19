@@ -13,6 +13,8 @@ declare var interfaceConfig: Object;
 
 const NOTIFICATION_TIMEOUT = 3000;
 
+const MAX_FILE_SIZE_FOR_UPLOAD = 314572800; // 300 MB = 300 X 1024 X 1024 bytes
+
 /**
  * The type of the React {@code Component} props of {@code AbstractChat}.
  */
@@ -80,6 +82,11 @@ export class FileUploadButton<P: Props> extends Component {
     async uploadFile(file) {
         await this.setState({ selectedFile: file });
         const { t } = this.props;
+
+        if(file.size > MAX_FILE_SIZE_FOR_UPLOAD) {
+            alert(t('fileupload.maxfilesizeexceeded'));
+            return;
+        }
 
         let _apiBase = getAuthUrl(APP.store.getState());
         const serverURL = getBaseUrl();

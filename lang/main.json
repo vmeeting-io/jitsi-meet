@@ -512,7 +512,8 @@
         "star": "Star"
     },
     "fileupload": {
-        "error": "There was an error in uploading file"
+        "error": "There was an error in uploading file",
+        "maxfilesizeexceeded": "Uploaded file exceeds the maximum file size allowed."
     },
     "footer": {
         "contactUs": "Contact Us",

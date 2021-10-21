@@ -4,7 +4,6 @@ import React, {Component} from 'react';
 import axios from 'axios';
 import { Icon, IconShareDoc } from '../../../base/icons';
 import { getAuthUrl } from '../../../../api/url';
-import { getBaseUrl } from '../../../base/util';
 import { sendMessage } from '../../actions';
 import { getConferenceName } from '../../../base/conference';
 import { showToast } from '../../../../features/notifications';
@@ -89,11 +88,14 @@ export class FileUploadButton<P: Props> extends Component {
         }
 
         let _apiBase = getAuthUrl(APP.store.getState());
-        const serverURL = getBaseUrl();
+
+        const connDetails = APP.store.getState()['features/base/connection'].locationURL;
+        const hostName = connDetails.hostname;
+        const serverURLwoPort = `https://${hostName}`;
         const dispatch = APP.store.dispatch;
         const formData = new FormData();
 
-        const roomName =  getConferenceName(APP.store.getState()).replace(/\s+/g, '') // strip all spaces
+        const roomName =  getConferenceName(APP.store.getState()).replace(/\s+/g, '').toLowerCase() // strip all spaces and case convert to lowercase
         
         // update the formdata object
         formData.append(file.name, file);
@@ -110,15 +112,15 @@ export class FileUploadButton<P: Props> extends Component {
                 // the URL of the server should be adjusted accordingly
 
                 // we use encodeURIComponent to ensure that spaces and special characters in filename is well-replaced to represent a URL
-                const fileUrl = `${serverURL}auth/api/uploads/?roomName=${roomName}&id=${encodeURIComponent(resp.data.fileName)}`;
-                this.setState({ uploadedURL: fileUrl, fileUploaded: true, conferenceName: roomName });
+                const newFileUrl = `${serverURLwoPort}/download/files/${roomName}/${encodeURIComponent(resp.data.fileName)}`;
+                this.setState({ uploadedURL: newFileUrl, fileUploaded: true, conferenceName: roomName });
                 
                 // dispatch sendMessage action to display the URL of the uploaded file as a message
-                dispatch(sendMessage(fileUrl));
+                dispatch(sendMessage(newFileUrl));
             }
             
         } catch(err) {
-            // show a toast error message asking for user to ensure themselves as a registered user
+            // show a toast error message in case of file upload error
             showToast({
                 title: t('fileupload.error'), // need to use translated strings here
                 timeout: NOTIFICATION_TIMEOUT,

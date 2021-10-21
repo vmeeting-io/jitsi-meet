@@ -19,7 +19,6 @@ import { translate } from '../../../base/i18n';
 import { Linkify } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { MESSAGE_TYPE_LOCAL } from '../../constants';
-import { getBaseUrl } from '../../../base/util';
 // import BanRemoteParticipantDialog from '../../../video-menu/components/web/BanRemoteParticipantDialog';
 import KickRemoteParticipantDialog from '../../../video-menu/components/web/KickRemoteParticipantDialog';
 
@@ -60,6 +59,10 @@ class ChatMessage extends AbstractChatMessage<Props> {
         const { message, t } = this.props;
         const processedMessage = [];
 
+        const connDetails = APP.store.getState()['features/base/connection'].locationURL;
+        const hostName = connDetails.hostname;
+        const serverURLwoPort = `https://${hostName}`;
+
         const txt = this._getMessageText();
 
         // Tokenize the text in order to avoid emoji substitution for URLs.
@@ -80,8 +83,9 @@ class ChatMessage extends AbstractChatMessage<Props> {
         }
 
         content.forEach(msg => {
-            if(typeof msg === 'string' && msg.startsWith(getBaseUrl())) {
-                let filename = msg.split('id=')[1];
+
+            if(typeof msg === 'string' && msg.startsWith(serverURLwoPort)) {
+                let filename = msg.split('/').pop(); // use pop to fetch the last element contained in the array after using split
 
                 if((filename !== undefined) && (filename !== '')) {
                     let decodedFileName = decodeURIComponent(filename);

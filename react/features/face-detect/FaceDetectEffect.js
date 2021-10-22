@@ -88,7 +88,7 @@ export default class FaceDetectEffect {
      * @returns {boolean} - Returns true if this effect can run on the specified track
      * false otherwise.
      */
-     isEnabled(jitsiLocalTrack: Object) {
+    isEnabled(jitsiLocalTrack: Object) {
         return jitsiLocalTrack.isVideoTrack() && jitsiLocalTrack.videoType === 'camera';
     }
 

@@ -23,6 +23,10 @@ const segmentationDimensions = {
     }
 };
 
+let tflite;
+let wasmCheck;
+let isWasmDisabled = false;
+
 /**
  * Creates a new instance of JitsiStreamBackgroundEffect. This loads the Meet background model that is used to
  * extract person segmentation.
@@ -36,38 +40,40 @@ export async function createVirtualBackgroundEffect(virtualBackground: Object, d
     if (!MediaStreamTrack.prototype.getSettings && !MediaStreamTrack.prototype.getConstraints) {
         throw new Error('JitsiStreamBackgroundEffect not supported!');
     }
-    let tflite;
-    let wasmCheck;
 
     // Checks if WebAssembly feature is supported or enabled by/in the browser.
     // Conditional import of wasm-check package is done to prevent
     // the browser from crashing when the user opens the app.
 
-    try {
-        wasmCheck = require('wasm-check');
-        const tfliteTimeout = 10000;
+    if (!tflite && !isWasmDisabled) {
+        try {
+            wasmCheck = require('wasm-check');
+            const tfliteTimeout = 10000;
+    
+            if (wasmCheck?.feature?.simd) {
+                tflite = await timeout(tfliteTimeout, createTFLiteSIMDModule());
+            } else {
+                tflite = await timeout(tfliteTimeout, createTFLiteModule());
+            }
+        } catch (err) {
+            isWasmDisabled = true;
 
-        if (wasmCheck?.feature?.simd) {
-            tflite = await timeout(tfliteTimeout, createTFLiteSIMDModule());
-        } else {
-            tflite = await timeout(tfliteTimeout, createTFLiteModule());
+            if (err?.message === '408') {
+                logger.error('Failed to download tflite model!');
+                dispatch(showWarningNotification({
+                    titleKey: 'virtualBackground.backgroundEffectError'
+                }));
+            } else {
+                logger.error('Looks like WebAssembly is disabled or not supported on this browser');
+                dispatch(showWarningNotification({
+                    titleKey: 'virtualBackground.webAssemblyWarning',
+                    description: 'WebAssembly disabled or not supported by this browser'
+                }));
+            }
+    
+            return;
+    
         }
-    } catch (err) {
-        if (err?.message === '408') {
-            logger.error('Failed to download tflite model!');
-            dispatch(showWarningNotification({
-                titleKey: 'virtualBackground.backgroundEffectError'
-            }));
-        } else {
-            logger.error('Looks like WebAssembly is disabled or not supported on this browser');
-            dispatch(showWarningNotification({
-                titleKey: 'virtualBackground.webAssemblyWarning',
-                description: 'WebAssembly disabled or not supported by this browser'
-            }));
-        }
-
-        return;
-
     }
 
     const modelBufferOffset = tflite._getModelBufferMemoryOffset();

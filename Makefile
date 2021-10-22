@@ -14,7 +14,7 @@ STYLES_BUNDLE = css/all.bundle.css
 STYLES_DESTINATION = css/all.css
 STYLES_MAIN = css/main.scss
 WEBPACK = ./node_modules/.bin/webpack
-WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack-dev-server
+WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack serve --mode development
 LANGUAGES := $(shell node -p "Object.keys(require('./lang/languages.json')).join(' ')")
 COUNTRIES_DIR := node_modules/i18n-iso-countries/langs
 DEV_COUNTRIES_DIR := lang/countries
@@ -22,7 +22,7 @@ DEV_COUNTRIES_DIR := lang/countries
 all: compile deploy clean
 
 compile:
-	node --max-old-space-size=4096 $(WEBPACK) -p
+	node --max-old-space-size=4096 $(WEBPACK)
 
 compile-load-test:
 	${NPM} install --prefix resources/load-test && ${NPM} run build --prefix resources/load-test
@@ -54,9 +54,11 @@ deploy-appbundle:
 		$(OUTPUT_DIR)/analytics-ga.js \
 		$(BUILD_DIR)/analytics-ga.min.js \
 		$(BUILD_DIR)/analytics-ga.min.map \
+		$(DEPLOY_DIR)
+	cp \
 		$(BUILD_DIR)/close3.min.js \
 		$(BUILD_DIR)/close3.min.map \
-		$(DEPLOY_DIR)
+		$(DEPLOY_DIR) || true
 
 deploy-lib-jitsi-meet:
 	cp \

@@ -115,14 +115,6 @@ form {
     display: block;
 }
 
-.watermark {
-    width: $watermarkWidth;
-    height: $watermarkHeight;
-    background-size: contain;
-    background-repeat: no-repeat;
-    z-index: $zindex2;
-}
-
 .leftwatermark {
     background-position: center left;
     background-repeat: no-repeat;

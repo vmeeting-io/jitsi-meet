@@ -33,6 +33,7 @@ import EnableChatForRemoteParticipantDialog from '../../../video-menu/components
 import DisableChatForRemoteParticipantDialog from '../../../video-menu/components/web/DisableChatForRemoteParticipantDialog';
 import { setPrivateMessageRecipient } from '../../actions';
 import PrivateNotice from './PrivateNotice';
+import { getBaseUrl } from '../../../base/util';
 
 declare var APP: Object;
 
@@ -59,9 +60,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
         const { message, t } = this.props;
         const processedMessage = [];
 
-        const connDetails = APP.store.getState()['features/base/connection'].locationURL;
-        const hostName = connDetails.hostname;
-        const serverURLwoPort = `https://${hostName}`;
+        const serverURL = getBaseUrl();
 
         const txt = this._getMessageText();
 
@@ -84,7 +83,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
 
         content.forEach(msg => {
 
-            if(typeof msg === 'string' && msg.startsWith(serverURLwoPort)) {
+            if(typeof msg === 'string' && msg.startsWith(serverURL)) {
                 let filename = msg.split('/').pop(); // use pop to fetch the last element contained in the array after using split
 
                 if((filename !== undefined) && (filename !== '')) {

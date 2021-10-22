@@ -7,6 +7,7 @@ import { getAuthUrl } from '../../../../api/url';
 import { sendMessage } from '../../actions';
 import { getConferenceName } from '../../../base/conference';
 import { showToast } from '../../../../features/notifications';
+import { getBaseUrl } from '../../../base/util';
 
 declare var interfaceConfig: Object;
 
@@ -89,9 +90,7 @@ export class FileUploadButton<P: Props> extends Component {
 
         let _apiBase = getAuthUrl(APP.store.getState());
 
-        const connDetails = APP.store.getState()['features/base/connection'].locationURL;
-        const hostName = connDetails.hostname;
-        const serverURLwoPort = `https://${hostName}`;
+        const serverURL = getBaseUrl();
         const dispatch = APP.store.dispatch;
         const formData = new FormData();
 
@@ -112,7 +111,7 @@ export class FileUploadButton<P: Props> extends Component {
                 // the URL of the server should be adjusted accordingly
 
                 // we use encodeURIComponent to ensure that spaces and special characters in filename is well-replaced to represent a URL
-                const newFileUrl = `${serverURLwoPort}/download/files/${roomName}/${encodeURIComponent(resp.data.fileName)}`;
+                const newFileUrl = `${serverURL}/download/files/${roomName}/${encodeURIComponent(resp.data.fileName)}`;
                 this.setState({ uploadedURL: newFileUrl, fileUploaded: true, conferenceName: roomName });
                 
                 // dispatch sendMessage action to display the URL of the uploaded file as a message

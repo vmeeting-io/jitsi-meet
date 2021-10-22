@@ -83,6 +83,7 @@
         "enter": "방 입장",
         "error": "메시지가 전송되지 않았습니다.\n수신인이 회의실에 없습니다.",
         "fieldPlaceHolder": "여기에 메시지를 입력하세요",
+        "filesize": "용량: ",
         "messagebox": "메시지 입력",
         "messageTo": "{{recipient}}에게 개인메시지",
         "noMessagesMessage": "회의에 아직 메시지가 없습니다. 여기서 대화를 시작하십시오!",

@@ -215,8 +215,8 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
             dispatch(disconnect(false));
         }
         dispatch(saveErrorNotification({
-            titleKey: 'dialog.LicenseError',
-            descriptionKey: 'dialog.MaxedLicense',
+            titleKey: 'dialog.maxUsersLimitReachedTitle',
+            descriptionKey: 'dialog.maxUsersLimitReached',
         }));
         dispatch(redirectWithStoredParams('/'));
         break;

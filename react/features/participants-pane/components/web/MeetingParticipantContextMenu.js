@@ -470,6 +470,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
               && overflowDrawer
               && typeof _volume === 'number'
               && !isNaN(_volume);
+        const isRemote = !(APP.store.getState()["features/base/participants"].local.id == _participant?.id);
     
         const actions
             = _participant?.isFakeParticipant ? (
@@ -483,7 +484,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                 </>
             ) : (
                 <>
-                    {_isLocalModerator && (
+                    {_isLocalModerator && isRemote && (
                         <ContextMenuItemGroup>
                             <>
                                 {
@@ -513,7 +514,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                             }
                         </ContextMenuItemGroup>
                     )}
-
+                    { isRemote && 
                     <ContextMenuItemGroup>
                         {
                             _isLocalModerator && (
@@ -552,9 +553,9 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                 </ContextMenuItem>
                             )
                         }
-                    </ContextMenuItemGroup>
+                    </ContextMenuItemGroup> }
                     
-                    <ContextMenuItemGroup>
+                    { !isRemote && <ContextMenuItemGroup>
                         {/* Code portion to self-remove AR hat */}
                         {
                             _isParticipantBirthday && _isHatOn && config.enableBirthdayARHat && <ContextMenuItem onClick = { this._onBirthdayHatOff }>
@@ -570,7 +571,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                 <span>{ t('participantsPane.actions.applyBirthdayARHat') }</span>
                             </ContextMenuItem>
                         }
-                    </ContextMenuItemGroup>
+                    </ContextMenuItemGroup> }
 
                     { showVolumeSlider
                         && <ContextMenuItemGroup>

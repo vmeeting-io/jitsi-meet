@@ -83,6 +83,7 @@
         "enter": "방 입장",
         "error": "메시지가 전송되지 않았습니다.\n수신인이 회의실에 없습니다.",
         "fieldPlaceHolder": "여기에 메시지를 입력하세요",
+        "filesize": "용량: ",
         "messagebox": "메시지 입력",
         "messageTo": "{{recipient}}에게 개인메시지",
         "noMessagesMessage": "회의에 아직 메시지가 없습니다. 여기서 대화를 시작하십시오!",
@@ -498,6 +499,10 @@
         "rateExperience": "회의 경험 평가하기",
         "veryBad": "매우 나쁨",
         "veryGood": "매우 좋음"
+    },
+    "fileupload": {
+        "error": "파일을 업로드하는 중에 오류가 발생되었니다.",
+        "maxfilesizeexceeded": "업로드된 파일이 허용되는 최대 파일 크기를 초과합니다."
     },
     "footer": {
         "contactUs": "문의하기",

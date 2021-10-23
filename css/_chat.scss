@@ -557,6 +557,38 @@
         white-space: pre-wrap;
         font-size: 14px;
         text-align: start;
+
+        .userfiles {
+            display: flex;
+            flex-direction: row;
+            width: $sidebarWidth * 0.8;
+            margin-top: 5px;
+            margin-bottom: -15px;
+            margin-left: 0px;
+
+            .userfiles-icons {
+                flex: 1;
+            }
+
+            .userfilesnamesize {
+                display: flex;
+                flex-direction: column;
+                flex: 3;
+
+                .userfilesname {
+                    flex: 3;
+                    font-size: small;
+                    margin-top: 10px;
+                    margin-right: 15px;
+                    word-break: break-all;
+                }
+
+                .userfilessize {
+                    font-size: smaller;
+                    flex: 3;
+                }
+            }
+        }
     }
 
     &.error {

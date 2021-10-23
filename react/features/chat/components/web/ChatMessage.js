@@ -19,7 +19,6 @@ import { translate } from '../../../base/i18n';
 import { Linkify } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { MESSAGE_TYPE_LOCAL } from '../../constants';
-import { getBaseUrl } from '../../../base/util';
 // import BanRemoteParticipantDialog from '../../../video-menu/components/web/BanRemoteParticipantDialog';
 import KickRemoteParticipantDialog from '../../../video-menu/components/web/KickRemoteParticipantDialog';
 
@@ -34,6 +33,7 @@ import EnableChatForRemoteParticipantDialog from '../../../video-menu/components
 import DisableChatForRemoteParticipantDialog from '../../../video-menu/components/web/DisableChatForRemoteParticipantDialog';
 import { setPrivateMessageRecipient } from '../../actions';
 import PrivateNotice from './PrivateNotice';
+import { getBaseUrl, getFileSize, processFileSize } from '../../../base/util';
 
 declare var APP: Object;
 
@@ -60,6 +60,8 @@ class ChatMessage extends AbstractChatMessage<Props> {
         const { message, t } = this.props;
         const processedMessage = [];
 
+        const serverURL = getBaseUrl();
+
         const txt = this._getMessageText();
 
         // Tokenize the text in order to avoid emoji substitution for URLs.
@@ -80,10 +82,14 @@ class ChatMessage extends AbstractChatMessage<Props> {
         }
 
         content.forEach(msg => {
-            if(typeof msg === 'string' && msg.startsWith(getBaseUrl())) {
-                let filename = msg.split('id=')[1];
+
+            if(typeof msg === 'string' && msg.startsWith(serverURL)) {
+                let filename = msg.split('/').pop(); // use pop to fetch the last element contained in the array after using split
 
                 if((filename !== undefined) && (filename !== '')) {
+
+                    const fsize = getFileSize(msg);
+                    const processedSize = processFileSize(fsize);
                     let decodedFileName = decodeURIComponent(filename);
 
                     // poetic way to check whether the file extension types
@@ -91,29 +97,29 @@ class ChatMessage extends AbstractChatMessage<Props> {
                         processedMessage.push(<a target="_blank" href={ msg }><img className = 'chatmessage-uploadedImage' key = {msg } src = { msg } /></a>);
                     }
                     else if(/\.(pdf)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconSharePDF } size= { 60 } /> { decodedFileName }</Linkify></a>);
+                        processedMessage.push(this._renderFileUploads(msg, IconSharePDF, decodedFileName, processedSize));
                     }
                     else if(/\.(html|htm)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareHTML } size= { 60 } /> { decodedFileName }</Linkify></a>);
+                        processedMessage.push(this._renderFileUploads(msg, IconShareHTML, decodedFileName, processedSize));
                     }
                     else if(/\.(doc|docx|hwp)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareWord } size= { 60 } /> { decodedFileName }</Linkify></a>);
+                        processedMessage.push(this._renderFileUploads(msg, IconShareWord, decodedFileName, processedSize));
                     }
                     else if(/\.(xls|xlsx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareExcel } size= { 60 } /> { decodedFileName }</Linkify></a>);
+                        processedMessage.push(this._renderFileUploads(msg, IconShareExcel, decodedFileName, processedSize));
                     }
                     else if(/\.(zip)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareZip } size= { 60 } /> { decodedFileName }</Linkify></a>);
+                        processedMessage.push(this._renderFileUploads(msg, IconShareZip, decodedFileName, processedSize));
                     }
                     else if(/\.(mp3)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareMP3 } size= { 60 } /> { decodedFileName }</Linkify></a>);
+                        processedMessage.push(this._renderFileUploads(msg, IconShareMP3, decodedFileName, processedSize));
                     }
                     else if(/\.(mp4)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareMP4 } size= { 60 } /> { decodedFileName }</Linkify></a>);
+                        processedMessage.push(this._renderFileUploads(msg, IconShareMP4, decodedFileName, processedSize));
                     }
                     // else it is an uploaded file but we don't have corresponding icon, we use the base icon
                     else {
-                        processedMessage.push(<a target="_blank" href={ msg }><Linkify key = { msg }> <Icon src={ IconShareDoc } size= { 60 } /> { decodedFileName }</Linkify></a>);
+                        processedMessage.push(this._renderFileUploads(msg, IconShareDoc, decodedFileName, processedSize));
                     }
                 }
 
@@ -196,6 +202,29 @@ class ChatMessage extends AbstractChatMessage<Props> {
             // dispatch necessary actions via a dialog box for the participant
             dispatch(openDialog(DisableChatForRemoteParticipantDialog, { participantID }));
         }
+    }
+
+    _renderFileUploads(msg, icon, fname, fsize) {
+        const { t } = this.props;
+        return(
+            <a target="_blank" href={ msg }>
+                <Linkify key = { msg }>
+                    <div className = "userfiles">
+                        <div className = "userfiles-icons">
+                            <Icon src={ icon } size= { 60 } />
+                        </div>
+                        <div className = "userfilesnamesize">
+                            <div className = "userfilesname">
+                                { fname }
+                            </div>
+                            <div className = "userfilessize">
+                                { t('chat.filesize') + fsize }
+                            </div>
+                        </div>
+                    </div>
+                </Linkify>
+            </a>
+        );
     }
 
     /**

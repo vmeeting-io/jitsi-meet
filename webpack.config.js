@@ -120,9 +120,6 @@ function getConfig(options = {}) {
                 // Transpile ES2015 (aka ES6) to ES5. Accept the JSX syntax by React
                 // as well.
 
-                exclude: [
-                    new RegExp(`${__dirname}/node_modules/(?!@jitsi/js-utils)`)
-                ],
                 loader: 'babel-loader',
                 options: {
                     // Avoid loading babel.config.js, since we only use it for React Native.
@@ -225,7 +222,6 @@ function getConfig(options = {}) {
                 }
             }, {
                 test: /\.svg$/,
-                exclude: /node_modules/,
                 use: [ {
                     loader: '@svgr/webpack',
                     options: {
@@ -249,7 +245,7 @@ function getConfig(options = {}) {
             filename: `[name]${minimize ? '.min' : ''}.js`,
             path: `${__dirname}/build`,
             publicPath: '/libs/',
-            sourceMapFilename: `[name].${minimize ? 'min' : 'js'}.map`
+            sourceMapFilename: `[name]${minimize ? '.min' : ''}.map`
         },
         plugins: [
             new webpack.DefinePlugin(envKeys),
@@ -262,8 +258,7 @@ function getConfig(options = {}) {
         ].filter(Boolean),
         resolve: {
             alias: {
-                'focus-visible': 'focus-visible/dist/focus-visible.min.js',
-                jquery: `jquery/dist/jquery${minimize ? '.min' : ''}.js`
+                'focus-visible': 'focus-visible/dist/focus-visible.min.js'
             },
             aliasFields: [
                 'browser'
@@ -291,6 +286,7 @@ function getConfig(options = {}) {
  * Webpack 5 because only one devServer entry is supported, so we attach it to
  * the main bundle.
  *
+
  * @returns {Object} the dev server configuration.
  */
 function getDevServerConfig() {
@@ -299,12 +295,12 @@ function getDevServerConfig() {
             overlay: {
                 errors: true,
                 warnings: false
-            },
-            // webSocketURL: 'wss://0.0.0.0:8080/sockjs-web',
+            }
         },
         allowedHosts: 'all',
         https: true,
         host: '0.0.0.0',
+        hot: true,
         proxy: {
             '/': {
                 bypass: devServerProxyBypass,

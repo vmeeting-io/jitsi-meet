@@ -16,7 +16,6 @@ import {
     IconShareDesktop
 } from '../../base/icons'
 
-import s from './SpeakerStatsItem.module.scss';
 import { formatDuration, formatTime } from '../../base/util/formatDateTime';
 
 declare var interfaceConfig: Object;
@@ -112,24 +111,24 @@ class SpeakerStatsItem extends Component<Props> {
         }
 
         return (
-            <div className = { `${rowDisplayClass} ${s.itemContainer}` }>
-                <div className = { `speaker-stats-item__name ${s.nameContainer}` }> 
-                    <span className = { s.name }>{ displayName }</span>
+            <div className = { rowDisplayClass }>
+                <div className = 'speaker-stats-item__name'> 
+                    <span className = 'name'>{ displayName }</span>
                 </div>
-                <div className = { s.statusContainer }>
+                <div className = 'speaker-stats-item__status'>
                     { this.displayModeratorStatus(isModerator) }
                     { this.displayPresenterStatus(isPresenter) }
                     { this.displayAudioStatus(audioMuted) }
                     { this.displayVideoStatus(videoMuted) }
                     { this.displayChatStatus(chat) }
                 </div>
-                <div className = { `speaker-stats-item__s_time ${s.joinTime}` }>
+                <div className = 'speaker-stats-item__s_time'>
                     { formatTime(joinTime) }
                 </div>
-                <div className = { `speaker-stats-item__l_time ${s.leaveTime}` }>
+                <div className = 'speaker-stats-item__l_time'>
                     { formatTime(leaveTime) } 
                 </div>
-                <div className = { s.duration }>
+                <div className = 'speaker-stats-item__duration'>
                     { formatDuration(duration) }
                 </div>
             </div>
@@ -138,7 +137,7 @@ class SpeakerStatsItem extends Component<Props> {
 
     displayAudioStatus(audioMuted) {
         let icon;
-        let iconClass = this.props.hasLeft || audioMuted ? s.disabled : '';
+        let iconClass = this.props.hasLeft || audioMuted ? 'indicator-disabled' : '';
         let toolTipMessage;
 
         if (audioMuted) {
@@ -162,7 +161,7 @@ class SpeakerStatsItem extends Component<Props> {
 
     displayVideoStatus(videoMuted) {
         let icon;
-        let iconClass = this.props.hasLeft || videoMuted ? s.disabled : '';
+        let iconClass = this.props.hasLeft || videoMuted ? 'indicator-disabled' : '';
         let toolTipMessage;
 
         if (videoMuted) {
@@ -189,7 +188,7 @@ class SpeakerStatsItem extends Component<Props> {
 
         return (
             <BaseIndicator
-                className = { isModerator ? '' : s.disabled }
+                className = { isModerator ? '' : 'indicator-disabled' }
                 icon = { IconModerator }
                 iconId = 'crown'
                 iconSize = { 16 }
@@ -199,7 +198,7 @@ class SpeakerStatsItem extends Component<Props> {
     }
 
     displayPresenterStatus(isPresenter) {
-        let iconClass = this.props.hasLeft || !isPresenter ? s.disabled : '';
+        let iconClass = this.props.hasLeft || !isPresenter ? 'indicator-disabled' : '';
         let toolTipMessage = isPresenter ? 'videothumbnail.presenter' : '';
 
         return(
@@ -218,7 +217,7 @@ class SpeakerStatsItem extends Component<Props> {
 
         return (
             <BaseIndicator
-                className = { chatEnabled ? '' : s.disabled }
+                className = { chatEnabled ? '' : 'indicator-disabled' }
                 icon = { chatEnabled ? IconChatEnabled : IconChatDisabled }
                 iconId = 'chat'
                 iconSize = { chatEnabled ? 14 : 16}

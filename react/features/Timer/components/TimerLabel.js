@@ -16,7 +16,6 @@ import AbstractTimerLabel, {
 } from './AbstractTimerLabel';
 
 import { notifyTimerStopped } from '../../participants-pane/actions.any'
-import s from './TimerLabel.module.scss';
 
 type Props = AbstractProps & {
 
@@ -45,7 +44,7 @@ export class TimerLabel extends Component<Props> {
 
         this.state = {
             timerValue: getLocalizedDurationFormatter(0),
-            className: s.customLabel
+            className: 'custom-label'
         };
 
         let interval;
@@ -70,9 +69,10 @@ export class TimerLabel extends Component<Props> {
                 
                 this.props.displayTimerOffGif(true);
 
-                this.setState({ timerValue: getLocalizedDurationFormatter(0), 
-                    className: s.customLabelRed
-                    });
+                this.setState({
+                    timerValue: getLocalizedDurationFormatter(0),
+                    className: 'custom-label-red'
+                });
                 clearInterval(this.interval);
                 
             }else{
@@ -88,15 +88,13 @@ export class TimerLabel extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const {
-            t
-        } = this.props;
+        const { t } = this.props;
 
         return (
             <>
                 <Tooltip
                     position = { 'bottom' }>
-                    <div className={s.labelContainer} >
+                    <div className = 'timer-label' >
                         <Label
                             className = { this.state.className}
                             icon = { IconStopWatch }

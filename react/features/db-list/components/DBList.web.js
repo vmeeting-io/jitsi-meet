@@ -1,5 +1,6 @@
 // @flow
 
+import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import React from 'react';
 import type { Dispatch } from 'redux';
 
@@ -11,10 +12,6 @@ import { toDisplayableList } from '../functions';
 import AbstractDBList from './AbstractDBList';
 
 import axios from 'axios';
-
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-
-import s from './DBList.module.scss';
 
 
 /**
@@ -145,7 +142,7 @@ class DBList extends AbstractDBList<Props, State> {
             <ModalTransition>
                 {modalOpen && (
                 <Modal
-                    className={s.lightModal}
+                    className='lightModal'
                     actions={[{ text: t('welcomepage.deleteElement'), onClick: this._proceedDelete }, { text: t('welcomepage.cancelDelete'), onClick: this._closeModal }]}
                     onClose={ this._closeModal }
                     heading={t('welcomepage.deleteModalHeading')}
@@ -157,7 +154,7 @@ class DBList extends AbstractDBList<Props, State> {
             <ModalTransition>
                 {failedModalOpen && (
                 <Modal
-                    className={s.lightModal}
+                    className='lightModal'
                     actions={[{ text: t('welcomepage.cancelDelete'), onClick: this._closeDeleteFailModal }]}
                     onClose={ this._closeDeleteFailModal }
                     heading={t('welcomepage.deleteFailHeading')}

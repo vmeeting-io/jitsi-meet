@@ -84,41 +84,41 @@ class ChatMessage extends AbstractChatMessage<Props> {
         content.forEach(msg => {
 
             if(typeof msg === 'string' && msg.startsWith(serverURL)) {
-                const [filelink, size] = msg.split('__size:');
-                let filename = filelink.split('/').pop(); // use pop to fetch the last element contained in the array after using split
+                let filename = msg.split('/').pop(); // use pop to fetch the last element contained in the array after using split
                 if((filename !== undefined) && (filename !== '')) {
 
-                    const processedSize = processFileSize(size);
+                    const fsize = getFileSize(msg);
+                    const processedSize = processFileSize(fsize);
                     let decodedFileName = decodeURIComponent(filename);
 
                     // poetic way to check whether the file extension types
-                    if(/\.(jpe?g|png|gif|bmp)$/i.test(filelink)) {
-                        processedMessage.push(<a target="_blank" href={ filelink }><img className = 'chatmessage-uploadedImage' key = { filelink } src = { filelink } /></a>);
+                    if(/\.(jpe?g|png|gif|bmp)$/i.test(msg)) {
+                        processedMessage.push(<a target="_blank" href={ msg }><img className = 'chatmessage-uploadedImage' key = { msg } src = { msg } /></a>);
                     }
-                    else if(/\.(pdf)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(filelink, IconSharePDF, decodedFileName, processedSize));
+                    else if(/\.(pdf)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
+                        processedMessage.push(this._renderFileUploads(msg, IconSharePDF, decodedFileName, processedSize));
                     }
-                    else if(/\.(html|htm)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(filelink, IconShareHTML, decodedFileName, processedSize));
+                    else if(/\.(html|htm)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
+                        processedMessage.push(this._renderFileUploads(msg, IconShareHTML, decodedFileName, processedSize));
                     }
-                    else if(/\.(doc|docx|hwp)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(filelink, IconShareWord, decodedFileName, processedSize));
+                    else if(/\.(doc|docx|hwp)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
+                        processedMessage.push(this._renderFileUploads(msg, IconShareWord, decodedFileName, processedSize));
                     }
-                    else if(/\.(xls|xlsx)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(filelink, IconShareExcel, decodedFileName, processedSize));
+                    else if(/\.(xls|xlsx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
+                        processedMessage.push(this._renderFileUploads(msg, IconShareExcel, decodedFileName, processedSize));
                     }
-                    else if(/\.(zip)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(filelink, IconShareZip, decodedFileName, processedSize));
+                    else if(/\.(zip)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
+                        processedMessage.push(this._renderFileUploads(msg, IconShareZip, decodedFileName, processedSize));
                     }
-                    else if(/\.(mp3)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(filelink, IconShareMP3, decodedFileName, processedSize));
+                    else if(/\.(mp3)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
+                        processedMessage.push(this._renderFileUploads(msg, IconShareMP3, decodedFileName, processedSize));
                     }
-                    else if(/\.(mp4)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(filelink, IconShareMP4, decodedFileName, processedSize));
+                    else if(/\.(mp4)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
+                        processedMessage.push(this._renderFileUploads(msg, IconShareMP4, decodedFileName, processedSize));
                     }
                     // else it is an uploaded file but we don't have corresponding icon, we use the base icon
                     else {
-                        processedMessage.push(this._renderFileUploads(filelink, IconShareDoc, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconShareDoc, decodedFileName, processedSize));
                     }
                 // when someone is just sending a message with the URL of the server but nothing more
                 } else {

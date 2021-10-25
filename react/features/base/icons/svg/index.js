@@ -105,6 +105,7 @@ export { default as IconMuteVideoEveryoneElse } from './mute-video-everyone-else
 export { default as IconNotificationJoin } from './navigate_next.svg';
 export { default as IconOpenInNew } from './open_in_new.svg';
 export { default as IconOutlook } from './office365.svg';
+export { default as IconPaperClip } from './paperclip-outlined.svg';
 export { default as IconParticipants } from './participants.svg';
 export { default as IconPhone } from './phone.svg';
 export { default as IconPin } from './enlarge.svg';

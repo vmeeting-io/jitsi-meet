@@ -81,6 +81,9 @@
         "error": "Your message was not sent.\n{{error}}",
         "fieldPlaceHolder": "Type your message here",
         "filesize": "Size: ",
+        "message": "Message",
+        "messageAccessibleTitle": "{{user}}:",
+        "messageAccessibleTitleMe": "me:",
         "messagebox": "Type a message",
         "messageTo": "Private message to {{recipient}}",
         "noMessagesMessage": "There are no messages in the meeting yet. Start a conversation here!",
@@ -91,9 +94,8 @@
         },
         "privateNotice": "Private message to {{recipient}}",
         "search": "Search for chat messages",
-        "message": "Message",
-        "messageAccessibleTitle": "{{user}} says:",
-        "messageAccessibleTitleMe": "me says:",
+        "send": "Send",
+        "smileys": "Emoji",
         "smileysPanel": "Emoji panel",
         "tabs": {
             "chat": "Chat",
@@ -513,6 +515,7 @@
         "star": "Star"
     },
     "fileupload": {
+        "title": "File Upload",
         "error": "There was an error in uploading file",
         "maxfilesizeexceeded": "Uploaded file exceeds the maximum file size allowed."
     },

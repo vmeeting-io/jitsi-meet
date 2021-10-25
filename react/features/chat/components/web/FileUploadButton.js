@@ -99,6 +99,7 @@ class FileUploadButton<P: Props> extends Component {
         const formData = new FormData();
 
         const roomName =  getConferenceName(APP.store.getState()).replace(/\s+/g, '').toLowerCase() // strip all spaces and case convert to lowercase
+        const fsize = file.size;
         
         // update the formdata object
         formData.append(file.name, file);
@@ -117,9 +118,12 @@ class FileUploadButton<P: Props> extends Component {
                 // we use encodeURIComponent to ensure that spaces and special characters in filename is well-replaced to represent a URL
                 const newFileUrl = `${serverURL}/download/files/${roomName}/${encodeURIComponent(resp.data.fileName)}`;
                 this.setState({ uploadedURL: newFileUrl, fileUploaded: true, conferenceName: roomName });
-                
+
+                // patchy solution for adding file size while sending file URL
+                const newFileUrlWithSize = newFileUrl + "__size:" + fsize;
+
                 // dispatch sendMessage action to display the URL of the uploaded file as a message
-                dispatch(sendMessage(newFileUrl));
+                dispatch(sendMessage(newFileUrlWithSize));
             }
             
         } catch(err) {

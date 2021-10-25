@@ -106,20 +106,18 @@ export function getBaseUrl(w: Object = window) {
  */
  export function getFileSize(url)
  {
-     var fileSize = '';
-     var http = new XMLHttpRequest();
-     http.open('HEAD', url, false); // false = Synchronous
+    let fileSize = '';
+    let http = new XMLHttpRequest();
+    http.open('HEAD', url, false); // false = Synchronous
+
+    http.send(null); // it will stop here until this http request is complete
  
-     http.send(null); // it will stop here until this http request is complete
+    if (http.status === 200) {
+        fileSize = http.getResponseHeader("Content-Length");
+    }
  
-     // when we are here, we already have a response, b/c we used Synchronous XHR
- 
-     if (http.status === 200) {
-         fileSize = http.getResponseHeader('content-length');
-     }
- 
-     return fileSize;
- }
+    return fileSize;
+}
 
 /**
  * Given the size of a file (in units bytes) converts appropriately into KB or MB

@@ -295,41 +295,7 @@
     }
 }
 
-.smiley-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    width: 40px;
-    border-radius: 3px;
-}
-
-#chat-input .smiley-button {
-    @media (hover: hover) and (pointer: fine) {
-        &:hover {
-            background-color: #484A4F;
-        }
-    }
-}
-
-.send-button-container {
-    display: flex;
-    align-items: center;
-}
-
-.send-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    width: 40px;
-    border-radius: 3px;
-
-    path {
-        fill: $chatInputSeparatorColor;
-    }
-}
-
+.file-upload,
 .smiley-button {
     display: flex;
     align-items: center;
@@ -340,10 +306,13 @@
     border-radius: 3px;
 }
 
-#chat-input .smiley-button {
-    @media (hover: hover) and (pointer: fine) {
-        &:hover {
-            background-color: #484A4F;
+#chat-input {
+    .smiley-button,
+    .file-upload {
+        @media (hover: hover) and (pointer: fine) {
+            &:hover {
+                background-color: #484A4F;
+            }
         }
     }
 }
@@ -658,19 +627,6 @@
 .smiley-input {
     display: flex;
     position: relative;
-}
-
-.file-upload {
-    display: flex;
-    position: relative;
-    margin: auto;
-    padding: 7px;
-}
-
-.file-upload:hover {
-    background-color: $newToolbarButtonToggleColor;
-    border-radius: 5px;
-    cursor: pointer;
 }
 
 .smileys-panel {

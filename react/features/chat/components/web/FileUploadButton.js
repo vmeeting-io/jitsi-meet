@@ -1,15 +1,15 @@
 /* @flow */
 
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import axios from 'axios';
-import { Icon, IconShareDoc } from '../../../base/icons';
 import { getAuthUrl } from '../../../../api/url';
-import { sendMessage } from '../../actions';
-import { getConferenceName } from '../../../base/conference';
 import { showToast } from '../../../../features/notifications';
+import { getConferenceName } from '../../../base/conference';
+import { translate } from '../../../base/i18n';
+import { Icon, IconPaperClip } from '../../../base/icons';
+import { Tooltip } from '../../../base/tooltip';
 import { getBaseUrl } from '../../../base/util';
-
-declare var interfaceConfig: Object;
+import { sendMessage } from '../../actions';
 
 const NOTIFICATION_TIMEOUT = 3000;
 
@@ -18,7 +18,7 @@ const MAX_FILE_SIZE_FOR_UPLOAD = 314572800; // 300 MB = 300 X 1024 X 1024 bytes
 /**
  * The type of the React {@code Component} props of {@code AbstractChat}.
  */
- export type Props = {
+export type Props = {
     /**
      * Function to be used to translate i18n labels.
      */
@@ -30,7 +30,7 @@ const MAX_FILE_SIZE_FOR_UPLOAD = 314572800; // 300 MB = 300 X 1024 X 1024 bytes
  * Implements a React {@link Component} which displays a button for uploading a file in a chatroom
  *
  */
-export class FileUploadButton<P: Props> extends Component {
+class FileUploadButton<P: Props> extends Component {
     /**
      * Instantiates a new {@code Component}.
      *
@@ -56,24 +56,28 @@ export class FileUploadButton<P: Props> extends Component {
      * @returns {ReactElement}
      */
     render() {
-        const { visible } = this.props;
+        const { t, visible } = this.props;
 
         if (!visible) {
             return null;
         }
 
         return (
-            <div className = 'file-upload'>
-                <div id='fileuploadarea'>
-                    <Icon src = { IconShareDoc } onClick = { () => this.refs.fileInput.click() }/>
-                    <input
-                        type='file'
-                        ref= 'fileInput'
-                        onChange = {e => this.uploadFile(e.target.files[0])}  // we will only select a single file for the time being
-                        className = 'file-upload-btn' 
-                    />
+            <Tooltip
+                content = { t('fileupload.title') }
+                position = 'top'>
+                <div className = 'file-upload'>
+                    <div id='fileuploadarea'>
+                        <Icon src = { IconPaperClip } onClick = { () => this.refs.fileInput.click() }/>
+                        <input
+                            type='file'
+                            ref= 'fileInput'
+                            onChange = {e => this.uploadFile(e.target.files[0])}  // we will only select a single file for the time being
+                            className = 'file-upload-btn' 
+                        />
+                    </div>
                 </div>
-            </div>
+            </Tooltip>
         );
     }
 
@@ -130,3 +134,5 @@ export class FileUploadButton<P: Props> extends Component {
 
     }
 }
+
+export default translate(FileUploadButton);

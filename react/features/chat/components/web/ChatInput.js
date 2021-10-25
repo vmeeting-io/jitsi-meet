@@ -9,13 +9,13 @@ import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { getLocalParticipant, getParticipants, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
 import { Icon, IconPlane, IconSmile, IconShareDoc } from '../../../base/icons';
-import { FileUploadButton } from './FileUploadButton';
 import { connect } from '../../../base/redux';
+import { Tooltip } from '../../../base/tooltip';
 import { areSmileysDisabled } from '../../functions';
 
 import { setPrivateMessageRecipient } from '../../actions';
 
-
+import FileUploadButton from './FileUploadButton';
 import SmileysPanel from './SmileysPanel';
 
 /**
@@ -134,7 +134,7 @@ class ChatInput extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { t, _fileUploadExists } = this.props;
+        const { t, _areSmileysDisabled, _fileUploadExists } = this.props;
         const smileysPanelClassName = `${this.state.showSmileysPanel
             ? 'show-smileys' : 'hide-smileys'} smileys-panel`;
         const smileysPanelMarginClassName = `${_fileUploadExists ? 'set-smileys-margin': '' }`;
@@ -146,22 +146,26 @@ class ChatInput extends Component<Props, State> {
             <div className = { `chat-input-container${this.state.message.trim().length ? ' populated' : ''}` }>
                 <div id = 'chat-input' >
                     <FileUploadButton t = { t } visible = { true } />
-                    { this.props._areSmileysDisabled ? null : (
+                    { _areSmileysDisabled ? null : (
                         <div className = 'smiley-input'>
                             <div id = 'smileysarea'>
                                 <div id = 'smileys'>
-                                    <div
-                                        aria-expanded = { this.state.showSmileysPanel }
-                                        aria-haspopup = 'smileysContainer'
-                                        aria-label = { this.props.t('chat.smileysPanel') }
-                                        className = 'smiley-button'
-                                        onClick = { this._onToggleSmileysPanel }
-                                        onKeyDown = { this._onEscHandler }
-                                        onKeyPress = { this._onToggleSmileysPanelKeyPress }
-                                        role = 'button'
-                                        tabIndex = { 0 }>
-                                        <Icon src = { IconSmile } />
-                                    </div>
+                                    <Tooltip
+                                        content = { t('chat.smileys') }
+                                        position = 'top'>
+                                        <div
+                                            aria-expanded = { this.state.showSmileysPanel }
+                                            aria-haspopup = 'smileysContainer'
+                                            aria-label = { t('chat.smileysPanel') }
+                                            className = 'smiley-button'
+                                            onClick = { this._onToggleSmileysPanel }
+                                            onKeyDown = { this._onEscHandler }
+                                            onKeyPress = { this._onToggleSmileysPanelKeyPress }
+                                            role = 'button'
+                                            tabIndex = { 0 }>
+                                            <Icon src = { IconSmile } />
+                                        </div>
+                                    </Tooltip>
                                 </div>
                             </div>
                             <div
@@ -184,21 +188,25 @@ class ChatInput extends Component<Props, State> {
                             onChange = { this._onMessageChange }
                             onHeightChange = { this.props.onResize }
                             onKeyDown = { this._onDetectSubmit }
-                            placeholder = { this.props.t('chat.messagebox') }
+                            placeholder = { t('chat.messagebox') }
                             ref = { this._setTextAreaRef }
                             tabIndex = { 0 }
                             value = { this.state.message } />
                     </div>
                     <div className = 'send-button-container'>
-                        <div
-                            aria-label = { this.props.t('chat.sendButton') }
-                            className = 'send-button'
-                            onClick = { this._onSubmitMessage }
-                            onKeyPress = { this._onSubmitMessageKeyPress }
-                            role = 'button'
-                            tabIndex = { this.state.message.trim() ? 0 : -1 } >
-                            <Icon src = { IconPlane } />
-                        </div>
+                        <Tooltip
+                            content = { t('chat.send') }
+                            position = 'top'>
+                            <div
+                                aria-label = { t('chat.sendButton') }
+                                className = 'send-button'
+                                onClick = { this._onSubmitMessage }
+                                onKeyPress = { this._onSubmitMessageKeyPress }
+                                role = 'button'
+                                tabIndex = { this.state.message.trim() ? 0 : -1 } >
+                                <Icon src = { IconPlane } />
+                            </div>
+                        </Tooltip>
                     </div>
                 </div>
             </div>

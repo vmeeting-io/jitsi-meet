@@ -29,7 +29,6 @@ import { getLocalParticipant } from '../../../base/participants';
 import ChatDisableButtonForAll from './ChatDisableButtonForAll';
 import TouchmoveHack from './TouchmoveHack';
 
-import s from './Chat.module.scss';
 import { openDialog } from '../../../base/dialog';
 import EnableChatForAllParticipantsDialog from '../../../video-menu/components/web/EnableChatForAllParticipantsDialog';
 import DisableChatForAllParticipantsDialog from '../../../video-menu/components/web/DisableChatForAllParticipantsDialog';
@@ -273,7 +272,7 @@ class Chat extends AbstractChat<Props> {
         const { t } = this.props;
 
         return (
-            <div className = { s.searchContainer }>
+            <div className = 'search-container'>
                 <TextField
                     compact = { true }
                     id = 'chatHeaderSearchBox'
@@ -285,7 +284,7 @@ class Chat extends AbstractChat<Props> {
                     onChange = { this._updateChatSearchInput }
                     type = 'text' />
                 <div
-                    className = { s.closeIcon }
+                    className = 'close-icon'
                     onClick = { this._onToggleSearch }>
                     <CrossCircleIcon size = 'small' />
                 </div>
@@ -353,13 +352,13 @@ class Chat extends AbstractChat<Props> {
             localParticipant.role === 'moderator';
 
         return (
-            <div className = {`chat-header ${s.chatHeader}`}>
+            <div className = 'chat-header'>
                 { !showSearch ? t('chat.title') : this._renderSearch() }
                 {/* Portion for rendering the chat close icon */}
-                <div className = { s.toolContainer }>
+                <div className = 'tool-container'>
                     { !showSearch && (
                         <div
-                            className = { s.button }
+                            className = 'button'
                             onClick = { this._onToggleSearch }>
                             <Tooltip
                                 content = { t('chat.search') }
@@ -387,7 +386,7 @@ class Chat extends AbstractChat<Props> {
                         </DropdownMenu>
                     ) : (
                         <div
-                            className = { s.button }
+                            className = 'button'
                             onClick = { this._onToggleChat }>
                             <Tooltip
                                 content = { t('dialog.close') }

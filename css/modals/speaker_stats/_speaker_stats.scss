@@ -1,80 +1,152 @@
 .speaker-stats {
     list-style: none;
-    padding: 0;
     width: 100%;
     font-weight: 500;
-    margin: 5px 5px;
+    margin: 0;
+    padding: 0 20px;
+    box-sizing: border-box;
 
-    .speaker-stats-item__labels {
-        font-weight: bold;
-        margin: 5px 5px;
+    &-title {
+        font-size: 20px;
+        font-weight: 500;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    
+        .button {
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 5px;
+    
+            &:hover {
+                background: $overflowMenuItemHoverBG;
+            }
+    
+            &.pressed {
+                background: $overflowMenuItemHoverBG;
+            }
+        }
     }
-
-    .speaker-stats-item__status-dot {
+    
+    &-divider {
+        border-color: rgba(255,255,255,0.3);
+        border-width: 1px 0 0 0;
+        margin: -5px 0 10px 0;
+    }
+    
+    &-searchbox {
+        display: flex;
+        width: 100%;
+        margin-bottom: 20px;
         position: relative;
-        display: block;
-        width: 9px;
-        height: 9px;
-        border-radius: 50%;
-        margin: 0 auto;
-
-        &.status-active {
-            background: green;
-        }
-
-        &.status-inactive {
-            background: gray;
+        
+        .close-icon {
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 8px;
+            color: gray;
         }
     }
+    
+    &-item {
+        display: flex;
+        align-items: center;
+        margin: 0 5px;
 
+        &__labels {
+            font-weight: bold;
+            margin: 5px 5px;
+        }
+    
+        &__status-dot {
+            position: relative;
+            display: block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            margin: 0 auto;
+    
+            &.status-active {
+                background: green;
+            }
+    
+            &.status-inactive {
+                background: gray;
+            }
+        }
+    
+        &__status,
+        &__name,
+        &__time,
+        &__s_time,
+        &__l_time {
+            display: inline-flex;
+            margin: 5px 0;
+            vertical-align: middle;
+        }
+        &__status {
+            display: inline-flex;
+            width: 20%;
+    
+            .indicator-disabled .jitsi-icon svg {
+                fill: gray;
+            }
+        }
+        &__name {
+            display: inline-flex !important;
+            padding: 0 16px 0 0;
+            box-sizing: border-box;
+            width: 35%;
+    
+            .name {
+                flex-grow: 1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+        &__time {
+            width: 20%;
+        }
+        &__s_time {
+            width: 15%;
+        }
+        &__l_time {
+            width: 15%;
+        }
+        &__duration {
+            display: inline-block;
+            margin: 5px 0;
+            vertical-align: middle;
+            width: 15%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    
+        &__name,
+        &__time,
+        &__status,
+        &__s_time,
+        &__l_time,
+        &__duration {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    
+        &__refresh {
+            width: 5%;
+            display: inline-block;
+            margin: 5px 0;
+            vertical-align: middle;
+        }
+    }
+    
     .status-user-left {
         color: $placeHolderColor;
     }
-
-    .speaker-stats-item__status,
-    .speaker-stats-item__name,
-    .speaker-stats-item__time,
-    .speaker-stats-item__s_time,
-    .speaker-stats-item__l_time {
-        display: inline-flex;
-        margin: 5px 0;
-        vertical-align: middle;
-    }
-    .speaker-stats-item__status {
-        width: 5%;
-    }
-    .speaker-stats-item__name {
-        width: 35%;
-    }
-    .speaker-stats-item__time {
-        width: 20%;
-    }
-    .speaker-stats-item__s_time {
-        width: 15%;
-    }
-    .speaker-stats-item__l_time {
-        width: 15%;
-    }
-
-    .speaker-stats-item__name,
-    .speaker-stats-item__time,
-    .speaker-stats-item__s_time,
-    .speaker-stats-item__l_time {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .speaker-stats-item__refresh {
-        width: 5%;
-        display: inline-block;
-        margin: 5px 0;
-        vertical-align: middle;
-    }
-}
-
-.speaker-stats-searchbox {
-    display: flex;
-    width: 100%;
-    margin-bottom: 20px;
 }

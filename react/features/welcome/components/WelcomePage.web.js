@@ -324,12 +324,11 @@ class WelcomePage extends AbstractWelcomePage {
                 );
             }
             buttons.push(
-                <div className = 'button mobile'>
+                <div key = 'user-menu-mobile' className = 'button mobile'>
                     <DropdownMenu
                         onOpenChange = { this._onOpenChange }
                         position = "bottom right"
                         isLoading = { submitting }
-                        key = 'userMenu'
                         trigger = {
                             <div className = 'user-container'>
                                 { _user.avatarURL ? (
@@ -454,7 +453,7 @@ class WelcomePage extends AbstractWelcomePage {
                                 <DropdownMenu
                                     onOpenChange = { this._onOpenChange }
                                     position = "bottom left"
-                                    key = 'userMenu'
+                                    key = 'user-menu-desktop'
                                     trigger = {
                                         <div id="featureDropdown" className = 'feature'>
                                             {t('toolbar.features.title')}

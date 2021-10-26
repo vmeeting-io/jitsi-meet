@@ -101,6 +101,17 @@ export default {
         color: ColorPalette.darkGrey,
         fontSize: 22
     },
+    
+    fileShareIcon: {
+        color: ColorPalette.darkGrey,
+        fontSize: 60
+    },
+
+    chatmessageUploadedImage: {
+        width: 300,
+        height: 400
+        // height: auto;
+    },
 
     /**
      * Style modifier for system (error) messages.

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 56 56" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g>
+        <path d="M36.985,0L7.963,0C7.155,0 6.5,0.655 6.5,1.926L6.5,55C6.5,55.345 7.155,56 7.963,56L48.037,56C48.845,56 49.5,55.345 49.5,55L49.5,12.978C49.5,12.282 49.407,12.058 49.243,11.893L37.607,0.257C37.442,0.093 37.218,0 36.985,0Z" style="fill:rgb(233,233,224);fill-rule:nonzero;"/>
+        <g transform="matrix(0.80301,0,0,0.80301,5.08179,19.0951)">
+            <path d="M24.5,28C24.334,28 24.169,27.959 24.019,27.877C23.699,27.701 23.5,27.365 23.5,27L23.5,13C23.5,12.635 23.699,12.299 24.019,12.123C24.34,11.948 24.729,11.961 25.038,12.156L36.038,19.156C36.325,19.34 36.5,19.658 36.5,20C36.5,20.342 36.325,20.66 36.037,20.844L25.037,27.844C24.874,27.947 24.687,28 24.5,28ZM25.5,14.821L25.5,25.178L33.637,20L25.5,14.821Z" style="fill:rgb(200,189,184);fill-rule:nonzero;"/>
+        </g>
+        <g transform="matrix(0.80301,0,0,0.80301,5.08179,19.0951)">
+            <path d="M28.5,35C20.229,35 13.5,28.271 13.5,20C13.5,11.729 20.229,5 28.5,5C36.771,5 43.5,11.729 43.5,20C43.5,28.271 36.771,35 28.5,35ZM28.5,7C21.332,7 15.5,12.832 15.5,20C15.5,27.168 21.332,33 28.5,33C35.668,33 41.5,27.168 41.5,20C41.5,12.832 35.668,7 28.5,7Z" style="fill:rgb(200,189,184);fill-rule:nonzero;"/>
+        </g>
+        <path d="M37.5,0.151L37.5,12L49.349,12L37.5,0.151Z" style="fill:rgb(217,215,202);fill-rule:nonzero;"/>
+        <g transform="matrix(0.778537,0,0,0.754975,0.918418,3.09851)">
+            <rect x="3.759" y="1.929" width="31.026" height="12.266" style="fill:rgb(255,83,100);"/>
+        </g>
+        <g transform="matrix(0.754975,0,0,0.754975,1.73805,1.11608)">
+            <path d="M2.791,16.821L6.5,16.821L6.5,21.858L2.791,16.821Z" style="fill:rgb(255,53,73);"/>
+        </g>
+        <g transform="matrix(0.806612,0,0,0.806612,1.32653,-7.90418)">
+            <text x="8.376px" y="24.528px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9.336px;fill:white;">MP4</text>
+        </g>
+    </g>
+</svg>

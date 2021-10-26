@@ -64,6 +64,7 @@ export { default as IconDocMP3 } from './mp3.svg';
 export { default as IconDocJPEG } from './jpeg.svg';
 export { default as IconDocHWP } from './hwp.svg';
 export { default as IconDocDOC } from './doc.svg';
+export { default as IconDocGENERAL } from './general.svg';
 export { default as IconDominantSpeaker } from './dominant-speaker.svg';
 export { default as IconDownload } from './download.svg';
 export { default as IconDragHandle } from './drag-handle.svg';

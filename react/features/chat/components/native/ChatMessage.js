@@ -13,7 +13,7 @@ import { MESSAGE_TYPE_ERROR, MESSAGE_TYPE_LOCAL } from '../../constants';
 import { replaceNonUnicodeEmojis } from '../../functions';
 import AbstractChatMessage, { type Props as AbstractProps } from '../AbstractChatMessage';
 import PrivateMessageButton from '../PrivateMessageButton';
-import { Icon, IconDocDOC, IconDocHTML, IconDocHWP, IconDocJPEG, IconDocMP3, IconDocMP4, IconDocPDF, IconDocXLS, IconDocZIP } from '../../../base/icons';
+import { Icon, IconDocDOC, IconDocHTML, IconDocHWP, IconDocJPEG, IconDocMP3, IconDocMP4, IconDocPDF, IconDocXLS, IconDocZIP, IconDocGENERAL} from '../../../base/icons';
 import { getBaseUrl, getFileSize, processFileSize, validURL} from '../../../base/util';
 import { getServerURL } from '../../../base/settings';
 
@@ -95,6 +95,14 @@ class ChatMessage extends AbstractChatMessage<Props> {
         );
     }
 
+    _getShortName(filename){
+        const len = filename.length;
+        if(len>30){
+            return filename.substring(0,15) + "..." + filename.substring(len-15,len);
+        }
+        return filename;
+    }
+
     _renderFileMessage(serverURL){    
         let msg = this._getMessageText();  
         let iconToDisplay = null;
@@ -103,57 +111,49 @@ class ChatMessage extends AbstractChatMessage<Props> {
         // msg = decodeURIComponent(msg);
         let image = false;
 
-        console.log("vmchg: Valid: ", msg.startsWith(serverURL), " Link ", msg, " Server URL ", serverURL);
         if(typeof msg === 'string' && msg.startsWith(serverURL)) {
             const filelink = msg;
             filename = filelink.split('/').pop(); // use pop to fetch the last element contained in the array after using split
             filename = decodeURIComponent(filename);
-            processedSize = processFileSize(msg);
-            console.log("vmchg: Filesize : ", processedSize)
+            
+            filename = this._getShortName(filename);
+
+            processedSize = processFileSize((Math.random() * (900024 - 1) + 1).toFixed(4));//TODO: Dummy file size for UI only.
             if((filename !== undefined) && (filename !== '')) {
 
                 // const processedSize = processFileSize(size); // TODO-: Filesize
 
                 // poetic way to check whether the file extension types
                 if(/\.(jpe?g|png|gif|bmp)$/i.test(filelink)) {
-                    console.log("vmchg: IMAGE " + filename);
                     image=true;
                 }
                 else if(/\.(pdf)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                    console.log("vmchg: PDF " + filename);
                     iconToDisplay = IconDocPDF;
                 }
                 else if(/\.(html|htm)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                    console.log("vmchg: HTML " + filename);
                     iconToDisplay = IconDocHTML;
                 }
                 else if(/\.(hwp)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                    console.log("vmchg: HWP " + filename);
                     iconToDisplay = IconDocHWP;
                 }
                 else if(/\.(doc|docx|hwp)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                    console.log("vmchg: DOC " + filename);
                     iconToDisplay = IconDocDOC;
                 }
                 else if(/\.(xls|xlsx)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                    console.log("vmchg: XLS " + filename);
                     iconToDisplay = IconDocXLS;
                 }
                 else if(/\.(zip)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                    console.log("vmchg: ZIP " + filename);
                     iconToDisplay = IconDocZIP;
                 }
                 else if(/\.(mp3)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                    console.log("vmchg: MP3 " + filename);
                     iconToDisplay = IconDocMP3;
                 }
                 else if(/\.(mp4)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
-                    console.log("vmchg: MP4 " + filename);
                     iconToDisplay = IconDocMP4;
                 }
                 // else it is an uploaded file but we don't have corresponding icon, we use the base icon
                 else {
-                    iconToDisplay = IconDocDOC;
+                    iconToDisplay = IconDocGENERAL;
                 }
             } 
         }
@@ -199,10 +199,10 @@ class ChatMessage extends AbstractChatMessage<Props> {
                                             {/* <Text style={styles.fileName}>01 FileName_File Detail Work_Place_Dummy.txt</Text> */}
                                             {/* <Text style={styles.fileName}>01 ABC 기술이전화 사업계획서_최종버전.pdf</Text> */}
                                             {/* <Text style={styles.fileName}>ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456.pdf</Text> */}
-                                            <Text style={styles.fileName}>{filename}</Text>
+                                            <Text>{filename}</Text>
                                         </View>
                                         <View style={ styles.fileSizeContainer } >
-                                            <Text style={ styles.fileSize }>Size : 12 MB</Text>
+                                            <Text style={ styles.fileSize }>Size : {processedSize} </Text>
                                         </View>
                                     </View>        
                                 </View>

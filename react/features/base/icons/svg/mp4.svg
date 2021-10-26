@@ -10,14 +10,14 @@
             <path d="M28.5,35C20.229,35 13.5,28.271 13.5,20C13.5,11.729 20.229,5 28.5,5C36.771,5 43.5,11.729 43.5,20C43.5,28.271 36.771,35 28.5,35ZM28.5,7C21.332,7 15.5,12.832 15.5,20C15.5,27.168 21.332,33 28.5,33C35.668,33 41.5,27.168 41.5,20C41.5,12.832 35.668,7 28.5,7Z" style="fill:rgb(200,189,184);fill-rule:nonzero;"/>
         </g>
         <path d="M37.5,0.151L37.5,12L49.349,12L37.5,0.151Z" style="fill:rgb(217,215,202);fill-rule:nonzero;"/>
-        <g transform="matrix(0.778537,0,0,0.754975,0.918418,3.09851)">
+        <g transform="matrix(1.04306,0,0,1.01149,-1.26759,2.60369)">
             <rect x="3.759" y="1.929" width="31.026" height="12.266" style="fill:rgb(255,83,100);"/>
         </g>
-        <g transform="matrix(0.754975,0,0,0.754975,1.73805,1.11608)">
+        <g transform="matrix(1.01149,0,0,1.01149,-0.169466,-0.0523177)">
             <path d="M2.791,16.821L6.5,16.821L6.5,21.858L2.791,16.821Z" style="fill:rgb(255,53,73);"/>
         </g>
-        <g transform="matrix(0.806612,0,0,0.806612,1.32653,-7.90418)">
-            <text x="8.376px" y="24.528px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9.336px;fill:white;">MP4</text>
+        <g transform="matrix(1.08068,0,0,1.08068,8.58711,14.3694)">
+            <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:9.336px;fill:white;">MP4</text>
         </g>
     </g>
 </svg>

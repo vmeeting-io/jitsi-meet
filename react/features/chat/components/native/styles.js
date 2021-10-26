@@ -105,54 +105,51 @@ export default {
     fileShareIcon: {
         color: ColorPalette.darkGrey,
         marginHorizontal: 8,
-        marginTop: 8,
-        fontSize: 80
+        fontSize: 50
     },
 
     chatmessageUploadedImage: {
-        width: 300,
+        width: 230,
         height: 400
         // height: auto;
     },
     
     fileContainer: {
-        width: 300,
-        height: 120,
+        width: 230,
+        height: 80,
         borderRadius:10,
         backgroundColor: '#ffffff'
     },
 
     fileIconInisdeContainer:{
-        width: 90,
-        height: 100,
-        marginTop: 10,
-        // backgroundColor: 'darkorange'
+        width: 65,
+        height: 85,
+        marginHorizontal:5,
+        marginTop: 15
     },
     
     fileDetailInisdeContainer:{
-        width: 200,
+        width: 190,
         height: 100,
-        marginTop: 10,
+        marginTop: 15,
     },
     
     fileNameContainer:{
-        width: 200,
-        marginTop: 15,
-        height:50
+        width: 150,
+        height: 35
     },
 
     fileSizeContainer:{
-        width: 200,
+        width: 190,
         height: 20,
         // marginTop:10
     },
     
     fileName:{
-        fontSize:17,
+        // fontSize:17,
     },
 
     fileSize:{
-        fontSize:14,
         color: '#b6b6b6'
     }, 
 

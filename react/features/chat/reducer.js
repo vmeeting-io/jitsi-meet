@@ -7,18 +7,23 @@ import {
     CLEAR_MESSAGES,
     CLOSE_CHAT,
     OPEN_CHAT,
+    FILE_UPLOADED_PERCENTAGE_STATUS,
     SET_PRIVATE_MESSAGE_RECIPIENT,
     SET_IS_POLL_TAB_FOCUSED
 } from './actionTypes';
 
 const DEFAULT_STATE = {
+    fileName: '',
+    fileSize: 0,
+    fileUploadPercentage: 0,
     isOpen: false,
     isPollsTabFocused: false,
     lastReadMessage: undefined,
     lastReadPoll: undefined,
     messages: [],
     nbUnreadMessages: 0,
-    privateMessageRecipient: undefined
+    privateMessageRecipient: undefined,
+    uploading: false,
 };
 
 ReducerRegistry.register('features/chat', (state = DEFAULT_STATE, action) => {
@@ -74,6 +79,16 @@ ReducerRegistry.register('features/chat', (state = DEFAULT_STATE, action) => {
             isOpen: true,
             privateMessageRecipient: action.participant
         };
+
+    case FILE_UPLOADED_PERCENTAGE_STATUS: {
+        return {
+            ...state,
+            fileUploadPercentage: action.percentage,
+            fileName: action.fnameWithTS,
+            fileSize: action.fileSize,
+            uploading: true
+        };
+    }
 
     case CLOSE_CHAT:
         return {

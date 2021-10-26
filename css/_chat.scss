@@ -685,6 +685,16 @@
     background: #3a3a3a;
 }
 
+.chat-file-upload-status-box {
+    display: block;
+    flex-direction: column;
+    align-items: flex-end;
+    background-color: $chatLocalMessageBackgroundColor;
+    border-radius: 6px 0px 6px 6px;
+    margin-top: 3px;
+    color: #fff;
+}
+
 .chat-message-group {
     display: block;
     flex-direction: column;

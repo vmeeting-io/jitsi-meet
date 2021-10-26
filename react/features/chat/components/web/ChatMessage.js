@@ -91,6 +91,11 @@ class ChatMessage extends AbstractChatMessage<Props> {
                     const processedSize = processFileSize(fsize);
                     let decodedFileName = decodeURIComponent(filename);
 
+                    // rendering ellipsis in the file name's length is longer than 38 characters
+                    if(decodedFileName.length > 38) {
+                        decodedFileName = decodedFileName.substr(0,25) + "..." + decodedFileName.substr(-10);
+                    }
+
                     // poetic way to check whether the file extension types
                     if(/\.(jpe?g|png|gif|bmp)$/i.test(msg)) {
                         processedMessage.push(<a target="_blank" href={ msg }><img className = 'chatmessage-uploadedImage' key = { msg } src = { msg } /></a>);

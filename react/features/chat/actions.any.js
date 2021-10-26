@@ -4,6 +4,7 @@ import {
     ADD_MESSAGE,
     CLEAR_MESSAGES,
     CLOSE_CHAT,
+    FILE_UPLOADED_PERCENTAGE_STATUS,
     SEND_MESSAGE,
     SET_PRIVATE_MESSAGE_RECIPIENT,
     SET_IS_POLL_TAB_FOCUSED
@@ -80,6 +81,16 @@ export function sendMessage(message: string, ignorePrivacy: boolean = false) {
         type: SEND_MESSAGE,
         ignorePrivacy,
         message
+    };
+}
+
+export function setFileUploadedPercentageValue(percentage: number, fnameWithTS: string, fileSize: number ) {
+    return {
+        type: FILE_UPLOADED_PERCENTAGE_STATUS,
+        percentage,
+        fnameWithTS,
+        fileSize,
+        uploading: true
     };
 }
 

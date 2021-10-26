@@ -249,6 +249,10 @@ class Chat extends AbstractChat<Props> {
                 {this.props._isPollsEnabled && this._renderTabs()}
                 <TouchmoveHack isModal = { this.props._isModal }>
                     <MessageContainer
+                        fileUploadPercentage = { this.props._fileUploadPercentage }
+                        fileName = { this.props._fileName }
+                        fileSize = { this.props._fileSize }
+                        isUploading = { this.props._isUploading }
                         messages = { this.props._messages }
                         ref = { this._messageContainerRef } />
                 </TouchmoveHack>

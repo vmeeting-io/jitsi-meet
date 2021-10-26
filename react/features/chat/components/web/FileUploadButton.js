@@ -10,6 +10,8 @@ import { Icon, IconPaperClip } from '../../../base/icons';
 import { Tooltip } from '../../../base/tooltip';
 import { getBaseUrl } from '../../../base/util';
 import { sendMessage } from '../../actions';
+import { setFileUploadedPercentageValue } from '../../actions.any';
+import moment from 'moment';
 
 const NOTIFICATION_TIMEOUT = 3000;
 
@@ -44,9 +46,9 @@ class FileUploadButton<P: Props> extends Component {
     state = {
         // initially no file is selected
         selectedFile: null,
-        fileUploaded: Boolean,
-        uploadedURL: String,
-        conferenceName: String,
+        fileUploaded: false,
+        uploadedURL: '',
+        conferenceName: '',
     }
 
     /**
@@ -100,16 +102,35 @@ class FileUploadButton<P: Props> extends Component {
 
         const roomName =  getConferenceName(APP.store.getState()).replace(/\s+/g, '').toLowerCase() // strip all spaces and case convert to lowercase
         
+        // we use moment data to append timestamp while uploading a file
+        const ts = moment().format('YYYYMMDDhhmmss');
+        const extn = file.name.split('.').pop();
+        const fname = file.name.split(`.${extn}`)[0];
+        const fileSize = file.size;
+        const fnameWithTS = fname + '_' + ts + '.' + extn;
+
+        let config = {
+            onUploadProgress: (progressEvent) => {
+                let percent = Math.round( (progressEvent.loaded * 100) / progressEvent.total);
+
+                // redux magic here
+                dispatch(setFileUploadedPercentageValue(percent, fnameWithTS, fileSize));
+                
+            }
+        }
+        
         // update the formdata object
         formData.append(file.name, file);
+
+        // name that includes the timestamp during which file was uploaded
+        formData.append('filename', fnameWithTS);
 
         // attach the roomName to the file upload button
         formData.append('roomName', roomName);
 
         // code to send to vmapi
         try {
-            const resp = await axios.post(`${_apiBase}/uploads`, formData);
-
+            const resp = await axios.post(`${_apiBase}/uploads`, formData, config);
 
             if(resp.status === 200) {
                 // the URL of the server should be adjusted accordingly
@@ -120,6 +141,10 @@ class FileUploadButton<P: Props> extends Component {
 
                 // dispatch sendMessage action to display the URL of the uploaded file as a message
                 dispatch(sendMessage(newFileUrl));
+
+                // reset fileUploadPercentage to 0;
+                // dispatch a new action for this, right now it is just resetting the original values
+                dispatch(setFileUploadedPercentageValue(0, '', 0));
             }
             
         } catch(err) {

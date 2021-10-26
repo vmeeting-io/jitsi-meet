@@ -171,28 +171,43 @@ class ChatMessage extends AbstractChatMessage<Props> {
             </TouchableHighlight>    
 
             </View>}
-
+            
             {/* If file being sent is not an image, show as icon */}
             {!image && <TouchableHighlight
                   onPress={() => Linking.openURL(msg)}>
-                    <View> 
+                    <View>
+                        {/* For Text Messages */}
                         <Linkify linkStyle = { styles.chatLink }>
-                        { !iconToDisplay && replaceNonUnicodeEmojis(this._getMessageText()) }  
+                            { !iconToDisplay && replaceNonUnicodeEmojis(this._getMessageText()) }  
                         </Linkify>
-
-                        { iconToDisplay && <Icon
-                                src = { iconToDisplay }
-                                style = { styles.fileShareIcon } /> }
                         
-                        { iconToDisplay && <View>
-                            <Text>
-                                {filename}
-                            </Text>
-                            <Text>
-                                Size: {processedSize} 
-                            </Text>
-                        </View> }
-                    </View> 
+                        { iconToDisplay && <View style={[styles.fileContainer, {
+                                flexDirection: "row"
+                                }]}>
+
+                                <View style={styles.fileIconInisdeContainer} >
+                                    { iconToDisplay && <Icon
+                                        src = { iconToDisplay }
+                                        style = { styles.fileShareIcon } /> }
+                                </View>
+                                
+                                <View style={styles.fileDetailInisdeContainer } >
+                                    <View style={{
+                                            flexDirection: "column"
+                                    }}>
+                                        <View style={styles.fileNameContainer} > 
+                                            {/* <Text style={styles.fileName}>01 FileName_File Detail Work_Place_Dummy.txt</Text> */}
+                                            {/* <Text style={styles.fileName}>01 ABC 기술이전화 사업계획서_최종버전.pdf</Text> */}
+                                            {/* <Text style={styles.fileName}>ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456.pdf</Text> */}
+                                            <Text style={styles.fileName}>{filename}</Text>
+                                        </View>
+                                        <View style={ styles.fileSizeContainer } >
+                                            <Text style={ styles.fileSize }>Size : 12 MB</Text>
+                                        </View>
+                                    </View>        
+                                </View>
+                        </View>}
+                    </View>
                 </TouchableHighlight>}
             </View>
         )

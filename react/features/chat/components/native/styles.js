@@ -104,7 +104,9 @@ export default {
     
     fileShareIcon: {
         color: ColorPalette.darkGrey,
-        fontSize: 60
+        marginHorizontal: 8,
+        marginTop: 8,
+        fontSize: 80
     },
 
     chatmessageUploadedImage: {
@@ -112,6 +114,47 @@ export default {
         height: 400
         // height: auto;
     },
+    
+    fileContainer: {
+        width: 300,
+        height: 120,
+        borderRadius:10,
+        backgroundColor: '#ffffff'
+    },
+
+    fileIconInisdeContainer:{
+        width: 90,
+        height: 100,
+        marginTop: 10,
+        // backgroundColor: 'darkorange'
+    },
+    
+    fileDetailInisdeContainer:{
+        width: 200,
+        height: 100,
+        marginTop: 10,
+    },
+    
+    fileNameContainer:{
+        width: 200,
+        marginTop: 15,
+        height:50
+    },
+
+    fileSizeContainer:{
+        width: 200,
+        height: 20,
+        // marginTop:10
+    },
+    
+    fileName:{
+        fontSize:17,
+    },
+
+    fileSize:{
+        fontSize:14,
+        color: '#b6b6b6'
+    }, 
 
     /**
      * Style modifier for system (error) messages.

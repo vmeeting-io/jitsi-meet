@@ -324,75 +324,94 @@ class WelcomePage extends AbstractWelcomePage {
                 );
             }
             buttons.push(
-                <DropdownMenu
-                    onOpenChange = { this._onOpenChange }
-                    position = "bottom right"
-                    isLoading = { submitting }
-                    key = 'userMenu'
-                    trigger = {
-                        <div className = 'user-container'>
-                            { _user.avatarURL ? (
-                                <img
-                                    alt = 'avatar'
-                                    className = 'avatar'
-                                    src = { _user.avatarURL } />
-                            ) : (
-                                <div className='avatar' style={{backgroundColor: avatarColor}}>
-                                    {_user.name?.[0] || _user.username[0]}
-                                </div>
-                            )}
-                            { _user.name }
-                            { (!_user.email_verified && currentTenant === DEFAULT_TENANT) && (
-                                <div className = 'badge'>
-                                    <Badge appearance="important">{1}</Badge>
-                                </div>
-                            )}
-                        </div>
-                    }
-                    triggerType = 'button'>
-                    <DropdownItemGroup className = 'menu-container'>
-                        <DropdownItem 
-                            className = 'menu-item mobile'
-                            href = { `${AUTH_PAGE_BASE}/features` }>
-                            {t('toolbar.features.title')}
-                        </DropdownItem>
-                        {
-                            _user.isAdmin && 
+                <div className = 'button mobile'>
+                    <DropdownMenu
+                        onOpenChange = { this._onOpenChange }
+                        position = "bottom right"
+                        isLoading = { submitting }
+                        key = 'userMenu'
+                        trigger = {
+                            <div className = 'user-container'>
+                                { _user.avatarURL ? (
+                                    <img
+                                        alt = 'avatar'
+                                        className = 'avatar'
+                                        src = { _user.avatarURL } />
+                                ) : (
+                                    <div className='avatar' style={{backgroundColor: avatarColor}}>
+                                        {_user.name?.[0] || _user.username[0]}
+                                    </div>
+                                )}
+                                { _user.name }
+                                { (!_user.email_verified && currentTenant === DEFAULT_TENANT) && (
+                                    <div className = 'badge'>
+                                        <Badge appearance="important">{1}</Badge>
+                                    </div>
+                                )}
+                            </div>
+                        }
+                        triggerType = 'button'>
+                        <DropdownItemGroup className = 'menu-container'>
                             <DropdownItem 
                                 className = 'menu-item mobile'
-                                href = { `${AUTH_PAGE_BASE}/admin/rooms` }>
-                                {t('welcomepage.adminConsole')}
+                                onClick = { this._getSiteLink }>
+                                { t('toolbar.features.learnMore') } 
                             </DropdownItem>
-                        }
-                        <DropdownItem
-                            className = 'menu-item'
-                            href = { `${AUTH_PAGE_BASE}/account` }>
-                            { t('welcomepage.account') }
-                            {(!_user.email_verified && currentTenant === DEFAULT_TENANT) && (
-                                <div className = 'badge'>
-                                    <Badge appearance="important">{1}</Badge>
-                                </div>
-                            )}
-                        </DropdownItem>
-                        { checkBlurSupport() && (
+                            
+                            <DropdownItem 
+                                className = 'menu-item mobile'
+                                onClick = { this._getManualDownloadLink }>
+                                { t('toolbar.features.downloadManual') }
+                            </DropdownItem>
+                        
+                            <DropdownItem
+                                className = 'menu-item mobile'
+                                href = { "mailto:vmeeting-info@kedutech.kr"} >
+                                {t('toolbar.features.support')} 
+                            </DropdownItem>
+                            <hr className = 'divider mobile' />
+                        </DropdownItemGroup>
+                        { _user.isAdmin && 
+                            <DropdownItemGroup className = 'menu-container'>
+                                <DropdownItem 
+                                    className = 'menu-item mobile'
+                                    href = { `${AUTH_PAGE_BASE}/admin/rooms` }>
+                                    {t('welcomepage.adminConsole')}
+                                </DropdownItem>
+                                <hr className = 'divider mobile' />
+                            </DropdownItemGroup> }
+                        <DropdownItemGroup className = 'menu-container'>
                             <DropdownItem
                                 className = 'menu-item'
-                                onClick = { this._onVirtualBackground }>
-                                { t('toolbar.selectBackground') }
+                                href = { `${AUTH_PAGE_BASE}/account` }>
+                                { t('welcomepage.account') }
+                                {(!_user.email_verified && currentTenant === DEFAULT_TENANT) && (
+                                    <div className = 'badge'>
+                                        <Badge appearance="important">{1}</Badge>
+                                    </div>
+                                )}
                             </DropdownItem>
-                        )}
-                        <DropdownItem
-                            className = 'menu-item'
-                            onClick = { this._onLogout }>
-                            { t('toolbar.logout') }
-                        </DropdownItem>
-                        <DropdownItem
-                            className = 'menu-item mobile'
-                            onClick = { this._onOpenSettings }>
-                            { t('toolbar.Settings') }
-                        </DropdownItem>
-                    </DropdownItemGroup>
-                </DropdownMenu>
+                            { checkBlurSupport() && (
+                                <DropdownItem
+                                    className = 'menu-item'
+                                    onClick = { this._onVirtualBackground }>
+                                    { t('toolbar.selectBackground') }
+                                </DropdownItem>
+                            )}
+                            <DropdownItem
+                                className = 'menu-item'
+                                onClick = { this._onLogout }>
+                                { t('toolbar.logout') }
+                            </DropdownItem>
+                            <hr className = 'divider mobile' />
+                            <DropdownItem
+                                className = 'menu-item mobile'
+                                onClick = { this._onOpenSettings }>
+                                { t('toolbar.Settings') }
+                            </DropdownItem>
+                        </DropdownItemGroup>
+                    </DropdownMenu>
+                </div>
             );
         } else {
             buttons.push(
@@ -431,38 +450,39 @@ class WelcomePage extends AbstractWelcomePage {
                             className = 'watermark'
                             defaultJitsiLogoURL = { DEFAULT_WELCOME_PAGE_LOGO_URL } />
                         <div className = 'toolbars'>
-                            <DropdownMenu
-                                onOpenChange = { this._onOpenChange }
-                                position = "bottom left"
-                                key = 'userMenu'
-                                trigger = {
-                                    <div id="featureDropdown" className = 'feature'>
-                                        {t('toolbar.features.title')}
-                                    </div>
-                                }
-                                triggerType = 'button'>
-                                <DropdownItemGroup className = 'menu-container'>
-                                    <DropdownItem 
-                                        className = 'menu-item'
-                                        onClick = { this._getSiteLink }>
-                                        { t('toolbar.features.learnMore') } 
-                                    </DropdownItem>
+                            <div className = 'button desktop'>
+                                <DropdownMenu
+                                    onOpenChange = { this._onOpenChange }
+                                    position = "bottom left"
+                                    key = 'userMenu'
+                                    trigger = {
+                                        <div id="featureDropdown" className = 'feature'>
+                                            {t('toolbar.features.title')}
+                                        </div>
+                                    }
+                                    triggerType = 'button'>
+                                    <DropdownItemGroup className = 'menu-container'>
+                                        <DropdownItem 
+                                            className = 'menu-item'
+                                            onClick = { this._getSiteLink }>
+                                            { t('toolbar.features.learnMore') } 
+                                        </DropdownItem>
+                                        
+                                        <DropdownItem 
+                                            className = 'menu-item'
+                                            onClick = { this._getManualDownloadLink }>
+                                            { t('toolbar.features.downloadManual') }
+                                        </DropdownItem>
                                     
-                                    <DropdownItem 
-                                        className = 'menu-item'
-                                        onClick = { this._getManualDownloadLink }>
-                                        { t('toolbar.features.downloadManual') }
-                                    </DropdownItem>
-                                   
-                                   
-                                    <DropdownItem
-                                        className = 'menu-item'
-                                        href = { "mailto:vmeeting-info@kedutech.kr"} >
-                                        {t('toolbar.features.support')} 
-                                    </DropdownItem>
-                                </DropdownItemGroup>
-                            </DropdownMenu>
-
+                                    
+                                        <DropdownItem
+                                            className = 'menu-item'
+                                            href = { "mailto:vmeeting-info@kedutech.kr"} >
+                                            {t('toolbar.features.support')} 
+                                        </DropdownItem>
+                                    </DropdownItemGroup>
+                                </DropdownMenu>
+                            </div>
                             
                             <ButtonGroup>
                                 {/* <Button

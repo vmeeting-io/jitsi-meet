@@ -98,13 +98,15 @@ body.welcome-page {
                 }
             }
 
-            .mobile.menu-item {
-                display: flex;
-
-                @include media-breakpoint-up(md) {
-                    display: none;
-                    min-height: 0;
-                    max-height: 0;
+            .menu-item {
+                &.mobile {
+                    display: flex;
+    
+                    @include media-breakpoint-up(md) {
+                        display: none;
+                        min-height: 0;
+                        max-height: 0;
+                    }
                 }
             }
 
@@ -137,6 +139,19 @@ body.welcome-page {
             .iwHKVI {
                 background: white;
                 border: 1px solid #d2d2d2;
+            }
+        }
+
+        .divider {
+            border-color: rgba(255,255,255,0.3);
+            border-width: 1px 0 0 0;
+
+            &.mobile {
+                @include media-breakpoint-up(md) {
+                    display: none;
+                    min-height: 0;
+                    max-height: 0;
+                }
             }
         }
     }
@@ -413,20 +428,41 @@ body.welcome-page {
             .tab {
                 display: $welcomePageTabDisplay;
                 text-align: center;
-                background: rgba(9,30,66,0.37);
+                font-weight: bold;
+                background: rgba(9,30,66,0.10);
+                border-radius: 7px;
                 height: 55px;
                 line-height: 54px;
                 flex-grow: 1;
                 cursor: pointer;
-
+                margin: auto;
+            
                 &.selected, &:hover {
-                    background: rgba(9,30,66,0.71);
-                }
-
-                &:last-child {
-                    margin-left: 1px;
+                    background: rgba(9,30,66,0.37);
                 }
             }
+
+            .current-tab {
+                display: $welcomePageTabDisplay;
+                text-align: center;
+                font-weight: bold;
+                background: rgba(179,230,255,0.7);
+                border-radius: 7px;
+                height: 55px;
+                line-height: 54px;
+                flex-grow: 1;
+                cursor: pointer;
+                margin: auto;
+            
+                &.selected, &:hover {
+                    background: rgba(94, 198, 250, 0.7);
+                }
+            }
+        }
+
+        .light-modal {
+            background-color: #ffffff;
+            color: #000000;
         }
     }
 

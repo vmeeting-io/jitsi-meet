@@ -245,7 +245,7 @@ function getConfig(options = {}) {
             filename: `[name]${minimize ? '.min' : ''}.js`,
             path: `${__dirname}/build`,
             publicPath: '/libs/',
-            sourceMapFilename: `[name]${minimize ? '.min' : ''}.map`
+            sourceMapFilename: '[file].map'
         },
         plugins: [
             new webpack.DefinePlugin(envKeys),

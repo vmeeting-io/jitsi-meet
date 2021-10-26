@@ -15,8 +15,6 @@ import axios from 'axios';
 
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
-import s from './RecentList.module.scss';
-
 /**
  * The type of the React {@code Component} props of {@link RecentList}
  */
@@ -81,7 +79,7 @@ class RecentList extends AbstractRecentList<Props, State> {
         const AUTH_API_BASE = process.env.VMEETING_API_BASE;
         const apiBaseUrl = `${baseURL.origin}${AUTH_API_BASE}`;
         
-        try{
+        try {
             axios.post(`${apiBaseUrl}/conferences/delete-conference-by-name`, {
                 name: title,
                 mail_owner: email
@@ -94,8 +92,7 @@ class RecentList extends AbstractRecentList<Props, State> {
                 this._openDeleteFailModal();
                 this.setState({setting: false});
             });
-        }
-        catch(err){    
+        } catch(err) {
             console.log(err);
             //Pop-up with Delete Failed Message
             this._openDeleteFailModal();
@@ -158,40 +155,39 @@ class RecentList extends AbstractRecentList<Props, State> {
 
         return set? (
             <>
-            <MeetingsList
-                disabled = { disabled }
-                hideURL = { true }
-                listEmptyComponent = { this._getRenderListEmptyComponent() }
-                meetings = { recentList }
-                onItemDelete = { this._onItemDelete }
-                onPress = { this._onPress } />
-            <ModalTransition>
-                {modalOpen && (
-            <Modal
-                    actions={[{ text: t('welcomepage.deleteElement'), onClick: this._proceedDelete }, { text: t('welcomepage.cancelDelete'), onClick: this._closeModal }]}
-                    onClose={ this._closeModal }
-                    heading={t('welcomepage.deleteModalHeading')}
-                    appearance="warning"
-                    width="small"
-                    >
-                    {t('welcomepage.deleteRecentListElementMessage')}
-                </Modal>)}
-            </ModalTransition>
-            <ModalTransition>
-                {failedModalOpen && (
-                <Modal
-                    className={s.lightModal}
-                    actions={[{ text: t('welcomepage.cancelDelete'), onClick: this._closeDeleteFailModal }]}
-                    onClose={ this._closeDeleteFailModal }
-                    heading={t('welcomepage.deleteFailHeading')}
-                    appearance="danger"
-                    width="small" >
-                    {t('welcomepage.deleteFailMessage')}
-                </Modal>)}
-            </ModalTransition>    
+                <MeetingsList
+                    disabled = { disabled }
+                    hideURL = { true }
+                    listEmptyComponent = { this._getRenderListEmptyComponent() }
+                    meetings = { recentList }
+                    onItemDelete = { this._onItemDelete }
+                    onPress = { this._onPress } />
+                <ModalTransition>
+                    {modalOpen && (
+                        <Modal
+                            actions={[{ text: t('welcomepage.deleteElement'), onClick: this._proceedDelete }, { text: t('welcomepage.cancelDelete'), onClick: this._closeModal }]}
+                            onClose={ this._closeModal }
+                            heading={t('welcomepage.deleteModalHeading')}
+                            appearance="warning"
+                            width="small">
+                            {t('welcomepage.deleteRecentListElementMessage')}
+                        </Modal>)}
+                </ModalTransition>
+                <ModalTransition>
+                    {failedModalOpen && (
+                        <Modal
+                            className='light-modal'
+                            actions={[{ text: t('welcomepage.cancelDelete'), onClick: this._closeDeleteFailModal }]}
+                            onClose={ this._closeDeleteFailModal }
+                            heading={t('welcomepage.deleteFailHeading')}
+                            appearance="danger"
+                            width="small" >
+                            {t('welcomepage.deleteFailMessage')}
+                        </Modal>)}
+                </ModalTransition>    
             </>
-        ):
-        <MeetingsList
+        ) : (
+            <MeetingsList
                 disabled = { disabled }
                 hideURL = { true }
                 listEmptyComponent = { this._getRenderListLoadingComponent() }
@@ -199,7 +195,8 @@ class RecentList extends AbstractRecentList<Props, State> {
                 t = { t }
                 onDeleteFromDB = { this._onDeleteFromDB }
                 // onDeleteFromRecent = { this._onDeleteFromRecent }
-                onPress = { this._onPress } />;
+                onPress = { this._onPress } />
+        );
     }
 
 };

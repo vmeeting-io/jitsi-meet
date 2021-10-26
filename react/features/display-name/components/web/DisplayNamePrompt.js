@@ -10,7 +10,6 @@ import AbstractDisplayNamePrompt, {
     type Props
 } from '../AbstractDisplayNamePrompt';
 import { showToast } from '../../../notifications';
-import s from './DisplayNamePrompt.module.scss';
 
 /**
  * The type of the React {@code Component} props of {@link DisplayNamePrompt}.

@@ -6,8 +6,6 @@ import { isVpaasMeeting } from '../../../../jaas/functions';
 import { translate } from '../../../i18n';
 import { connect } from '../../../redux';
 
-import s from './Watermarks.module.scss';
-
 declare var interfaceConfig: Object;
 
 /**
@@ -103,7 +101,7 @@ class Watermarks extends Component<Props, State> {
      */
     render() {
         return (
-            <div className={s.watermark}>
+            <div className='watermark'>
                 {
                     this._renderJitsiWatermark()
                 }
@@ -168,7 +166,7 @@ class Watermarks extends Component<Props, State> {
         if (_showJitsiWatermark) {
 
             reactElement = (<img
-                className = {`${s.watermark} ${s.leftwatermark} ${!_logoLink ? className : ''}`}
+                className = {`watermark leftwatermark ${!_logoLink ? className : ''}`}
                 src = { _logoUrl } />);
 
             if (_logoLink) {

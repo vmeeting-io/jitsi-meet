@@ -119,12 +119,7 @@
 }
 
 .chat-header {
-    height: 70px;
-    position: relative;
-    width: 100%;
-    z-index: 1;
     display: flex;
-    justify-content: space-between;
     padding: 16px;
     align-items: center;
     box-sizing: border-box;
@@ -132,34 +127,21 @@
     font-weight: 600;
     font-size: 24px;
     line-height: 32px;
+    justify-content: space-between;
 
-    .chat-header-searchbox {
-        align-items: center;
-        bottom: 15px;
-        display: flex;
-        padding: 4px;
-        font-size: 18px;
-        line-height: 15px;
-        justify-content: center;
-        left: 5px;
-        position: absolute;
-        width: 75%;
-
-        .chat-header-search-icon {
-            position: absolute;
-            right: 5px;
-            align-items: center;
-            padding: 4px;
-            justify-content: center;
-            bottom: 4px;
+    .search-container {
+        position: relative;
+        flex-grow: 1;
+    
+        .close-icon {
             cursor: pointer;
-            border-style: solid;
-            border-width: thin;
-            padding: 2;
-            border-radius: 3px;
+            position: absolute;
+            right: 10px;
+            top: 8px;
+            color: gray;
         }
     }
-
+    
     .chat-header-control-button {
         align-items: center;
         width: 40px;
@@ -196,6 +178,29 @@
 
     .jitsi-icon {
         cursor: pointer;
+    }
+
+    .tool-container {
+        display: flex;
+        font-size: 14px;
+        font-weight: normal;
+
+        .button {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+    
+        button {
+            background: none;
+            padding: 6px 8px;
+            height: unset;
+            line-height: unset;
+        }
+
+        > div:last-child {
+            margin-left: 10px;
+        }
     }
 }
 

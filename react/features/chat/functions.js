@@ -4,6 +4,7 @@ import aliases from 'react-emoji-render/data/aliases';
 import emojiAsciiAliases from 'react-emoji-render/data/asciiAliases';
 import { getAuthUrl } from '../../api/url';
 import { showToast } from '../../features/notifications';
+import { i18next } from '../base/i18n';
 import { getConferenceName } from '../base/conference';
 import moment from 'moment';
 import axios from 'axios';
@@ -114,7 +115,7 @@ export async function uploadFile(file, store) {
     const NOTIFICATION_TIMEOUT = 3000;
 
     if(file.size > MAX_FILE_SIZE_FOR_UPLOAD) {
-        alert('fileupload.maxfilesizeexceeded');
+        alert(i18next.t('fileupload.maxfilesizeexceeded'));
         return;
     }
 
@@ -176,7 +177,7 @@ export async function uploadFile(file, store) {
         // show a toast error message in case of file upload error
         console.log("Error is: ", err);
         showToast({
-            title: 'fileupload.error', // need to use translated strings here
+            title: i18next.t('fileupload.error'), // need to use translated strings here
             timeout: NOTIFICATION_TIMEOUT,
             icon: 'error',
             animation: false });

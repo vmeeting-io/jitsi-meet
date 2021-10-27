@@ -6,12 +6,14 @@ import { toArray } from 'react-emoji-render';
 import { 
     Icon,
     IconMenuThumb,
-    IconShareDoc,
     IconShareExcel,
     IconShareHTML,
+    IconShareHWP,
+    IconShareFile,
     IconShareMP3,
     IconShareMP4,
     IconSharePDF,
+    IconSharePPT,
     IconShareWord,
     IconShareZip
 } from '../../../base/icons';
@@ -100,11 +102,17 @@ class ChatMessage extends AbstractChatMessage<Props> {
                     else if(/\.(pdf)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                         processedMessage.push(this._renderFileUploads(msg, IconSharePDF, decodedFileName, processedSize));
                     }
+                    else if(/\.(ppt|pptx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
+                        processedMessage.push(this._renderFileUploads(msg, IconSharePPT, decodedFileName, processedSize));
+                    }
                     else if(/\.(html|htm)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                         processedMessage.push(this._renderFileUploads(msg, IconShareHTML, decodedFileName, processedSize));
                     }
-                    else if(/\.(doc|docx|hwp)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
+                    else if(/\.(doc|docx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                         processedMessage.push(this._renderFileUploads(msg, IconShareWord, decodedFileName, processedSize));
+                    }
+                    else if(/\.(hwp)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
+                        processedMessage.push(this._renderFileUploads(msg, IconShareHWP, decodedFileName, processedSize));
                     }
                     else if(/\.(xls|xlsx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                         processedMessage.push(this._renderFileUploads(msg, IconShareExcel, decodedFileName, processedSize));
@@ -120,7 +128,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
                     }
                     // else it is an uploaded file but we don't have corresponding icon, we use the base icon
                     else {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareDoc, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconShareFile, decodedFileName, processedSize));
                     }
                 // when someone is just sending a message with the URL of the server but nothing more
                 } else {

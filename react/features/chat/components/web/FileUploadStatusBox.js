@@ -3,7 +3,9 @@
 import React, { Component } from 'react';
 import { translate } from '../../../base/i18n';
 import { Circle } from 'rc-progress';
-
+import { Linkify } from '../../../base/react';
+import { processFileSize, renderLongFileNameWithEllipses } from '../../../base/util';
+import moment from 'moment';
 /**
  * The type of the React {@code Component} props of {@code AbstractChat}.
  */
@@ -38,18 +40,49 @@ class FileUploadStatusBox<P: Props> extends Component {
     render() {
         const { t, fileUploadPercentage, fileName, fileSize } = this.props;
 
-        return (
-            <div id='file-upload-status-box' className='chat-file-upload-status-box'>
-                {/* render circular progress bar here */}
-                <div className=''>
-                    <Circle percent={ fileUploadPercentage } strokeWidth="4" strokeColor="#FF0000" />
-                </div>
+        const shortenedFileName = renderLongFileNameWithEllipses(fileName);
+        console.log("Shortened File Name is: ", shortenedFileName);
 
-                {/* render filename and size info here */}
-                <div className=''>
-                    <p> { fileName } </p>
-                    <p> { fileSize } </p>
+        return (
+            <div className = {'chat-message-group local'}>
+                <div className = {'chatmessage-wrapper local'} tabIndex = { -1 }>
+                    <div className = 'chatmessage'>
+                        <div className = 'replywrapper'>
+                            <div className = 'messagecontent'>
+                                <div className = 'usermessage loadingCircleHeight'>
+                                    <a target="_blank" href='#' >
+                                        <Linkify key = { fileSize }>
+                                            <div className = "userfiles">
+                                                <div className = "userfiles-icons">
+                                                    <Circle percent={ fileUploadPercentage } strokeWidth="12" strokeColor="#36c6f4" className="progressIcon" />
+                                                </div>
+                                                <div className = "userfilesnamesize">
+                                                    <div className = "userfilesname ">
+                                                        { shortenedFileName }
+                                                    </div>
+                                                    <div className = "userfilessize">
+                                                        { t('chat.filesize') + processFileSize(fileSize) }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Linkify>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    { this._renderTimestamp() }
                 </div>
+            </div>
+
+        );
+    }
+
+    _renderTimestamp() {
+        const currentTime = moment().format('hh:mm');
+        return (
+            <div className = 'timestamp'>
+                { currentTime }
             </div>
         );
     }

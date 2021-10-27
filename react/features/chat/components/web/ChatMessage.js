@@ -33,7 +33,7 @@ import EnableChatForRemoteParticipantDialog from '../../../video-menu/components
 import DisableChatForRemoteParticipantDialog from '../../../video-menu/components/web/DisableChatForRemoteParticipantDialog';
 import { setPrivateMessageRecipient } from '../../actions';
 import PrivateNotice from './PrivateNotice';
-import { getBaseUrl, getFileSize, processFileSize } from '../../../base/util';
+import { getBaseUrl, getFileSize, processFileSize, renderLongFileNameWithEllipses } from '../../../base/util';
 
 declare var APP: Object;
 
@@ -90,11 +90,8 @@ class ChatMessage extends AbstractChatMessage<Props> {
                     const fsize = getFileSize(msg);
                     const processedSize = processFileSize(fsize);
                     let decodedFileName = decodeURIComponent(filename);
+                    decodedFileName = renderLongFileNameWithEllipses(decodedFileName);
 
-                    // rendering ellipsis in the file name's length is longer than 38 characters
-                    if(decodedFileName.length > 38) {
-                        decodedFileName = decodedFileName.substr(0,25) + "..." + decodedFileName.substr(-10);
-                    }
 
                     // poetic way to check whether the file extension types
                     if(/\.(jpe?g|png|gif|bmp)$/i.test(msg)) {

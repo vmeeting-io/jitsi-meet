@@ -161,7 +161,17 @@ export default class AbstractChat<P: Props> extends Component<P> {
  * }}
  */
 export function _mapStateToProps(state: Object) {
-    const { isOpen, isPollsTabFocused, messages, nbUnreadMessages, privateMessageRecipient } = state['features/chat'];
+    const { 
+        isOpen, 
+        isPollsTabFocused, 
+        messages, 
+        nbUnreadMessages, 
+        privateMessageRecipient, 
+        fileUploadPercentage, 
+        uploading,
+        fileName,
+        fileSize
+    } = state['features/chat'];
     const { nbUnreadPolls } = state['features/polls'];
     const { enableChatControl } = state['features/base/config'];
     const _localParticipant = getLocalParticipant(state);
@@ -169,6 +179,10 @@ export function _mapStateToProps(state: Object) {
 
     return {
         _enableChatControl: Boolean(enableChatControl),
+        _fileName: fileName,
+        _fileSize: fileSize,
+        _fileUploadPercentage: fileUploadPercentage,
+        _isUploading: Boolean(uploading),
         _isModal: window.innerWidth <= SMALL_WIDTH_THRESHOLD,
         _isOpen: isOpen,
         _isPollsEnabled: !disablePolls,

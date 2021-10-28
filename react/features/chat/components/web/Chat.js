@@ -5,7 +5,7 @@ import React from 'react';
 import { FieldTextStateless as TextField } from '@atlaskit/field-text';
 import CrossCircleIcon from '@atlaskit/icon/glyph/cross-circle';
 import DropdownMenu, { DropdownItem, DropdownItemGroup } from '@atlaskit/dropdown-menu';
-
+import { uploadFile } from '../../functions';
 import { translate } from '../../../base/i18n';
 import { Icon, IconClose, IconMenu, IconMenuThumb, IconSearch } from '../../../base/icons';
 import { connect } from '../../../base/redux';
@@ -36,6 +36,7 @@ import { setPrivateMessageRecipient } from '../../actions';
 import { showToast } from '../../../notifications';
 
 import Mark from 'mark.js';
+import DragAndDrop from './DragAndDrop';
 
 declare var APP: Object;
 
@@ -246,22 +247,32 @@ class Chat extends AbstractChat<Props> {
         return (
             <>
                 {this.props._isPollsEnabled && this._renderTabs()}
-                <TouchmoveHack isModal = { this.props._isModal }>
-                    <MessageContainer
-                        messages = { this.props._messages }
-                        ref = { this._messageContainerRef } />
-                </TouchmoveHack>
-                { _showMessageRecipient && <MessageRecipient /> }
-                { _showChatInput && (
-                    <>
-                        <ChatInput
-                            onResize = { this._onChatInputResize }
-                            onSend = { this._onSendMessage } />
-                        <KeyboardAvoider />
-                    </>
-                )}
+                <DragAndDrop handleDrop={this._fileDropHandler}>
+                    <TouchmoveHack isModal = { this.props._isModal }>
+                        <MessageContainer
+                            fileUploadPercentage = { this.props._fileUploadPercentage }
+                            fileName = { this.props._fileName }
+                            fileSize = { this.props._fileSize }
+                            isUploading = { this.props._isUploading }
+                            messages = { this.props._messages }
+                            ref = { this._messageContainerRef } />
+                    </TouchmoveHack>
+                    { _showMessageRecipient && <MessageRecipient /> }
+                    { _showChatInput && (
+                        <>
+                            <ChatInput
+                                onResize = { this._onChatInputResize }
+                                onSend = { this._onSendMessage } />
+                            <KeyboardAvoider />
+                        </>
+                    )}
+                </DragAndDrop>
             </>
         );
+    }
+
+    _fileDropHandler(file) {
+        uploadFile(file, APP.store);
     }
 
     toggleChatHeaderMenuDialog = () => {

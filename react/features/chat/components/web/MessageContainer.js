@@ -7,6 +7,7 @@ import AbstractMessageContainer, { type Props }
     from '../AbstractMessageContainer';
 
 import ChatMessageGroup from './ChatMessageGroup';
+import FileUploadStatusBox from './FileUploadStatusBox';
 
 /**
  * Displays all received chat messages, grouped by sender.
@@ -56,6 +57,12 @@ export default class MessageContainer extends AbstractMessageContainer<Props> {
      * @inheritdoc
      */
     render() {
+        const { 
+            fileName,
+            fileSize,
+            fileUploadPercentage,
+            isUploading 
+        } = this.props;
         const groupedMessages = this._getMessagesGroupedBySender();
         const messages = groupedMessages.map((group, index) => {
             const messageType = group[0] && group[0].messageType;
@@ -68,18 +75,39 @@ export default class MessageContainer extends AbstractMessageContainer<Props> {
             );
         });
 
-        return (
-            <div
-                aria-labelledby = 'chat-header'
-                id = 'chatconversation'
-                onScroll = { this._onChatScroll }
-                ref = { this._messageListRef }
-                role = 'log'
-                tabIndex = { 0 }>
-                { messages }
-                <div ref = { this._messagesListEndRef } />
-            </div>
-        );
+        if(isUploading && fileUploadPercentage > 0 && fileUploadPercentage < 100) {
+            // render loading circle component here
+            return (
+                <div
+                    aria-labelledby = 'chat-header'
+                    id = 'chatconversation'
+                    onScroll = { this._onChatScroll }
+                    ref = { this._messageListRef }
+                    role = 'log'
+                    tabIndex = { 0 }>
+                        <FileUploadStatusBox 
+                            fileName = { fileName } 
+                            fileSize = { fileSize } 
+                            fileUploadPercentage = { fileUploadPercentage } 
+                        />
+                    <div ref = { this._messagesListEndRef } />
+                </div>
+            );
+        }
+        else {
+            return (
+                <div
+                    aria-labelledby = 'chat-header'
+                    id = 'chatconversation'
+                    onScroll = { this._onChatScroll }
+                    ref = { this._messageListRef }
+                    role = 'log'
+                    tabIndex = { 0 }>
+                    { messages }
+                    <div ref = { this._messagesListEndRef } />
+                </div>
+            );
+        }
     }
 
     /**

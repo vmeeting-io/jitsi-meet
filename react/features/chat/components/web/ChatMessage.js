@@ -221,21 +221,19 @@ class ChatMessage extends AbstractChatMessage<Props> {
         const { t } = this.props;
         return(
             <a target="_blank" href={ msg } download={ rawFileName }>
-                <Linkify key = { msg }>
-                    <div className = "userfiles">
-                        <div className = "userfiles-icons">
-                            <Icon src={ icon } size= { 60 } />
+                <div className = "userfiles">
+                    <div className = "userfiles-icons">
+                        <Icon src={ icon } size= { 60 } />
+                    </div>
+                    <div className = "userfilesnamesize">
+                        <div className = "userfilesname">
+                            { shortenedFileName }
                         </div>
-                        <div className = "userfilesnamesize">
-                            <div className = "userfilesname">
-                                { shortenedFileName }
-                            </div>
-                            <div className = "userfilessize">
-                                { t('chat.filesize') + fsize }
-                            </div>
+                        <div className = "userfilessize">
+                            { t('chat.filesize') + fsize }
                         </div>
                     </div>
-                </Linkify>
+                </div>
             </a>
         );
     }

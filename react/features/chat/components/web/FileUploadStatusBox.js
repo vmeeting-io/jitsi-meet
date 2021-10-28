@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { translate } from '../../../base/i18n';
 import { Circle } from 'rc-progress';
 import { Linkify } from '../../../base/react';
-import { processFileSize, renderLongFileNameWithEllipses } from '../../../base/util';
+import { processFileSize, renderLongFileNameWithEllipses, truncateDateTimeStamp } from '../../../base/util';
 import moment from 'moment';
 /**
  * The type of the React {@code Component} props of {@code AbstractChat}.
@@ -40,9 +40,8 @@ class FileUploadStatusBox<P: Props> extends Component {
     render() {
         const { t, fileUploadPercentage, fileName, fileSize } = this.props;
 
-        const shortenedFileName = renderLongFileNameWithEllipses(fileName);
-        console.log("Shortened File Name is: ", shortenedFileName);
-
+        const rawFilenameWOTS = truncateDateTimeStamp(fileName);
+        const shortenedFileName = renderLongFileNameWithEllipses(rawFilenameWOTS);
         return (
             <div className = {'chat-message-group local'}>
                 <div className = {'chatmessage-wrapper local'} tabIndex = { -1 }>
@@ -50,23 +49,19 @@ class FileUploadStatusBox<P: Props> extends Component {
                         <div className = 'replywrapper'>
                             <div className = 'messagecontent'>
                                 <div className = 'usermessage loadingCircleHeight'>
-                                    <a target="_blank" href='#' >
-                                        <Linkify key = { fileSize }>
-                                            <div className = "userfiles">
-                                                <div className = "userfiles-icons">
-                                                    <Circle percent={ fileUploadPercentage } strokeWidth="12" strokeColor="#36c6f4" className="progressIcon" />
-                                                </div>
-                                                <div className = "userfilesnamesize">
-                                                    <div className = "userfilesname ">
-                                                        { shortenedFileName }
-                                                    </div>
-                                                    <div className = "userfilessize">
-                                                        { t('chat.filesize') + processFileSize(fileSize) }
-                                                    </div>
-                                                </div>
+                                    <div className = "userfiles">
+                                        <div className = "userfiles-icons">
+                                            <Circle percent={ fileUploadPercentage } strokeWidth="12" strokeColor="#36c6f4" className="progressIcon" />
+                                        </div>
+                                        <div className = "userfilesnamesize">
+                                            <div className = "userfilesname ">
+                                                { shortenedFileName }
                                             </div>
-                                        </Linkify>
-                                    </a>
+                                            <div className = "userfilessize">
+                                                { t('chat.filesize') + processFileSize(fileSize) }
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

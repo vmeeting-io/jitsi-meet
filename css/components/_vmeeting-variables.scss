@@ -207,7 +207,7 @@ $font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica 
   'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
   'Noto Color Emoji';
 $code-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-$text-color: transparentize($white, 0.15);
+$text-color: transparentize($black, 0.15);
 $text-color-secondary: transparentize($black, 0.55);
 $text-color-inverse: $white;
 $icon-color: inherit;
@@ -432,7 +432,7 @@ $calendar-full-panel-bg: $calendar-full-bg;
 // --
 $progress-default-color: $processing-color;
 $progress-remaining-color: $background-color-base;
-$progress-text-color: $text-color; // This is for circle text color, should be renamed better
+$progress-text-color: $text-color-dark; // This is for circle text color, should be renamed better
 $progress-info-text-color: $progress-text-color;
 $progress-radius: 100px;
 $progress-steps-item-bg: #f3f3f3;

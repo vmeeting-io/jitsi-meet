@@ -291,7 +291,7 @@ class ChatInput extends Component<Props, State> {
      * @returns {void}
      */
     _onMessageChange(event) {
-        console.error('_onMessageChange:', event.target.value);
+        // console.error('_onMessageChange:', event.target.value);
         event.preventDefault();
         event.persist();
         this.setState({ message: event.target.value });

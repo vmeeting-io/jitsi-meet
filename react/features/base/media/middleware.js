@@ -73,7 +73,7 @@ MiddlewareRegistry.register(store => next => action => {
         const state = store.getState();
         const participant = getLocalParticipant(state);
 
-        console.log('==> SET_VIDEO_MUTED:', state.muted, action);
+        console.log('==> SET_VIDEO_MUTED:', state['features/base/media'].video.muted, action);
         if (!action.muted && isForceMuted(participant, MEDIA_TYPE.VIDEO, state)) {
             return;
         }

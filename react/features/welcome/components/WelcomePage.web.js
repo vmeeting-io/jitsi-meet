@@ -564,7 +564,7 @@ class WelcomePage extends AbstractWelcomePage {
                                     </div>
                                     { tenant && tenant !== currentTenant ? (
                                         <div
-                                            className = 'welcome-page-button disabled'
+                                            className = 'welcome-page-button'
                                             id = 'enter_room_button'
                                             onClick = { this._onFormSubmit }>
                                             { t('welcomepage.join') }
@@ -594,9 +594,13 @@ class WelcomePage extends AbstractWelcomePage {
                                 </div>
                             </div>
                             <div className = 'header-image'>
-                                <img
-                                    alt = 'Video conference'
-                                    src = '/images/header-image.png' />
+                                <iframe
+                                    src="https://www.youtube.com/embed/3Z-bkgjYUTc"
+                                    title="YouTube video player"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen>
+                                </iframe>
                             </div>
                         </div>
                     </div>

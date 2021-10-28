@@ -272,7 +272,18 @@ class Chat extends AbstractChat<Props> {
     }
 
     _fileDropHandler(file) {
-        uploadFile(file, APP.store);
+        const state = APP.store.getState();
+        
+        // code block that identifies whether or not there is a file upload, currently in progress or not
+        // if so upload is not processed.
+        const existingFileName = state['features/chat'].fileName || undefined;
+        const existingFileUploadP = state['features/chat'].fileUploadPercentage;
+        let fileUploadInProgress = false;
+        if((existingFileName !== undefined) && (existingFileUploadP > 0 && existingFileUploadP < 100)) {
+            fileUploadInProgress = true;
+        }
+
+        uploadFile(file, APP.store, fileUploadInProgress);
     }
 
     toggleChatHeaderMenuDialog = () => {

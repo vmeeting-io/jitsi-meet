@@ -115,28 +115,23 @@ class ChatMessageGroup extends Component<Props> {
                 size = { 32 } />
         );
 
-        //we want to only allow moderators to get the chat control button alongside chat message
-        if (_isLocalParticipantAModerator) {
-            return(
-                <DropdownMenu
-                    boundariesElement = 'scrollParent'
-                    trigger = { avatar }>
-                    <DropdownItemGroup>
-                        <DropdownItem onClick = { this._onPrivateMessage }>
-                            { t('dialog.privateMessage') }
-                        </DropdownItem>
-                        <DropdownItem onClick = { this._onToggleChatState }>
-                            { _isChatMessageDisabled ? t('dialog.enableChat') : t('dialog.disableChat') }
-                        </DropdownItem>
-                        <DropdownItem onClick = { this._onKickUser }>
-                            { t('dialog.kickOut') }
-                        </DropdownItem>
-                    </DropdownItemGroup>
-                </DropdownMenu>
-            );
-        } else {
-            return avatar;
-        }
+        return(
+            <DropdownMenu
+                boundariesElement = 'scrollParent'
+                trigger = { avatar }>
+                <DropdownItemGroup>
+                    <DropdownItem onClick = { this._onPrivateMessage }>
+                        { t('dialog.privateMessage') }
+                    </DropdownItem>
+                    { _isLocalParticipantAModerator && <DropdownItem onClick = { this._onToggleChatState }>
+                        { _isChatMessageDisabled ? t('dialog.enableChat') : t('dialog.disableChat') }
+                    </DropdownItem>}
+                    { _isLocalParticipantAModerator && <DropdownItem onClick = { this._onKickUser }>
+                        { t('dialog.kickOut') }
+                    </DropdownItem>}
+                </DropdownItemGroup>
+            </DropdownMenu>
+        );
     }
 
     /**

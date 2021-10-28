@@ -35,7 +35,7 @@ import EnableChatForRemoteParticipantDialog from '../../../video-menu/components
 import DisableChatForRemoteParticipantDialog from '../../../video-menu/components/web/DisableChatForRemoteParticipantDialog';
 import { setPrivateMessageRecipient } from '../../actions';
 import PrivateNotice from './PrivateNotice';
-import { getBaseUrl, getFileSize, processFileSize, renderLongFileNameWithEllipses } from '../../../base/util';
+import { getBaseUrl, getFileSize, processFileSize } from '../../../base/util';
 
 declare var APP: Object;
 
@@ -92,12 +92,10 @@ class ChatMessage extends AbstractChatMessage<Props> {
                     const fsize = getFileSize(msg);
                     const processedSize = processFileSize(fsize);
                     let decodedFileName = decodeURIComponent(filename);
-                    // decodedFileName = renderLongFileNameWithEllipses(decodedFileName);
-
 
                     // poetic way to check whether the file extension types
                     if(/\.(jpe?g|png|gif|bmp)$/i.test(msg)) {
-                        processedMessage.push(<a target="_blank" href={ msg }><img className = 'chatmessage-uploadedImage' key = { msg } src = { msg } /></a>);
+                        processedMessage.push(<a target="_blank" key = 'chatmessage-uploadedImage' href={ msg }><img className = 'chatmessage-uploadedImage' key = { msg } src = { msg } /></a>);
                     }
                     else if(/\.(pdf)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
                         processedMessage.push(this._renderFileUploads(msg, IconSharePDF, decodedFileName, processedSize));
@@ -219,8 +217,8 @@ class ChatMessage extends AbstractChatMessage<Props> {
     _renderFileUploads(msg, icon, fname, fsize) {
         const { t } = this.props;
         return(
-            <a target="_blank" href={ msg }>
-                <Linkify key = { msg }>
+            <a target="_blank" key = { msg } href={ msg }>
+                <Linkify>
                     <div className = "userfiles">
                         <div className = "userfiles-icons">
                             <Icon src={ icon } size= { 50 } />

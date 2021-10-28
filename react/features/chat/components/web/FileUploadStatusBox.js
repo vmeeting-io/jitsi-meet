@@ -1,11 +1,13 @@
 /* @flow */
 
 import React, { Component } from 'react';
-import { translate } from '../../../base/i18n';
-import { Circle } from 'rc-progress';
-import { Linkify } from '../../../base/react';
-import { processFileSize, renderLongFileNameWithEllipses } from '../../../base/util';
 import moment from 'moment';
+
+import { translate } from '../../../base/i18n';
+import { Linkify } from '../../../base/react';
+import { processFileSize } from '../../../base/util';
+import Progress from '../../../../components/Progress';
+
 /**
  * The type of the React {@code Component} props of {@code AbstractChat}.
  */
@@ -40,9 +42,6 @@ class FileUploadStatusBox<P: Props> extends Component {
     render() {
         const { t, fileUploadPercentage, fileName, fileSize } = this.props;
 
-        const shortenedFileName = renderLongFileNameWithEllipses(fileName);
-        console.log("Shortened File Name is: ", shortenedFileName);
-
         return (
             <div className = {'chat-message-group local'}>
                 <div className = {'chatmessage-wrapper local'} tabIndex = { -1 }>
@@ -54,11 +53,16 @@ class FileUploadStatusBox<P: Props> extends Component {
                                         <Linkify key = { fileSize }>
                                             <div className = "userfiles">
                                                 <div className = "userfiles-icons">
-                                                    <Circle percent={ fileUploadPercentage } strokeWidth="12" strokeColor="#36c6f4" className="progressIcon" />
+                                                    <Progress
+                                                        type = 'circle'
+                                                        percent = { fileUploadPercentage }
+                                                        strokeColor = "#36c6f4"
+                                                        className = "progressIcon"
+                                                        width = { 50 } />
                                                 </div>
                                                 <div className = "userfilesnamesize">
                                                     <div className = "userfilesname ">
-                                                        { shortenedFileName }
+                                                        { fileName }
                                                     </div>
                                                     <div className = "userfilessize">
                                                         { t('chat.filesize') + processFileSize(fileSize) }

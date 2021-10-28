@@ -75,39 +75,29 @@ export default class MessageContainer extends AbstractMessageContainer<Props> {
             );
         });
 
-        if(isUploading && fileUploadPercentage > 0 && fileUploadPercentage < 100) {
+        if (isUploading && fileUploadPercentage > 0 && fileUploadPercentage < 100) {
             // render loading circle component here
-            return (
-                <div
-                    aria-labelledby = 'chat-header'
-                    id = 'chatconversation'
-                    onScroll = { this._onChatScroll }
-                    ref = { this._messageListRef }
-                    role = 'log'
-                    tabIndex = { 0 }>
-                        <FileUploadStatusBox 
-                            fileName = { fileName } 
-                            fileSize = { fileSize } 
-                            fileUploadPercentage = { fileUploadPercentage } 
-                        />
-                    <div ref = { this._messagesListEndRef } />
-                </div>
+            messages.push(
+                <FileUploadStatusBox 
+                    fileName = { fileName } 
+                    fileSize = { fileSize } 
+                    fileUploadPercentage = { fileUploadPercentage } 
+                />
             );
         }
-        else {
-            return (
-                <div
-                    aria-labelledby = 'chat-header'
-                    id = 'chatconversation'
-                    onScroll = { this._onChatScroll }
-                    ref = { this._messageListRef }
-                    role = 'log'
-                    tabIndex = { 0 }>
-                    { messages }
-                    <div ref = { this._messagesListEndRef } />
-                </div>
-            );
-        }
+
+        return (
+            <div
+                aria-labelledby = 'chat-header'
+                id = 'chatconversation'
+                onScroll = { this._onChatScroll }
+                ref = { this._messageListRef }
+                role = 'log'
+                tabIndex = { 0 }>
+                { messages }
+                <div ref = { this._messagesListEndRef } />
+            </div>
+        );
     }
 
     /**

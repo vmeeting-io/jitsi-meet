@@ -310,6 +310,12 @@
     }
 }
 
+.file-upload-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .file-upload,
 .smiley-button {
     display: flex;

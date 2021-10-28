@@ -48,21 +48,23 @@ class FileUploadButton<P: Props> extends Component {
         }
                 
         return (
-            <Tooltip
-                content = { t('fileupload.title') }
-                position = 'top'>
-                <div className = 'file-upload'>
-                    <div id='fileuploadarea'>
-                        <Icon src = { IconPaperClip } onClick = { () => this.refs.fileInput.click() }/>
-                        <input
-                            type='file'
-                            ref= 'fileInput'
-                            onChange = {e => uploadFile(e.target.files[0], store, _fileUploadInProgress)}  // we will only select a single file for the time being
-                            className = 'file-upload-btn' 
-                        />
+            <div className = 'file-upload-wrapper'>
+                <Tooltip
+                    content = { t('fileupload.title') }
+                    position = 'top'>
+                    <div className = 'file-upload'>
+                        <div id='fileuploadarea'>
+                            <Icon src = { IconPaperClip } onClick = { () => this.refs.fileInput.click() }/>
+                            <input
+                                type='file'
+                                ref= 'fileInput'
+                                onChange = {e => uploadFile(e.target.files[0], store, _fileUploadInProgress)}  // we will only select a single file for the time being
+                                className = 'file-upload-btn' 
+                            />
+                        </div>
                     </div>
-                </div>
-            </Tooltip>
+                </Tooltip>
+            </div>
         );
     }
 

@@ -44,6 +44,7 @@
 
         &:link {
             color: rgb(184, 184, 184);
+            text-decoration: none;
         }
     
         &:visited {
@@ -436,15 +437,16 @@
     .display-name {
         font-size: 12px;
         font-weight: 600;
-        margin-bottom: 5px;
+        margin: 0;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
         display: flex;
         align-items: center;
+        color: rgba(255,255,255,.65);
 
         .message-menu-container {
-            margin-left: 16px;
+            margin-left: auto;
 
             button {
                 background: none;
@@ -544,7 +546,7 @@
         .userfiles {
             display: flex;
             flex-direction: row;
-            width: 220px;
+            min-width: 180px;
 
             .userfiles-icons {
                 flex: 1;
@@ -572,7 +574,7 @@
                 .userfilessize {
                     font-size: smaller;
                     margin-top: 8px;
-                    color: rgba(255,255,255,0.4);
+                    color: rgba(255,255,255,.65);
                 }
             }
         }
@@ -736,14 +738,23 @@
     }
 
     &.remote {
-        flex-direction: row-reverse;
+        flex-direction: row;
         align-items: flex-start;
         text-align: left;
+        display: flex;
 
         .timestamp {
             text-align: left;
             margin-top: auto;
             margin-left: 3px;
+        }
+
+        .chat-avatar {
+            cursor: pointer;
+        }
+
+        .messages {
+            padding-left: 8px;
         }
     }
 

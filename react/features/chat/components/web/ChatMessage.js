@@ -35,7 +35,7 @@ import EnableChatForRemoteParticipantDialog from '../../../video-menu/components
 import DisableChatForRemoteParticipantDialog from '../../../video-menu/components/web/DisableChatForRemoteParticipantDialog';
 import { setPrivateMessageRecipient } from '../../actions';
 import PrivateNotice from './PrivateNotice';
-import { getBaseUrl, getFileSize, processFileSize, renderLongFileNameWithEllipses } from '../../../base/util';
+import { getBaseUrl, getFileSize, processFileSize, renderLongFileNameWithEllipses, truncateDateTimeStamp } from '../../../base/util';
 
 declare var APP: Object;
 
@@ -92,43 +92,44 @@ class ChatMessage extends AbstractChatMessage<Props> {
                     const fsize = getFileSize(msg);
                     const processedSize = processFileSize(fsize);
                     let decodedFileName = decodeURIComponent(filename);
-                    decodedFileName = renderLongFileNameWithEllipses(decodedFileName);
+                    let rawFileNameWOTS = truncateDateTimeStamp(decodedFileName);
+                    let shortenedFileName = renderLongFileNameWithEllipses(rawFileNameWOTS);
 
 
                     // poetic way to check whether the file extension types
                     if(/\.(jpe?g|png|gif|bmp)$/i.test(msg)) {
-                        processedMessage.push(<a target="_blank" href={ msg }><img className = 'chatmessage-uploadedImage' key = { msg } src = { msg } /></a>);
+                        processedMessage.push(<a target="_blank" href={ msg } download={ rawFileNameWOTS }> <img className = 'chatmessage-uploadedImage' key = { msg } src = { msg } /> </a>);
                     }
                     else if(/\.(pdf)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconSharePDF, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconSharePDF, rawFileNameWOTS, shortenedFileName, processedSize));
                     }
                     else if(/\.(ppt|pptx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconSharePPT, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconSharePPT, rawFileNameWOTS, shortenedFileName, processedSize));
                     }
                     else if(/\.(html|htm)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareHTML, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconShareHTML, rawFileNameWOTS, shortenedFileName, processedSize));
                     }
                     else if(/\.(doc|docx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareWord, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconShareWord, rawFileNameWOTS, shortenedFileName, processedSize));
                     }
                     else if(/\.(hwp)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareHWP, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconShareHWP, rawFileNameWOTS, shortenedFileName, processedSize));
                     }
                     else if(/\.(xls|xlsx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareExcel, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconShareExcel, rawFileNameWOTS, shortenedFileName, processedSize));
                     }
                     else if(/\.(zip)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareZip, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconShareZip, rawFileNameWOTS, shortenedFileName, processedSize));
                     }
                     else if(/\.(mp3)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareMP3, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconShareMP3, rawFileNameWOTS, shortenedFileName, processedSize));
                     }
                     else if(/\.(mp4)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareMP4, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconShareMP4, rawFileNameWOTS, shortenedFileName, processedSize));
                     }
                     // else it is an uploaded file but we don't have corresponding icon, we use the base icon
                     else {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareFile, decodedFileName, processedSize));
+                        processedMessage.push(this._renderFileUploads(msg, IconShareFile, rawFileNameWOTS, shortenedFileName, processedSize));
                     }
                 // when someone is just sending a message with the URL of the server but nothing more
                 } else {
@@ -216,10 +217,10 @@ class ChatMessage extends AbstractChatMessage<Props> {
         }
     }
 
-    _renderFileUploads(msg, icon, fname, fsize) {
+    _renderFileUploads(msg, icon, rawFileName, shortenedFileName, fsize) {
         const { t } = this.props;
         return(
-            <a target="_blank" href={ msg }>
+            <a target="_blank" href={ msg } download={ rawFileName }>
                 <Linkify key = { msg }>
                     <div className = "userfiles">
                         <div className = "userfiles-icons">
@@ -227,7 +228,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
                         </div>
                         <div className = "userfilesnamesize">
                             <div className = "userfilesname">
-                                { fname }
+                                { shortenedFileName }
                             </div>
                             <div className = "userfilessize">
                                 { t('chat.filesize') + fsize }

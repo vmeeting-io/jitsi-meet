@@ -138,6 +138,12 @@ export function processFileSize(fsize)
     }
 }
 
+export function truncateDateTimeStamp(filename) {
+    const x = filename.lastIndexOf('_')
+    const y = filename.lastIndexOf('.')
+    return filename.substring(0,x) + filename.substring(y,filename.length);
+}
+
 export function renderLongFileNameWithEllipses(filename)
 {
     if(filename.length > 38) {

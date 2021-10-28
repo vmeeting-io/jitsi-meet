@@ -709,6 +709,7 @@
 .chat-message-group {
     display: block;
     flex-direction: column;
+    margin-top: 6px;
 
     &.local {
         align-items: flex-end;

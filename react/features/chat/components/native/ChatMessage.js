@@ -177,9 +177,9 @@ class ChatMessage extends AbstractChatMessage<Props> {
                   onPress={() => Linking.openURL(msg)}>
                     <View>
                         {/* For Text Messages */}
-                        <Linkify linkStyle = { styles.chatLink }>
+                       { !iconToDisplay && <Linkify linkStyle = { styles.chatLink }>
                             { !iconToDisplay && replaceNonUnicodeEmojis(this._getMessageText()) }  
-                        </Linkify>
+                        </Linkify>}
                         
                         { iconToDisplay && <View style={[styles.fileContainer, {
                                 flexDirection: "row"

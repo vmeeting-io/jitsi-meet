@@ -79,6 +79,7 @@ export default class MessageContainer extends AbstractMessageContainer<Props> {
             // render loading circle component here
             messages.push(
                 <FileUploadStatusBox 
+                    key = 'file-upload-status-box'
                     fileName = { fileName } 
                     fileSize = { fileSize } 
                     fileUploadPercentage = { fileUploadPercentage } 

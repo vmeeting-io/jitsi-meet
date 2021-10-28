@@ -177,10 +177,19 @@ export function _mapStateToProps(state: Object) {
     const _localParticipant = getLocalParticipant(state);
     const { disablePolls } = state['features/base/config'];
 
+    // whether or not there is file upload currently in progress
+    const existingFileName = state['features/chat'].fileName || undefined;
+    const existingFileUploadP = state['features/chat'].fileUploadPercentage;
+    let fileUploadInProgress = false;
+    if((existingFileName !== undefined) && (existingFileUploadP > 0 && existingFileUploadP < 100)) {
+        fileUploadInProgress = true;
+    }
+
     return {
         _enableChatControl: Boolean(enableChatControl),
         _fileName: fileName,
         _fileSize: fileSize,
+        _fileUploadInProgress: Boolean(fileUploadInProgress),
         _fileUploadPercentage: fileUploadPercentage,
         _isUploading: Boolean(uploading),
         _isModal: window.innerWidth <= SMALL_WIDTH_THRESHOLD,

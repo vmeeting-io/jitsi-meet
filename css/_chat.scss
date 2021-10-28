@@ -530,7 +530,7 @@
     box-sizing: border-box;
     color: white;
     margin-top: 3px;
-    max-width: 90%;
+    max-width: calc(100% - 40px);
     position: relative;
 
     &.localuser {
@@ -756,6 +756,7 @@
 
         .messages {
             padding-left: 8px;
+            width: calc(100% - 40px);
         }
     }
 

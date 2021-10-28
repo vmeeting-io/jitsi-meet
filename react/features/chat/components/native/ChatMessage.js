@@ -97,8 +97,8 @@ class ChatMessage extends AbstractChatMessage<Props> {
 
     _getShortName(filename){
         const len = filename.length;
-        if(len>30){
-            return filename.substring(0,15) + "..." + filename.substring(len-15,len);
+        if(len>25){
+            return filename.substring(0,16) + "..." + filename.substring(len-8,len);
         }
         return filename;
     }

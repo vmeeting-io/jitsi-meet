@@ -92,7 +92,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
                     const fsize = getFileSize(msg);
                     const processedSize = processFileSize(fsize);
                     let decodedFileName = decodeURIComponent(filename);
-                    decodedFileName = renderLongFileNameWithEllipses(decodedFileName);
+                    // decodedFileName = renderLongFileNameWithEllipses(decodedFileName);
 
 
                     // poetic way to check whether the file extension types
@@ -223,7 +223,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
                 <Linkify key = { msg }>
                     <div className = "userfiles">
                         <div className = "userfiles-icons">
-                            <Icon src={ icon } size= { 60 } />
+                            <Icon src={ icon } size= { 50 } />
                         </div>
                         <div className = "userfilesnamesize">
                             <div className = "userfilesname">

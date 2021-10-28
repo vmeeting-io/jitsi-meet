@@ -95,6 +95,12 @@ class ChatMessage extends AbstractChatMessage<Props> {
         );
     }
 
+    _truncateDateTimeStamp(filename){
+        // Remove datetime stamp appended at the end of the file.
+        const x = filename.lastIndexOf('_')
+        const y = filename.lastIndexOf('.')
+        return filename.substring(0,x) + filename.substring(y,filename.length);
+    }
     _getShortName(filename){
         const len = filename.length;
         if(len>25){
@@ -116,6 +122,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
             filename = filelink.split('/').pop(); // use pop to fetch the last element contained in the array after using split
             filename = decodeURIComponent(filename);
             
+            filename = this._truncateDateTimeStamp(filename);
             filename = this._getShortName(filename);
 
             processedSize = processFileSize((Math.random() * (900024 - 1) + 1).toFixed(4));//TODO: Dummy file size for UI only.

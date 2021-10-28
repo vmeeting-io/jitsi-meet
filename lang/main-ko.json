@@ -508,7 +508,7 @@
     "fileupload": {
         "title": "파일 전송",
         "error": "파일을 업로드하는 중에 오류가 발생되었니다.",
-        "fileuploadinprogress": "파일 업로드가 진행중입니다. 현재 업로드가 완료된 후 다시 시도해 주세요.",
+        "fileuploadinprogress": "파일 업로드 중입니다. 업로드가 완료된 후 다시 시도해 주세요.",
         "maxfilesizeexceeded": "업로드된 파일이 허용되는 최대 파일 크기를 초과합니다."
     },
     "footer": {
@@ -1332,7 +1332,7 @@
     },
     "lobby": {
         "admit": "수락",
-        "admitAll": "모두 수략",
+        "admitAll": "모두 수락",
         "knockingParticipantList": "참가 요청",
         "allow": "수락",
         "backToKnockModeButton": "암호 없음, 대신 가입 요청",

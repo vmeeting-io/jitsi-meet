@@ -199,7 +199,7 @@ body.welcome-page {
 
             @include media-breakpoint-up(md) {
                 max-width: 35rem;
-                padding: 3em 1em 6em 4em;
+                padding: 3em 1em 0em 4em;
                 margin: 0;
                 border-bottom: 0;
             }
@@ -207,8 +207,6 @@ body.welcome-page {
 
         .header-image {
             display: block;
-            justify-content: center;
-            align-items: center;
             width: 100%;
             max-width: 39rem;
             margin: 0 auto;
@@ -217,14 +215,14 @@ body.welcome-page {
                 display: inline-flex;
                 width: initial;
                 max-width: initial;
-                padding: 1em 2em 0em 0;
+                padding: 4em 4em 0em 1em;
                 flex-basis: 45%;
                 margin: 0;
             }
 
-            img {
+            iframe {
                 width: 100%;
-                object-fit: contain;
+                height: 315px;
             }
         }
     }
@@ -311,6 +309,7 @@ body.welcome-page {
 
             span {
                 color: #253858;
+                margin-left: 4px;
                 margin-right: 4px;
                 font-weight: bold;  
             }
@@ -534,6 +533,11 @@ body.welcome-page {
             margin-right: 6px;
             color: white;
             line-height: 24px;
+        }
+
+        .badge {
+            margin-left: 5px;
+            display: inline-flex;
         }
     }
 

@@ -29,7 +29,7 @@ export default function loadEffects(store: Object): Promise<any> {
         : Promise.resolve();
 
     const backgroundPromise = virtualBackground.backgroundEffectEnabled
-        ? createVirtualBackgroundEffect({ ...virtualBackground, apiBase })
+        ? createVirtualBackgroundEffect({ ...virtualBackground, apiBase }, store.dispatch)
             .catch(error => {
                 logger.error('Failed to obtain the background effect instance with error: ', error);
 

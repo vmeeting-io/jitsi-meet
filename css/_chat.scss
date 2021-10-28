@@ -118,6 +118,14 @@
     }
 }
 
+.chat-drop-wrapper {
+    display: 'flex';
+    position: 'relative';
+    flex-direction: column;
+    max-height: 90%;
+    flex: 1;
+}
+
 .chat-header {
     display: flex;
     padding: 16px;

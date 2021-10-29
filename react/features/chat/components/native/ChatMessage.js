@@ -229,17 +229,21 @@ class ChatMessage extends AbstractChatMessage<Props> {
 
     _onClickFile(url){
         console.log("vmchg: 1: On avatar Click!!");
+        console.log("vmchg: URI 1 ", url)
+        const filename = decodeURI(url.substring(url.lastIndexOf("/"),url.length));
+        console.log("vmchg: xx", filename);
 
         const { config, fs } = RNFetchBlob
         let PictureDir = fs.dirs.PictureDir // this is the pictures directory. You can check the available directories in the wiki.
         let options = {
-        fileCache: true,
-        addAndroidDownloads : {
-            useDownloadManager : true, // setting it to true will use the device's native download manager and will be shown in the notification bar.
-            notification : false,
-            path:  PictureDir + "/me_", // this is the path where your downloaded file will live in
-            description : 'Downloading image.'
-        }
+            fileCache: true,
+            addAndroidDownloads : {
+                useDownloadManager : true, // setting it to true will use the device's native download manager and will be shown in the notification bar.
+                notification : false,
+                path:  PictureDir + "/me_", // this is the path where your downloaded file will live in
+                description : 'Downloading image.'
+            },
+            path: `${RNFetchBlob.fs.dirs.DownloadDir}/${filename}`
         }
         config(options).fetch('GET', url).then((res) => {
         // do some magic here
@@ -249,7 +253,9 @@ class ChatMessage extends AbstractChatMessage<Props> {
               }
         
               if (Platform.OS === 'ios') {
-                RNFetchBlob.ios.openDocument(res.path());
+                console.log('vmchg: 1. : Response: ', res)
+                RNFetchBlob.ios.previewDocument(res.path());
+                console.log('vmchg: 1. : Response Path:  ', res.respInfo.redirects[0])
               }
         })
 

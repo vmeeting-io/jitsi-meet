@@ -14,6 +14,7 @@
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		1C9E1114F3664925AF1B3E91 /* libRNFetchBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F029B52720A84AB0BC6537C2 /* libRNFetchBlob.a */; };
 		392E19EA26BCF99F00F629BF /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 392E19E926BCF99F00F629BF /* GoogleService-Info.plist */; };
 		3956ACE426C558790089235E /* libRCTOrientation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3956ACE326C558410089235E /* libRCTOrientation.a */; };
 		399CBFC126A145720050FA24 /* WebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 399CBFC026A145720050FA24 /* WebRTC.xcframework */; };
@@ -28,10 +29,16 @@
 		39C6101326B130890019A5C9 /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39C6100726B1290E0019A5C9 /* ReplayKit.framework */; };
 		4EB0602B260E026600F524C5 /* JitsiMeetBroadcastExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4EB06023260E026600F524C5 /* JitsiMeetBroadcastExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DE4C456121DE1E4E00EA0709 /* FIRUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = DE4C455F21DE1E4E00EA0709 /* FIRUtilities.m */; };
-		1C9E1114F3664925AF1B3E91 /* libRNFetchBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F029B52720A84AB0BC6537C2 /* libRNFetchBlob.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		0D9D35A4272BC12B003C637E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AC634147570A408A88227733 /* RNFetchBlob.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A15C300E1CD25C330074CB35;
+			remoteInfo = RNFetchBlob;
+		};
 		3956ACE226C558410089235E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 3956ACDE26C558410089235E /* RCTOrientation.xcodeproj */;
@@ -125,6 +132,7 @@
 		5FEF9D87A4D2A38AD7193308 /* Pods-vmeeting-JitsiMeetBroadcastExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-vmeeting-JitsiMeetBroadcastExtension.release.xcconfig"; path = "../Pods/Target Support Files/Pods-vmeeting-JitsiMeetBroadcastExtension/Pods-vmeeting-JitsiMeetBroadcastExtension.release.xcconfig"; sourceTree = "<group>"; };
 		6342EE7F981197A37212F6C7 /* Pods-vmeeting.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-vmeeting.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-vmeeting/Pods-vmeeting.debug.xcconfig"; sourceTree = "<group>"; };
 		A7B2827E068A0E05260054AC /* Pods-vmeeting-JitsiMeetBroadcastExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-vmeeting-JitsiMeetBroadcastExtension.debug.xcconfig"; path = "../Pods/Target Support Files/Pods-vmeeting-JitsiMeetBroadcastExtension/Pods-vmeeting-JitsiMeetBroadcastExtension.debug.xcconfig"; sourceTree = "<group>"; };
+		AC634147570A408A88227733 /* RNFetchBlob.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNFetchBlob.xcodeproj; path = "../../node_modules/rn-fetch-blob/ios/RNFetchBlob.xcodeproj"; sourceTree = "<group>"; };
 		AF5DC70CC3D33F668BD7E37A /* Pods-vmeeting.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-vmeeting.release.xcconfig"; path = "../Pods/Target Support Files/Pods-vmeeting/Pods-vmeeting.release.xcconfig"; sourceTree = "<group>"; };
 		B3B083EB1D4955FF0069CEE7 /* app.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = app.entitlements; sourceTree = "<group>"; };
 		DE4C455F21DE1E4E00EA0709 /* FIRUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FIRUtilities.m; sourceTree = "<group>"; };
@@ -132,8 +140,7 @@
 		E58801132278944E008B0561 /* JitsiMeetContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JitsiMeetContext.swift; sourceTree = "<group>"; };
 		E5C97B62227A1EB400199214 /* JitsiMeetCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JitsiMeetCommands.swift; sourceTree = "<group>"; };
 		E9D914D91D6C415C907F5030 /* libPods-vmeeting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-vmeeting.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		AC634147570A408A88227733 /* RNFetchBlob.xcodeproj */ = {isa = PBXFileReference; name = "RNFetchBlob.xcodeproj"; path = "../../node_modules/rn-fetch-blob/ios/RNFetchBlob.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
-		F029B52720A84AB0BC6537C2 /* libRNFetchBlob.a */ = {isa = PBXFileReference; name = "libRNFetchBlob.a"; path = "libRNFetchBlob.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		F029B52720A84AB0BC6537C2 /* libRNFetchBlob.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNFetchBlob.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -200,6 +207,14 @@
 			path = watchos/extension;
 			sourceTree = "<group>";
 		};
+		0D9D35A0272BC12B003C637E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0D9D35A5272BC12B003C637E /* libRNFetchBlob.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		13B07FAE1A68108700A75B9A /* src */ = {
 			isa = PBXGroup;
 			children = (
@@ -223,6 +238,7 @@
 		3956ACC526C53CC30089235E /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
+				F029B52720A84AB0BC6537C2 /* libRNFetchBlob.a */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -387,6 +403,10 @@
 					ProductGroup = 3956ACDF26C558410089235E /* Products */;
 					ProjectRef = 3956ACDE26C558410089235E /* RCTOrientation.xcodeproj */;
 				},
+				{
+					ProductGroup = 0D9D35A0272BC12B003C637E /* Products */;
+					ProjectRef = AC634147570A408A88227733 /* RNFetchBlob.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -397,6 +417,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		0D9D35A5272BC12B003C637E /* libRNFetchBlob.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRNFetchBlob.a;
+			remoteRef = 0D9D35A4272BC12B003C637E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		3956ACE326C558410089235E /* libRCTOrientation.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;

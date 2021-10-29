@@ -355,6 +355,8 @@ PODS:
     - React-jsi (= 0.61.5-jitsi.2)
     - ReactCommon/jscallinvoker (= 0.61.5-jitsi.2)
     - ReactCommon/turbomodule/core (= 0.61.5-jitsi.2)
+  - rn-fetch-blob (0.12.0):
+    - React-Core
   - RNCAsyncStorage (1.15.5):
     - React-Core
   - RNDefaultPreference (1.4.2):
@@ -418,6 +420,7 @@ DEPENDENCIES:
   - React-RCTText (from `../node_modules/react-native/Libraries/Text`)
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - ReactCommon/turbomodule (from `../node_modules/react-native/ReactCommon`)
+  - rn-fetch-blob (from `../node_modules/rn-fetch-blob`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - RNDefaultPreference (from `../node_modules/react-native-default-preference`)
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
@@ -520,6 +523,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/Libraries/Vibration"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  rn-fetch-blob:
+    :path: "../node_modules/rn-fetch-blob"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNDefaultPreference:
@@ -592,6 +597,7 @@ SPEC CHECKSUMS:
   React-RCTText: 4f1b99f228278d2a5e9008eced8dc9c974c4a270
   React-RCTVibration: c1041024893fdfdb8371e7c720c437751b711676
   ReactCommon: 18014e1d98dbeb9141e935cfe35fc93bd511ffb6
+  rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNCAsyncStorage: 56a3355a10b5d660c48c6e37325ac85ebfd09885
   RNDefaultPreference: 1f8133ec0bc0f9453cdada578564ba1ef551fb44
   RNDeviceInfo: 87d2d175c760f6bcf58acd036f887e8b2392802c
@@ -601,6 +607,6 @@ SPEC CHECKSUMS:
   RNWatch: a5320c959c75e72845c07985f3e935e58998f1d3
   Yoga: 96b469c5e81ff51b917b92e8c3390642d4ded30c
 
-PODFILE CHECKSUM: 5242c6deffd76036a44213b74ce57312f98a2970
+PODFILE CHECKSUM: e39dc75a0cdb799a77656b82f9591b7f22f63076
 
 COCOAPODS: 1.11.0

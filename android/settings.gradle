@@ -1,4 +1,6 @@
 rootProject.name = 'jitsi-meet'
+include ':rn-fetch-blob'
+project(':rn-fetch-blob').projectDir = new File(rootProject.projectDir, '../node_modules/rn-fetch-blob/android')
 
 include ':app', ':sdk'
 include ':react-native-async-storage'

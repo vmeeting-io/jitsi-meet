@@ -28,6 +28,7 @@
 		39C6101326B130890019A5C9 /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39C6100726B1290E0019A5C9 /* ReplayKit.framework */; };
 		4EB0602B260E026600F524C5 /* JitsiMeetBroadcastExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4EB06023260E026600F524C5 /* JitsiMeetBroadcastExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DE4C456121DE1E4E00EA0709 /* FIRUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = DE4C455F21DE1E4E00EA0709 /* FIRUtilities.m */; };
+		1C9E1114F3664925AF1B3E91 /* libRNFetchBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F029B52720A84AB0BC6537C2 /* libRNFetchBlob.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -131,6 +132,8 @@
 		E58801132278944E008B0561 /* JitsiMeetContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JitsiMeetContext.swift; sourceTree = "<group>"; };
 		E5C97B62227A1EB400199214 /* JitsiMeetCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JitsiMeetCommands.swift; sourceTree = "<group>"; };
 		E9D914D91D6C415C907F5030 /* libPods-vmeeting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-vmeeting.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC634147570A408A88227733 /* RNFetchBlob.xcodeproj */ = {isa = PBXFileReference; name = "RNFetchBlob.xcodeproj"; path = "../../node_modules/rn-fetch-blob/ios/RNFetchBlob.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		F029B52720A84AB0BC6537C2 /* libRNFetchBlob.a */ = {isa = PBXFileReference; name = "libRNFetchBlob.a"; path = "libRNFetchBlob.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,6 +145,7 @@
 				0087C21FA5A978E98A12654C /* libPods-vmeeting.a in Frameworks */,
 				3956ACE426C558790089235E /* libRCTOrientation.a in Frameworks */,
 				399CBFC126A145720050FA24 /* WebRTC.xcframework in Frameworks */,
+				1C9E1114F3664925AF1B3E91 /* libRNFetchBlob.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,6 +296,7 @@
 			isa = PBXGroup;
 			children = (
 				3956ACDE26C558410089235E /* RCTOrientation.xcodeproj */,
+				AC634147570A408A88227733 /* RNFetchBlob.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -590,14 +595,20 @@
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = 628662D3Q5;
 				ENABLE_BITCODE = NO;
-				HEADER_SEARCH_PATHS = "$(inherited)";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../../node_modules/rn-fetch-blob/ios/**",
+				);
 				INFOPLIST_FILE = src/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Vmeeting\"",
+				);
 				MARKETING_VERSION = 21.3.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -626,14 +637,20 @@
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 628662D3Q5;
 				ENABLE_BITCODE = YES;
-				HEADER_SEARCH_PATHS = "$(inherited)";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../../node_modules/rn-fetch-blob/ios/**",
+				);
 				INFOPLIST_FILE = src/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/Vmeeting\"",
+				);
 				MARKETING_VERSION = 21.3.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",

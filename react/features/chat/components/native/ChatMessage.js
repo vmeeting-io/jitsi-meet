@@ -1,7 +1,7 @@
 // @flow
 
 import React from 'react';
-import { Text, View, Image,Linking,TouchableHighlight} from 'react-native';
+import { Text, View, Button, Image,Linking,TouchableHighlight} from 'react-native';
 
 import { Avatar } from '../../../base/avatar';
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
@@ -18,6 +18,7 @@ import { getBaseUrl, getFileSize, processFileSize, validURL} from '../../../base
 import { getServerURL } from '../../../base/settings';
 
 import styles from './styles';
+import RNFetchBlob from 'rn-fetch-blob';
 
 type Props = AbstractProps & {
 
@@ -170,7 +171,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
             {/* If Image display preview of image. */}
             {image && <View>
             <TouchableHighlight
-                  onPress={() => Linking.openURL(msg)}>
+                  onPress={() => this._onClickFile(msg)}>
                 <Image
                     style={styles.chatmessageUploadedImage}
                     source={{uri:msg}}
@@ -181,7 +182,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
             
             {/* If file being sent is not an image, show as icon */}
             {!image && <TouchableHighlight
-                  onPress={() => Linking.openURL(msg)}>
+                  onPress={() => this._onClickFile(msg)}>
                     <View>
                         {/* For Text Messages */}
                        { !iconToDisplay && <Linkify linkStyle = { styles.chatLink }>
@@ -225,6 +226,63 @@ class ChatMessage extends AbstractChatMessage<Props> {
     _getMessageText: () => string;
 
     _getPrivateNoticeMessage: () => string;
+
+    _onClickFile(url){
+        console.log("vmchg: 1: On avatar Click!!");
+
+        const { config, fs } = RNFetchBlob
+        let PictureDir = fs.dirs.PictureDir // this is the pictures directory. You can check the available directories in the wiki.
+        let options = {
+        fileCache: true,
+        addAndroidDownloads : {
+            useDownloadManager : true, // setting it to true will use the device's native download manager and will be shown in the notification bar.
+            notification : false,
+            path:  PictureDir + "/me_", // this is the path where your downloaded file will live in
+            description : 'Downloading image.'
+        }
+        }
+        config(options).fetch('GET', url).then((res) => {
+        // do some magic here
+            console.log('vmchg: 1: ', res.info())
+            if (Platform.OS === 'android') {
+                RNFetchBlob.android.actionViewIntent(res.path(), 'image/png');
+              }
+        
+              if (Platform.OS === 'ios') {
+                RNFetchBlob.ios.openDocument(res.path());
+              }
+        })
+
+        
+        // RNFetchBlob
+        //     .config({
+        //         // add this option that makes response data to be stored as a file,
+        //         // this is much more performant.
+        //             fileCache : true,
+        //             title: "abc.pdf",
+        //             appendExt : 'tmp'
+        //             }
+        //         )
+        //     .fetch('GET', url, {
+        //         //some headers ..
+        //     })
+        //     .then((res) => {
+        //         // the temp file path
+        //         console.log('vmchg: 1.2.1: The file saved to ', res.path())
+
+        //         if (Platform.OS === 'android') {
+        //             RNFetchBlob.android.actionViewIntent(res.path(), mimeType || 'application/pdf');
+        //           }
+            
+        //           if (Platform.OS === 'ios') {
+        //             RNFetchBlob.ios.previewDocument(res.path());
+        //           }
+
+        //         console.log('vmchg: 1.2.3: The file saved to ', res)
+        //     });
+        
+        console.log("vmchg: 2: On avatar Click Complete!!");
+    }
 
     /**
      * Renders the avatar of the sender.

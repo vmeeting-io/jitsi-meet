@@ -234,22 +234,37 @@ class ChatMessage extends AbstractChatMessage<Props> {
         console.log("vmchg: xx", filename);
 
         const { config, fs } = RNFetchBlob
-        let PictureDir = fs.dirs.PictureDir // this is the pictures directory. You can check the available directories in the wiki.
+        let PictureDir = fs.dirs.DownloadDir // this is the pictures directory. You can check the available directories in the wiki.
         let options = {
             fileCache: true,
             addAndroidDownloads : {
-                useDownloadManager : true, // setting it to true will use the device's native download manager and will be shown in the notification bar.
-                notification : false,
-                path:  PictureDir + "/me_", // this is the path where your downloaded file will live in
-                description : 'Downloading image.'
+                // useDownloadManager : true, // setting it to true will use the device's native download manager and will be shown in the notification bar.
+                // notification : true,
+                path:  PictureDir +filename, // this is the path where your downloaded file will live in
+                // description : 'Downloading image.'
+                useDownloadManager : true,
+                title : filename.substring(1,filename.length),
+                description : 'An APK that will be installed',
+                mediaScannable : true,
+                notification : true
             },
             path: `${RNFetchBlob.fs.dirs.DownloadDir}/${filename}`
         }
         config(options).fetch('GET', url).then((res) => {
         // do some magic here
-            console.log('vmchg: 1: ', res.info())
+            console.log('vmchg: 3: ', res.info())
+            // console.log('vmchg: 3 File Type: ', res.respInfo.headers['Content-Type'])
+            console.log('vmchg: 3 File Type: ', res.path())
             if (Platform.OS === 'android') {
-                RNFetchBlob.android.actionViewIntent(res.path(), 'image/png');
+                
+                console.log("vmchg: 0.1   ", JSON.stringify(res.respInfo));
+                try{
+                    RNFetchBlob.android.actionViewIntent(res.path(), '/');
+                    console.log("vmchg: OK");
+                }catch(error){
+                    console.log("vmchg: Error- actionViewIntent ",error);
+                }
+                console.log("vmchg: 0.2   ", filename);
               }
         
               if (Platform.OS === 'ios') {
@@ -257,6 +272,10 @@ class ChatMessage extends AbstractChatMessage<Props> {
                 RNFetchBlob.ios.previewDocument(res.path());
                 console.log('vmchg: 1. : Response Path:  ', res.respInfo.redirects[0])
               }
+        })
+        // listen to download progress event
+        .catch((err) => {
+            console.log('vmchg: Error: ', err)
         })
 
         

@@ -34,6 +34,7 @@ import com.facebook.soloader.SoLoader;
 import com.github.yamill.orientation.OrientationPackage;
 import com.oney.WebRTCModule.RTCVideoViewManager;
 import com.oney.WebRTCModule.WebRTCModule;
+import com.RNFetchBlob.RNFetchBlobPackage;
 
 import org.devio.rn.splashscreen.SplashScreenModule;
 import org.webrtc.SoftwareVideoDecoderFactory;
@@ -191,6 +192,7 @@ class ReactInstanceManagerHolder {
                 new com.reactnativecommunity.slider.ReactSliderPackage(),
                 new com.reactnativecommunity.webview.RNCWebViewPackage(),
                 new OrientationPackage(),
+                new RNFetchBlobPackage(),
                 new com.rnimmersive.RNImmersivePackage(),
                 new com.zmxv.RNSound.RNSoundPackage(),
                 new com.brentvatne.react.ReactVideoPackage(),

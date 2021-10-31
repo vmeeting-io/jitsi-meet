@@ -258,7 +258,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
 
     _onClickFile(url){
 
-        const filename = decodeURI(url.substring(url.lastIndexOf("/"),url.length));
+        const filename = decodeURI(url.substring(url.lastIndexOf("/")+1,url.length));
         const mime = getMime(filename)
         const { config, fs } = RNFetchBlob
 
@@ -266,9 +266,9 @@ class ChatMessage extends AbstractChatMessage<Props> {
             fileCache: true,
             addAndroidDownloads : {
                 fileCache: true,
-                path:   fs.dirs.DownloadDir +filename, // this is the path where your downloaded file will live in
+                path:   `${fs.dirs.DownloadDir}/${filename}`, // this is the path where your downloaded file will live in
                 useDownloadManager : true,
-                title : filename.substring(1,filename.length),
+                title : filename,
                 description : 'Download File from Vmeeting.',
                 mediaScannable : true,
                 notification : true
@@ -276,6 +276,10 @@ class ChatMessage extends AbstractChatMessage<Props> {
             path: `${RNFetchBlob.fs.dirs.DownloadDir}/${filename}`
         }
         
+        if (Platform.OS === 'android') {
+            ToastAndroid.show("Downloading " + filename, ToastAndroid.SHORT);
+        }
+
         config(options).fetch('GET', url).then((res) => {
             const fileShortName = this._getFileName(res.path()).substring();
             if (Platform.OS === 'android') {

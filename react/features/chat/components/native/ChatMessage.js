@@ -1,7 +1,7 @@
 // @flow
 
 import React from 'react';
-import { Text, View, Button, Image,Linking,TouchableHighlight} from 'react-native';
+import { Text, View, Button, Image,Linking,TouchableHighlight,ToastAndroid} from 'react-native';
 
 import { Avatar } from '../../../base/avatar';
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
@@ -118,6 +118,11 @@ class ChatMessage extends AbstractChatMessage<Props> {
                 </View>
             </View>
         );
+    }
+    _getFileName(path){
+        // Remove datetime stamp appended at the end of the file.
+        const x = path.lastIndexOf('/') + 1;
+        return path.substring(x,path.length);
     }
 
     _truncateDateTimeStamp(filename){
@@ -272,13 +277,15 @@ class ChatMessage extends AbstractChatMessage<Props> {
         }
         
         config(options).fetch('GET', url).then((res) => {
+            const fileShortName = this._getFileName(res.path()).substring();
             if (Platform.OS === 'android') {
-                try{
-                    const getAndroidPermissionAndOpenIntent = this.getAndroidPersissionAndOpenIntent(res.path(),getMime(res.path()));
-                    getAndroidPermissionAndOpenIntent();
-                }catch(error){
-                    console.log("vmchg: Error- actionViewIntent ",error);
-                }
+                ToastAndroid.show("Download Completed: " + fileShortName, ToastAndroid.SHORT);
+                // try{
+                //     const getAndroidPermissionAndOpenIntent = this.getAndroidPersissionAndOpenIntent(res.path(),getMime(res.path()));
+                //     getAndroidPermissionAndOpenIntent();
+                // }catch(error){
+                //     console.log("vmchg: Error- actionViewIntent ",error);
+                // }
               }
         
             if (Platform.OS === 'ios') {

@@ -17,8 +17,11 @@ import { Icon, IconDocDOC, IconDocHTML, IconDocHWP, IconDocJPEG, IconDocMP3, Ico
 import { getBaseUrl, getFileSize, processFileSize, validURL} from '../../../base/util';
 import { getServerURL } from '../../../base/settings';
 
+import { PermissionsAndroid } from 'react-native';
+
 import styles from './styles';
 import RNFetchBlob from 'rn-fetch-blob';
+import { getMime } from './functions';
 
 type Props = AbstractProps & {
 
@@ -32,6 +35,27 @@ type Props = AbstractProps & {
  * Renders a single chat message.
  */
 class ChatMessage extends AbstractChatMessage<Props> {
+    getAndroidPersissionAndOpenIntent = (path,mime) =>
+    async () => {
+    try {
+        // const readGranted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
+        // const writeGranted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
+
+        const result = await PermissionsAndroid.requestMultiple([
+            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          ]);
+        const isGranted = result[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] === 'granted' 
+                && result[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] === 'granted';
+        if(isGranted){
+            RNFetchBlob.android.actionViewIntent(path, mime);
+        }
+        return isGranted;
+    } catch (error) {
+        console.log("vmchg: Error at getAndroidPermissionAndOpenIntent: ", error)
+      throw new Error(error);
+    }
+  };
     /**
      * Implements {@code Component#render}.
      *
@@ -228,85 +252,44 @@ class ChatMessage extends AbstractChatMessage<Props> {
     _getPrivateNoticeMessage: () => string;
 
     _onClickFile(url){
-        console.log("vmchg: 1: On avatar Click!!");
-        console.log("vmchg: URI 1 ", url)
-        const filename = decodeURI(url.substring(url.lastIndexOf("/"),url.length));
-        console.log("vmchg: xx", filename);
 
+        const filename = decodeURI(url.substring(url.lastIndexOf("/"),url.length));
+        const mime = getMime(filename)
         const { config, fs } = RNFetchBlob
-        let PictureDir = fs.dirs.DownloadDir // this is the pictures directory. You can check the available directories in the wiki.
+
         let options = {
             fileCache: true,
             addAndroidDownloads : {
-                // useDownloadManager : true, // setting it to true will use the device's native download manager and will be shown in the notification bar.
-                // notification : true,
-                path:  PictureDir +filename, // this is the path where your downloaded file will live in
-                // description : 'Downloading image.'
+                fileCache: true,
+                path:   fs.dirs.DownloadDir +filename, // this is the path where your downloaded file will live in
                 useDownloadManager : true,
                 title : filename.substring(1,filename.length),
-                description : 'An APK that will be installed',
+                description : 'Download File from Vmeeting.',
                 mediaScannable : true,
                 notification : true
             },
             path: `${RNFetchBlob.fs.dirs.DownloadDir}/${filename}`
         }
+        
         config(options).fetch('GET', url).then((res) => {
-        // do some magic here
-            console.log('vmchg: 3: ', res.info())
-            // console.log('vmchg: 3 File Type: ', res.respInfo.headers['Content-Type'])
-            console.log('vmchg: 3 File Type: ', res.path())
             if (Platform.OS === 'android') {
-                
-                console.log("vmchg: 0.1   ", JSON.stringify(res.respInfo));
                 try{
-                    RNFetchBlob.android.actionViewIntent(res.path(), '/');
-                    console.log("vmchg: OK");
+                    const getAndroidPermissionAndOpenIntent = this.getAndroidPersissionAndOpenIntent(res.path(),getMime(res.path()));
+                    getAndroidPermissionAndOpenIntent();
                 }catch(error){
                     console.log("vmchg: Error- actionViewIntent ",error);
                 }
-                console.log("vmchg: 0.2   ", filename);
               }
         
-              if (Platform.OS === 'ios') {
-                console.log('vmchg: 1. : Response: ', res)
+            if (Platform.OS === 'ios') {
                 RNFetchBlob.ios.previewDocument(res.path());
-                console.log('vmchg: 1. : Response Path:  ', res.respInfo.redirects[0])
-              }
+            }
         })
-        // listen to download progress event
+        // on error event
         .catch((err) => {
             console.log('vmchg: Error: ', err)
         })
 
-        
-        // RNFetchBlob
-        //     .config({
-        //         // add this option that makes response data to be stored as a file,
-        //         // this is much more performant.
-        //             fileCache : true,
-        //             title: "abc.pdf",
-        //             appendExt : 'tmp'
-        //             }
-        //         )
-        //     .fetch('GET', url, {
-        //         //some headers ..
-        //     })
-        //     .then((res) => {
-        //         // the temp file path
-        //         console.log('vmchg: 1.2.1: The file saved to ', res.path())
-
-        //         if (Platform.OS === 'android') {
-        //             RNFetchBlob.android.actionViewIntent(res.path(), mimeType || 'application/pdf');
-        //           }
-            
-        //           if (Platform.OS === 'ios') {
-        //             RNFetchBlob.ios.previewDocument(res.path());
-        //           }
-
-        //         console.log('vmchg: 1.2.3: The file saved to ', res)
-        //     });
-        
-        console.log("vmchg: 2: On avatar Click Complete!!");
     }
 
     /**

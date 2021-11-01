@@ -170,11 +170,13 @@ type Props = {
  * @returns {ReactElement}
  */
 function MeetingParticipantItem({
+    _aiAttentionAnalysisEnabled,
     _audioMediaState,
     _audioTrack,
     _disableModeratorIndicator,
     _displayName,
     _isParticipantBirthday,
+    _isVideoMuted,
     _local,
     _localVideoOwner,
     _participant,
@@ -235,6 +237,8 @@ function MeetingParticipantItem({
     return (
         <ParticipantItem
             actionsTrigger = { ACTION_TRIGGER.HOVER }
+            aiAttentionFlag = { _aiAttentionAnalysisEnabled }
+            isVideoMuted = { _isVideoMuted }
             audioMediaState = { audioMediaState }
             disableModeratorIndicator = { _disableModeratorIndicator }
             displayName = { _displayName }
@@ -282,6 +286,7 @@ function MeetingParticipantItem({
  * @returns {Props}
  */
 function _mapStateToProps(state, ownProps): Object {
+    const { aiAttentionAnalysisEnabled } = state['features/base/settings'];
     const { participantID } = ownProps;
     const { ownerId } = state['features/shared-video'];
     const localParticipantId = getLocalParticipant(state).id;
@@ -302,16 +307,18 @@ function _mapStateToProps(state, ownProps): Object {
     const { disableModeratorIndicator } = state['features/base/config'];
 
     return {
+        _aiAttentionAnalysisEnabled: aiAttentionAnalysisEnabled,
         _audioMediaState,
         _audioTrack,
         _disableModeratorIndicator: disableModeratorIndicator,
         _displayName: getParticipantDisplayName(state, participant?.id),
+        _isParticipantBirthday: isParticipantBirthday,
+        _isVideoMuted,
         _local: Boolean(participant?.local),
         _localVideoOwner: Boolean(ownerId === localParticipantId),
         _participant: participant,
         _participantID: participant?.id,
         _quickActionButtonType,
-        _isParticipantBirthday: isParticipantBirthday,
         _raisedHand: Boolean(participant?.raisedHand),
         _videoMediaState
     };

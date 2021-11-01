@@ -27,6 +27,8 @@ import {
     ParticipantStates
 } from './styled';
 
+import { isLocalParticipantModerator } from '../../../base/participants/functions';
+
 /**
  * Participant actions component mapping depending on trigger type.
  */
@@ -125,6 +127,8 @@ type Props = {
  * @returns {ReactNode}
  */
 function ParticipantItem({
+    aiAttentionFlag,
+    isVideoMuted,
     isParticipantBirthday,
     children,
     isHighlighted,
@@ -148,6 +152,11 @@ function ParticipantItem({
             participantID,
             displayName
         }));
+    
+    // Dummy array that randomly assigns concentrated, lapsed or absent, must be replaced with the data from the model
+    const attentionArr = ['concentrated', 'lapsed', 'absent'];
+    const randomAttentionStatus = attentionArr[Math.floor(Math.random() * attentionArr.length)];
+    const localIsAModerator = isLocalParticipantModerator(APP.store.getState());
 
     return (
         <ParticipantContainer
@@ -157,10 +166,14 @@ function ParticipantItem({
             onClick = { !local && overflowDrawer ? onClick : undefined }
             onMouseLeave = { onLeave }
             trigger = { actionsTrigger }>
-            <Avatar
-                className = 'participant-avatar'
-                participantId = { participantID }
-                size = { 32 } />
+            
+            {/* Participant avatar wrapper class, that is used to color the state of the participant's listening status */}
+            <div className={` ${(aiAttentionFlag && !isVideoMuted && localIsAModerator) ? randomAttentionStatus : ''} `}>
+                <Avatar
+                    className = 'participant-avatar'
+                    participantId = { participantID }
+                    size = { 32 } />
+            </div>
             <ParticipantContent>
                 <ParticipantDetailsContainer>
                     <ParticipantNameContainer>

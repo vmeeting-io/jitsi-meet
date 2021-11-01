@@ -273,7 +273,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
                 mediaScannable : true,
                 notification : true
             },
-            path: `${RNFetchBlob.fs.dirs.DownloadDir}/${filename}`
+            path: `${RNFetchBlob.fs.dirs.DocumentDir}/${filename}`
         }
         
         if (Platform.OS === 'android') {

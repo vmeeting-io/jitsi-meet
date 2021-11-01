@@ -1,4 +1,4 @@
-import { SETTINGS_UPDATED } from './actionTypes';
+import { SETTINGS_UPDATED, SET_AI_ATTENTION_ANALYSIS } from './actionTypes';
 
 /**
  * Create an action for when the settings are updated.
@@ -26,5 +26,12 @@ export function updateSettings(settings) {
     return {
         type: SETTINGS_UPDATED,
         settings
+    };
+}
+
+export function setAIAttentionSettings(value: boolean) {
+    return {
+        type: SET_AI_ATTENTION_ANALYSIS,
+        value
     };
 }

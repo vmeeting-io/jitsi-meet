@@ -753,6 +753,7 @@
             "waitingLobby": "로비에서 대기중 ({{count}})"
         },
         "actions": {
+            "aiAttentionAnalysis": "집중도",
             "allow": "참가자에게 아래와 같이 허용:",
             "applyBirthdayARHat": "생일 모자 켜기",
             "removeBirthdayARHat": "생일 모자 끄기",
@@ -928,6 +929,7 @@
         "toggleLabel": "회의 공개"
     },
     "settings": {
+        "aiAttention": "집중도 사용여부",
         "background": "배경",
         "calendar": {
             "about": "{{appName}} 캘린더 통합은 향후 일정을 읽을 수 있도록 캘린더에 안전하게 액세스하는 데 사용됩니다.",
@@ -965,7 +967,9 @@
         "startVideoMuted": "모두가 카메라 꺼짐 상태로 시작합니다",
         "disableDeviceAccess": "참가자 마이크와 카메라 제어를 제한",
         "talkWhileMuted": "음소거 상태로 대화 중",
-        "title": "설정"
+        "title": "설정",
+        "turnOffAIAttentionAnalysis": "미사용",
+        "turnOnAIAttentionAnalysis": "사용"
     },
     "settingsView": {
         "advanced": "고급 설정",

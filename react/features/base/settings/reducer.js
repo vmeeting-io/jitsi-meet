@@ -7,7 +7,7 @@ import { APP_WILL_MOUNT } from '../app/actionTypes';
 import { PersistenceRegistry, ReducerRegistry } from '../redux';
 import { assignIfDefined } from '../util';
 
-import { SETTINGS_UPDATED } from './actionTypes';
+import { SETTINGS_UPDATED, SET_AI_ATTENTION_ANALYSIS } from './actionTypes';
 
 /**
  * The default/initial redux state of the feature {@code base/settings}.
@@ -36,6 +36,7 @@ const DEFAULT_STATE = {
     startAudioOnly: false,
     startWithAudioMuted: false,
     startWithVideoMuted: false,
+    aiAttentionAnalysisEnabled: true,
     userSelectedAudioOutputDeviceId: undefined,
     userSelectedCameraDeviceId: undefined,
     userSelectedMicDeviceId: undefined,
@@ -66,6 +67,7 @@ filterSubtree.soundsReactions = false;
 filterSubtree.soundsIncomingMessage = false;
 filterSubtree.soundsParticipantJoined = false;
 filterSubtree.soundsParticipantLeft = false;
+filterSubtree.aiAttentionAnalysisEnabled = true; // keep it true for persistent storage
 
 PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
 
@@ -73,6 +75,12 @@ ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
     switch (action.type) {
     case APP_WILL_MOUNT:
         return _initSettings(state);
+
+    case SET_AI_ATTENTION_ANALYSIS:
+        return {
+            ...state,
+            aiAttentionAnalysisEnabled: action.value,
+        }
 
     case SETTINGS_UPDATED:
         return {

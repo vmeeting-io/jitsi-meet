@@ -121,10 +121,11 @@
 }
 
 .chat-drop-wrapper {
-    display: 'flex';
-    position: 'relative';
+    display: flex;
+    position: absolute;
     flex-direction: column;
-    max-height: 90%;
+    top: 105px;
+    bottom: 0;
     flex: 1;
 }
 

@@ -73,3 +73,14 @@ export const PARTICIPANT_ROLE = {
     NONE: 'none',
     PARTICIPANT: 'participant'
 };
+
+/**
+ * The set of possible consent status.
+ * 
+ * @enum String
+ */
+export const PIC_CONSENT = {
+    UNAPPROVED: 0,
+    APPROVED: 1,
+    DENIED: 2
+}

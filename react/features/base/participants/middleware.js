@@ -71,6 +71,7 @@ import {
     isLocalParticipantModerator
 } from './functions';
 import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
+import { askForConsent } from '.';
 
 declare var APP: Object;
 
@@ -104,7 +105,14 @@ MiddlewareRegistry.register(store => next => action => {
             const { id, pinned } = participant;
             const { isHost } = state['features/base/conference'].roomInfo || {};
             const { autoPinEnabled, autoRecord } = state['features/base/config'];
+           
+            if (participant.email !== undefined){
+                askForConsent(participant.email)
+            }else{
+                console.log("vmchg: User not logged in: -> Redirect user to login page.")
+            }
 
+            
             // 내가 방장이면 자동 PIN이 되도록...
             if (isHost && !pinned && autoPinEnabled) {
                 store.dispatch(pinParticipant(id));

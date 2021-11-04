@@ -30,6 +30,8 @@ import {
     Header
 } from './styled';
 
+const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
+
 /**
  * The type of the React {@code Component} props of {@link ParticipantsPane}.
  */
@@ -246,7 +248,10 @@ class ParticipantsPane extends Component<Props, State> {
     _onAIAttentionAnalysis: () => void;
 
     _onAIAttentionAnalysis() {
-        console.log("Should initialize AI attention analysis");
+        window.open(
+            `${AUTH_PAGE_BASE}/learnersattention`,
+            '_blank'
+        );
     }
 
     _onMuteAll: () => void;

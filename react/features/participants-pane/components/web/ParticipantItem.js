@@ -155,8 +155,14 @@ function ParticipantItem({
     
     // Dummy array that randomly assigns concentrated, lapsed or absent, must be replaced with the data from the model
     const attentionArr = ['concentrated', 'lapsed', 'absent'];
-    const randomAttentionStatus = attentionArr[Math.floor(Math.random() * attentionArr.length)];
+    let randomAttentionStatus = '';
     const localIsAModerator = isLocalParticipantModerator(APP.store.getState());
+
+    if(isVideoMuted && aiAttentionFlag) {
+        randomAttentionStatus = 'absent'
+    } else if(aiAttentionFlag && localIsAModerator) {
+        randomAttentionStatus = attentionArr[Math.floor(Math.random() * attentionArr.length)];
+    }
 
     return (
         <ParticipantContainer
@@ -168,7 +174,7 @@ function ParticipantItem({
             trigger = { actionsTrigger }>
             
             {/* Participant avatar wrapper class, that is used to color the state of the participant's listening status */}
-            <div className={` ${(aiAttentionFlag && !isVideoMuted && localIsAModerator) ? randomAttentionStatus : ''} `}>
+            <div className={randomAttentionStatus} >
                 <Avatar
                     className = 'participant-avatar'
                     participantId = { participantID }

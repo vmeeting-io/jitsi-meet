@@ -59,6 +59,7 @@ export default class FaceDetect {
         const boxes = result['PartitionedCall:0'];
         const result1 = await predict_BB(frame.shape[1], frame.shape[0], confidences, boxes, 0.7);
         console.log('face-detect:', result1);
+        result1.print(); // return in Tensor
 
         // const { ret } = this.postProcess(landmarks, faces[0]);
         // let status = ret === 0 ? 0 : 1; // 정면이면 0(집중), 그렇지 않으면 1(비집중)

@@ -145,12 +145,12 @@ export async function predict_BB(width, height, confidences, boxes, prob_thresho
         //boxes의 mask번째 row 추출
         var subset_boxes = await tf.booleanMaskAsync(box, mask);
         var box_probs = tf.concat([subset_boxes, masked_prob.reshape([-1, 1])], 1);
-        box_probs = box_utils.hard_nms(box_probs, iou_threshold, top_k);
+        box_probs = await box_utils.hard_nms(box_probs, iou_threshold, top_k);
         picked_box_probs.push(box_probs);
     }
 
     if (picked_box_probs.length === 0)
-        return tf.Tensor([]);
+        return tf.tensor([]);
 
     picked_box_probs = tf.concat(picked_box_probs);
     var c0 = picked_box_probs.gather(tf.tensor1d([0], 'int32'), 1).mul(width);

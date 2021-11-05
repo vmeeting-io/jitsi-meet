@@ -16,10 +16,9 @@ require('@tensorflow/tfjs-backend-webgl');
  * extract keypoints of face.
  *
  * @param {Object} arObj - AR image link
- * @param {Function} dispatch - The Redux dispatch function.
  * @returns {Promise<JitsiStreamBackgroundEffect>}
  */
-export async function createAREffect(arObj: Object, dispatch: Function) {
+export async function createAREffect(arObj: Object) {
     const packageConfig = {
         shouldLoadIrisModel: false,
         detectionConfidence: 0.7,

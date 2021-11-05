@@ -504,6 +504,9 @@
         "webAssemblyWarning": "WebAssembly not supported",
         "backgroundEffectError": "Failed to apply background effect."
     },
+    "faceDetect": {
+        "failToLoadError": "Failed to apply face detect."
+    },
     "feedback": {
         "average": "Average",
         "bad": "Bad",

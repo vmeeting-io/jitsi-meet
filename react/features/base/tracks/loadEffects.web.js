@@ -36,6 +36,7 @@ export default function loadEffects(store: Object): Promise<any> {
                 return Promise.resolve();
             })
         : Promise.resolve();
+
     const screenshotCapturePromise = state['features/screenshot-capture']?.capturesEnabled
         ? createScreenshotCaptureEffect(state)
             .catch(error => {

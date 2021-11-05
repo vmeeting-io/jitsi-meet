@@ -1,6 +1,6 @@
 // Conversion from onnx_inf_test.py to Javascript
 import * as tf from '@tensorflow/tfjs';
-import * as box_utils from './box_utils.js';
+import * as box_utils from './box_utils';
 
 // input: Tensor
 export function normalize_cropped_img(input){
@@ -144,7 +144,7 @@ export async function predict_BB(width, height, confidences, boxes, prob_thresho
             continue;
         //boxes의 mask번째 row 추출
         var subset_boxes = await tf.booleanMaskAsync(box, mask);
-        var box_probs = tf.concat([subset_boxes, probs.reshape([-1, 1])], 1);
+        var box_probs = tf.concat([subset_boxes, masked_prob.reshape([-1, 1])], 1);
         box_probs = box_utils.hard_nms(box_probs, iou_threshold, top_k);
         picked_box_probs.push(box_probs);
     }
@@ -210,53 +210,52 @@ export function pred_landmarks(landmark_model, frame, box){
     return result;
 }
 
-export function Inference_frame(model, landmark_model, frame, show_result=false) {
-    //input_name = model.get_inputs()[0].name;
+export function inference_frame(model, landmark_model, frame) {
     var frame_normed = normalize_frame(frame);
     var confidences, boxes;
     // run model
     // confidences, boxes = model.run(None, {input_name: frame_normed})
-    
-    const prob_threshold = 0.7
-    var faces = predict_BB(frame.shape[1], frame.shape[0], confidences, boxes, prob_threshold)
+    console.log('inference_frame:', model.predict(frame_normed));
+    // const prob_threshold = 0.7
+    // var faces = predict_BB(frame.shape[1], frame.shape[0], confidences, boxes, prob_threshold)
 
-    var status = 0;
-    var ret = 5;
-    var iBoxTo4 = tf.Tensor([]);
+    // var status = 0;
+    // var ret = 5;
+    // var iBoxTo4 = tf.Tensor([]);
 
-    // 얼굴이 검출되면
-    if (faces.shape[0] !== 0){
-        for(var i = 0; i < faces.shape[0]; i++){
-            var target = faces.gather(tf.tensor1d([i], 'int32')).squeeze(0);
-            var iBox = tf.round(target).asType('int32');
-            iBox.clipByValue(0, tf.int32.max);
+    // // 얼굴이 검출되면
+    // if (faces.shape[0] !== 0){
+    //     for(var i = 0; i < faces.shape[0]; i++){
+    //         var target = faces.gather(tf.tensor1d([i], 'int32')).squeeze(0);
+    //         var iBox = tf.round(target).asType('int32');
+    //         iBox.clipByValue(0, tf.int32.max);
 
-            var landmark_5 = pred_landmarks(landmark_model, frame, iBox);
+    //         var landmark_5 = pred_landmarks(landmark_model, frame, iBox);
             
-            iBoxTo4 = iBox.gather(tf.tensor1d([0, 1, 2, 3], 'int32'));
-            ret = check_large_pose(landmark_5, iBoxTo4);
+    //         iBoxTo4 = iBox.gather(tf.tensor1d([0, 1, 2, 3], 'int32'));
+    //         ret = check_large_pose(landmark_5, iBoxTo4);
 
-            if (ret === 0)
-                status = 0;
-            else
-                status = 1;
-        }
-    }
-    else{
-        status = 2;
-    }
+    //         if (ret === 0)
+    //             status = 0;
+    //         else
+    //             status = 1;
+    //     }
+    // }
+    // else{
+    //     status = 2;
+    // }
 
-    var boxes = [0, 0, 0, 0];
-    if (faces.shape[0] !== 1){
-        boxes = iBoxTo4.arraySync();
-    }
+    // var boxes = [0, 0, 0, 0];
+    // if (faces.shape[0] !== 1){
+    //     boxes = iBoxTo4.arraySync();
+    // }
     
-    return {
-        face_len: faces.shape[0],
-        status: status,
-        boxes: boxes,
-        ret: ret
-    }
+    // return {
+    //     face_len: faces.shape[0],
+    //     status: status,
+    //     boxes: boxes,
+    //     ret: ret
+    // }
 }
 
 // input: Int Tensor (img with range (0-255))

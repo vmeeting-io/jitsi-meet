@@ -1,0 +1,3 @@
+export const START_FACE_DETECT = 'START_FACE_DETECT';
+
+export const STOP_FACE_DETECT = 'STOP_FACE_DETECT';

@@ -33,8 +33,8 @@ export function iou_of(boxes0, boxes1, eps=1e-5){
 }
 
 export async function hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200){
-    var scores = box_scores.gather(tf.tensor1d([a.shape[1]-1], 'int32'), 1);
-    var boxes = box_scores.gather(tf.range(0, a.shape[1]-1, 1, 'int32'), 1);
+    var scores = box_scores.gather(tf.tensor1d([box_scores.shape[1]-1], 'int32'), 1);
+    var boxes = box_scores.gather(tf.range(0, box_scores.shape[1]-1, 1, 'int32'), 1);
 
     var picked = [];
 

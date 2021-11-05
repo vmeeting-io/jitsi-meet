@@ -496,6 +496,9 @@
         "webAssemblyWarning": "WebAssembly가 지원되지 않습니다.",
         "backgroundEffectError": "배경 적용에 실패했습니다."
     },
+    "faceDetect": {
+        "failToLoadError": "얼글 인식 적용에 실패했습니다."
+    },
     "feedback": {
         "average": "보통",
         "bad": "나쁨",

@@ -18,5 +18,6 @@ import '../shared-video/middleware';
 import '../talk-while-muted/middleware';
 import '../virtual-background/middleware';
 import '../Timer/middleware';
+import '../face-detect/middleware';
 
 import './middlewares.any';

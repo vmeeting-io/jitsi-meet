@@ -80,13 +80,14 @@ function getBundleAnalyzerPlugin(analyzeBundle, name) {
  */
 function devServerProxyBypass({ path }) {
     if (path.startsWith('/css/')
-            || path.startsWith('/doc/')
-            || path.startsWith('/fonts/')
-            || path.startsWith('/images/')
-            || path.startsWith('/lang/')
-            || path.startsWith('/sounds/')
-            || path.startsWith('/static/')
-            || path.endsWith('.wasm')) {
+        || path.startsWith('/doc/')
+        || path.startsWith('/fonts/')
+        || path.startsWith('/images/')
+        || path.startsWith('/lang/')
+        || path.startsWith('/sounds/')
+        || path.startsWith('/static/')
+        // || path.endsWith('.wasm')
+    ) {
 
         return path;
     }

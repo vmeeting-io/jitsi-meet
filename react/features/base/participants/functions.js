@@ -55,7 +55,6 @@ export function openOnNewTab(url){
 
 
 export function askForConsent(email: String){
-    console.log("vmchg: ", email);
 
     const state = APP.store.getState();
     const config = {
@@ -86,6 +85,38 @@ export function askForConsent(email: String){
 
     //make an axios call and get the user status.
 }
+export async function isDIDDenied(){
+    const state = APP.store.getState();
+    const config = {
+        headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(state)}`}
+    };
+    const _apiBase = getAuthUrl(state);
+
+    try {
+        const resp = await axios.get(`${_apiBase}/isDIDDenied`, config)
+        return resp.data.denied
+    } catch(err) {
+        console.log("vmchg: ", err);
+        return err
+    }
+}
+
+export async function denyDID(){
+    const state = APP.store.getState();
+    const config = {
+        headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(state)}`}
+    };
+    const _apiBase = getAuthUrl(state);
+
+    try {
+        const resp = await axios.post(`${_apiBase}/denyDID`, config)
+        return resp.data
+    } catch(err) {
+        console.log("vmchg: ", err);
+        return err
+    }
+}
+
 
 /**
  * Resolves the first loadable avatar URL for a participant.

@@ -1,3 +1,36 @@
+.consent-message{
+    min-height: 100px;
+}
+
+.consent-form{
+    display: flex;
+}
+
+.consent-form-title{
+    flex: 2;
+}
+
+.consent-form-input{
+    flex: 2;
+}
+
+.consent-pane {
+    .profile-edit {
+        display: flex;
+        width: 100%;
+        // min-height: 100px;
+    }
+
+    // .profile-edit-field {
+    //     flex: 1;
+    // }
+
+    img{
+        width: 100px;
+        height: 100px;
+    }
+}
+
 .settings-pane {
     display: flex;
     width: 100%;

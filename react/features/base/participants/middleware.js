@@ -71,7 +71,10 @@ import {
     isLocalParticipantModerator
 } from './functions';
 import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
-import { askForConsent } from '.';
+import { askForConsent, isDIDDenied, PIC_CONSENT } from '.';
+import { openConsentDialogOne, openConsentDialogTwo, openLoginDialogDIDPopUp } from '../../DIDConsent/actions.any';
+import { openLoginDialog } from '../../authentication/actions.any';
+import { checkDIDConsent, checkPhoneNumber } from '../../DIDConsent/components/web/functions';
 
 declare var APP: Object;
 
@@ -105,11 +108,39 @@ MiddlewareRegistry.register(store => next => action => {
             const { id, pinned } = participant;
             const { isHost } = state['features/base/conference'].roomInfo || {};
             const { autoPinEnabled, autoRecord } = state['features/base/config'];
-           
-            if (participant.email !== undefined){
-                askForConsent(participant.email)
-            }else{
-                console.log("vmchg: User not logged in: -> Redirect user to login page.")
+            if (config.enableDIDConsent){
+                if (participant.email !== undefined){
+                    //Logged in case.
+                    isDIDDenied().then(denied => {// Check if DID has been denied.
+                        if(denied == false){
+                            let checkConsent = true;
+                            checkPhoneNumber().then(cellPhoneNumber=>{
+                                // console.log("vmchg: Cellphone Number ",cellPhoneNumber)
+                                if (cellPhoneNumber===false){// If there is not cell phone number in the database, show popup.
+                                    checkConsent = false
+                                    store.dispatch(openConsentDialogOne()); 
+                                }
+                            })
+
+                            checkConsent ? checkDIDConsent().then(resp=>{
+                                // console.log("vmchg: verifyConsent ",resp.data)
+                                if(resp.data.consent !== PIC_CONSENT.APPROVED){ // If consent has not been approved, show popup
+                                    store.dispatch(openConsentDialogOne());
+                                }
+                            }):false;
+
+                        }
+
+                    }) 
+
+
+                }else{
+                    //Not logged in case.
+                    // alert("vmchg: User not logged in: -> Redirect user to login page.")
+                    store.dispatch(openLoginDialogDIDPopUp());
+
+                    console.log("vmchg: User not logged in: -> Redirect user to login page.")
+                }
             }
 
             

@@ -113,12 +113,12 @@ class LoginDialogDID extends PureComponent<Props> {
                 hideCloseIconButton = { true }
                 onCancel = { this._onCancelDialog }
                 onSubmit = { this._onSubmit }
-                titleKey = { 'dialog.consent.titleDialogOne' }
+                titleKey = { 'dialog.login' }
                 width = { 'small' }
                 >
                 <div className="consent-message">
                     <span>
-                        {t('dialog.consent.dialogOneMessage')}
+                        {t('dialog.consent.dialogLoginMessage')}
                     </span>
                 </div>
             </Dialog>

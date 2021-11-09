@@ -5,7 +5,7 @@ import React, { PureComponent } from 'react';
 
 import { translate, translateToHTML } from '../../../base/i18n';
 import Dialog from '../../../base/dialog/components/web/Dialog';
-import { checkDIDConsent, sendConsentAgreeNotification,sendConsentDisagreeNotification} from './functions';
+import { checkDIDConsent, sendConsentAgreeNotification,sendConsentDisagreeNotification, sendConsentVerifyOnProgressNotification} from './functions';
 import { PIC_CONSENT } from '../../../base/participants';
 
 
@@ -80,10 +80,10 @@ class ConsentDialogThree extends PureComponent<Props> {
         checkDIDConsent().then(resp=>{
             if(resp.data.consent===PIC_CONSENT.APPROVED){
                 sendConsentAgreeNotification(APP.store.dispatch)
+                this._closeModal();
             }else{
-                sendConsentDisagreeNotification(APP.store.dispatch)
+                sendConsentVerifyOnProgressNotification(APP.store.dispatch)
             }
-            this._closeModal();
         });
     }
 

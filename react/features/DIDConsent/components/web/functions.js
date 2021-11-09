@@ -6,16 +6,24 @@ import { setJWT } from "../../../base/jwt";
 
 export function sendConsentDisagreeNotification(dispatch){
     dispatch(showNotification({
-        titleKey: 'notify.consentTitle',
-        descriptionKey: 'notify.disagreeNotice',
+        titleKey: 'dialog.consent.notice.disagreeTitle',
+        descriptionKey: 'dialog.consent.notice.disagreeNotice',
     },
     5000))
 }
 
 export function sendConsentAgreeNotification(dispatch){
     dispatch(showNotification({
-        titleKey: 'notify.consentTitle',
-        descriptionKey: 'notify.agreeNotice',
+        titleKey: 'dialog.consent.notice.agreeTitle',
+        descriptionKey: 'dialog.consent.notice.agreeNotice',
+    },
+    5000))
+}
+
+export function sendConsentVerifyOnProgressNotification(dispatch){
+    dispatch(showNotification({
+        titleKey: 'dialog.consent.notice.agreeTitle',
+        descriptionKey: 'dialog.consent.notice.verificationOnProcess',
     },
     5000))
 }

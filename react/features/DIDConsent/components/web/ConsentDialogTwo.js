@@ -96,20 +96,6 @@ class ConsentDialogTwo extends PureComponent<Props> {
         }catch(err){
             console.log("vmchg: Error on request of phoneNumberExist ", err);
         }
-        // const state = APP.store.getState();
-        // const config = {
-        //     headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(state)}`}
-        // };
-        
-        // const _apiBase = getAuthUrl(state);
-
-        // try {
-        //     const resp = axios.get(`${_apiBase}/phoneNumberExist`, config).then((resp) => {
-        //         this.setState({phoneNumber: resp.data.phoneNumberExist})
-        //     });
-        // } catch(err) {
-        //     console.log("vmchg: Error on request of phoneNumberExist ", err);
-        // }
     }
 
     async _savePhoneNumber(){

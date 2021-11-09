@@ -37,7 +37,7 @@ export async function checkPhoneNumber(){
         const _apiBase = getAuthUrl(state);
 
         try {
-            const resp = await axios.get(`${_apiBase}/phoneNumberExist`, config)
+            const resp = await axios.post(`${_apiBase}/phoneNumberExist`, config)
             return resp.data.phoneNumberExist;
         } catch(err) {
             console.log("vmchg: Error on request of phoneNumberExist ", err);
@@ -59,7 +59,6 @@ export async function savePhoneNumber(newNumber){
 
         try {
             const resp = await axios.patch(`${_apiBase}/savePhoneNumber`, config)
-            
             const token = resp.data;
             tokenLocalStorage.setItem(token, APP.store.getState());
             APP.store.dispatch(setJWT(resp.data));

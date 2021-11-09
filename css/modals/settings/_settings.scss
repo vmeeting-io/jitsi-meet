@@ -1,23 +1,32 @@
 .consent-message{
-    min-height: 100px;
+    min-height: 150px;
+    text-align: justify;
 }
 
 .consent-form{
     display: flex;
+    margin-top: 10px;
 }
 
+.phone-input-block{
+    margin-top: 30px;
+}
 .consent-form-title{
     flex: 2;
 }
 
 .consent-form-input{
-    flex: 2;
+    flex: 4;
+}
+
+.consent-innertext-three{
 }
 
 .consent-pane {
     .profile-edit {
         display: flex;
         width: 100%;
+        margin-top: 35px;
         // min-height: 100px;
     }
 
@@ -28,6 +37,7 @@
     img{
         width: 100px;
         height: 100px;
+        padding-right: 10px;
     }
 }
 
@@ -81,6 +91,7 @@
     }
 
     .profile-edit-field {
+        padding: 10px 0px 0px 25px;
         flex: 1;
     }
 

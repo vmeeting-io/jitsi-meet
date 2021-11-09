@@ -125,6 +125,7 @@ class ConsentDialogThree extends PureComponent<Props> {
                 width = { 'small' }
                 >
 
+                <div className="consent-message">
                 <div className="consent-pane">
                     <div className = 'profile-edit'>
                         <div className = 'profile-edit-field'>
@@ -136,6 +137,7 @@ class ConsentDialogThree extends PureComponent<Props> {
                             </span>
                         </div>
                     </div>
+                </div>
                 </div>
 
                 

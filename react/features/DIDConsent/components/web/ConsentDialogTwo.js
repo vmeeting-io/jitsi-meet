@@ -145,10 +145,20 @@ class ConsentDialogTwo extends PureComponent<Props> {
                             {translateToHTML(t,t('dialog.consent.dialogTwoMessage'))}
                         </span>
 
-                        <div> 
+                        <div className="phone-input-block"> 
                             <div className="consent-form">
                                 <div className="consent-form-title">
-                                    {t('dialog.consent.phoneNumber')}
+                                    <strong><span>{ t('dialog.name')}</span></strong>
+                                </div> 
+                                <div className="consent-form-input"> 
+                                    <span>John</span>
+                                </div> 
+                                <div className="consent-form-title"></div>
+                            </div> 
+
+                            <div className="consent-form">
+                                <div className="consent-form-title">
+                                   <strong> {t('dialog.consent.phoneNumber')} </strong>
                                 </div>
                                 <div className="consent-form-input">
                                 <input
@@ -159,6 +169,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
                                     value = { this.state.phoneNumber ?? "" } 
                                     type = 'number' /> 
                                 </div>
+                                <div className="consent-form-title"></div>
                             </div>
                                 
                             <div className="consent-form">
@@ -167,6 +178,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
                                 {this.state.phoneNumberError && <span>
                                     { t('dialog.consent.invalidPhoneNumber')}
                                 </span>}
+                                <div className="consent-form-title"></div>
 
                                 </div>
                             </div>

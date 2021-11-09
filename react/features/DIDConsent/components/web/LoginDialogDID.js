@@ -73,9 +73,8 @@ class LoginDialogDID extends PureComponent<Props> {
      */
     _onCancelDialog() {
         this.setState({show: false});
-        denyDID().then(resp=>{
-            sendConsentDisagreeNotification(APP.store.dispatch);
-        });
+        sendConsentDisagreeNotification(APP.store.dispatch);
+        alert("TODO: DID Disagreed.. Will be handled on integration.")
     }
 
     _onSubmit: () => void;

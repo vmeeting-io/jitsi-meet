@@ -8,5 +8,5 @@ export const username = (value) =>
 
 export const phoneNumber = value => 
   value && !/(010)+[0-9]{4}[0-9]{4}$/i.test(value)
-    ? 'error.phoneNumberInvalid'
+    ? 'error.invalidPhoneNumber'
     : undefined;

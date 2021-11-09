@@ -162,7 +162,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
                         <div> 
                             <div className="consent-form">
                                 <div className="consent-form-title">
-                                    {t('register.phoneNumber')}
+                                    {t('dialog.consent.phoneNumber')}
                                 </div>
                                 <div className="consent-form-input">
                                 <input
@@ -179,7 +179,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
                                 <div className="consent-form-title"></div> 
                                 <div className="consent-form-input"> 
                                 {this.state.phoneNumberError && <span>
-                                    { t('error.invalidValue')}
+                                    { t('dialog.consent.invalidPhoneNumber')}
                                 </span>}
 
                                 </div>

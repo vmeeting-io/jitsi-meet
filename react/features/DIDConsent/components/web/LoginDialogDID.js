@@ -8,6 +8,10 @@ import Dialog from '../../../base/dialog/components/web/Dialog';
 import { closeConsentDialogOne, openConsentDialogTwo } from '../../actions.any';
 import { sendConsentDisagreeNotification, sendConsentAgreeNotification } from './functions';
 import { denyDID } from '../../../base/participants';
+import { getAuthUrl } from '../../../../api/url';
+import tokenLocalStorage from '../../../../api/tokenLocalStorage';
+
+const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
 
 /**
  * The type of the React {@code Component} props of {@link WaitForOwnerDialog}.
@@ -84,8 +88,10 @@ class LoginDialogDID extends PureComponent<Props> {
      */
     _onSubmit() {
         this.setState({show: false});
-        alert("vmchg: Direct to login page.")
-        // APP.store.dispatch(openConsentDialogTwo());
+        const roomName = APP.store.getState()["features/base/conference"].room;
+
+        window.location.href = `${AUTH_PAGE_BASE}/login?next=${encodeURIComponent(`/${roomName}`)}`;
+        
     }
 
     /**

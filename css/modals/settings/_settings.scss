@@ -1,5 +1,5 @@
 .consent-message{
-    min-height: 150px;
+    min-height: 160px;
     text-align: justify;
 }
 
@@ -11,6 +11,21 @@
 .phone-input-block{
     margin-top: 30px;
 }
+
+.consent-form-input-textbox{
+    display: inline-block;
+    width: 140px;
+    padding: 5px 7px;
+    border-radius: $borderRadius;
+    line-height: 25px;
+    height: 25px;
+    text-align: left;
+    // margin-bottom: 8px;
+}
+
+.consent-error{
+}
+
 .consent-form-title{
     flex: 2;
 }
@@ -26,7 +41,6 @@
     .profile-edit {
         display: flex;
         width: 100%;
-        margin-top: 35px;
         // min-height: 100px;
     }
 

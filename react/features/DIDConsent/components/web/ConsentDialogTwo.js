@@ -151,7 +151,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
                                     <strong><span>{ t('dialog.name')}</span></strong>
                                 </div> 
                                 <div className="consent-form-input"> 
-                                    <span>John</span>
+                                    <span>{t('dialog.consent.notice.dummyName')}</span>
                                 </div> 
                                 <div className="consent-form-title"></div>
                             </div> 
@@ -163,7 +163,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
                                 <div className="consent-form-input">
                                 <input
                                     autoFocus = { true }
-                                    className = 'input-control'
+                                    className = 'consent-form-input-textbox'
                                     name = 'phoneNumber'
                                     onChange = { this._onPhoneNumberChange }
                                     value = { this.state.phoneNumber ?? "" } 
@@ -174,11 +174,10 @@ class ConsentDialogTwo extends PureComponent<Props> {
                                 
                             <div className="consent-form">
                                 <div className="consent-form-title"></div> 
-                                <div className="consent-form-input"> 
-                                {this.state.phoneNumberError && <span>
+                                <div className="consent-error"> 
+                                {this.state.phoneNumberError && <span className="consent-error">
                                     { t('dialog.consent.invalidPhoneNumber')}
                                 </span>}
-                                <div className="consent-form-title"></div>
 
                                 </div>
                             </div>

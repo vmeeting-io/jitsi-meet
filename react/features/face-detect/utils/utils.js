@@ -443,7 +443,7 @@ export async function inferenceFrame(model, landmarkModel, frame, refData) {
 
 // input: Int Tensor (img with range (0-255))
 // Output: Float Tensor (img with range (0-255))
-export function bl_interpolate(img, ax=1.0, ay=1.0){
+export function bl_interpolate(img, target_height, target_width){
     const resized_img = tf.image.resizeBilinear(img, [target_height, target_width], true);
     // const [H, W, C] = img.shape;
     // const aH = Math.round(ay * H);

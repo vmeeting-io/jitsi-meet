@@ -1,5 +1,6 @@
-import '@tensorflow/tfjs-backend-cpu';
+import '@tensorflow/tfjs-backend-webgl';
 import * as tf from '@tensorflow/tfjs-core';
+import { isEqual } from 'lodash';
 
 import {
     CLEAR_TIMEOUT,
@@ -7,7 +8,7 @@ import {
     SET_TIMEOUT,
     timerWorkerScript
 } from './TimerWorker';
-import { normalize_frame, predict_BB } from './utils/utils';
+import { getReferenceData, inferenceFrame } from './utils/utils';
 
 /**
  * Represents a modified MediaStream that detect effects from video.
@@ -18,7 +19,7 @@ export default class FaceDetect {
     /**
      * Represents a modified video MediaStream track.
      */
-    constructor(model, landmarkModel) {
+    constructor(model, landmarkModel, patience = 10) {
         this._model = model;
         this._landmarkModel = landmarkModel;
 
@@ -26,6 +27,28 @@ export default class FaceDetect {
         this._onFrameTimer = this._onFrameTimer.bind(this);
 
         this._inputVideoElement = document.getElementById('localVideo_container');
+        this._canvas = document.createElement('canvas');
+        document.body.appendChild(this._canvas);
+        this._canvas.className = 'face-detect-canvas';
+        this._canvas.width = innerWidth;
+        this._canvas.height = innerHeight;
+        this._ctx = this._canvas.getContext('2d');
+        // this._inputVideoElement = document.createElement('video');
+        // document.body.appendChild(this._inputVideoElement);
+        // const source = document.createElement('source');
+        // source.src = 'room/libs/sample_data.mp4';
+        // source.type = 'video/mp4';
+        // this._inputVideoElement.appendChild(source);
+        // this._inputVideoElement.autoplay = true;
+        // this._inputVideoElement.controls = true;
+        // this._inputVideoElement.id = 'sample';
+        // this._inputVideoElement.play();
+
+        this._nFrame = 1;
+        this._patience = patience;
+        this._refData = [];
+        this._prevBox = [0, 0, 0, 0];
+        this._isSleep = [];
     }
 
     /**
@@ -36,7 +59,7 @@ export default class FaceDetect {
      * @returns {void}
      */
     _onFrameTimer(response: Object) {
-        console.log('_onFrameTimer:', response);
+        // console.log('_onFrameTimer:', response);
         if (response.data.id === TIMEOUT_TICK) {
             this._loop();
         }
@@ -48,33 +71,47 @@ export default class FaceDetect {
      * @returns {void}
      */
     async runInference() {
-        // Get face detect result
+        // Get face detect output
         const frame = tf.browser.fromPixels(this._inputVideoElement);
-        // const frame = tf.image.resizeBilinear(video, [180, 320]);
-        const frame_normed = normalize_frame(frame);
-        // const input = tf.sub(tf.div(tf.expandDims(img), 127.5), 1);
-        console.log(this._model, frame.shape);
-        const result = await this._model.predict(frame_normed);
-        const confidences = result['PartitionedCall:1'];
-        const boxes = result['PartitionedCall:0'];
-        const result1 = await predict_BB(frame.shape[1], frame.shape[0], confidences, boxes, 0.7);
-        console.log('face-detect:', result1);
-        result1.print(); // return in Tensor
+        if (!frame || !frame.shape[0] || !frame.shape[1]) {
+            console.error('ERROR: runInference is failed');
+            return;
+        }
 
-        // const { ret } = this.postProcess(landmarks, faces[0]);
-        // let status = ret === 0 ? 0 : 1; // 정면이면 0(집중), 그렇지 않으면 1(비집중)
+        if (this._nFrame <= this._patience) {
+            const [data, ret, box] = await getReferenceData(this._model, this._landmarkModel, frame);
+            console.log('getReferenceData:', data, ret, box);
 
-        // if (faces.length) {
-        //     console.log('face detect:', faces, landmarks);
-        // } else {
-        //     status = 2; // 자리이탈
-        // }
+            if (ret && !isEqual(box, this._prevBox)) {
+                this._refData.push(data);
+                this._nFrame += 1;
+            }
+            this._prevBox = box;
+        } else {
+            let [status, eyeClose, box, landmarks] = await inferenceFrame(this._model, this._landmarkModel, frame, this._refData);
+            console.log('inferenceFrame:', status, eyeClose, box, landmarks, frame.shape);
 
-        // return {
-        //     faces: faces.length,
-        //     status,
-        //     direction: faces.length === 1 ? ret : 5
-        // };
+            if (this._isSleep.length <= this._patience / 10) {
+                this._isSleep.push(eyeClose * 1.0);
+            } else {
+                this._isSleep.pop();
+                this._isSleep.push(eyeClose * 1.0);
+                if (tf.mean(this._isSleep).arraySync() > 0.5) {
+                    status = 1;
+                }
+            }
+
+            const a = Math.min(innerWidth/1280, innerHeight/720);
+            let dx = 0;
+            let dy = (innerHeight - 720*a) / 2;
+
+            this._ctx.clearRect(0, 0, innerWidth, innerHeight);
+            this._ctx.beginPath();
+            this._ctx.lineWidth = 2;
+            this._ctx.strokeStyle = '#ffffff';
+            this._ctx.rect(dx + box[0] * a, dy + box[1] * a, (box[2] - box[0])*a, (box[3] - box[1])*a);
+            this._ctx.stroke();
+        }
     }
 
     /**

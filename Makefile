@@ -6,7 +6,6 @@ LIBFLAC_DIR = node_modules/libflacjs/dist/min/
 OLM_DIR = node_modules/@matrix-org/olm
 RNNOISE_WASM_DIR = node_modules/rnnoise-wasm/dist/
 TFLITE_WASM = react/features/stream-effects/virtual-background/vendor/tflite
-TFLITE_DIR = node_modules/\@tensorflow/tfjs-tflite/dist
 MEET_MODELS_DIR  = react/features/stream-effects/virtual-background/vendor/models
 FACE_DETECT_MODELS_DIR = react/features/face-detect/models
 NODE_SASS = ./node_modules/.bin/sass
@@ -91,9 +90,6 @@ deploy-tflite:
 	cp \
 		$(TFLITE_WASM)/*.wasm \
 		$(DEPLOY_DIR)		
-	cp -r \
-		$(TFLITE_DIR)/* \
-		$(DEPLOY_DIR)
 
 deploy-meet-models:
 	cp \
@@ -102,7 +98,7 @@ deploy-meet-models:
 
 deploy-face-detect-models:
 	cp \
-		$(FACE_DETECT_MODELS_DIR)/*.tflite \
+		$(FACE_DETECT_MODELS_DIR)/* \
 		$(DEPLOY_DIR)
 
 deploy-css:

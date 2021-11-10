@@ -1,5 +1,8 @@
 // Conversion from onnx_inf_test.py to Javascript
+import '@tensorflow/tfjs-backend-cpu';
 import * as tf from '@tensorflow/tfjs';
+import { map, range } from 'lodash';
+
 import * as box_utils from './box_utils';
 
 // input: Tensor
@@ -16,13 +19,13 @@ export function normalize_cropped_img(input){
 
     var converted = tf.concat([c0, c1, c2], 2);
 
-    return converted;
+    return converted.asType('float32');
 }
 
 // input: Int Tensor
 export function normalize_frame(orig_image) {
     //not needed
-    //image = cvt_Color_BGR2RGB(orig_image)
+    // const image = cvt_Color_BGR2RGB(orig_image)
 
     //resize to 320 * 240 image
     const interpolated = bl_interpolate(orig_image, 240, 320);
@@ -36,15 +39,56 @@ export function normalize_frame(orig_image) {
     return res;
 }
 
-export function check_large_pose(landmark, bbox){
+export function get_thetas(landmark, bbox) {
+    if (landmark[0] !== 5 || landmark[1] !== 2)
+        return;
+    if (bbox.length !== 4)
+        return;
+
+    function get_theta(base, x, y) {
+        var vx = [x[0] - base[0], x[1] - base[1]];
+        var vy = [y[0] - base[0], y[1] - base[1]];
+        vx[1] *= -1
+        vy[1] *= -1
+
+        var tx = Math.atan2(vx[1], vx[0]);
+        var ty = Math.atan2(vy[1], vy[0]);
+        var d = ty - tx;
+        d = d *  180.0 / Math.PI;
+
+        if (d < -180.0)
+            d += 360.0;
+        else
+            d -= 360.0;
+    
+        return d;
+    }
+
+    theta1 = get_theta(landmark[0], landmark[3], landmark[2]);
+    theta2 = get_theta(landmark[1], landmark[2], landmark[4]);
+    // print(va, vb, theta2)
+    theta3 = get_theta(landmark[0], landmark[2], landmark[1]);
+    theta4 = get_theta(landmark[1], landmark[0], landmark[2]);
+    theta5 = get_theta(landmark[3], landmark[4], landmark[2]);
+    theta6 = get_theta(landmark[4], landmark[2], landmark[3]);
+    theta7 = get_theta(landmark[3], landmark[2], landmark[0]);
+    theta8 = get_theta(landmark[4], landmark[1], landmark[2]);
+    // print(theta1, theta2, theta3, theta4, theta5, theta6, theta7, theta8)
+
+    thetas = [theta1, theta2, theta3, theta4, theta5, theta6, theta7, theta8];
+
+    return thetas
+}
+
+export function check_large_pose(landmark, bbox) {
     if(landmark.shape[0] !== 5 || landmark.shape[1] !== 2)
         return;
     if(bbox.shape[0] !== 4)
         return;
 
-    function get_theta(base, x, y){
+    function get_theta(base, x, y) {
         var vx = [x[0] - base[0], x[1] - base[1]];
-        var vx = [y[0] - base[0], y[1] - base[1]];
+        var vy = [y[0] - base[0], y[1] - base[1]];
 
         vx[1] *= -1;
         vy[1] *= -1;
@@ -125,6 +169,56 @@ export function check_large_pose(landmark, bbox){
     return ret;
 }
 
+export function check_large_pose_from_ref(landmark, bbox, ref_lr_ratio, ref_ud_ratio) {
+    if (landmark.length !== 5 || landmark[1].length !== 2)
+        return;
+    if (bbox.length !== 4)
+        return;
+
+    function get_theta(base, x, y) {
+        var vx = [x[0] - base[0], x[1] - base[1]];
+        var vy = [y[0] - base[0], y[1] - base[1]];
+
+        vx[1] *= -1;
+        vy[1] *= -1;
+
+        var tx = Math.atan2(vx[1], vx[0]);
+        var ty = Math.atan2(vy[1], vy[0]);
+        var d = ty - tx;
+        d = d *  180.0 / Math.PI;
+
+        if (d < -180.0)
+            d += 360.0;
+        else
+            d -= 360.0;
+
+        return d;
+    }
+    
+    // returned float value
+    var theta1 = get_theta(landmark[0], landmark[3], landmark[2]);
+    var theta2 = get_theta(landmark[1], landmark[2], landmark[4]);
+    var theta3 = get_theta(landmark[0], landmark[2], landmark[1]);
+    var theta4 = get_theta(landmark[1], landmark[0], landmark[2]);
+    var theta5 = get_theta(landmark[3], landmark[4], landmark[2]);
+    var theta6 = get_theta(landmark[4], landmark[2], landmark[3]);
+    var theta7 = get_theta(landmark[3], landmark[2], landmark[0]);
+    var theta8 = get_theta(landmark[4], landmark[1], landmark[2]);
+
+    const lr_ratio = (theta1 + theta7) / (theta2 + theta8)
+    const ud_ratio = (theta3 + theta4) / (theta5 + theta6)
+
+    const threshold = 2.0
+    // # print("ref_lr:", ref_lr_ratio, "lr:", lr_ratio, "ref_ud:",ref_ud_ratio, "ud:",ud_ratio)
+
+    let ret = 0;
+    if ((lr_ratio <= (ref_lr_ratio/threshold) || lr_ratio >= (ref_lr_ratio*threshold)) ||
+        (ud_ratio <= (ref_ud_ratio/threshold) || ud_ratio >= (ref_ud_ratio*threshold)))
+        ret = 1;
+
+    return ret;
+}
+
 // Input
 // Output: Tensor
 export async function predict_BB(width, height, confidences, boxes, prob_threshold, iou_threshold=0.3, top_k=-1){
@@ -152,7 +246,8 @@ export async function predict_BB(width, height, confidences, boxes, prob_thresho
     if (picked_box_probs.length === 0)
         return tf.tensor([]);
 
-    picked_box_probs = tf.concat(picked_box_probs);
+    picked_box_probs = tf.concat(picked_box_probs).clipByValue(0, 1);
+    // console.log('predict_BB:', picked_box_probs.arraySync());
     var c0 = picked_box_probs.gather(tf.tensor1d([0], 'int32'), 1).mul(width);
     var c1 = picked_box_probs.gather(tf.tensor1d([1], 'int32'), 1).mul(height);
     var c2 = picked_box_probs.gather(tf.tensor1d([2], 'int32'), 1).mul(width);
@@ -163,105 +258,212 @@ export async function predict_BB(width, height, confidences, boxes, prob_thresho
     return result.asType('int32');
 }
 
-export function pred_landmarks(landmark_model, frame, box){
-    box = box.arraySync();
-    var cropped_face = frame.slice([box[1], box[0]], [box[3] - box[1], box[2] - box[0]]);
-    cropped_face = bl_interpolate(cropped_face, 56, 56);
+export async function pred_landmarks(landmark_model, frame, box){
+    const resize_shape = [112, 112];
 
-    cropped_face = cvt_Color_BGR2RGB(cropped_face, 56, 56);
+    // console.log('pred_landmarks:', frame.shape, box);
+    var cropped_face = frame.slice([box[1], box[0]], [box[3] - box[1], box[2] - box[0]]);
+    // console.log('cropped_face:', cropped_face.shape, box);
+
+    cropped_face = bl_interpolate(cropped_face, resize_shape[0], resize_shape[1]);
+    cropped_face = cvt_Color_BGR2RGB(cropped_face);
     cropped_face = normalize_cropped_img(cropped_face);
-    cropped_face = cropped_face.transpose([2, 0, 1]);
-    // run model
+    cropped_face = cropped_face.transpose([2, 0, 1]).asType('float32');
+    
+    // inference
     var landmark_68 = null;
-    // landmark_68 = landmark_model.run(None, {'input': [cropped_face.astype(np.float32)]})  # [0, 1]
+    landmark_68 = await landmark_model.executeAsync(cropped_face.expandDims());
+
     // Let landmark_68 is a Tensor
-    var landmark_item0 = landmark_68.gather(tf.tensor1d([0], 'int32')).squeeze(0);
-    landmark_68 = landmark_item0.mul(tf.scalar(56)).round();
-    landmark_68 = landmark_item0.reshape([-1, 2]);
+    const landmarks = landmark_68.squeeze()
+        .mul(tf.scalar(resize_shape[0]))
+        .round()
+        .reshape([-1, 2])
+        .arraySync();
 
     // landmark_seperate
     var face_landmarks = {}
-    face_landmarks['left_eye'] = landmark_68.slice([42], [6]);
-    face_landmarks['right_eye'] = landmark_68.slice([36], [6]);
-    face_landmarks['nose'] = landmark_68.slice([27], [5]);
-    face_landmarks['nose_end'] = landmark_68.gather(tf.tensor1d([30], 'int32'));
-    face_landmarks['lips_end'] = landmark_68.gather(tf.tensor1d([48, 54], 'int32'));
+    face_landmarks['left_eye'] = landmarks.slice(42, 48);
+    face_landmarks['right_eye'] = landmarks.slice(36, 42);
+    face_landmarks['nose'] = landmarks.slice(27, 32);
+    face_landmarks['nose_end'] = [landmarks[30]];
+    face_landmarks['lips_end'] = [landmarks[48], landmarks[54]];
 
     var landmark5 = []
-    landmark5.push(face_landmarks['right_eye'].mean(0));
-    landmark5.push(face_landmarks['left_eye'].mean(0));
-    landmark5.push(face_landmarks['nose_end'].gather(tf.tensor1d([0], 'int32')).squeeze(0));
-    landmark5.push(face_landmarks['left_eye'].gather(tf.tensor1d([0], 'int32')).squeeze(0));
-    landmark5.push(face_landmarks['left_eye'].gather(tf.tensor1d([1], 'int32')).squeeze(0));
+    landmark5.push(tf.tensor(face_landmarks['right_eye']).mean(0).arraySync());
+    landmark5.push(tf.tensor(face_landmarks['left_eye']).mean(0).arraySync());
+    landmark5.push(face_landmarks['nose_end'][0]);
+    landmark5.push(face_landmarks['lips_end'][0]);
+    landmark5.push(face_landmarks['lips_end'][1]);
 
-    var res_landmark5 = tf.stack(landmark5).round().asType('int32');
-    var coords = res_landmark5.arraySync();
+    var coords = tf.stack(landmark5)
+        .round()
+        .asType('int32')
+        .arraySync();
 
     var projected_coords = [];
-
-    for(var i = 0; i < coords.length; i++){
-        var scaled_x = (box[2] - box[0]) / 56.0 * coords[i][0];
-        var scaled_y = (box[3] - box[1]) / 56.0 * coords[i][1];
+    for (var i = 0; i < coords.length; i++) {
+        var scaled_x = (box[2] - box[0]) / resize_shape[0] * coords[i][0];
+        var scaled_y = (box[3] - box[1]) / resize_shape[1] * coords[i][1];
         projected_coords.push([Math.round(scaled_x) + box[0], Math.round(scaled_y) + box[1]]);
     }
 
-    var result = tf.tensor(projected_coords, 'int32');
-
-    return result;
+    return [ projected_coords, face_landmarks ];
 }
 
-export function inference_frame(model, landmark_model, frame) {
-    var frame_normed = normalize_frame(frame);
-    var confidences, boxes;
-    // run model
-    // confidences, boxes = model.run(None, {input_name: frame_normed})
-    console.log('inference_frame:', model.predict(frame_normed));
-    // const prob_threshold = 0.7
-    // var faces = predict_BB(frame.shape[1], frame.shape[0], confidences, boxes, prob_threshold)
+export function calcEar(eye) { // Eye Aspect Ratio
 
-    // var status = 0;
-    // var ret = 5;
-    // var iBoxTo4 = tf.Tensor([]);
+    function euclidean_distance(x1, y1, x2, y2) {
+        return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+    }
 
-    // // 얼굴이 검출되면
-    // if (faces.shape[0] !== 0){
-    //     for(var i = 0; i < faces.shape[0]; i++){
-    //         var target = faces.gather(tf.tensor1d([i], 'int32')).squeeze(0);
-    //         var iBox = tf.round(target).asType('int32');
-    //         iBox.clipByValue(0, tf.int32.max);
+    function midpoint(p1, p2) {
+        return [Math.round((p1[0] + p2[0]) / 2), Math.round((p1[1] + p2[1]) / 2)];
+    }
 
-    //         var landmark_5 = pred_landmarks(landmark_model, frame, iBox);
-            
-    //         iBoxTo4 = iBox.gather(tf.tensor1d([0, 1, 2, 3], 'int32'));
-    //         ret = check_large_pose(landmark_5, iBoxTo4);
+    const left_point = eye[3];
+    const right_point = eye[0];
 
-    //         if (ret === 0)
-    //             status = 0;
-    //         else
-    //             status = 1;
-    //     }
-    // }
-    // else{
-    //     status = 2;
-    // }
+    const center_top = midpoint(eye[1], eye[2]);
+    const center_bottom = midpoint(eye[4], eye[5]);
 
-    // var boxes = [0, 0, 0, 0];
-    // if (faces.shape[0] !== 1){
-    //     boxes = iBoxTo4.arraySync();
-    // }
+    const horizontal_len = euclidean_distance(left_point[0], left_point[1], right_point[0], right_point[1]);
+    const vertical_len = euclidean_distance(center_top[0], center_top[1], center_bottom[0], center_bottom[1]);
+    const eye_area = horizontal_len * vertical_len;
+
+    return [vertical_len / horizontal_len, eye_area];
+}
+
+
+export function is_eye_close(face_landmark, threshold=0.2) {
+    const [ r_EAR, r_Area ] = calcEar(face_landmark["right_eye"])
+    const [ l_EAR, l_Area ] = calcEar(face_landmark["left_eye"])
+    // print("threshold:", threshold, "r_EAR:", r_EAR, "l_EAR",l_EAR)
+    if ((r_EAR <= threshold) || (l_EAR <= threshold)) {
+        return [true, r_EAR, l_EAR, r_Area+l_Area];
+    } else {
+        return [false, r_EAR, l_EAR, r_Area+l_Area];
+    }
+}
+
+export async function getReferenceData(model, landmarkModel, frame) {
+    const frameNormed = normalize_frame(frame);
+
+    const output = await model.predict(frameNormed);
+    // console.log('getReferenceData: output=', output);
+
+    const boxes = output[0];
+    const confidences = output[1];
+
+    const faces = await predict_BB(frame.shape[1], frame.shape[0], confidences, boxes, 0.7);
+
+    if (faces.shape[0] > 0) {
+        const areas = range(faces.shape[0]).map(index => {
+            return calc_BB_area(tf.gather(faces, [index]).squeeze());
+        });
+        const maxIndex = areas.indexOf(Math.max(...areas));
+
+        // console.log('getReferenceData: faces=', faces.arraySync());
+        let box = tf.round(tf.gather(faces, [maxIndex]).squeeze()).asType('int32');
+        box = box.clipByValue(0, Number.MAX_VALUE).arraySync();
+
+        const [ landmark5, face_landmarks ] = await pred_landmarks(landmarkModel, frame, box);
+        // console.log('pred_landmarks:', landmark5, face_landmarks);
+
+        const thetas = get_thetas(landmark5, box.slice([0], [4]));
+        const [ _, r_EAR, l_EAR, eyes_area ] = is_eye_close(face_landmarks, 0.15);
+
+        return [
+            { r_EAR, l_EAR, eyes_area, landmark5, thetas },
+            1,
+            box
+        ];
+    } else {
+        return [ null, 0, [0, 0, 0, 0] ];
+    }
+}
+
+export async function inferenceFrame(model, landmarkModel, frame, refData) {
+    const frameNormed = normalize_frame(frame);
+
+    const output = await model.predict(frameNormed);
+    const boxes = output[0];
+    const confidences = output[1];
+    const faces = await predict_BB(frame.shape[1], frame.shape[0], confidences, boxes, 0.7);
+
+    let eyeClose = false;
+    let box = [0, 0, 0, 0];
+    let status = 0;
+    let landmarks = [];
+
+    // 얼굴이 검출되면
+    if (faces.shape[0] > 0) {
+        const areas = range(faces.shape[0]).map(index => {
+            return calc_BB_area(tf.gather(faces, [index]).squeeze());
+        });
+        const max = Math.max(...areas);
+        const maxIndex = areas.indexOf(max);
+
+        if (max <= frame.shape[0] * frame.shape[1] * 0.05) {
+            status = 2;
+        } else {
+            box = tf.round(tf.gather(faces, [maxIndex]).squeeze()).asType('int32');
+            box = box.clipByValue(0, Number.MAX_VALUE).arraySync();
     
-    // return {
-    //     face_len: faces.shape[0],
-    //     status: status,
-    //     boxes: boxes,
-    //     ret: ret
-    // }
+            landmarks = await pred_landmarks(landmarkModel, frame, box);
+            const [ landmark5, face_landmarks ] = landmarks;
+
+            // console.log('pred_landmarks:', landmark5, face_landmarks);
+
+            const meanEyeArea = tf.mean(map(refData, 'eyes_area')).arraySync();
+            console.log('MEA:', meanEyeArea);
+
+            eyeClose = false;
+            if (meanEyeArea >= 200) {
+                const maxL = Math.max(...map(refData, 'l_EAR'));
+                const maxR = Math.max(...map(refData, 'r_EAR'));
+                const threshold = (maxL + maxR) / 2.0 * 0.6;
+                eyeClose = is_eye_close(face_landmarks, threshold)[0];
+            }
+
+            const avgThetas = tf.mean(map(refData, 'thetas'), [0]).arraySync();
+            const refRatioLR = (avgThetas[0] + avgThetas[6]) / (avgThetas[1] + avgThetas[7]);
+            const refRatioUD = (avgThetas[2] + avgThetas[3]) / (avgThetas[4] + avgThetas[5]);
+
+            const ret = check_large_pose_from_ref(landmark5, box.slice(0, 4), refRatioLR, refRatioUD);
+
+            status = ret === 0 ? 0 : 1; // 집중(0), 비집중(1) 여부
+        }
+    } else {
+        status = 2;
+    }
+
+    return [status, eyeClose, box, landmarks];
 }
 
 // input: Int Tensor (img with range (0-255))
 // Output: Float Tensor (img with range (0-255))
-export function bl_interpolate(img, target_height, target_width){
-    const resized_img = tf.image.resizeBilinear(img, [target_height, target_width]);
+export function bl_interpolate(img, ax=1.0, ay=1.0){
+    const resized_img = tf.image.resizeBilinear(img, [target_height, target_width], true);
+    // const [H, W, C] = img.shape;
+    // const aH = Math.round(ay * H);
+    // const aW = Math.round(ax * W);
+    // // get position of resized image
+    // let y = tf.tile(tf.range(0, aH).expandDims(-1), [1, 320]);
+    // let x = tf.tile(tf.range(0, aW), [aH]).reshape([aH, aW]);
+
+    // y = y.div(tf.scalar(ay));
+    // x = x.div(tf.scalar(ax));
+    // let ix = tf.floor(x).asType('int32');
+    // let iy = tf.floor(y).asType('int32');
+    // ix = tf.minimum(ix, tf.scalar(W - 2));
+    // iy = tf.minimum(iy, tf.scalar(H - 2));
+
+    // let dx = x.sub(ix);
+    // let dy = y.sub(iy);
+    // dx = tf.tile(dx.expandDims(-1), [1,1,3]);
+    // dy = tf.tile(dy.expandDims(-1), [1,1,3]);
+
 
     return resized_img;
 }
@@ -272,4 +474,11 @@ export function cvt_Color_BGR2RGB(orig_image){
 
     var converted = tf.concat([c2, c1, c0], 2);
     return converted;
+}
+
+// calc bounding box area
+// input: area tensor
+export function calc_BB_area(t) {
+    const bb = t.arraySync();
+    return (bb[2] - bb[0]) * (bb[3] - bb[1]);
 }

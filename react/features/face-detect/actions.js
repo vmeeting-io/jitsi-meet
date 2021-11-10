@@ -1,6 +1,5 @@
-import '@tensorflow/tfjs-backend-cpu';
-import * as tf from '@tensorflow/tfjs-core';
-import * as tflite from '@tensorflow/tfjs-tflite';
+import '@tensorflow/tfjs-backend-webgl';
+import * as tf from '@tensorflow/tfjs';
 
 import { MEDIA_TYPE } from '../base/media';
 import { getLocalTrack } from '../base/tracks';
@@ -9,8 +8,8 @@ import { grantFaceDetect } from './functions';
 import FaceDetect from './FaceDetect';
 
 const models = {
-    model_face_detect: '/libs/retina_face.tflite',
-    model_landmark_detect: '/libs/pfld.tflite'
+    model_face_detect: '/libs/retinaface.json',
+    model_landmark_detect: '/libs/pfld.json'
 };
 
 let faceDetector;
@@ -34,8 +33,8 @@ export function startFaceDetect() {
             }
         
             try {
-                const faceDetectModel = await tflite.loadTFLiteModel(models.model_face_detect);
-                const landmarkDetectModel = await tflite.loadTFLiteModel(models.model_landmark_detect);
+                const faceDetectModel = await tf.loadGraphModel(models.model_face_detect);
+                const landmarkDetectModel = await tf.loadGraphModel(models.model_landmark_detect);
             
                 faceDetector = new FaceDetect(faceDetectModel, landmarkDetectModel);
                 faceDetector.startEffect();

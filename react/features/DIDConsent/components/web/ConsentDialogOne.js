@@ -13,22 +13,6 @@ import { denyDID } from '../../../base/participants';
  * The type of the React {@code Component} props of {@link WaitForOwnerDialog}.
  */
 type Props = {
-
-    /**
-     * The name of the conference room (without the domain part).
-     */
-    _room: string,
-
-    /**
-     * Redux store dispatch method.
-     */
-    dispatch: Dispatch<any>,
-
-    /**
-     * Function to be invoked after click.
-     */
-    onAuthNow: ?Function,
-
     /**
      * Invoked to obtain translated strings.
      */
@@ -41,9 +25,6 @@ type Props = {
  * @returns {React$Element<any>}
  */
 class ConsentDialogOne extends PureComponent<Props> {
-    
-    
-    
     /**
      * Instantiates a new component.
      *

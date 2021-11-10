@@ -2,6 +2,9 @@
 
 import React, { PureComponent } from 'react';
 import { FieldTextStateless as TextField } from '@atlaskit/field-text';
+import Button from '@atlaskit/button/standard-button';
+import ButtonGroup from '@atlaskit/button/button-group';
+import Modal, { ModalFooter } from '@atlaskit/modal-dialog';
 
 import { translate, translateToHTML } from '../../../base/i18n';
 import Dialog from '../../../base/dialog/components/web/Dialog';
@@ -11,7 +14,7 @@ import axios from 'axios';
 import { getAuthUrl } from "../../../../api/url";
 import tokenLocalStorage from '../../../../api/tokenLocalStorage';
 import { setJWT } from '../../../base/jwt';
-import { checkPhoneNumber, savePhoneNumber } from './functions';
+import { checkPhoneNumber, savePhoneNumber, sendConsentDisagreeNotification } from './functions';
 
 /**
  * The type of the React {@code Component} props of {@link WaitForOwnerDialog}.
@@ -54,7 +57,8 @@ class ConsentDialogTwo extends PureComponent<Props> {
         }
 
         this._onCancelDialog = this._onCancelDialog.bind(this);
-        this._onSubmit       = this._onSubmit.bind(this);
+        this._onPrev         = this._onPrev.bind(this);
+        this._onNext         = this._onNext.bind(this);
         this._onPhoneNumberChange = this._onPhoneNumberChange.bind(this);
         this._checkIfPhoneExists  = this._checkIfPhoneExists.bind(this); 
 
@@ -71,10 +75,17 @@ class ConsentDialogTwo extends PureComponent<Props> {
      */
     _onCancelDialog() {
         this.setState({show: false});
+        sendConsentDisagreeNotification(APP.store.dispatch);this.setState({show: false});
+    }
+
+    _onPrev: () => void;
+
+    _onPrev(){
+        this.setState({show: false});
         APP.store.dispatch(openConsentDialogOne());
     }
 
-    _onSubmit: () => void;
+    _onNext: () => void;
 
     /**
      * Called when the OK button is clicked.
@@ -82,7 +93,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
      * @private
      * @returns {void}
      */
-    _onSubmit() {
+    _onNext() {
         this.setState({show: false});
         APP.store.dispatch(openConsentDialogThree());
     }
@@ -130,13 +141,9 @@ class ConsentDialogTwo extends PureComponent<Props> {
 
         return (
             this.state.show && <Dialog
-                okKey = { 'dialog.consent.next' }
                 okDisabled = {this.state.phoneNumberError}
-                cancelKey = { 'dialog.consent.prev' }
-                disableBlanketClickDismiss = { true }
-                hideCloseIconButton = { true }
+                disableFooter = { true }
                 onCancel = { this._onCancelDialog }
-                onSubmit = { this._onSubmit }
                 titleKey = { 'dialog.consent.titleDialogTwo' }
                 width = { 'small' }
                 >
@@ -187,7 +194,26 @@ class ConsentDialogTwo extends PureComponent<Props> {
                             </div>
                         </div>
                     </div>
-                </div>
+
+                    </div>
+                    <div className="prev-next-button-wrapper">
+                        <ButtonGroup>
+                            <Button
+                                appearance = 'primary'
+                                key = 'submit'
+                                onClick = { this._onNext }
+                                type = 'button'>
+                                { t('dialog.consent.next') }
+                            </Button>
+                            <Button
+                                appearance = 'subtle'
+                                key = 'cancel'
+                                onClick = {this._onPrev }
+                                type = 'button'>
+                                { t('dialog.consent.prev') }
+                            </Button> 
+                        </ButtonGroup>
+                    </div>
             </Dialog>
         );
     }

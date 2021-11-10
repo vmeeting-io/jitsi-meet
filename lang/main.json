@@ -250,7 +250,7 @@
             "complete":"Complete",
             "dialogOneMessage":"We are informing you that your personal data may be collected, utilized or provided to the third parties based on Personal Information Protection Act article 15 and 17. This is as a part of Kedutech’s Dataflagship Project (2021), sponsored by National Information Society Agency (NIA), titled “Developing an innovative service to enhance the interaction among the users on real-time online classes.",
             "dialogTwoMessage":"<br>Please type your phone number in to agree to provide your data. This phone number has to match with what is to be used in the APP for verification.",
-            "dialogThreeMessage":"Scan the QR code to open the APP to verify yourself. <br><br> Click Complete once the app procedure is completed.",
+            "dialogThreeMessage":"Scan the QR code to open the APP to verify yourself. <br><br><br> Click Complete once the app procedure is completed.",
             "dialogLoginMessage":"As part of the data flagship project sponsored by the Korea Intelligence Information Society Agency (NIA), login is needed for the service of 'development of innovative services to improve interaction in real-time online video classes.'",
             "disagree": "Disagree",
             "invalidPhoneNumber": "Invalid Phone Number",

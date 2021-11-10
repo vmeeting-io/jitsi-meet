@@ -101,8 +101,8 @@ class ConsentDialogOne extends PureComponent<Props> {
             this.state.show && <Dialog
                 okKey = { 'dialog.consent.agree' }
                 cancelKey = { 'dialog.consent.disagree' }
-                disableBlanketClickDismiss = { true }
-                hideCloseIconButton = { true }
+                // disableBlanketClickDismiss = { true }
+                // hideCloseIconButton = { false }
                 onCancel = { this._onCancelDialog }
                 onSubmit = { this._onSubmit }
                 titleKey = { 'dialog.consent.titleDialogOne' }

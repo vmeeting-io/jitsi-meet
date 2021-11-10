@@ -116,9 +116,10 @@ class ConsentDialogThree extends PureComponent<Props> {
 
             {this.state.show && <Dialog
                 okKey = { 'dialog.consent.complete' }
-                cancelKey = { 'dialog.consent.cancel' }
-                disableBlanketClickDismiss = { true }
-                hideCloseIconButton = { true }
+                // cancelKey = { 'dialog.consent.cancel' }
+                disableBlanketClickDismiss = { false }
+                hideCancelButton = { true }
+                // hideCloseIconButton = { false }
                 onCancel = { this._onCancelDialog }
                 onSubmit = { this._onAgree }
                 titleKey = { 'dialog.consent.titleDialogThree' }

@@ -141,9 +141,13 @@ class ConsentDialogTwo extends PureComponent<Props> {
                 width = { 'small' }
                 >
                 <div className="consent-message">
-                        <span>
-                            {translateToHTML(t,t('dialog.consent.dialogTwoMessage'))}
-                        </span>
+                    <div className="consent-two-wrapper">
+                    
+                        <div className="consent-two-info">
+                            <span>
+                                {translateToHTML(t,t('dialog.consent.dialogTwoMessage'))}
+                            </span>
+                        </div>
 
                         <div className="phone-input-block"> 
                             <div className="consent-form">
@@ -151,9 +155,9 @@ class ConsentDialogTwo extends PureComponent<Props> {
                                     <strong><span>{ t('dialog.name')}</span></strong>
                                 </div> 
                                 <div className="consent-form-input"> 
-                                    <span>{t('dialog.consent.notice.dummyName')}</span>
+                                    <span>{APP.store.getState()["features/base/participants"].local.name.substring(0,11)+"..."}</span>
                                 </div> 
-                                <div className="consent-form-title"></div>
+                                <div className="consent-form-gap"></div>
                             </div> 
 
                             <div className="consent-form">
@@ -163,25 +167,26 @@ class ConsentDialogTwo extends PureComponent<Props> {
                                 <div className="consent-form-input">
                                 <input
                                     autoFocus = { true }
-                                    className = 'consent-form-input-textbox'
+                                    className = 'consent-form-input-textbox remove-inc-dec-in-input-box'
                                     name = 'phoneNumber'
                                     onChange = { this._onPhoneNumberChange }
                                     value = { this.state.phoneNumber ?? "" } 
                                     type = 'number' /> 
                                 </div>
-                                <div className="consent-form-title"></div>
+                                <div className="consent-form-gap"></div>
                             </div>
                                 
-                            <div className="consent-form">
-                                <div className="consent-form-title"></div> 
-                                <div className="consent-error"> 
-                                {this.state.phoneNumberError && <span className="consent-error">
-                                    { t('dialog.consent.invalidPhoneNumber')}
-                                </span>}
+                            <div className="consent-phone-error">
+                                <div className="title"></div> 
+                                <div className="error"> 
+                                    {this.state.phoneNumberError && <span className="consent-error">
+                                        { t('dialog.consent.invalidPhoneNumber')}
+                                    </span>}
 
                                 </div>
                             </div>
                         </div>
+                    </div>
                 </div>
             </Dialog>
         );

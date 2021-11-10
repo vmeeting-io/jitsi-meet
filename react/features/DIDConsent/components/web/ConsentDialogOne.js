@@ -69,10 +69,6 @@ class ConsentDialogOne extends PureComponent<Props> {
      */
     _onCancelDialog() {
         this.setState({show: false});
-        //Disabled as specified on slack: 2021-11-09(ui-and-feature...)
-        // denyDID().then(resp=>{
-        //     sendConsentDisagreeNotification(APP.store.dispatch);
-        // });
         sendConsentDisagreeNotification(APP.store.dispatch);
         alert("TODO: DID Disagreed.. Will be handled on integration.")
     }
@@ -114,7 +110,7 @@ class ConsentDialogOne extends PureComponent<Props> {
                 >
                 <div className="consent-message">
                     <span>
-                        {t('dialog.consent.dialogOneMessage')}
+                        {translateToHTML(t,t('dialog.consent.dialogOneMessage'))}
                     </span>
                 </div>
             </Dialog>

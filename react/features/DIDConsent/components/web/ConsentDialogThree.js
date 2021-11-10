@@ -126,18 +126,16 @@ class ConsentDialogThree extends PureComponent<Props> {
                 >
 
                 <div className="consent-message">
-                <div className="consent-pane">
-                    <div className = 'profile-edit'>
-                        <div className = 'profile-edit-field'>
+                    <div className="consent-three-wrapper">
+                        <div className = 'barcode'>
                             <img src='/static/consentBarcode.png' />
                         </div>
-                        <div className = 'profile-edit-field'>
+                        <div className = 'consent-three-info'>
                             <span>
                                 {translateToHTML(t,t('dialog.consent.dialogThreeMessage'))}
                             </span>
                         </div>
                     </div>
-                </div>
                 </div>
 
                 

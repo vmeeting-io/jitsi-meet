@@ -128,6 +128,14 @@ class ConsentDialogTwo extends PureComponent<Props> {
         }
     }
 
+    _getShortName(name){
+        if (name.length>15){
+            return name.substring(0,11)+"...";
+        }else{
+            return name
+        }
+    }
+
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -162,7 +170,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
                                     <strong><span>{ t('dialog.name')}</span></strong>
                                 </div> 
                                 <div className="consent-form-input"> 
-                                    <span>{APP.store.getState()["features/base/participants"].local.name.substring(0,11)+"..."}</span>
+                                    <span>{this._getShortName(APP.store.getState()["features/base/participants"].local.name)}</span>
                                 </div> 
                                 <div className="consent-form-gap"></div>
                             </div> 
@@ -199,6 +207,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
                     <div className="prev-next-button-wrapper">
                         <ButtonGroup>
                             <Button
+                                isDisabled={this.state.phoneNumber=="" || this.state.phoneNumberError}
                                 appearance = 'primary'
                                 key = 'submit'
                                 onClick = { this._onNext }

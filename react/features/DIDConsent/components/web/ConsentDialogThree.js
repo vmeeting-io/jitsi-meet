@@ -52,6 +52,7 @@ class ConsentDialogThree extends PureComponent<Props> {
 
         this._onCancelDialog = this._onCancelDialog.bind(this);
         this._onAgree = this._onAgree.bind(this);
+        this._onX = this._onX.bind(this);
     }
 
     _onCancelDialog: () => void;
@@ -67,6 +68,17 @@ class ConsentDialogThree extends PureComponent<Props> {
         this._closeModal();
         alert("TODO: DID Disagreed.. Will be handled on integration.")
 
+    }
+
+    _onX: () => void;
+
+    /**
+     * Called on pressing X button.
+     * @private
+     * @returns {void}
+     */
+    _onX(){
+        this._onCancelDialog();
     }
 
     _onAgree: () => void;
@@ -117,11 +129,11 @@ class ConsentDialogThree extends PureComponent<Props> {
 
             {this.state.show && <Dialog
                 okKey = { 'dialog.consent.complete' }
-                // cancelKey = { 'dialog.consent.cancel' }
-                disableBlanketClickDismiss = { false }
+                disableBlanketClickDismiss = { true }
+                onX={ this._onX }
+                consentDialog={true}
                 hideCancelButton = { true }
-                // hideCloseIconButton = { false }
-                onCancel = { this._onCancelDialog }
+                hideCloseIconButton = { false }
                 onSubmit = { this._onAgree }
                 titleKey = { 'dialog.consent.titleDialogThree' }
                 width = { 'small' }

@@ -131,7 +131,10 @@
     margin-top: 3px;
 }
 
-
+.consent-form-phone{
+    display: flex;
+    margin-top: 7px;
+}
 
 .consent-form-input input::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -149,15 +152,25 @@
 
 
 
-.consent-form .consent-form-title{
+.consent-form-title{
     flex: 3;
 }
 
-.consent-form .consent-form-input{
+.consent-form-phone-title-kr{
+    flex: 3;
+    padding-top:7px;
+}
+
+.consent-form-phone-title{
+    flex: 3;
+    padding-top:5px;
+}
+
+.consent-form-input{
     flex: 4;
 }
 
-.consent-form .consent-form-gap{
+.consent-form-gap{
     flex: 1;
 }
 
@@ -178,7 +191,11 @@
 
 
 .consent-two-info{
-   padding-bottom: 20px; 
+   padding-bottom: 30px; 
+}
+
+.consent-two-info-kr{
+   padding-bottom: 15px; 
 }
 
 .consent-two-wrapper .phone-info-block{
@@ -215,6 +232,6 @@
 
 .view-more-kr{
     float: right;
-    margin-top: 40px;
+    margin-top: 20px;
     font-weight: bold;
 }

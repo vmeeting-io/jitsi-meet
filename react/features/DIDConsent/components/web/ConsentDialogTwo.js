@@ -57,7 +57,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
             show: true
         }
 
-        this._onCancelDialog = this._onCancelDialog.bind(this);
+        this._onX = this._onX.bind(this);
         this._onPrev         = this._onPrev.bind(this);
         this._onNext         = this._onNext.bind(this);
         this._onPhoneNumberChange = this._onPhoneNumberChange.bind(this);
@@ -66,7 +66,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
         this._checkIfPhoneExists();
     }
 
-    _onCancelDialog: () => void;
+    _onX: () => void;
 
     /**
      * Called when the cancel button is clicked.
@@ -74,9 +74,10 @@ class ConsentDialogTwo extends PureComponent<Props> {
      * @private
      * @returns {void}
      */
-    _onCancelDialog() {
+    _onX() {
         this.setState({show: false});
         sendConsentDisagreeNotification(APP.store.dispatch);this.setState({show: false});
+        alert("TODO: DID Disagreed.. Will be handled on integration.")
     }
 
     _onPrev: () => void;
@@ -150,15 +151,17 @@ class ConsentDialogTwo extends PureComponent<Props> {
         return (
             this.state.show && <Dialog
                 okDisabled = {this.state.phoneNumberError}
+                onX={ this._onX }
+                consentDialog={true}
+                disableBlanketClickDismiss = { true }
                 disableFooter = { true }
-                onCancel = { this._onCancelDialog }
                 titleKey = { 'dialog.consent.titleDialogTwo' }
                 width = { 'small' }
                 >
                 <div className={`consent-message${this.state.class}`}>
                     <div className="consent-two-wrapper">
                     
-                        <div className="consent-two-info">
+                        <div className={`consent-two-info${this.state.class}`}>
                             <span>
                                 {translateToHTML(t,t('dialog.consent.dialogTwoMessage'))}
                             </span>
@@ -175,8 +178,8 @@ class ConsentDialogTwo extends PureComponent<Props> {
                                 <div className="consent-form-gap"></div>
                             </div> 
 
-                            <div className="consent-form">
-                                <div className="consent-form-title">
+                            <div className="consent-form-phone">
+                                <div className={`consent-form-phone-title${this.state.class}`}>
                                    <strong> {t('dialog.consent.phoneNumber')} </strong>
                                 </div>
                                 <div className="consent-form-input">

@@ -115,7 +115,6 @@ MiddlewareRegistry.register(store => next => action => {
                         if(denied == false){
                             let checkConsent = true;
                             checkPhoneNumber().then(cellPhoneNumber=>{
-                                // console.log("vmchg: Cellphone Number ",cellPhoneNumber)
                                 if (cellPhoneNumber===false){// If there is not cell phone number in the database, show popup.
                                     checkConsent = false
                                     store.dispatch(openConsentDialogOne()); 
@@ -123,7 +122,6 @@ MiddlewareRegistry.register(store => next => action => {
                             })
 
                             checkConsent ? checkDIDConsent().then(resp=>{
-                                // console.log("vmchg: verifyConsent ",resp.data)
                                 if(resp.data.consent !== PIC_CONSENT.APPROVED){ // If consent has not been approved, show popup
                                     store.dispatch(openConsentDialogOne());
                                 }
@@ -136,7 +134,6 @@ MiddlewareRegistry.register(store => next => action => {
 
                 }else{
                     //Not logged in case.
-                    // alert("vmchg: User not logged in: -> Redirect user to login page.")
                     store.dispatch(openLoginDialogDIDPopUp());
 
                     console.log("vmchg: User not logged in: -> Redirect user to login page.")

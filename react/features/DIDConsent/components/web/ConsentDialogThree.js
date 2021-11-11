@@ -46,6 +46,7 @@ class ConsentDialogThree extends PureComponent<Props> {
     constructor(props: Props) {
         super(props);
         this.state = {
+            class: localStorage.language !== "ko" ? "consent-message":"consent-message-kr",
             show: true
         }
 
@@ -126,7 +127,7 @@ class ConsentDialogThree extends PureComponent<Props> {
                 width = { 'small' }
                 >
 
-                <div className="consent-message">
+                <div className={`${this.state.class}`}>
                     <div className="consent-three-wrapper">
                         <div className = 'barcode'>
                             <img src='/static/consentBarcode.png' />

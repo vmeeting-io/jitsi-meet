@@ -266,6 +266,7 @@
                 "disagreeNotice":"You have disagreed to provide your data",
                 "agreeTitle":"Data request for Dataflagship Project",
                 "agreeNotice":"You have agreed to provide your data",
+                "viewMore": "View More",
                 "verificationOnProcess": "Data flagship data consent is in progress. When the consent process is completed, please click the Complete button."
             }
         },

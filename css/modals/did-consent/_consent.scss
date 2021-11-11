@@ -3,6 +3,11 @@
     min-height: 210px;
 }
 
+.consent-message-kr{
+    text-align: justify;
+    min-height: 187px;
+}
+
 
 // .consent-form-input-textbox{
 //     -webkit-align-items: center;
@@ -79,7 +84,7 @@
     word-wrap: break-word;
     border-width: 2px;
     padding: 2px 6px;
-    width: 105px;
+    width: 165px;
 }
 
 .consent-form-input-textbox:focus{
@@ -115,7 +120,7 @@
     word-wrap: break-word;
     border-width: 2px;
     padding: 2px 6px;
-    width: 105px;
+    width: 165px;
 }
 
 
@@ -190,16 +195,20 @@
 }
 
 .consent-three-wrapper .barcode{
-    flex: 3;
+    flex: 2.2;
 }
 
 .barcode > img{
-    width: 195px;
-    height: 195px;
+    width: 170px;
+    height: 170px;
 }
 
 .consent-three-wrapper .consent-three-info{
     flex: 2;    
 }
 
-
+.viewMore{
+    float: right;
+    margin-top: 40px;
+    font-weight: bold;
+}

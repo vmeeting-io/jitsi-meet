@@ -52,6 +52,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
     constructor(props: Props) {
         super(props);
         this.state = {
+            class: localStorage.language !== "ko" ? "consent-message":"consent-message-kr",
             phoneNumberError: false,
             show: true
         }
@@ -111,7 +112,6 @@ class ConsentDialogTwo extends PureComponent<Props> {
 
     async _savePhoneNumber(){
        const res = await savePhoneNumber(this.state.phoneNumber)
-       console.log("vmchg: Saved", res ) 
     }
 
     async _onPhoneNumberChange(e){
@@ -129,8 +129,8 @@ class ConsentDialogTwo extends PureComponent<Props> {
     }
 
     _getShortName(name){
-        if (name.length>15){
-            return name.substring(0,11)+"...";
+        if (name.length>20){
+            return name.substring(0,16)+"...";
         }else{
             return name
         }
@@ -155,7 +155,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
                 titleKey = { 'dialog.consent.titleDialogTwo' }
                 width = { 'small' }
                 >
-                <div className="consent-message">
+                <div className={`${this.state.class}`}>
                     <div className="consent-two-wrapper">
                     
                         <div className="consent-two-info">

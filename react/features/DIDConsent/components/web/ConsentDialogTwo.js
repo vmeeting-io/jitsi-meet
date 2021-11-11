@@ -77,7 +77,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
     _onX() {
         this.setState({show: false});
         sendConsentDisagreeNotification(APP.store.dispatch);this.setState({show: false});
-        alert("TODO: DID Disagreed.. Will be handled on integration.")
+        // alert("TODO: DID Disagreed.. Will be handled on integration.")
     }
 
     _onPrev: () => void;

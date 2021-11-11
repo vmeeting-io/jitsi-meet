@@ -7,7 +7,7 @@ import { translate, translateToHTML } from '../../../base/i18n';
 import Dialog from '../../../base/dialog/components/web/Dialog';
 import { closeConsentDialogOne, openConsentDialogTwo } from '../../actions.any';
 import { sendConsentDisagreeNotification, sendConsentAgreeNotification } from './functions';
-import { denyDID } from '../../../base/participants';
+import { denyDID, openOnNewTab } from '../../../base/participants';
 
 /**
  * The type of the React {@code Component} props of {@link WaitForOwnerDialog}.
@@ -52,7 +52,7 @@ class ConsentDialogOne extends PureComponent<Props> {
     _onCancelDialog() {
         this.setState({show: false});
         sendConsentDisagreeNotification(APP.store.dispatch);
-        alert("TODO: DID Disagreed.. Will be handled on integration.")
+        // alert("TODO: DID Disagreed.. Will be handled on integration.")
     }
 
     _onSubmit: () => void;
@@ -66,6 +66,14 @@ class ConsentDialogOne extends PureComponent<Props> {
     _onSubmit() {
         this.setState({show: false});
         APP.store.dispatch(openConsentDialogTwo());
+    }
+
+    /**
+     * Open View More tab on URL. 
+     */
+    _openOnNewTab(){
+        const VIEW_MORE_URL = "https://sites.google.com/kedutech.kr/en-vmeeting-guide-v2";
+        openOnNewTab(VIEW_MORE_URL);
     }
 
     /**
@@ -96,7 +104,7 @@ class ConsentDialogOne extends PureComponent<Props> {
                         {translateToHTML(t,t('dialog.consent.dialogOneMessage'))}
                     </span>
                     <div className={`view-more${this.state.class}`}>
-                        <a href="#">{t('dialog.consent.notice.viewMore')}</a>
+                        <a href onClick={this._openOnNewTab} >{t('dialog.consent.notice.viewMore')}</a>
                     </div>
                 </div>
             </Dialog>

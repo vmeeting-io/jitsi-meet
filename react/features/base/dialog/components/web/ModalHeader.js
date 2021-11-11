@@ -111,6 +111,7 @@ class ModalHeader extends React.Component<Props> {
                     <TitleText
                         data-testid = { testId && `${testId}-heading` }
                         id = { id }
+                        className={consentDialog?"consent-header-class":""}
                         isHeadingMultiline = { isHeadingMultiline }>
                         {heading}
                     </TitleText>

@@ -66,7 +66,7 @@ class ConsentDialogThree extends PureComponent<Props> {
     _onCancelDialog() {
         sendConsentDisagreeNotification(APP.store.dispatch)
         this._closeModal();
-        alert("TODO: DID Disagreed.. Will be handled on integration.")
+        // alert("TODO: DID Disagreed.. Will be handled on integration.")
 
     }
 

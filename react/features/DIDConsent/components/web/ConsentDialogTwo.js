@@ -52,7 +52,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            class: localStorage.language !== "ko" ? "consent-message":"consent-message-kr",
+            class: localStorage.language !== "ko" ? "":"-kr",
             phoneNumberError: false,
             show: true
         }
@@ -155,7 +155,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
                 titleKey = { 'dialog.consent.titleDialogTwo' }
                 width = { 'small' }
                 >
-                <div className={`${this.state.class}`}>
+                <div className={`consent-message${this.state.class}`}>
                     <div className="consent-two-wrapper">
                     
                         <div className="consent-two-info">

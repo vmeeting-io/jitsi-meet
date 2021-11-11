@@ -35,7 +35,7 @@ class ConsentDialogOne extends PureComponent<Props> {
         super(props);
         this.state = {
             show: true,
-            class: localStorage.language !== "ko" ? "consent-message":"consent-message-kr",
+            class: localStorage.language !== "ko" ? "":"-kr",
         };
         this._onCancelDialog = this._onCancelDialog.bind(this);
         this._onSubmit = this._onSubmit.bind(this);
@@ -90,11 +90,11 @@ class ConsentDialogOne extends PureComponent<Props> {
                 titleKey = { 'dialog.consent.titleDialogOne' }
                 width = { 'small' }
                 >
-                <div className={`${this.state.class}`}>
+                <div className={`consent-message${this.state.class}`}>
                     <span>
                         {translateToHTML(t,t('dialog.consent.dialogOneMessage'))}
                     </span>
-                    <div className="viewMore">
+                    <div className={`view-more${this.state.class}`}>
                         <a href="#">{t('dialog.consent.notice.viewMore')}</a>
                     </div>
                 </div>

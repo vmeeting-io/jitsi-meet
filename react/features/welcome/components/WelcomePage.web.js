@@ -390,6 +390,11 @@ class WelcomePage extends AbstractWelcomePage {
                                     </div>
                                 )}
                             </DropdownItem>
+                            <DropdownItem
+                                className = 'menu-item'
+                                href = { `${AUTH_PAGE_BASE}/meetingdetails` }>
+                                { t('welcomepage.meetingDetails') }
+                            </DropdownItem>
                             { checkBlurSupport() && (
                                 <DropdownItem
                                     className = 'menu-item'

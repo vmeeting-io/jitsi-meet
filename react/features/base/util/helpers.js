@@ -138,15 +138,12 @@ export function processFileSize(fsize)
     }
 }
 
-export function renderLongFileNameWithEllipses(filename)
-{
-    if(filename.length > 38) {
-        const shortenedName  = filename.substr(0,25) + "..." + filename.substr(-10);
-        return shortenedName;
-    } else {
-        return filename;
-    }
+export function truncateDateTimeStamp(filename) {
+    const x = filename.lastIndexOf('_')
+    const y = filename.lastIndexOf('.')
+    return filename.substring(0,x) + filename.substring(y,filename.length);
 }
+
 /**
  * Returns the namespace for all global variables, functions, etc that we need.
  *

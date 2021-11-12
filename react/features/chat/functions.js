@@ -109,10 +109,20 @@ export function areSmileysDisabled(state: Object) {
     return disableChatSmileys;
 }
 
-export async function uploadFile(file, store) {
+export async function uploadFile(file, store, fileUploadInProgress) {
+    if (!file) {
+        return;
+    }
 
     const MAX_FILE_SIZE_FOR_UPLOAD = 314572800; // 300 MB = 300 X 1024 X 1024 bytes
     const NOTIFICATION_TIMEOUT = 3000;
+
+    // use the option fileUploadInProgress if we wish to allow only one file upload at a time
+    // and unless the file is completely uploaded, new files cannot be uploaded
+    if(fileUploadInProgress) {
+        alert(i18next.t('fileupload.fileuploadinprogress'));
+        return;
+    }
 
     if(file.size > MAX_FILE_SIZE_FOR_UPLOAD) {
         alert(i18next.t('fileupload.maxfilesizeexceeded'));

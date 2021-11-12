@@ -1,17 +1,5 @@
-@import './picker-variables';
+@import './vmeeting-variables';
 @import './slide';
-
-@mixin reset-component {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  color: #B8C7E0;
-  font-size: $font-size-base;
-  font-variant: $font-variant-base;
-  line-height: $line-height-base;
-  list-style: none;
-  font-feature-settings: $font-feature-settings-base;
-}
 
 $input-affix-with-clear-btn-width: 38px;
 

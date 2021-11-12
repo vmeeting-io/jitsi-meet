@@ -41,23 +41,25 @@
 
     a {
         display: block;
-    }
 
-    a:link {
-        color: rgb(184, 184, 184);
-    }
-
-    a:visited {
-        color: white;
-    }
-
-    a:hover {
-        color: rgb(213, 213, 213);
-    }
-
-    a:active {
-        color: black;
-    }
+        &:link {
+            color: rgb(184, 184, 184);
+            text-decoration: none;
+        }
+    
+        &:visited {
+            color: white;
+        }
+    
+        &:hover {
+            color: rgb(213, 213, 213);
+            text-decoration: none;
+        }
+    
+        &:active {
+            color: black;
+        }
+    }    
 
     &::-webkit-scrollbar {
         background: #06a5df;
@@ -119,10 +121,11 @@
 }
 
 .chat-drop-wrapper {
-    display: 'flex';
-    position: 'relative';
+    display: flex;
+    position: absolute;
     flex-direction: column;
-    max-height: 90%;
+    top: 105px;
+    bottom: 0;
     flex: 1;
 }
 
@@ -308,6 +311,12 @@
     }
 }
 
+.file-upload-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .file-upload,
 .smiley-button {
     display: flex;
@@ -435,15 +444,16 @@
     .display-name {
         font-size: 12px;
         font-weight: 600;
-        margin-bottom: 5px;
+        margin: 0;
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
         display: flex;
         align-items: center;
+        color: rgba(255,255,255,.65);
 
         .message-menu-container {
-            margin-left: 16px;
+            margin-left: auto;
 
             button {
                 background: none;
@@ -527,7 +537,7 @@
     box-sizing: border-box;
     color: white;
     margin-top: 3px;
-    max-width: 90%;
+    max-width: calc(100% - 40px);
     position: relative;
 
     &.localuser {
@@ -536,38 +546,42 @@
     }
 
     .usermessage {
-        white-space: pre-wrap;
+        // white-space: pre-wrap;
         font-size: 14px;
         text-align: start;
 
         .userfiles {
             display: flex;
             flex-direction: row;
-            width: $sidebarWidth * 0.8;
-            margin-top: 5px;
-            margin-bottom: -15px;
-            margin-left: 0px;
+            min-width: 180px;
 
             .userfiles-icons {
                 flex: 1;
+                padding: 5px 5px 0 0;
             }
 
             .userfilesnamesize {
                 display: flex;
                 flex-direction: column;
                 flex: 3;
+                font-weight: normal;
 
                 .userfilesname {
-                    flex: 3;
                     font-size: small;
-                    margin-top: 10px;
-                    margin-right: 15px;
                     word-break: break-all;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    display: -webkit-box;
+                    width: 100%;
+                    color: white;
                 }
 
                 .userfilessize {
                     font-size: smaller;
-                    flex: 3;
+                    margin-top: 8px;
+                    color: rgba(255,255,255,.65);
                 }
             }
         }
@@ -702,6 +716,7 @@
 .chat-message-group {
     display: block;
     flex-direction: column;
+    margin-top: 6px;
 
     &.local {
         align-items: flex-end;
@@ -709,6 +724,7 @@
         .chatmessage {
             background-color: $chatLocalMessageBackgroundColor;
             border-radius: 6px 0px 6px 6px;
+            max-width: 70%;
 
             &.privatemessage {
                 background-color: $chatPrivateMessageBackgroundColor;
@@ -722,7 +738,7 @@
         .timestamp {
             text-align: right;
             margin-top: auto;
-            margin-right: 3px;
+            margin-right: 8px;
         }
 
         .chatmessage-wrapper {
@@ -731,14 +747,24 @@
     }
 
     &.remote {
-        flex-direction: row-reverse;
+        flex-direction: row;
         align-items: flex-start;
         text-align: left;
+        display: flex;
 
         .timestamp {
             text-align: left;
             margin-top: auto;
             margin-left: 3px;
+        }
+
+        .chat-avatar {
+            cursor: pointer;
+        }
+
+        .messages {
+            padding-left: 8px;
+            width: calc(100% - 40px);
         }
     }
 

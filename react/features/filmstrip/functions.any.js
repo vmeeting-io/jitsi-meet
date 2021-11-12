@@ -38,7 +38,6 @@ export function updateRemoteParticipants(store: Object, participantId: ?number) 
     const sharedVideos = fakeParticipants ? Array.from(fakeParticipants.keys()) : [];
     // const speakers = new Map(speakersList);
 
-    console.log('updateRemoteParticipants: before', remoteParticipants);
     for (const screenshare of screenShares.keys()) {
         remoteParticipants.delete(screenshare);
         // speakers.delete(screenshare);
@@ -60,7 +59,6 @@ export function updateRemoteParticipants(store: Object, participantId: ?number) 
         ...Array.from(remoteParticipants.keys())
     ];
 
-    console.log('updateRemoteParticipants: after', remoteParticipants);
     store.dispatch(setRemoteParticipants(reorderedParticipants));
 }
 

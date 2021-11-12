@@ -517,6 +517,7 @@
     "fileupload": {
         "title": "File Upload",
         "error": "There was an error in uploading file",
+        "fileuploadinprogress": "A file upload is currently in progress. Please try again after completing the current upload.",
         "maxfilesizeexceeded": "Uploaded file exceeds the maximum file size allowed."
     },
     "footer": {

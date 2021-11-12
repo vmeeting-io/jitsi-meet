@@ -136,7 +136,6 @@ MiddlewareRegistry.register(store => next => action => {
                     //Not logged in case.
                     store.dispatch(openLoginDialogDIDPopUp());
 
-                    console.log("vmchg: User not logged in: -> Redirect user to login page.")
                 }
             }
 

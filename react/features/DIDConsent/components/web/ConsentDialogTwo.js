@@ -1,20 +1,15 @@
 // @flow
 
 import React, { PureComponent } from 'react';
-import { FieldTextStateless as TextField } from '@atlaskit/field-text';
 import Button from '@atlaskit/button/standard-button';
 import ButtonGroup from '@atlaskit/button/button-group';
-import Modal, { ModalFooter } from '@atlaskit/modal-dialog';
 
-import { translate, translateToHTML } from '../../../base/i18n';
+import { checkPhoneNumber, savePhoneNumber, sendConsentDisagreeNotification } from './functions';
+
 import Dialog from '../../../base/dialog/components/web/Dialog';
 import { openConsentDialogThree, openConsentDialogOne } from '../../actions.any';
+import { translate, translateToHTML } from '../../../base/i18n';
 import * as validators from '../../../../utils/validator';
-import axios from 'axios';
-import { getAuthUrl } from "../../../../api/url";
-import tokenLocalStorage from '../../../../api/tokenLocalStorage';
-import { setJWT } from '../../../base/jwt';
-import { checkPhoneNumber, savePhoneNumber, sendConsentDisagreeNotification } from './functions';
 
 /**
  * The type of the React {@code Component} props of {@link WaitForOwnerDialog}.
@@ -25,11 +20,6 @@ type Props = {
      * The name of the conference room (without the domain part).
      */
     _room: string,
-
-    /**
-     * Redux store dispatch method.
-     */
-    dispatch: Dispatch<any>,
 
     /**
      * Invoked to obtain translated strings.
@@ -76,12 +66,16 @@ class ConsentDialogTwo extends PureComponent<Props> {
      */
     _onX() {
         this.setState({show: false});
-        sendConsentDisagreeNotification(APP.store.dispatch);this.setState({show: false});
+        sendConsentDisagreeNotification(APP.store.dispatch);
+        this.setState({show: false});
         // alert("TODO: DID Disagreed.. Will be handled on integration.")
     }
 
     _onPrev: () => void;
 
+    /**
+     * Moves to Previous Consent Dialog(Consent Form 1)
+     */
     _onPrev(){
         this.setState({show: false});
         APP.store.dispatch(openConsentDialogOne());
@@ -90,7 +84,7 @@ class ConsentDialogTwo extends PureComponent<Props> {
     _onNext: () => void;
 
     /**
-     * Called when the OK button is clicked.
+     * Called when the Next button is clicked.
      *
      * @private
      * @returns {void}
@@ -100,6 +94,11 @@ class ConsentDialogTwo extends PureComponent<Props> {
         APP.store.dispatch(openConsentDialogThree());
     }
 
+    /**
+     * Checks if phone number is present in vmeeting database
+     * and sets it into the state variable of this component.
+     * 
+     */
     async _checkIfPhoneExists(){
         try{
             const number = await checkPhoneNumber();
@@ -111,6 +110,10 @@ class ConsentDialogTwo extends PureComponent<Props> {
         }
     }
 
+    /**
+     * Save phone number entered in this component to vmeeting database.
+     * 
+     */
     async _savePhoneNumber(){
        const res = await savePhoneNumber(this.state.phoneNumber)
     }
@@ -129,6 +132,12 @@ class ConsentDialogTwo extends PureComponent<Props> {
         }
     }
 
+    /**
+     * Truncates name with length greater than 20.
+     * 
+     * @param {String} name 
+     * @returns Truncated name with suffix "..."
+     */
     _getShortName(name){
         if (name.length>20){
             return name.substring(0,16)+"...";

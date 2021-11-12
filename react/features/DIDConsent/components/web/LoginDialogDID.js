@@ -1,15 +1,10 @@
 // @flow
 
-import axios from 'axios';
 import React, { PureComponent } from 'react';
 
 import { translate, translateToHTML } from '../../../base/i18n';
 import Dialog from '../../../base/dialog/components/web/Dialog';
-import { closeConsentDialogOne, openConsentDialogTwo } from '../../actions.any';
 import { sendConsentDisagreeNotification, sendConsentAgreeNotification } from './functions';
-import { denyDID } from '../../../base/participants';
-import { getAuthUrl } from '../../../../api/url';
-import tokenLocalStorage from '../../../../api/tokenLocalStorage';
 
 const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
 
@@ -40,9 +35,6 @@ type Props = {
  * @returns {React$Element<any>}
  */
 class LoginDialogDID extends PureComponent<Props> {
-    
-    
-    
     /**
      * Instantiates a new component.
      *
@@ -114,7 +106,7 @@ class LoginDialogDID extends PureComponent<Props> {
                 >
                 <div className="consent-message-login">
                     <span>
-                        {t('dialog.consent.dialogLoginMessage')}
+                        {translateToHTML(t, t('dialog.consent.dialogLoginMessage'))}
                     </span>
                 </div>
             </Dialog>

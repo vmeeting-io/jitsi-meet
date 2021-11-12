@@ -145,7 +145,7 @@ class StatelessDialog extends Component<Props> {
             customHeader,
             children,
             className,
-            consentDialog,
+            consentDialog,//Flag set to true, only for did consent Dialog.  
             hideCloseIconButton,
             onX,
             t /* The following fixes a flow error: */ = _.identity,

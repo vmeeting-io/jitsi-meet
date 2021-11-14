@@ -71,6 +71,10 @@ import {
     isLocalParticipantModerator
 } from './functions';
 import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
+import { askForConsent, isDIDDenied, PIC_CONSENT } from '.';
+import { openConsentDialogOne, openConsentDialogTwo, openLoginDialogDIDPopUp } from '../../DIDConsent/actions.any';
+import { openLoginDialog } from '../../authentication/actions.any';
+import { checkDIDConsent, checkPhoneNumber } from '../../DIDConsent/components/web/functions';
 
 declare var APP: Object;
 
@@ -104,7 +108,38 @@ MiddlewareRegistry.register(store => next => action => {
             const { id, pinned } = participant;
             const { isHost } = state['features/base/conference'].roomInfo || {};
             const { autoPinEnabled, autoRecord } = state['features/base/config'];
+            if (config.enableDIDConsent){
+                if (participant.email !== undefined){
+                    //Logged in case.
+                    isDIDDenied().then(denied => {// Check if DID has been denied.
+                        if(denied == false){
+                            let checkConsent = true;
+                            checkPhoneNumber().then(cellPhoneNumber=>{
+                                if (cellPhoneNumber===false){// If there is not cell phone number in the database, show popup.
+                                    checkConsent = false
+                                    store.dispatch(openConsentDialogOne()); 
+                                }
+                            })
 
+                            checkConsent ? checkDIDConsent().then(resp=>{
+                                if(resp.data.consent !== PIC_CONSENT.APPROVED){ // If consent has not been approved, show popup
+                                    store.dispatch(openConsentDialogOne());
+                                }
+                            }):false;
+
+                        }
+
+                    }) 
+
+
+                }else{
+                    //Not logged in case.
+                    store.dispatch(openLoginDialogDIDPopUp());
+
+                }
+            }
+
+            
             // 내가 방장이면 자동 PIN이 되도록...
             if (isHost && !pinned && autoPinEnabled) {
                 store.dispatch(pinParticipant(id));

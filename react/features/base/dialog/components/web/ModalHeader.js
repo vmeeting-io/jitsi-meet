@@ -90,9 +90,11 @@ class ModalHeader extends React.Component<Props> {
         const {
             id,
             appearance,
+            consentDialog,
             heading,
             hideCloseIconButton,
             onClose,
+            onX,
             showKeyline,
             isHeadingMultiline,
             testId,
@@ -102,7 +104,6 @@ class ModalHeader extends React.Component<Props> {
         if (!heading) {
             return null;
         }
-
         return (
             <Header showKeyline = { showKeyline }>
                 <Title>
@@ -110,6 +111,7 @@ class ModalHeader extends React.Component<Props> {
                     <TitleText
                         data-testid = { testId && `${testId}-heading` }
                         id = { id }
+                        className={consentDialog?"consent-header-class":""}
                         isHeadingMultiline = { isHeadingMultiline }>
                         {heading}
                     </TitleText>
@@ -118,7 +120,7 @@ class ModalHeader extends React.Component<Props> {
                 {
                     !hideCloseIconButton && <Icon
                         ariaLabel = { t('dialog.close') }
-                        onClick = { onClose }
+                        onClick = { consentDialog ? onX : onClose }
                         onKeyPress = { this._onKeyPress }
                         role = 'button'
                         src = { IconClose }

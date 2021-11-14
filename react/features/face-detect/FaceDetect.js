@@ -1,6 +1,5 @@
 import '@tensorflow/tfjs-backend-webgl';
 import * as tf from '@tensorflow/tfjs-core';
-import { isEqual } from 'lodash';
 
 import {
     CLEAR_TIMEOUT,
@@ -8,7 +7,6 @@ import {
     SET_TIMEOUT,
     timerWorkerScript
 } from './TimerWorker';
-import { getReferenceData, inferenceFrame } from './utils/utils';
 
 /**
  * Represents a modified MediaStream that detect effects from video.
@@ -19,36 +17,20 @@ export default class FaceDetect {
     /**
      * Represents a modified video MediaStream track.
      */
-    constructor(model, landmarkModel, patience = 10) {
-        this._model = model;
-        this._landmarkModel = landmarkModel;
-
+    constructor(patience = 100, showResult = false) {
         // Bind event handler so it is only bound once for every instance.
+        this._frameInterval = 1000 / 30;
+        this._initialized = false;
+        this._isWaiting = false;
+        this._showResult = showResult;
+
+        this._inputVideo = document.getElementById('localVideo_container');
+        this._worker = new Worker(new URL('./worker.js', import.meta.url));
+
         this._onFrameTimer = this._onFrameTimer.bind(this);
-
-        this._inputVideoElement = document.getElementById('localVideo_container');
-        this._canvas = document.createElement('canvas');
-        document.body.appendChild(this._canvas);
-        this._canvas.className = 'face-detect-canvas';
-        this._canvas.width = innerWidth;
-        this._canvas.height = innerHeight;
-        this._ctx = this._canvas.getContext('2d');
-        // this._inputVideoElement = document.createElement('video');
-        // document.body.appendChild(this._inputVideoElement);
-        // const source = document.createElement('source');
-        // source.src = 'room/libs/sample_data.mp4';
-        // source.type = 'video/mp4';
-        // this._inputVideoElement.appendChild(source);
-        // this._inputVideoElement.autoplay = true;
-        // this._inputVideoElement.controls = true;
-        // this._inputVideoElement.id = 'sample';
-        // this._inputVideoElement.play();
-
-        this._nFrame = 1;
-        this._patience = patience;
-        this._refData = [];
-        this._prevBox = [0, 0, 0, 0];
-        this._isSleep = [];
+        this._onMessage = this._onMessage.bind(this);
+        this._worker.onmessage = this._onMessage;
+        this._worker.postMessage({ command: 'initialize', data: { patience } });
     }
 
     /**
@@ -71,47 +53,124 @@ export default class FaceDetect {
      * @returns {void}
      */
     async runInference() {
-        // Get face detect output
-        const frame = tf.browser.fromPixels(this._inputVideoElement);
-        if (!frame || !frame.shape[0] || !frame.shape[1]) {
-            console.error('ERROR: runInference is failed');
+        if (!this._initialized) {
+            console.log('worker is not initialized.');
             return;
         }
 
-        if (this._nFrame <= this._patience) {
-            const [data, ret, box] = await getReferenceData(this._model, this._landmarkModel, frame);
-            console.log('getReferenceData:', data, ret, box);
+        if (this._isWaiting) {
+            return;
+        }
 
-            if (ret && !isEqual(box, this._prevBox)) {
-                this._refData.push(data);
-                this._nFrame += 1;
+        if (this._showResult && !this._ctx) {
+            const largeVideo = document.getElementById('largeVideo');
+            const rc = largeVideo.getClientRects()[0];
+            console.log('video: clientRect', rc);
+            
+            this._rc = rc;
+            this._width = rc.width;
+            this._height = rc.height;
+            this._canvas = document.createElement('canvas');
+            document.body.appendChild(this._canvas);
+            this._canvas.className = 'face-detect-canvas';
+            this._canvas.width = largeVideo.videoWidth;
+            this._canvas.height = largeVideo.videoHeight;
+            this._canvas.style.left = this._rc.x;
+            this._canvas.style.top = this._rc.y;
+            this._canvas.style.width = `${this._width}px`;
+            this._canvas.style.height = `${this._height}px`;
+            this._ctx = this._canvas.getContext('2d');
+        }
+        
+        this._inputVideo = document.getElementById('localVideo_container');
+        if (!this._videoCanvas) {
+            this._videoCanvas = document.createElement('canvas');
+            this._videoCanvas.width = this._inputVideo.videoWidth;
+            this._videoCanvas.height = this._inputVideo.videoHeight;
+            this._videoContext = this._videoCanvas.getContext('2d');
+        }
+
+        // Get face detect output
+        // console.time('inferenceImage');
+        this._videoContext.drawImage(this._inputVideo, 0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
+        const frame = this._videoContext.getImageData(0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
+        this._worker.postMessage({ command: 'frame', data: frame });
+        this._isWaiting = true;
+        // console.timeEnd('inferenceImage');
+    }
+
+    _onMessage(event) {
+        const result = event.data;
+
+        if (!result.done) {
+            console.error('onMessage is failed!', result);
+            return;
+        }
+
+        if (!this._initialized) {
+            if (result.data === 'initialized') {
+                this._initialized = true;
+                console.log('worker is initialized!');
+                return;
             }
-            this._prevBox = box;
-        } else {
-            let [status, eyeClose, box, landmarks] = await inferenceFrame(this._model, this._landmarkModel, frame, this._refData);
-            console.log('inferenceFrame:', status, eyeClose, box, landmarks, frame.shape);
+            console.error('worker is not initialized.');
+            return;
+        };
 
-            if (this._isSleep.length <= this._patience / 10) {
-                this._isSleep.push(eyeClose * 1.0);
-            } else {
-                this._isSleep.pop();
-                this._isSleep.push(eyeClose * 1.0);
-                if (tf.mean(this._isSleep).arraySync() > 0.5) {
-                    status = 1;
-                }
-            }
+        if (!result.data) {
+            this._isWaiting = !this._isWaiting;
+            return;
+        }
 
-            const a = Math.min(innerWidth/1280, innerHeight/720);
-            let dx = 0;
-            let dy = (innerHeight - 720*a) / 2;
+        const { status, eyeClose, box, landmarks } = result.data;
+        console.log(`status=${status}, eyeClose=${eyeClose}`);
+        this._frameInterval = 1000;
 
-            this._ctx.clearRect(0, 0, innerWidth, innerHeight);
+        if (this._showResult) {
+            this._ctx.clearRect(0, 0, 1280, 720);
             this._ctx.beginPath();
             this._ctx.lineWidth = 2;
-            this._ctx.strokeStyle = '#ffffff';
-            this._ctx.rect(dx + box[0] * a, dy + box[1] * a, (box[2] - box[0])*a, (box[3] - box[1])*a);
+            this._ctx.strokeStyle = '#ff0000';
+            this._ctx.rect(box[0], box[1], box[2] - box[0], box[3] - box[1]);
             this._ctx.stroke();
+            this._ctx.font = `normal 18px 맑은 고딕`;
+            this._ctx.fillStyle = '#00ff00';
+            this._ctx.mlFillText(`${status}`, box[0] + 5, box[1] + 5, 100, 50, 'top', 'left', 20);
+      
+            if (landmarks.length) {
+                // landmark5
+                for (let i = 0; i < landmarks[0].length; i++) {
+                    const [x, y] = landmarks[0][i];
+                    this._ctx.beginPath();
+                    this._ctx.strokeStyle = '#00ff00';
+                    this._ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                    this._ctx.fill();
+                }
+      
+                // face_landmarks
+                let marks = landmarks[1]['left_eye'];
+                for (let i = 0; i < marks.length; i++) {
+                    const [x, y] = marks[i];
+                    const scaled_x = (box[2] - box[0]) / 112 * x;
+                    const scaled_y = (box[3] - box[1]) / 112 * y;
+                    this._ctx.beginPath();
+                    this._ctx.strokeStyle = '#00ff00';
+                    this._ctx.arc(scaled_x + box[0], scaled_y + box[1], 2, 0, 2 * Math.PI);
+                    this._ctx.fill();
+                }
+                marks = landmarks[1]['right_eye'];
+                for (let i = 0; i < marks.length; i++) {
+                    const [x, y] = marks[i];
+                    const scaled_x = (box[2] - box[0]) / 112 * x;
+                    const scaled_y = (box[3] - box[1]) / 112 * y;
+                    this._ctx.beginPath();
+                    this._ctx.strokeStyle = '#00ff00';
+                    this._ctx.arc(scaled_x + box[0], scaled_y + box[1], 2, 0, 2 * Math.PI);
+                    this._ctx.fill();
+                }
+            }
         }
+        this._isWaiting = !this._isWaiting;
     }
 
     /**
@@ -125,19 +184,8 @@ export default class FaceDetect {
 
         this._frameTimerWorker.postMessage({
             id: SET_TIMEOUT,
-            timeMs: 1000
+            timeMs: this._frameInterval
         });
-    }
-
-    /**
-     * Checks if the local track supports this effect.
-     *
-     * @param {JitsiLocalTrack} jitsiLocalTrack - Track to apply effect.
-     * @returns {boolean} - Returns true if this effect can run on the specified track
-     * false otherwise.
-     */
-    isEnabled(jitsiLocalTrack: Object) {
-        return jitsiLocalTrack.isVideoTrack() && jitsiLocalTrack.videoType === 'camera';
     }
 
     /**
@@ -149,10 +197,13 @@ export default class FaceDetect {
     startEffect() {
         this._frameTimerWorker = new Worker(timerWorkerScript, { name: 'face effect worker' });
         this._frameTimerWorker.onmessage = this._onFrameTimer;
-        this._frameTimerWorker.postMessage({
-            id: SET_TIMEOUT,
-            timeMs: 1000 / 30
-        });
+
+        this._inputVideo.onloadeddata = () => {
+            this._frameTimerWorker.postMessage({
+                id: SET_TIMEOUT,
+                timeMs: this._frameInterval
+            });
+        };
     }
 
     /**

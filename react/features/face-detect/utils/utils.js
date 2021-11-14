@@ -11,14 +11,13 @@ export function normalize_cropped_img(input){
     var std = [0.229, 0.224, 0.225];
 
     var fInput = input.div(tf.scalar(255.0));
-    var [c0, c1, c2] = tf.split(fInput, 3, 2);
+    var c = tf.split(fInput, 3, 2);
     
-    c0 = c0.sub(tf.scalar(mean[0])).div(tf.scalar(std[0]));
-    c1 = c1.sub(tf.scalar(mean[1])).div(tf.scalar(std[1]));
-    c2 = c2.sub(tf.scalar(mean[2])).div(tf.scalar(std[2]));
+    for (let i = 0; i < 1; i++) {
+        c[i] = c[i].sub(tf.scalar(mean[i])).div(tf.scalar(std[i]));
+    }
 
-    var converted = tf.concat([c0, c1, c2], 2);
-
+    var converted = tf.concat(c, 2);
     return converted.asType('float32');
 }
 
@@ -404,7 +403,8 @@ export async function inferenceFrame(model, landmarkModel, frame, refData) {
         const max = Math.max(...areas);
         const maxIndex = areas.indexOf(max);
 
-        if (max <= frame.shape[0] * frame.shape[1] * 0.05) {
+        // console.log('face max area:', max, maxIndex);
+        if (max <= frame.shape[0] * frame.shape[1] * 0.01) {
             status = 2;
         } else {
             box = tf.round(tf.gather(faces, [maxIndex]).squeeze()).asType('int32');
@@ -416,7 +416,7 @@ export async function inferenceFrame(model, landmarkModel, frame, refData) {
             // console.log('pred_landmarks:', landmark5, face_landmarks);
 
             const meanEyeArea = tf.mean(map(refData, 'eyes_area')).arraySync();
-            console.log('MEA:', meanEyeArea);
+            // console.log('MEA:', meanEyeArea);
 
             eyeClose = false;
             if (meanEyeArea >= 200) {
@@ -445,26 +445,6 @@ export async function inferenceFrame(model, landmarkModel, frame, refData) {
 // Output: Float Tensor (img with range (0-255))
 export function bl_interpolate(img, target_height, target_width){
     const resized_img = tf.image.resizeBilinear(img, [target_height, target_width], true);
-    // const [H, W, C] = img.shape;
-    // const aH = Math.round(ay * H);
-    // const aW = Math.round(ax * W);
-    // // get position of resized image
-    // let y = tf.tile(tf.range(0, aH).expandDims(-1), [1, 320]);
-    // let x = tf.tile(tf.range(0, aW), [aH]).reshape([aH, aW]);
-
-    // y = y.div(tf.scalar(ay));
-    // x = x.div(tf.scalar(ax));
-    // let ix = tf.floor(x).asType('int32');
-    // let iy = tf.floor(y).asType('int32');
-    // ix = tf.minimum(ix, tf.scalar(W - 2));
-    // iy = tf.minimum(iy, tf.scalar(H - 2));
-
-    // let dx = x.sub(ix);
-    // let dy = y.sub(iy);
-    // dx = tf.tile(dx.expandDims(-1), [1,1,3]);
-    // dy = tf.tile(dy.expandDims(-1), [1,1,3]);
-
-
     return resized_img;
 }
 

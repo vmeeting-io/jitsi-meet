@@ -7,11 +7,6 @@ import { START_FACE_DETECT, STOP_FACE_DETECT } from './actionTypes';
 import { grantFaceDetect } from './functions';
 import FaceDetect from './FaceDetect';
 
-const models = {
-    model_face_detect: '/libs/retinaface.json',
-    model_landmark_detect: '/libs/pfld.json'
-};
-
 let faceDetector;
 
 export function startFaceDetect() {
@@ -33,10 +28,7 @@ export function startFaceDetect() {
             }
         
             try {
-                const faceDetectModel = await tf.loadGraphModel(models.model_face_detect);
-                const landmarkDetectModel = await tf.loadGraphModel(models.model_landmark_detect);
-            
-                faceDetector = new FaceDetect(faceDetectModel, landmarkDetectModel);
+                faceDetector = new FaceDetect();
                 faceDetector.startEffect();
 
                 dispatch({

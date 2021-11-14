@@ -796,6 +796,7 @@
             "waitingLobby": "Waiting in lobby ({{count}})"
         },
         "actions": {
+            "aiAttentionAnalysis": "Learner's Attention",
             "allow": "Allow attendees to:",
             "applyBirthdayARHat": "Birthday Hat ON",
             "removeBirthdayARHat": "Birthday Hat OFF",
@@ -976,6 +977,7 @@
         "toggleLabel": "Public Conference"
     },
     "settings": {
+        "aiAttention": "Attention Analysis Usage",
         "background": "Background",
         "calendar": {
             "about": "The {{appName}} calendar integration is used to securely access your calendar so it can read upcoming events.",
@@ -1013,7 +1015,9 @@
         "startVideoMuted": "Everyone starts hidden",
         "disableDeviceAccess": "Disable user's device access",
         "talkWhileMuted": "Talk while muted",
-        "title": "Settings"
+        "title": "Settings",
+        "turnOffAIAttentionAnalysis": "Do Not Use",
+        "turnOnAIAttentionAnalysis": "Use"
     },
     "settingsView": {
         "advanced": "Advanced",

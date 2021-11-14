@@ -7,7 +7,7 @@ import tokenLocalStorage from '../../api/tokenLocalStorage';
 import { setFollowMe, setStartMutedPolicy, setUserDeviceAccessDisabled } from '../base/conference';
 import { hideDialog, openDialog } from '../base/dialog';
 import { i18next } from '../base/i18n';
-import { updateSettings } from '../base/settings';
+import { setAIAttentionSettings, updateSettings } from '../base/settings';
 import { setPrejoinPageVisibility } from '../prejoin/actions';
 import { PREJOIN_SCREEN_STATES } from '../prejoin/constants';
 import { setScreenshareFramerate } from '../screen-share/actions';
@@ -117,6 +117,14 @@ export function submitMoreTab(newState: Object): Function {
             const frameRate = parseInt(newState.currentFramerate, 10);
 
             dispatch(setScreenshareFramerate(frameRate));
+        }
+
+        if (newState.aiAttentionFlag !== currentState.aiAttentionFlag) {
+            if(newState.aiAttentionFlag) { // a string variable with value true is being stored when toggling menu
+                dispatch(setAIAttentionSettings(true));
+            } else if (newState.aiAttentionFlag === false) {
+                dispatch(setAIAttentionSettings(false));
+            }
         }
     };
 }

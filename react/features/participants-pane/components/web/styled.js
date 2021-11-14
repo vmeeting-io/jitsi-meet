@@ -256,6 +256,7 @@ export const ParticipantContent = styled.div`
   height: 100%;
   overflow: hidden;
   padding-right: ${props => props.theme.panePadding}px;
+  padding-left: ${props => props.theme.panePadding}px;
 `;
 
 export const ParticipantStates = styled.div`

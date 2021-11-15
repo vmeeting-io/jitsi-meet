@@ -1,6 +1,7 @@
-import '@tensorflow/tfjs-backend-webgl';
-import * as tf from '@tensorflow/tfjs-core';
-
+import axios from 'axios';
+import { getAuthUrl } from '../../api/url';
+import { isLocalParticipantModerator } from '../base/participants';
+import { refreshAttentionStatuses } from './actions';
 import {
     CLEAR_TIMEOUT,
     TIMEOUT_TICK,
@@ -17,12 +18,22 @@ export default class FaceDetect {
     /**
      * Represents a modified video MediaStream track.
      */
-    constructor(patience = 100, showResult = false) {
+    constructor(dispatch, getState) {
+        const {
+            referenceInterval = (1000 / 10),
+            patience = 100,
+            showResult = false
+        } = config.testing.faceDetect || {};
+        const { aiAttentionAnalysisEnabled } = getState()['features/base/settings'];
+
         // Bind event handler so it is only bound once for every instance.
-        this._frameInterval = 1000 / 30;
+        this._dispatch = dispatch;
+        this._getState = getState;
+        this._frameInterval = referenceInterval;
         this._initialized = false;
         this._isWaiting = false;
         this._showResult = showResult;
+        this._enabled = !Boolean(aiAttentionAnalysisEnabled);
 
         this._inputVideo = document.getElementById('localVideo_container');
         this._worker = new Worker(new URL('./worker.js', import.meta.url));
@@ -53,8 +64,16 @@ export default class FaceDetect {
      * @returns {void}
      */
     async runInference() {
+        const state = this._getState();
+        const { conference } = state['features/base/conference'];
+
+        // check conference is started
+        if (!conference?.room?.meetingId) {
+            return;
+        }
+
         if (!this._initialized) {
-            console.log('worker is not initialized.');
+            console.log('face-detect worker is not initialized.');
             return;
         }
 
@@ -62,19 +81,21 @@ export default class FaceDetect {
             return;
         }
 
-        if (this._showResult && !this._ctx) {
+        if (this._showResult) {
             const largeVideo = document.getElementById('largeVideo');
             const rc = largeVideo.getClientRects()[0];
-            console.log('video: clientRect', rc);
+            // console.log('video: clientRect', rc);
             
             this._rc = rc;
             this._width = rc.width;
             this._height = rc.height;
-            this._canvas = document.createElement('canvas');
-            document.body.appendChild(this._canvas);
-            this._canvas.className = 'face-detect-canvas';
-            this._canvas.width = largeVideo.videoWidth;
-            this._canvas.height = largeVideo.videoHeight;
+            if (!this._canvas) {
+                this._canvas = document.createElement('canvas');
+                document.body.appendChild(this._canvas);
+                this._canvas.className = 'face-detect-canvas';
+                this._canvas.width = largeVideo.videoWidth;
+                this._canvas.height = largeVideo.videoHeight;
+            }
             this._canvas.style.left = this._rc.x;
             this._canvas.style.top = this._rc.y;
             this._canvas.style.width = `${this._width}px`;
@@ -90,17 +111,20 @@ export default class FaceDetect {
             this._videoContext = this._videoCanvas.getContext('2d');
         }
 
-        // Get face detect output
-        // console.time('inferenceImage');
-        this._videoContext.drawImage(this._inputVideo, 0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
-        const frame = this._videoContext.getImageData(0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
-        this._worker.postMessage({ command: 'frame', data: frame });
-        this._isWaiting = true;
-        // console.timeEnd('inferenceImage');
+        if (this._enabled) {
+            // Get face detect output
+            // console.time('inferenceImage');
+            this._videoContext.drawImage(this._inputVideo, 0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
+            const frame = this._videoContext.getImageData(0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
+            this._worker.postMessage({ command: 'frame', data: frame });
+            this._isWaiting = true;
+            // console.timeEnd('inferenceImage');
+        }
     }
 
     _onMessage(event) {
         const result = event.data;
+        const state = this._getState();
 
         if (!result.done) {
             console.error('onMessage is failed!', result);
@@ -110,24 +134,28 @@ export default class FaceDetect {
         if (!this._initialized) {
             if (result.data === 'initialized') {
                 this._initialized = true;
-                console.log('worker is initialized!');
+                console.log('face-detect worker is initialized!');
                 return;
             }
-            console.error('worker is not initialized.');
+            console.error('face-detect worker is not initialized.');
             return;
         };
 
+        this._isWaiting = !this._isWaiting;
+
         if (!result.data) {
-            this._isWaiting = !this._isWaiting;
             return;
         }
 
         const { status, eyeClose, box, landmarks } = result.data;
-        console.log(`status=${status}, eyeClose=${eyeClose}`);
-        this._frameInterval = 1000;
+        // console.log(`status=${status}, eyeClose=${eyeClose}`);
+
+        this._frameInterval = config.testing.faceDetect?.frameInterval || 1000;
 
         if (this._showResult) {
             this._ctx.clearRect(0, 0, 1280, 720);
+            if (!this._enabled) return;
+
             this._ctx.beginPath();
             this._ctx.lineWidth = 2;
             this._ctx.strokeStyle = '#ff0000';
@@ -170,7 +198,23 @@ export default class FaceDetect {
                 }
             }
         }
-        this._isWaiting = !this._isWaiting;
+
+        const apiBase = getAuthUrl(state);
+        const { conference } = state['features/base/conference'];
+        const { id } = state['features/base/participants'].local;
+
+        if (conference?.room?.meetingId && id !== 'local') {
+            axios.post(`${apiBase}/attentions/`, {
+                conference: conference.room.meetingId,
+                nick: id,
+                status
+            }).then(() => {
+                const isModerator = isLocalParticipantModerator(state);
+                if (isModerator) {
+                    this._dispatch(refreshAttentionStatuses());
+                }
+            });
+        }
     }
 
     /**
@@ -181,6 +225,10 @@ export default class FaceDetect {
      */
     _loop() {
         this.runInference();
+
+        const state = this._getState();
+        const { aiAttentionAnalysisEnabled } = state['features/base/settings'];
+        this._enabled = Boolean(aiAttentionAnalysisEnabled);
 
         this._frameTimerWorker.postMessage({
             id: SET_TIMEOUT,

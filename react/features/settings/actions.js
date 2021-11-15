@@ -120,11 +120,7 @@ export function submitMoreTab(newState: Object): Function {
         }
 
         if (newState.aiAttentionFlag !== currentState.aiAttentionFlag) {
-            if(newState.aiAttentionFlag) { // a string variable with value true is being stored when toggling menu
-                dispatch(setAIAttentionSettings(true));
-            } else if (newState.aiAttentionFlag === false) {
-                dispatch(setAIAttentionSettings(false));
-            }
+            dispatch(setAIAttentionSettings(newState.aiAttentionFlag));
         }
     };
 }

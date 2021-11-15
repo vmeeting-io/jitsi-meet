@@ -1,11 +1,10 @@
-import '@tensorflow/tfjs-backend-webgl';
-import * as tf from '@tensorflow/tfjs';
-
+import axios from 'axios';
 import { MEDIA_TYPE } from '../base/media';
 import { getLocalTrack } from '../base/tracks';
-import { START_FACE_DETECT, STOP_FACE_DETECT } from './actionTypes';
+import { UPDATE_ATTENTION_STATUSES, START_FACE_DETECT, STOP_FACE_DETECT } from './actionTypes';
 import { grantFaceDetect } from './functions';
 import FaceDetect from './FaceDetect';
+import { getAuthUrl } from '../../api/url';
 
 let faceDetector;
 
@@ -14,10 +13,11 @@ export function startFaceDetect() {
         const state = getState();
         const localTrack = getLocalTrack(state['features/base/tracks'], MEDIA_TYPE.VIDEO);
         const { started } = state['features/face-detect'];
+
         const test = !started
-        && localTrack
-        && localTrack.isVideoTrack()
-        && localTrack.videoType !== 'desktop';
+            && localTrack
+            && localTrack.isVideoTrack()
+            && localTrack.videoType !== 'desktop';
 
         console.log('==> startFaceDetect:', test);
         if (true
@@ -28,7 +28,7 @@ export function startFaceDetect() {
             }
         
             try {
-                faceDetector = new FaceDetect();
+                faceDetector = new FaceDetect(dispatch, getState);
                 faceDetector.startEffect();
 
                 dispatch({
@@ -51,5 +51,24 @@ export function stopFaceDetect() {
     return {
         type: STOP_FACE_DETECT,
         started: false
+    };
+}
+
+export function refreshAttentionStatuses() {
+    return function(dispatch, getState) {
+        try {
+            const state = getState()
+            const apiBase = getAuthUrl(state);
+            const { meetingId } = state['features/base/conference'].conference.room;
+    
+            axios.get(`${apiBase}/attentions/${meetingId}/latest`).then(resp => {
+                dispatch({
+                    type: UPDATE_ATTENTION_STATUSES,
+                    statuses: resp.data,
+                });
+            });
+        } catch (err) {
+            console.error('updateAttentionStatuses is failed.', err);
+        }
     };
 }

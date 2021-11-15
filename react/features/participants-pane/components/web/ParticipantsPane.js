@@ -248,8 +248,9 @@ class ParticipantsPane extends Component<Props, State> {
     _onAIAttentionAnalysis: () => void;
 
     _onAIAttentionAnalysis() {
+        const { _meetingId } = this.props;
         window.open(
-            `${AUTH_PAGE_BASE}/learnersattention`,
+            `${AUTH_PAGE_BASE}/learnersattention?meetingId=${_meetingId}`,
             '_blank'
         );
     }
@@ -316,6 +317,7 @@ function _mapStateToProps(state: Object) {
     return {
         _aiAttentionAnalysisEnabled: Boolean(aiAttentionAnalysisEnabled),
         _isBreakoutRoomsSupported,
+        _meetingId: conference?.room?.meetingId,
         _showAddRoomButton: _isBreakoutRoomsSupported && !hideAddRoomButton && _isLocalParticipantModerator,
         _overflowDrawer: showOverflowDrawer(state),
         _paneOpen: isPaneOpen,

@@ -11,33 +11,22 @@ let faceDetector;
 export function startFaceDetect() {
     return async function(dispatch, getState) {
         const state = getState();
-        const localTrack = getLocalTrack(state['features/base/tracks'], MEDIA_TYPE.VIDEO);
-        const { started } = state['features/face-detect'];
+        const granted = await grantFaceDetect(state);
 
-        const test = !started
-            && localTrack
-            && localTrack.isVideoTrack()
-            && localTrack.videoType !== 'desktop';
+        if (!MediaStreamTrack.prototype.getSettings && !MediaStreamTrack.prototype.getConstraints) {
+            throw new Error('FaceDetect not supported!');
+        }
+    
+        try {
+            faceDetector = new FaceDetect(dispatch, getState);
+            faceDetector.startEffect(true /* granted */);
 
-        console.log('==> startFaceDetect:', test);
-        if (true
-            // && await grantFaceDetect(state)
-        ) {
-            if (!MediaStreamTrack.prototype.getSettings && !MediaStreamTrack.prototype.getConstraints) {
-                throw new Error('FaceDetect not supported!');
-            }
-        
-            try {
-                faceDetector = new FaceDetect(dispatch, getState);
-                faceDetector.startEffect();
-
-                dispatch({
-                    type: START_FACE_DETECT,
-                    started: true
-                });
-            } catch (err) {
-                console.error('createFaceDetect is failed.', err);
-            }
+            dispatch({
+                type: START_FACE_DETECT,
+                started: true
+            });
+        } catch (err) {
+            console.error('createFaceDetect is failed.', err);
         }
     };
 }

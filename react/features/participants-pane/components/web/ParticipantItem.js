@@ -1,9 +1,12 @@
 // @flow
 
 import React, { type Node, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 
 import { Avatar } from '../../../base/avatar';
+import { Icon, IconPinned } from '../../../base/icons';
 import { translate } from '../../../base/i18n';
+import { isLocalParticipantModerator } from '../../../base/participants/functions';
 import {
     ACTION_TRIGGER,
     AudioStateIcons,
@@ -26,8 +29,8 @@ import {
     ParticipantNameContainer,
     ParticipantStates
 } from './styled';
+import { pinParticipant } from '../../../base/participants';
 
-import { isLocalParticipantModerator } from '../../../base/participants/functions';
 
 /**
  * Participant actions component mapping depending on trigger type.
@@ -131,6 +134,7 @@ function ParticipantItem({
     attentionStatus,
     isVideoMuted,
     isParticipantBirthday,
+    isPinned,
     children,
     isHighlighted,
     isModerator,
@@ -147,24 +151,22 @@ function ParticipantItem({
     t,
     youText
 }: Props) {
+    const dispatch = useDispatch();
     const ParticipantActions = Actions[actionsTrigger];
-    const onClick = useCallback(
-        () => openDrawerForParticipant({
-            participantID,
-            displayName
-        }));
+    const onClick = useCallback(() => {
+        dispatch(pinParticipant(isPinned ? null : participantID));
+    }, [isPinned, participantID]);
     
     // Dummy array that randomly assigns concentrated, lapsed or absent, must be replaced with the data from the model
     const attentionArr = ['concentrated', 'lapsed', 'absent'];
-    let attentionClass = '';
+    let attentionClass = 'participant-avatar-container ';
     const localIsAModerator = isLocalParticipantModerator(APP.store.getState());
 
     if (aiAttentionFlag
-        && !isVideoMuted
         && localIsAModerator
         && attentionStatus >= 0
     ) {
-        attentionClass = attentionArr[attentionStatus];
+        attentionClass += attentionArr[isVideoMuted ? 2 : attentionStatus];
     }
 
     return (
@@ -172,7 +174,7 @@ function ParticipantItem({
             id = { `participant-item-${participantID}` }
             isHighlighted = { isHighlighted }
             $local = { local }
-            onClick = { !local && overflowDrawer ? onClick : undefined }
+            onClick = { onClick }
             onMouseLeave = { onLeave }
             trigger = { actionsTrigger }>
             
@@ -182,6 +184,12 @@ function ParticipantItem({
                     className = 'participant-avatar'
                     participantId = { participantID }
                     size = { 32 } />
+                { isPinned && (
+                    <Icon
+                        className = 'pin-icon'
+                        size = { 12 }
+                        src = { IconPinned } />
+                )}
             </div>
             <ParticipantContent>
                 <ParticipantDetailsContainer>

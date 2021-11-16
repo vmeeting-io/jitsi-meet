@@ -40,6 +40,20 @@
     opacity: 50%;
 }
 
+.participant-avatar-container {
+    position: relative;
+
+    .pin-icon {
+        position: absolute;
+        right: -6px;
+        top: -6px;
+        transform: rotate(45deg);
+        padding: 5px;
+        background: rgba(0,0,0,0.8);
+        border-radius: 50%;
+    }
+}
+
 .participant-avatar {
     margin: 4px 4px 4px 4px;
 }

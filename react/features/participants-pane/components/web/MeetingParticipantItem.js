@@ -9,6 +9,7 @@ import {
     getLocalParticipant,
     getParticipantByIdOrUndefined,
     getParticipantDisplayName,
+    getPinnedParticipant,
     isParticipantModerator
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
@@ -182,6 +183,7 @@ function MeetingParticipantItem({
     _localVideoOwner,
     _participant,
     _participantID,
+    _isPinned,
     _quickActionButtonType,
     _raisedHand,
     _videoMediaState,
@@ -247,6 +249,7 @@ function MeetingParticipantItem({
             isHighlighted = { isHighlighted }
             isModerator = { isParticipantModerator(_participant) }
             isParticipantBirthday = { _isParticipantBirthday }
+            isPinned = { _isPinned }
             local = { _local }
             onLeave = { onLeave }
             openDrawerForParticipant = { openDrawerForParticipant }
@@ -294,6 +297,7 @@ function _mapStateToProps(state, ownProps): Object {
     const localParticipantId = getLocalParticipant(state).id;
 
     const participant = getParticipantByIdOrUndefined(state, participantID);
+    const pinnedParticipant = getPinnedParticipant(state);
 
     const _isAudioMuted = isParticipantAudioMuted(participant, state);
     const _isVideoMuted = isParticipantVideoMuted(participant, state);
@@ -307,7 +311,7 @@ function _mapStateToProps(state, ownProps): Object {
         ? getLocalAudioTrack(tracks) : getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.AUDIO, participantID);
 
     const { disableModeratorIndicator } = state['features/base/config'];
-    const attentionStatus = state['features/face-detect'].statuses[participant?.id];
+    const attentionStatus = state['features/face-detect'].statuses[participant?.id]?.status;
 
     return {
         _aiAttentionAnalysisEnabled: aiAttentionAnalysisEnabled,
@@ -317,6 +321,7 @@ function _mapStateToProps(state, ownProps): Object {
         _disableModeratorIndicator: disableModeratorIndicator,
         _displayName: getParticipantDisplayName(state, participant?.id),
         _isParticipantBirthday: isParticipantBirthday,
+        _isPinned: participant === pinnedParticipant,
         _isVideoMuted,
         _local: Boolean(participant?.local),
         _localVideoOwner: Boolean(ownerId === localParticipantId),

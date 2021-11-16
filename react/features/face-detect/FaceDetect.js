@@ -1,7 +1,10 @@
 import axios from 'axios';
+import { isEqual } from 'lodash';
 import { getAuthUrl } from '../../api/url';
-import { isLocalParticipantModerator } from '../base/participants';
+import { getLocalParticipant, isLocalParticipantModerator } from '../base/participants';
+import { isParticipantVideoMuted } from '../base/tracks';
 import { refreshAttentionStatuses } from './actions';
+import { REFRESH_TIMEOUT, UPDATE_TIMEOUT } from './constants';
 import {
     CLEAR_TIMEOUT,
     TIMEOUT_TICK,
@@ -34,6 +37,9 @@ export default class FaceDetect {
         this._isWaiting = false;
         this._showResult = showResult;
         this._enabled = !Boolean(aiAttentionAnalysisEnabled);
+        this._updateCounter = 0;
+        this._refreshCounter = 0;
+        this._prevParams = null;
 
         this._inputVideo = document.getElementById('localVideo_container');
         this._worker = new Worker(new URL('./worker.js', import.meta.url));
@@ -114,19 +120,33 @@ export default class FaceDetect {
         }
 
         if (this._enabled) {
-            // Get face detect output
-            // console.time('inferenceImage');
-            this._videoContext.drawImage(this._inputVideo, 0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
-            const frame = this._videoContext.getImageData(0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
-            this._worker.postMessage({ command: 'frame', data: frame });
-            this._isWaiting = true;
-            // console.timeEnd('inferenceImage');
+            const participant = getLocalParticipant(state);
+            const videoMuted = isParticipantVideoMuted(participant, state);
+
+            if (videoMuted) {
+                if (this._updateCounter >= (UPDATE_TIMEOUT / this._frameInterval)) {
+                    this._updateParticipantStatus(2);
+                    this._updateCounter = 0;
+                }
+                this._updateCounter += 1;
+            } else {
+                try {
+                    // Get face detect output
+                    // console.time('inferenceImage');
+                    this._videoContext.drawImage(this._inputVideo, 0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
+                    const frame = this._videoContext.getImageData(0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
+                    this._worker.postMessage({ command: 'frame', data: frame });
+                    this._isWaiting = true;
+                    // console.timeEnd('inferenceImage');
+                } catch (e) {
+                    // ignore
+                }
+            }
         }
     }
 
     _onMessage(event) {
         const result = event.data;
-        const state = this._getState();
 
         if (!result.done) {
             console.error('onMessage is failed!', result);
@@ -201,21 +221,40 @@ export default class FaceDetect {
             }
         }
 
+        if (this._updateCounter >= (UPDATE_TIMEOUT / this._frameInterval)) {
+            this._updateParticipantStatus(status);
+            this._updateCounter = 0;
+        }
+        this._updateCounter += 1;
+    }
+
+    _updateParticipantStatus(status) {
+        const state = this._getState();
         const apiBase = getAuthUrl(state);
         const { conference } = state['features/base/conference'];
         const { id } = state['features/base/participants'].local;
+        const { user } = state['features/base/jwt'];
+        const { displayName } = state['features/base/settings'];
 
         if (conference?.room?.meetingId && id !== 'local') {
-            axios.post(`${apiBase}/attentions/`, {
+            const params = {
                 conference: conference.room.meetingId,
                 nick: id,
-                status
-            }).then(() => {
-                const isModerator = isLocalParticipantModerator(state);
-                if (isModerator) {
-                    this._dispatch(refreshAttentionStatuses());
-                }
-            });
+                status,
+                name: displayName,
+                avatarURL: user?.avatarURL
+            };
+            if (!isEqual(params, this._prevParams)) {
+                axios.post(`${apiBase}/attentions/`, params).then(() => {
+                    const isModerator = isLocalParticipantModerator(state);
+                    if (isModerator && this._refreshCounter >= (REFRESH_TIMEOUT / this._frameInterval)) {
+                        this._dispatch(refreshAttentionStatuses());
+                        this._refreshCounter = 0;
+                    }
+                    this._prevParams = params;
+                });
+            }
+            this._refreshCounter += 1;
         }
     }
 
@@ -244,16 +283,20 @@ export default class FaceDetect {
      * @param {MediaStream} stream - Stream to be used for processing.
      * @returns {MediaStream} - The stream with the applied effect.
      */
-    startEffect() {
-        this._frameTimerWorker = new Worker(timerWorkerScript, { name: 'face effect worker' });
-        this._frameTimerWorker.onmessage = this._onFrameTimer;
-
-        this._inputVideo.onloadeddata = () => {
-            this._frameTimerWorker.postMessage({
-                id: SET_TIMEOUT,
-                timeMs: this._frameInterval
-            });
-        };
+    startEffect(granted) {
+        if (granted) {
+            this._frameTimerWorker = new Worker(timerWorkerScript, { name: 'face effect worker' });
+            this._frameTimerWorker.onmessage = this._onFrameTimer;
+    
+            this._inputVideo.onloadeddata = () => {
+                this._frameTimerWorker.postMessage({
+                    id: SET_TIMEOUT,
+                    timeMs: this._frameInterval
+                });
+            };
+        } else {
+            this._updateParticipantStatus(3);
+        }
     }
 
     /**

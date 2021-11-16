@@ -1,1 +1,2 @@
-export const FACE_DETECT_COMMAND = 'face-detect';
+export const UPDATE_TIMEOUT = 1000;
+export const REFRESH_TIMEOUT = 3000;

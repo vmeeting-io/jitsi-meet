@@ -380,6 +380,11 @@ class WelcomePage extends AbstractWelcomePage {
                                 <hr className = 'divider mobile' />
                             </DropdownItemGroup> }
                         <DropdownItemGroup className = 'menu-container'>
+                             <DropdownItem
+                                className = 'menu-item'
+                                href = { `${AUTH_PAGE_BASE}/meetingdetails` }>
+                                { t('welcomepage.meetingDetails') }
+                            </DropdownItem>
                             <DropdownItem
                                 className = 'menu-item'
                                 href = { `${AUTH_PAGE_BASE}/account` }>
@@ -389,11 +394,6 @@ class WelcomePage extends AbstractWelcomePage {
                                         <Badge appearance="important">{1}</Badge>
                                     </div>
                                 )}
-                            </DropdownItem>
-                            <DropdownItem
-                                className = 'menu-item'
-                                href = { `${AUTH_PAGE_BASE}/meetingdetails` }>
-                                { t('welcomepage.meetingDetails') }
                             </DropdownItem>
                             { checkBlurSupport() && (
                                 <DropdownItem

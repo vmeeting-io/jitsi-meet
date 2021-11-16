@@ -274,9 +274,11 @@ export function appNavigate(uri: ?string) {
 
             try {
                 const headers = jwt ? { Authorization: `Bearer ${jwt}` } : {};
+                const { aiAttentionAnalysisEnabled = false } = getState()['features/base/settings'];
                 resp = await axios.post(apiUrl, {
                     name: room,
                     start_time: new Date(),
+                    face_detect: aiAttentionAnalysisEnabled
                 }, { headers });
                 roomInfo = resp.data;
                 roomInfo.isHost = true;

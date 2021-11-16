@@ -86,21 +86,23 @@ export default class FaceDetect {
             const rc = largeVideo.getClientRects()[0];
             // console.log('video: clientRect', rc);
             
-            this._rc = rc;
-            this._width = rc.width;
-            this._height = rc.height;
-            if (!this._canvas) {
-                this._canvas = document.createElement('canvas');
-                document.body.appendChild(this._canvas);
-                this._canvas.className = 'face-detect-canvas';
-                this._canvas.width = largeVideo.videoWidth;
-                this._canvas.height = largeVideo.videoHeight;
+            if (rc) {
+                this._rc = rc;
+                this._width = rc.width;
+                this._height = rc.height;
+                if (!this._canvas) {
+                    this._canvas = document.createElement('canvas');
+                    document.body.appendChild(this._canvas);
+                    this._canvas.className = 'face-detect-canvas';
+                    this._canvas.width = largeVideo.videoWidth;
+                    this._canvas.height = largeVideo.videoHeight;
+                }
+                this._canvas.style.left = this._rc.x;
+                this._canvas.style.top = this._rc.y;
+                this._canvas.style.width = `${this._width}px`;
+                this._canvas.style.height = `${this._height}px`;
             }
-            this._canvas.style.left = this._rc.x;
-            this._canvas.style.top = this._rc.y;
-            this._canvas.style.width = `${this._width}px`;
-            this._canvas.style.height = `${this._height}px`;
-            this._ctx = this._canvas.getContext('2d');
+            this._ctx = this._canvas?.getContext('2d');
         }
         
         this._inputVideo = document.getElementById('localVideo_container');

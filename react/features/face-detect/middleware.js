@@ -1,10 +1,10 @@
 // @flow
 
-import {
-    CONNECTION_ESTABLISHED,
-} from '../base/connection';
+import { CONNECTION_ESTABLISHED } from '../base/connection';
 import { MiddlewareRegistry } from '../base/redux';
 import { startFaceDetect } from './actions';
+
+import './subscriber';
 
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {

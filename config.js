@@ -38,6 +38,9 @@ var config = {
     // whether or not to allow moderator to disable other participant's device
     enableUserDeviceAccessDisabledOption: false,
 
+    // whether or not we want to use AI attention analysis
+    useAIAttentionAnalysis: true, // default value is true for flagship project
+
     hosts: {
         // XMPP domain.
         domain: 'jitsi-meet.example.com',

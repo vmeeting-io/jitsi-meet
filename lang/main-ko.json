@@ -1340,6 +1340,7 @@
         "login": "로그인",
         "loginRequired": "로그인이 필요합니다.",
         "join": "회의 입장",
+        "meetingDetails": "회의관리",
         "moderatedMessage": "또는 본인이 방장인 경우 사전에 <a href=\"{{url}}\" rel=\"noopener noreferrer\" target=\"_blank\">회의 URL을 예약</a>하세요.",
         "privacy": "개인정보",
         "recentList": "최근 이력",

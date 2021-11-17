@@ -30,6 +30,7 @@ import {
     ParticipantStates
 } from './styled';
 import { pinParticipant } from '../../../base/participants';
+import { STATUS_TABLE } from '../../../face-detect/constants';
 
 
 /**
@@ -131,7 +132,6 @@ type Props = {
  */
 function ParticipantItem({
     aiAttentionFlag,
-    attentionStatus,
     isVideoMuted,
     isParticipantBirthday,
     isPinned,
@@ -144,6 +144,7 @@ function ParticipantItem({
     videoMediaState = MEDIA_STATE.NONE,
     displayName,
     participantID,
+    participantStatus,
     local,
     openDrawerForParticipant,
     overflowDrawer,
@@ -158,15 +159,10 @@ function ParticipantItem({
     }, [isPinned, participantID]);
     
     // Dummy array that randomly assigns concentrated, lapsed or absent, must be replaced with the data from the model
-    const attentionArr = ['concentrated', 'lapsed', 'absent'];
     let attentionClass = 'participant-avatar-container ';
-    const localIsAModerator = isLocalParticipantModerator(APP.store.getState());
 
-    if (aiAttentionFlag
-        && localIsAModerator
-        && attentionStatus >= 0
-    ) {
-        attentionClass += attentionArr[isVideoMuted ? 2 : attentionStatus];
+    if (aiAttentionFlag && participantStatus) {
+        attentionClass += isVideoMuted ? STATUS_TABLE[2] : participantStatus;
     }
 
     return (

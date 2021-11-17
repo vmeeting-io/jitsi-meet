@@ -9,6 +9,7 @@ import { isLocalParticipantModerator, getParticipantCount} from '../../../base/p
 import { connect } from '../../../base/redux';
 import { AddBreakoutRoomButton } from '../../../breakout-rooms/components/web/AddBreakoutRoomButton';
 import { RoomList } from '../../../breakout-rooms/components/web/RoomList';
+import { openAttentionAnalysis } from '../../../face-detect';
 import { Drawer, DrawerPortal } from '../../../toolbox/components/web';
 import { showOverflowDrawer } from '../../../toolbox/functions';
 import { MuteEveryoneDialog } from '../../../video-menu/components/';
@@ -29,8 +30,6 @@ import {
     FooterEllipsisContainer,
     Header
 } from './styled';
-
-const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
 
 /**
  * The type of the React {@code Component} props of {@link ParticipantsPane}.
@@ -174,7 +173,8 @@ class ParticipantsPane extends Component<Props, State> {
                         {_showFooter && (
                             <Footer>
                                 { _aiAttentionAnalysisEnabled && (
-                                    <FooterButton onClick = { this._onAIAttentionAnalysis }>
+                                    <FooterButton
+                                        onClick = { this._onAIAttentionAnalysis }>
                                         {t('participantsPane.actions.aiAttentionAnalysis')}    
                                     </FooterButton>
                                 )}
@@ -248,11 +248,7 @@ class ParticipantsPane extends Component<Props, State> {
     _onAIAttentionAnalysis: () => void;
 
     _onAIAttentionAnalysis() {
-        const { _meetingId } = this.props;
-        window.open(
-            `${AUTH_PAGE_BASE}/learnersattention?meetingId=${_meetingId}`,
-            '_blank'
-        );
+        this.props.dispatch(openAttentionAnalysis());
     }
 
     _onMuteAll: () => void;
@@ -317,7 +313,6 @@ function _mapStateToProps(state: Object) {
     return {
         _aiAttentionAnalysisEnabled: Boolean(aiAttentionAnalysisEnabled),
         _isBreakoutRoomsSupported,
-        _meetingId: conference?.room?.meetingId,
         _showAddRoomButton: _isBreakoutRoomsSupported && !hideAddRoomButton && _isLocalParticipantModerator,
         _overflowDrawer: showOverflowDrawer(state),
         _paneOpen: isPaneOpen,

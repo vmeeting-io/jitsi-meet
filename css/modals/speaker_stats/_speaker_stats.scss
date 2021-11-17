@@ -78,28 +78,18 @@
             }
         }
     
-        &__status,
         &__name,
-        &__time,
         &__s_time,
         &__l_time {
             display: inline-flex;
             margin: 5px 0;
             vertical-align: middle;
         }
-        &__status {
-            display: inline-flex;
-            width: 20%;
-    
-            .indicator-disabled .jitsi-icon svg {
-                fill: gray;
-            }
-        }
         &__name {
             display: inline-flex !important;
             padding: 0 16px 0 0;
             box-sizing: border-box;
-            width: 35%;
+            width: 40%;
     
             .name {
                 flex-grow: 1;
@@ -108,28 +98,23 @@
                 text-overflow: ellipsis;
             }
         }
-        &__time {
+        &__s_time {
             width: 20%;
         }
-        &__s_time {
-            width: 15%;
-        }
         &__l_time {
-            width: 15%;
+            width: 20%;
         }
         &__duration {
             display: inline-block;
             margin: 5px 0;
             vertical-align: middle;
-            width: 15%;
+            width: 20%;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
     
         &__name,
-        &__time,
-        &__status,
         &__s_time,
         &__l_time,
         &__duration {

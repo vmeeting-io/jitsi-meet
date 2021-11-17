@@ -41,3 +41,10 @@ export const HAT_COMMAND = 'hatOn';
  * from the outside is not cool but it should suffice for now.
  */
 export const JITSI_CONFERENCE_URL_KEY = Symbol('url');
+
+/**
+ * The command type for updating a participant's status.
+ * 
+ * @type {string}
+ */
+export const STATUS_COMMAND = 'status';

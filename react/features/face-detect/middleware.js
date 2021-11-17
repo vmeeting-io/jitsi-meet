@@ -1,6 +1,13 @@
 // @flow
 
+import { updateAttentionAnalysis } from '.';
 import { CONNECTION_ESTABLISHED } from '../base/connection';
+import {
+    getParticipantPresenceStatus,
+    PARTICIPANT_JOINED,
+    PARTICIPANT_LEFT,
+    PARTICIPANT_UPDATED
+} from '../base/participants';
 import { MiddlewareRegistry } from '../base/redux';
 import { startFaceDetect } from './actions';
 
@@ -8,31 +15,27 @@ import './subscriber';
 
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
-    case CONNECTION_ESTABLISHED:
-        return _connectionEstablished(store, next, action);
+    case CONNECTION_ESTABLISHED: {
+        const result = next(action);
+        store.dispatch(startFaceDetect());
+        return result;
+    }
+    case PARTICIPANT_UPDATED: {
+        const { id, presence } = action.participant;
+        const old = getParticipantPresenceStatus(store.getState(), id);
+        const result = next(action);
+        if (presence && old !== presence) {
+            store.dispatch(updateAttentionAnalysis());
+        }
+        return result;
+    }
+    case PARTICIPANT_JOINED:
+    case PARTICIPANT_LEFT: {
+        const result = next(action);
+        store.dispatch(updateAttentionAnalysis());
+        return result;
+    }
     }
 
     return next(action);
 });
-
-/**
- * Notifies the feature app that the action {@link CONNECTION_ESTABLISHED} is
- * being dispatched within a specific redux {@code store}.
- *
- * @param {Store} store - The redux store in which the specified {@code action}
- * is being dispatched.
- * @param {Dispatch} next - The redux {@code dispatch} function to dispatch the
- * specified {@code action} to the specified {@code store}.
- * @param {Action} action - The redux action {@code CONNECTION_ESTABLISHED}
- * which is being dispatched in the specified {@code store}.
- * @private
- * @returns {Object} The new state that is the result of the reduction of the
- * specified {@code action}.
- */
-function _connectionEstablished(store, next, action) {
-    const result = next(action);
-
-    store.dispatch(startFaceDetect());
-
-    return result;
-}

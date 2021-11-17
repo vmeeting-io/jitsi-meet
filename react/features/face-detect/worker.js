@@ -61,7 +61,7 @@ addEventListener('message', async event => {
       if (self.isSleep.length <= self.patience / 10) {
         self.isSleep.push(eyeClose * 1.0);
       } else {
-        self.isSleep.pop();
+        self.isSleep.shift();
         self.isSleep.push(eyeClose * 1.0);
         if (tf.mean(self.isSleep).arraySync() > 0.5) {
           status = 1;

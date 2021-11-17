@@ -1,33 +1,29 @@
-import axios from 'axios';
-import { MEDIA_TYPE } from '../base/media';
-import { getLocalTrack } from '../base/tracks';
-import { UPDATE_ATTENTION_STATUSES, START_FACE_DETECT, STOP_FACE_DETECT } from './actionTypes';
+import { filter } from 'lodash';
+import { START_FACE_DETECT, STOP_FACE_DETECT, ATTENTION_ANALYSIS_OPENED } from './actionTypes';
 import { grantFaceDetect } from './functions';
 import FaceDetect from './FaceDetect';
-import { getAuthUrl } from '../../api/url';
+import { getCurrentConference } from '../base/conference';
+import { getAttentionAnalysisWindow } from '.';
+import { getLocalParticipant, getRemoteParticipants, getRemoteParticipantsSorted } from '../base/participants';
 
 let faceDetector;
+const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
 
 export function startFaceDetect() {
     return async function(dispatch, getState) {
-        const state = getState();
-        const granted = await grantFaceDetect(state);
-
         if (!MediaStreamTrack.prototype.getSettings && !MediaStreamTrack.prototype.getConstraints) {
             throw new Error('FaceDetect not supported!');
         }
     
-        try {
-            faceDetector = new FaceDetect(dispatch, getState);
-            faceDetector.startEffect(true /* granted */);
-
-            dispatch({
-                type: START_FACE_DETECT,
-                started: true
-            });
-        } catch (err) {
-            console.error('createFaceDetect is failed.', err);
-        }
+        const state = getState();
+        // const granted = await grantFaceDetect(state);
+        
+        faceDetector = new FaceDetect(dispatch, getState);
+        faceDetector.startEffect(true /* granted */);
+        dispatch({
+            type: START_FACE_DETECT,
+            started: true
+        });
     };
 }
 
@@ -43,21 +39,47 @@ export function stopFaceDetect() {
     };
 }
 
-export function refreshAttentionStatuses() {
+export function openAttentionAnalysis() {
     return function(dispatch, getState) {
-        try {
-            const state = getState()
-            const apiBase = getAuthUrl(state);
-            const { meetingId } = state['features/base/conference'].conference.room;
-    
-            axios.get(`${apiBase}/attentions/${meetingId}/latest`).then(resp => {
-                dispatch({
-                    type: UPDATE_ATTENTION_STATUSES,
-                    statuses: resp.data,
-                });
+        const state = getState();
+        let childWindow = getAttentionAnalysisWindow(state);
+        
+        if (!childWindow) {
+            const conference = getCurrentConference(state);
+            const meetingId = conference.room.meetingId;
+
+            childWindow = window.open(
+                `${AUTH_PAGE_BASE}/learnersattention?meetingId=${meetingId}`,
+                '_blank'
+            );
+
+            dispatch({
+                type: ATTENTION_ANALYSIS_OPENED,
+                childWindow
             });
-        } catch (err) {
-            console.error('updateAttentionStatuses is failed.', err);
+            dispatch(updateAttentionAnalysis());
+        } else {
+            childWindow.focus();
         }
-    };
+    }
+}
+
+export function updateAttentionAnalysis() {
+    return function(dispatch, getState) {
+        const state = getState();
+        const childWindow = getAttentionAnalysisWindow(state);
+
+        if (childWindow) {
+            const remote = getRemoteParticipants(state);
+            const participants = filter(getRemoteParticipantsSorted(state).map(pid => {
+                const { id, avatarURL, name, presence } = remote.get(pid) || {};
+                return id ? { id, avatarURL, name, status: presence } : null;
+            }));
+
+            const { id, avatarURL, name, presence } = getLocalParticipant(state);
+            participants.unshift({ id, avatarURL, name, status: presence });
+
+            childWindow.postMessage(participants);
+        }
+    }
 }

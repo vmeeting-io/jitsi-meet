@@ -1,6 +1,7 @@
 // @flow
 
 import axios from 'axios';
+import { getAuthUrl } from '../../api/url';
 
 export async function grantFaceDetect(state) {
     const apiBase = getAuthUrl(state);
@@ -16,4 +17,11 @@ export async function grantFaceDetect(state) {
     }
     
     return false;
+}
+
+export function getAttentionAnalysisWindow(state) {
+    const { childWindow } = state['features/face-detect'];
+
+    return (childWindow && !childWindow.closed)
+        ? childWindow : null;
 }

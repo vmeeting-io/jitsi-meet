@@ -172,7 +172,6 @@ type Props = {
  */
 function MeetingParticipantItem({
     _aiAttentionAnalysisEnabled,
-    _attentionStatus,
     _audioMediaState,
     _audioTrack,
     _disableModeratorIndicator,
@@ -241,7 +240,6 @@ function MeetingParticipantItem({
         <ParticipantItem
             actionsTrigger = { ACTION_TRIGGER.HOVER }
             aiAttentionFlag = { _aiAttentionAnalysisEnabled }
-            attentionStatus = { _attentionStatus }
             isVideoMuted = { _isVideoMuted }
             audioMediaState = { audioMediaState }
             disableModeratorIndicator = { _disableModeratorIndicator }
@@ -255,6 +253,7 @@ function MeetingParticipantItem({
             openDrawerForParticipant = { openDrawerForParticipant }
             overflowDrawer = { overflowDrawer }
             participantID = { _participantID }
+            participantStatus = { _participant.presence }
             raisedHand = { _raisedHand }
             videoMediaState = { _videoMediaState }
             youText = { youText }>
@@ -311,11 +310,9 @@ function _mapStateToProps(state, ownProps): Object {
         ? getLocalAudioTrack(tracks) : getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.AUDIO, participantID);
 
     const { disableModeratorIndicator } = state['features/base/config'];
-    const attentionStatus = state['features/face-detect'].statuses[participant?.id]?.status;
 
     return {
         _aiAttentionAnalysisEnabled: aiAttentionAnalysisEnabled,
-        _attentionStatus: attentionStatus ?? -1,
         _audioMediaState,
         _audioTrack,
         _disableModeratorIndicator: disableModeratorIndicator,

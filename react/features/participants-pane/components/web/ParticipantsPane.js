@@ -9,6 +9,7 @@ import { isLocalParticipantModerator, getParticipantCount} from '../../../base/p
 import { connect } from '../../../base/redux';
 import { AddBreakoutRoomButton } from '../../../breakout-rooms/components/web/AddBreakoutRoomButton';
 import { RoomList } from '../../../breakout-rooms/components/web/RoomList';
+import { openAttentionAnalysis } from '../../../face-detect';
 import { Drawer, DrawerPortal } from '../../../toolbox/components/web';
 import { showOverflowDrawer } from '../../../toolbox/functions';
 import { MuteEveryoneDialog } from '../../../video-menu/components/';
@@ -103,6 +104,7 @@ class ParticipantsPane extends Component<Props, State> {
         this._onDrawerClose = this._onDrawerClose.bind(this);
         this._onKeyPress = this._onKeyPress.bind(this);
         this._onMuteAll = this._onMuteAll.bind(this);
+        this._onAIAttentionAnalysis = this._onAIAttentionAnalysis.bind(this);
         this._onToggleContext = this._onToggleContext.bind(this);
         this._onWindowClickListener = this._onWindowClickListener.bind(this);
     }
@@ -138,6 +140,7 @@ class ParticipantsPane extends Component<Props, State> {
             _overflowDrawer,
             _paneOpen,
             _showFooter,
+            _aiAttentionAnalysisEnabled,
             t
         } = this.props;
         const { contextOpen } = this.state;
@@ -169,6 +172,12 @@ class ParticipantsPane extends Component<Props, State> {
                         </Container>
                         {_showFooter && (
                             <Footer>
+                                { _aiAttentionAnalysisEnabled && (
+                                    <FooterButton
+                                        onClick = { this._onAIAttentionAnalysis }>
+                                        {t('participantsPane.actions.aiAttentionAnalysis')}    
+                                    </FooterButton>
+                                )}
                                 <FooterButton onClick = { this._onMuteAll }>
                                     {t('participantsPane.actions.muteAll')}
                                 </FooterButton>
@@ -236,6 +245,12 @@ class ParticipantsPane extends Component<Props, State> {
         }
     }
 
+    _onAIAttentionAnalysis: () => void;
+
+    _onAIAttentionAnalysis() {
+        this.props.dispatch(openAttentionAnalysis());
+    }
+
     _onMuteAll: () => void;
 
     /**
@@ -291,10 +306,12 @@ function _mapStateToProps(state: Object) {
     const isPaneOpen = getParticipantsPaneOpen(state);
     const { hideAddRoomButton } = state['features/base/config'];
     const { conference } = state['features/base/conference'];
+    const { aiAttentionAnalysisEnabled } = state['features/base/settings'];
     const _isBreakoutRoomsSupported = Boolean(conference && conference.isBreakoutRoomsSupported());
     const _isLocalParticipantModerator = isLocalParticipantModerator(state);
 
     return {
+        _aiAttentionAnalysisEnabled: Boolean(aiAttentionAnalysisEnabled),
         _isBreakoutRoomsSupported,
         _showAddRoomButton: _isBreakoutRoomsSupported && !hideAddRoomButton && _isLocalParticipantModerator,
         _overflowDrawer: showOverflowDrawer(state),

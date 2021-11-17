@@ -2289,6 +2289,9 @@ export default {
         room.on(JitsiConferenceEvents.TIME_REMAINED,
             timeRemained => APP.store.dispatch(conferenceTimeRemained(timeRemained)));
 
+        room.on(JitsiConferenceEvents.FACE_DETECT_ENABLED,
+            value => APP.store.dispatch(updateSettings({ aiAttentionAnalysisEnabled: value })));
+
         // start of added portion
         room.on(JitsiConferenceEvents.USER_DEVICE_ACCESS_DISABLED,
             userDeviceAccessDisabled =>  {

@@ -3,6 +3,7 @@
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const dotenv = require('dotenv');
 const fs = require('fs');
+const path = require('path');
 const { join } = require('path');
 const process = require('process');
 const webpack = require('webpack');
@@ -80,13 +81,14 @@ function getBundleAnalyzerPlugin(analyzeBundle, name) {
  */
 function devServerProxyBypass({ path }) {
     if (path.startsWith('/css/')
-            || path.startsWith('/doc/')
-            || path.startsWith('/fonts/')
-            || path.startsWith('/images/')
-            || path.startsWith('/lang/')
-            || path.startsWith('/sounds/')
-            || path.startsWith('/static/')
-            || path.endsWith('.wasm')) {
+        || path.startsWith('/doc/')
+        || path.startsWith('/fonts/')
+        || path.startsWith('/images/')
+        || path.startsWith('/lang/')
+        || path.startsWith('/sounds/')
+        || path.startsWith('/static/')
+        // || path.endsWith('.wasm')
+    ) {
 
         return path;
     }
@@ -243,7 +245,7 @@ function getConfig(options = {}) {
         },
         output: {
             filename: `[name]${minimize ? '.min' : ''}.js`,
-            path: `${__dirname}/build`,
+            path: path.resolve(__dirname, 'build'),
             publicPath: '/libs/',
             sourceMapFilename: '[file].map'
         },
@@ -441,7 +443,7 @@ module.exports = (_env, argv) => {
                 },
                 output: Object.assign({}, config.output, {
                     library: 'JitsiMeetJS',
-                    libraryTarget: 'umd'
+                    libraryTarget: 'umd',
                 })
             })
         ])

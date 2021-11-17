@@ -1,20 +1,8 @@
 /* @flow */
 
-import moment from 'moment';
 import React, { Component } from 'react';
 
 import { translate } from '../../base/i18n';
-import { BaseIndicator } from '../../base/react';
-import {
-    IconCamera,
-    IconCameraDisabled,
-    IconChatDisabled,
-    IconChatEnabled,
-    IconModerator,
-    IconMicDisabled,
-    IconMicrophone,
-    IconShareDesktop
-} from '../../base/icons'
 
 import { formatDuration, formatTime } from '../../base/util/formatDateTime';
 
@@ -49,26 +37,6 @@ type Props = {
      * The duration time.
      */
     duration: string,
-
-    /**
-     * True if video is muted.
-     */
-    videoMuted: boolean,
-
-    /**
-     * True if audio is muted.
-     */
-    audioMuted: boolean,
-
-    /**
-     * True if speaker is moderator.
-     */
-    isModerator: boolean,
-
-    /**
-     * True if speaker is presenter.
-     */
-    isPresenter: boolean
 };
 
 /**
@@ -88,14 +56,9 @@ class SpeakerStatsItem extends Component<Props> {
             joinTime,
             leaveTime,
             duration,
-            isModerator,
-            isPresenter,
-            videoMuted,
-            audioMuted,
             local,
             name,
             hasLeft,
-            chat,
             t
         } = this.props;
 
@@ -115,13 +78,6 @@ class SpeakerStatsItem extends Component<Props> {
                 <div className = 'speaker-stats-item__name'> 
                     <span className = 'name'>{ displayName }</span>
                 </div>
-                <div className = 'speaker-stats-item__status'>
-                    { this.displayModeratorStatus(isModerator) }
-                    { this.displayPresenterStatus(isPresenter) }
-                    { this.displayAudioStatus(audioMuted) }
-                    { this.displayVideoStatus(videoMuted) }
-                    { this.displayChatStatus(chat) }
-                </div>
                 <div className = 'speaker-stats-item__s_time'>
                     { formatTime(joinTime) }
                 </div>
@@ -132,97 +88,6 @@ class SpeakerStatsItem extends Component<Props> {
                     { formatDuration(duration) }
                 </div>
             </div>
-        );
-    }
-
-    displayAudioStatus(audioMuted) {
-        let icon;
-        let iconClass = this.props.hasLeft || audioMuted ? 'indicator-disabled' : '';
-        let toolTipMessage;
-
-        if (audioMuted) {
-            icon = IconMicDisabled;
-            toolTipMessage = 'videothumbnail.muted';
-        } else {
-            icon = IconMicrophone;
-            toolTipMessage = 'videothumbnail.audioconnected';
-        }
-
-        return(
-            <BaseIndicator
-                className = { `audioMuted toolbar-icon ${iconClass}` }
-                icon = { icon }
-                iconId = 'mic-disabled'
-                iconSize = { 16 }
-                tooltipKey = { toolTipMessage }
-                tooltipPosition = { 'top' } />
-        );
-    }
-
-    displayVideoStatus(videoMuted) {
-        let icon;
-        let iconClass = this.props.hasLeft || videoMuted ? 'indicator-disabled' : '';
-        let toolTipMessage;
-
-        if (videoMuted) {
-            icon = IconCameraDisabled;
-            toolTipMessage = 'videothumbnail.videomuted'
-        }
-        else {
-            icon = IconCamera;
-            toolTipMessage = 'videothumbnail.videoconnected'
-        }
-        return(
-            <BaseIndicator
-                className = { `videoMuted toolbar-icon ${iconClass}` }
-                icon = { icon }
-                iconId = 'camera-disabled'
-                iconSize = { 16 }
-                tooltipKey = { toolTipMessage }
-                tooltipPosition = { 'top' } />
-        );
-    }
-
-    displayModeratorStatus(isModerator) {
-        let toolTipMessage = isModerator ? 'videothumbnail.moderator' : '';
-
-        return (
-            <BaseIndicator
-                className = { isModerator ? '' : 'indicator-disabled' }
-                icon = { IconModerator }
-                iconId = 'crown'
-                iconSize = { 16 }
-                tooltipKey = { toolTipMessage }
-                tooltipPosition = 'top' />
-        );
-    }
-
-    displayPresenterStatus(isPresenter) {
-        let iconClass = this.props.hasLeft || !isPresenter ? 'indicator-disabled' : '';
-        let toolTipMessage = isPresenter ? 'videothumbnail.presenter' : '';
-
-        return(
-            <BaseIndicator
-                className = { `videoMuted toolbar-icon ${iconClass}` }
-                icon = { IconShareDesktop }
-                iconId = 'share-desktop'
-                iconSize = { 16 }
-                tooltipKey = { toolTipMessage }
-                tooltipPosition = { 'top' } />
-        );
-    }
-
-    displayChatStatus(chatEnabled) {
-        let toolTipMessage = chatEnabled ? 'dialog.chatEnabledTitle' : 'dialog.chatDisabledTitle';
-
-        return (
-            <BaseIndicator
-                className = { chatEnabled ? '' : 'indicator-disabled' }
-                icon = { chatEnabled ? IconChatEnabled : IconChatDisabled }
-                iconId = 'chat'
-                iconSize = { chatEnabled ? 14 : 16}
-                tooltipKey = { toolTipMessage }
-                tooltipPosition = 'top' />
         );
     }
 }

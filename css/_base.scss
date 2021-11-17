@@ -123,6 +123,7 @@ form {
     max-height: 40px;
     margin: 16px;
     position: relative;
+    z-index: 10;
 
     @include media-breakpoint-up(md) {
       max-width: 140px;

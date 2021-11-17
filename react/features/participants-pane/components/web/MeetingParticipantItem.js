@@ -9,6 +9,7 @@ import {
     getLocalParticipant,
     getParticipantByIdOrUndefined,
     getParticipantDisplayName,
+    getPinnedParticipant,
     isParticipantModerator
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
@@ -170,15 +171,18 @@ type Props = {
  * @returns {ReactElement}
  */
 function MeetingParticipantItem({
+    _aiAttentionAnalysisEnabled,
     _audioMediaState,
     _audioTrack,
     _disableModeratorIndicator,
     _displayName,
     _isParticipantBirthday,
+    _isVideoMuted,
     _local,
     _localVideoOwner,
     _participant,
     _participantID,
+    _isPinned,
     _quickActionButtonType,
     _raisedHand,
     _videoMediaState,
@@ -235,17 +239,21 @@ function MeetingParticipantItem({
     return (
         <ParticipantItem
             actionsTrigger = { ACTION_TRIGGER.HOVER }
+            aiAttentionFlag = { _aiAttentionAnalysisEnabled }
+            isVideoMuted = { _isVideoMuted }
             audioMediaState = { audioMediaState }
             disableModeratorIndicator = { _disableModeratorIndicator }
             displayName = { _displayName }
             isHighlighted = { isHighlighted }
             isModerator = { isParticipantModerator(_participant) }
             isParticipantBirthday = { _isParticipantBirthday }
+            isPinned = { _isPinned }
             local = { _local }
             onLeave = { onLeave }
             openDrawerForParticipant = { openDrawerForParticipant }
             overflowDrawer = { overflowDrawer }
             participantID = { _participantID }
+            participantStatus = { _participant.presence }
             raisedHand = { _raisedHand }
             videoMediaState = { _videoMediaState }
             youText = { youText }>
@@ -282,11 +290,13 @@ function MeetingParticipantItem({
  * @returns {Props}
  */
 function _mapStateToProps(state, ownProps): Object {
+    const { aiAttentionAnalysisEnabled } = state['features/base/settings'];
     const { participantID } = ownProps;
     const { ownerId } = state['features/shared-video'];
     const localParticipantId = getLocalParticipant(state).id;
 
     const participant = getParticipantByIdOrUndefined(state, participantID);
+    const pinnedParticipant = getPinnedParticipant(state);
 
     const _isAudioMuted = isParticipantAudioMuted(participant, state);
     const _isVideoMuted = isParticipantVideoMuted(participant, state);
@@ -302,16 +312,19 @@ function _mapStateToProps(state, ownProps): Object {
     const { disableModeratorIndicator } = state['features/base/config'];
 
     return {
+        _aiAttentionAnalysisEnabled: aiAttentionAnalysisEnabled,
         _audioMediaState,
         _audioTrack,
         _disableModeratorIndicator: disableModeratorIndicator,
         _displayName: getParticipantDisplayName(state, participant?.id),
+        _isParticipantBirthday: isParticipantBirthday,
+        _isPinned: participant === pinnedParticipant,
+        _isVideoMuted,
         _local: Boolean(participant?.local),
         _localVideoOwner: Boolean(ownerId === localParticipantId),
         _participant: participant,
         _participantID: participant?.id,
         _quickActionButtonType,
-        _isParticipantBirthday: isParticipantBirthday,
         _raisedHand: Boolean(participant?.raisedHand),
         _videoMediaState
     };

@@ -21,7 +21,7 @@ export function toggleAREffect(options: Object, jitsiTrack: Object) {
         if (jitsiTrack) {
             try {
                 if (options.enabled) {
-                    await jitsiTrack.setEffect(await createAREffect(arOption, dispatch));
+                    await jitsiTrack.setEffect(await createAREffect(arOption));
                 } else {
                     await jitsiTrack.setEffect(undefined);
                     dispatch(arEnabled(false));

@@ -109,6 +109,7 @@ export { default as IconPaperClip } from './paperclip-outlined.svg';
 export { default as IconParticipants } from './participants.svg';
 export { default as IconPhone } from './phone.svg';
 export { default as IconPin } from './enlarge.svg';
+export { default as IconPinned } from './thumbtack-solid.svg';
 export { default as IconPlane } from './paper-plane.svg';
 export { default as IconPresentation } from './presentation.svg';
 export { default as IconRaisedHand } from './raised-hand.svg';

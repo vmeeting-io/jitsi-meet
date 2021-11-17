@@ -4,7 +4,7 @@ import * as tf from '@tensorflow/tfjs';
 // Let inputs are tf.tensor
 export function area_of(left_top, right_bottom){
     var hw = right_bottom.sub(left_top);
-    var hw_clipped = hw.clipByValue(0.0, tf.float32.max);
+    var hw_clipped = hw.clipByValue(0.0, Number.MAX_SAFE_INTEGER);
 
     var [c0, c1] = tf.split(hw_clipped, 2, 1);
     var res = c0.mul(c1).transpose().squeeze(0);
@@ -14,10 +14,10 @@ export function area_of(left_top, right_bottom){
 
 // Let inputs are tf.tensor
 export function iou_of(boxes0, boxes1, eps=1e-5){
-    var lt0 = boxes0.gather(tf.tensor1d([0, 1], 'int32'), axis=1);
-    var lt1 = boxes1.gather(tf.tensor1d([0, 1], 'int32'), axis=1);
-    var rb0 = boxes0.gather(tf.tensor1d([2, 3], 'int32'), axis=1);
-    var rb1 = boxes1.gather(tf.tensor1d([2, 3], 'int32'), axis=1);
+    var lt0 = boxes0.gather(tf.tensor1d([0, 1], 'int32'), 1);
+    var lt1 = boxes1.gather(tf.tensor1d([0, 1], 'int32'), 1);
+    var rb0 = boxes0.gather(tf.tensor1d([2, 3], 'int32'), 1);
+    var rb1 = boxes1.gather(tf.tensor1d([2, 3], 'int32'), 1);
 
     var overlap_left_top = lt0.maximum(lt1);
     var overlap_right_bottom = rb0.maximum(rb1);
@@ -33,8 +33,8 @@ export function iou_of(boxes0, boxes1, eps=1e-5){
 }
 
 export async function hard_nms(box_scores, iou_threshold, top_k=-1, candidate_size=200){
-    var scores = box_scores.gather(tf.tensor1d([a.shape[1]-1], 'int32'), 1);
-    var boxes = box_scores.gather(tf.range(0, a.shape[1]-1, 1, 'int32'), 1);
+    var scores = box_scores.gather(tf.tensor1d([box_scores.shape[1]-1], 'int32'), 1).transpose().squeeze(0);
+    var boxes = box_scores.gather(tf.range(0, box_scores.shape[1]-1, 1, 'int32'), 1);
 
     var picked = [];
 
@@ -42,8 +42,7 @@ export async function hard_nms(box_scores, iou_threshold, top_k=-1, candidate_si
     if(candidate_limit > candidate_size)
         candidate_limit = candidate_size;
 
-    var {values, indices} = tf.topk(a, candidate_limit);
-
+    var {values, indices} = tf.topk(scores, candidate_limit);
     var index_arr = indices.arraySync();
 
     while(index_arr.length > 0){
@@ -56,10 +55,11 @@ export async function hard_nms(box_scores, iou_threshold, top_k=-1, candidate_si
         var current_box = boxes.gather(tf.tensor1d([current_index], 'int32')).squeeze(0);
         index_arr.shift();
 
-        const ascending_index = tf.range(0, a.shape[0], 1);
+        const ascending_index = tf.range(0, scores.shape[0], 1);
         var mask = tf.notEqual(ascending_index, tf.scalar(current_index));
 
-        var rest_boxes = await tf.booleanMaskAsync(a, mask);
+        
+        var rest_boxes = await tf.booleanMaskAsync(boxes, mask);
         var iou = iou_of(rest_boxes, current_box.expandDims(0));
 
         var index_mask = tf.lessEqual(iou, tf.scalar(iou_threshold));

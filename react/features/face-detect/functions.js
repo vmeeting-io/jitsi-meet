@@ -1,68 +1,27 @@
 // @flow
 
-import FaceDetectEffect from './RetinaFaceEffect';
+import axios from 'axios';
+import { getAuthUrl } from '../../api/url';
 
-/**
- * Start face detect process.
- *
- * @param {Object} arObj - AR image link
- * @param {Function} dispatch - The Redux dispatch function.
- * @returns {Promise<JitsiStreamBackgroundEffect>}
- */
-export async function startFaceDetect(stream: MediaStream) {
-    let tflite;
-    let wasmCheck;
-
-    // Checks if WebAssembly feature is supported or enabled by/in the browser.
-    // Conditional import of wasm-check package is done to prevent
-    // the browser from crashing when the user opens the app.
+export async function grantFaceDetect(state) {
+    const apiBase = getAuthUrl(state);
 
     try {
-        wasmCheck = require('wasm-check');
-        const tfliteTimeout = 10000;
-
-        if (wasmCheck?.feature?.simd) {
-            tflite = await timeout(tfliteTimeout, createTFLiteSIMDModule());
-        } else {
-            tflite = await timeout(tfliteTimeout, createTFLiteModule());
-        }
+        const { jwt } = state['features/base/jwt'];
+        const headers = jwt ? { Authorization: `Bearer ${jwt}` } : {};
+        const resp = await axios.get(`${apiBase}/check-face-detect`, { headers });
+        console.log('grantFaceDetect:', resp.data);
+        return resp.data?.result;
     } catch (err) {
-        if (err?.message === '408') {
-            logger.error('Failed to download tflite model!');
-            dispatch(showWarningNotification({
-                titleKey: 'virtualBackground.backgroundEffectError'
-            }));
-        } else {
-            logger.error('Looks like WebAssembly is disabled or not supported on this browser');
-            dispatch(showWarningNotification({
-                titleKey: 'virtualBackground.webAssemblyWarning',
-                description: 'WebAssembly disabled or not supported by this browser'
-            }));
-        }
-
-        return;
-
+        console.error('grantFaceDetect is failed.', err);
     }
-
-    const modelBufferOffset = tflite._getModelBufferMemoryOffset();
-    const modelResponse = await fetch(wasmCheck.feature.simd ? models.model144 : models.model96);
-
-    if (!modelResponse.ok) {
-        throw new Error('Failed to download tflite model!');
-    }
-
-    const model = await modelResponse.arrayBuffer();
-
-    tflite.HEAPU8.set(new Uint8Array(model), modelBufferOffset);
-
-    tflite._loadModel(model.byteLength);
-
-    const options = {
-        ...wasmCheck.feature.simd ? segmentationDimensions.model144 : segmentationDimensions.model96,
-        virtualBackground
-    };
+    
+    return false;
 }
 
-export function stopFaceDetect() {
-    
+export function getAttentionAnalysisWindow(state) {
+    const { childWindow } = state['features/face-detect'];
+
+    return (childWindow && !childWindow.closed)
+        ? childWindow : null;
 }

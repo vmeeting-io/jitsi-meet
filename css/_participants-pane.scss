@@ -25,8 +25,37 @@
     }
 }
 
+.concentrated {
+    background-color: #95F681 !important;
+    opacity: 50%;
+}
+
+.lapsed {
+    background-color: #FFd400 !important;
+    opacity: 50%;
+}
+
+.absent {
+    background-color: #D33A21 !important;
+    opacity: 50%;
+}
+
+.participant-avatar-container {
+    position: relative;
+
+    .pin-icon {
+        position: absolute;
+        right: -6px;
+        top: -6px;
+        transform: rotate(45deg);
+        padding: 5px;
+        background: rgba(0,0,0,0.8);
+        border-radius: 50%;
+    }
+}
+
 .participant-avatar {
-    margin: 8px 16px 8px 0;
+    margin: 4px 4px 4px 4px;
 }
 
 @media (max-width: 580px) {

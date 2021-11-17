@@ -982,11 +982,11 @@ class Thumbnail extends Component<Props, State> {
                         participantID = { id } />
                 </div>
                 { this._renderAvatar(styles.avatar) }
-                <div className = 'presence-label-container'>
+                {/* <div className = 'presence-label-container'>
                     <PresenceLabel
                         className = 'presence-label'
                         participantID = { id } />
-                </div>
+                </div> */}
                 <span className = 'audioindicator-container'>
                     <AudioLevelIndicator audioLevel = { audioLevel } />
                 </span>

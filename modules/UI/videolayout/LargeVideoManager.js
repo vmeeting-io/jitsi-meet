@@ -287,7 +287,7 @@ export default class LargeVideoManager {
                     !overrideAndHide && messageKey);
 
             // Change the participant id the presence label is listening to.
-            this.updatePresenceLabel(id);
+            // this.updatePresenceLabel(id);
 
             this.videoContainer.positionRemoteStatusMessages();
 

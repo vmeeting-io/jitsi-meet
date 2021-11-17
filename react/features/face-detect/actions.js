@@ -50,16 +50,31 @@ export function openAttentionAnalysis() {
 
             childWindow = window.open(
                 `${AUTH_PAGE_BASE}/learnersattention?meetingId=${meetingId}`,
-                '_blank'
+                '_blank',
+                'status=no,location=no,toolbar=no,menubar=no,width=1024,height=700,left=100,top=100'
             );
 
             dispatch({
                 type: ATTENTION_ANALYSIS_OPENED,
                 childWindow
             });
-            dispatch(updateAttentionAnalysis());
+
+            childWindow.onload = () => {
+                dispatch(updateAttentionAnalysis());
+            };
         } else {
             childWindow.focus();
+        }
+    }
+}
+
+export function closeAttentionAnalysis() {
+    return function(dispatch, getState) {
+        const state = getState();
+        let childWindow = getAttentionAnalysisWindow(state);
+
+        if (childWindow) {
+            childWindow.close();
         }
     }
 }
@@ -79,7 +94,10 @@ export function updateAttentionAnalysis() {
             const { id, avatarURL, name, presence } = getLocalParticipant(state);
             participants.unshift({ id, avatarURL, name, status: presence });
 
-            childWindow.postMessage(participants);
+            childWindow.postMessage({
+                type: 'update-attentions',
+                participants
+            });
         }
     }
 }

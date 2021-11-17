@@ -1,6 +1,7 @@
 // @flow
 
-import { updateAttentionAnalysis } from '.';
+import { closeAttentionAnalysis, updateAttentionAnalysis } from '.';
+import { CONFERENCE_LEFT } from '../base/conference';
 import { CONNECTION_ESTABLISHED } from '../base/connection';
 import {
     getParticipantPresenceStatus,
@@ -20,6 +21,9 @@ MiddlewareRegistry.register(store => next => action => {
         store.dispatch(startFaceDetect());
         return result;
     }
+    case CONFERENCE_LEFT:
+        store.dispatch(closeAttentionAnalysis());
+        break;
     case PARTICIPANT_UPDATED: {
         const { id, presence } = action.participant;
         const old = getParticipantPresenceStatus(store.getState(), id);

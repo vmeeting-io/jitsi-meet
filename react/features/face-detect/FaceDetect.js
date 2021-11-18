@@ -37,7 +37,11 @@ export default class FaceDetect {
         this._prevStatus = -1;
 
         this._inputVideo = document.getElementById('localVideo_container');
-        this._worker = new Worker(new URL('./worker.js', import.meta.url));
+
+        this._worker = new Worker(
+            new URL('./worker.js', import.meta.url),
+            { name: 'worker', type: 'module' }
+        );
 
         this._onFrameTimer = this._onFrameTimer.bind(this);
         this._onMessage = this._onMessage.bind(this);
@@ -95,8 +99,8 @@ export default class FaceDetect {
                 try {
                     // Get face detect output
                     // console.time('inferenceImage');
-                    this._videoContext.drawImage(this._inputVideo, 0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
-                    const frame = this._videoContext.getImageData(0, 0, this._inputVideo.videoWidth, this._inputVideo.videoHeight);
+                    this._videoContext.drawImage(this._inputVideo, 0, 0, videoWidth, videoHeight);
+                    const frame = this._videoContext.getImageData(0, 0, videoWidth, videoHeight);
                     this._worker.postMessage({ command: 'frame', data: frame });
                     this._isWaiting = true;
                     // console.timeEnd('inferenceImage');

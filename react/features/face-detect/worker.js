@@ -1,12 +1,9 @@
+'use strict';
+
 import * as tf from '@tensorflow/tfjs';
 import { isEqual } from 'lodash';
 
 import { getReferenceData, inferenceFrame } from './utils/utils';
-
-const models = {
-  model_face_detect: '/libs/retinaface.json',
-  model_landmark_detect: '/libs/pfld.json'
-};
 
 addEventListener('message', async event => {
   const { command, data } = event.data;
@@ -19,8 +16,8 @@ addEventListener('message', async event => {
     self.refData = [];
     self.prevBox = [0, 0, 0, 0];
     self.isSleep = [];
-    self.faceDetectModel = await tf.loadGraphModel(models.model_face_detect);
-    self.landmarkDetectModel = await tf.loadGraphModel(models.model_landmark_detect);
+    self.faceDetectModel = await tf.loadGraphModel('/libs/retinaface.json');
+    self.landmarkDetectModel = await tf.loadGraphModel('/libs/pfld.json');
 
     console.time('get references');
     postMessage({ done: true, data: 'initialized' });

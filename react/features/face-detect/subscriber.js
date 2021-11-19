@@ -1,8 +1,12 @@
 // @flow
 
+import axios from 'axios';
+import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
 import { getCurrentConference } from '../base/conference';
-import { isLocalParticipantModerator } from '../base/participants';
+import { isHost } from '../base/jwt';
 import { StateListenerRegistry } from '../base/redux';
+import { getAuthUrl } from '../../api/url';
+import { updateSettings } from '../base/settings';
 
 /**
  * Sends the face detect command, when a local property change occurs.
@@ -14,18 +18,20 @@ import { StateListenerRegistry } from '../base/redux';
  */
 const _sendCommand = function (newSelectedValue, store) {
     const state = store.getState();
-    const conference = getCurrentConference(state);
-
-    if (!conference) {
-        return;
-    }
 
     // Only a moderator is allowed to send commands.
-    if (!isLocalParticipantModerator(state)) {
+    if (!isHost(state)) {
         return;
     }
 
-    conference.faceDetectEnabled(newSelectedValue);
+    const reqConfig = {
+        headers: { Authorization: `Bearer ${process.env.VMEETING_API_TOKEN}`}
+    };
+    const apiBase = getAuthUrl(state);
+    const { roomInfo: room } = state['features/base/conference'];
+    axios.patch(`${apiBase}/conferences/${room._id}`, {
+        face_detect: newSelectedValue
+    }, reqConfig);
 };
 
 /**
@@ -37,3 +43,28 @@ const _sendCommand = function (newSelectedValue, store) {
 StateListenerRegistry.register(
     /* selector */ state => state['features/base/settings'].aiAttentionAnalysisEnabled,
     /* listener */ (newSelectedValue, store) => _sendCommand(newSelectedValue, store));
+
+StateListenerRegistry.register(
+    /* selector */ state => getCurrentConference(state),
+    /* listener */ (conference, store) => {
+        const receiveMessage = (_, data) => {
+            // console.log('message is received:', data);
+            const { type, ...payload } = data;
+            switch (type) {
+            case 'features/face-detect/update': {
+                const { facedetect } = payload;
+                const { aiAttentionAnalysisEnabled } = store.getState()['features/base/settings'];
+                if (aiAttentionAnalysisEnabled !== facedetect) {
+                    store.dispatch(updateSettings({
+                        aiAttentionAnalysisEnabled: facedetect
+                    }));
+                }
+            }
+            }
+        };
+
+        if (conference) {
+            conference.on(JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED, receiveMessage);
+        }
+    }
+)

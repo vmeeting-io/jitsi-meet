@@ -63,6 +63,8 @@ StateListenerRegistry.register(
             }
         };
 
-        conference.on(JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED, receiveMessage);
+        if (conference) {
+            conference.on(JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED, receiveMessage);
+        }
     }
 )

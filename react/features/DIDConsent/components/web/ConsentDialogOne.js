@@ -72,7 +72,9 @@ class ConsentDialogOne extends PureComponent<Props> {
      * Open View More tab on URL. 
      */
     _openOnNewTab(){
-        const VIEW_MORE_URL = "https://sites.google.com/kedutech.kr/en-vmeeting-guide-v2";
+        const enLink = window.config.DID.enLink;
+        const krLink = window.config.DID.krLink;
+        const VIEW_MORE_URL = localStorage.language === 'ko' ? krLink:enLink;    
         openOnNewTab(VIEW_MORE_URL);
     }
 

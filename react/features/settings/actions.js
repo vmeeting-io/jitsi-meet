@@ -120,7 +120,9 @@ export function submitMoreTab(newState: Object): Function {
         }
 
         if (newState.aiAttentionFlag !== currentState.aiAttentionFlag) {
-            dispatch(setAIAttentionSettings(newState.aiAttentionFlag));
+            dispatch(updateSettings({
+                aiAttentionAnalysisEnabled: newState.aiAttentionFlag
+            }));
         }
     };
 }

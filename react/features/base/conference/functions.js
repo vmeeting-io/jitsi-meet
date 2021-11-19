@@ -468,7 +468,7 @@ function safeStartCase(s = '') {
  * @param {Object} store global redux store   
  * @returns JSON Object with room information
  */
-export function getRoomInfo(store){
+export function getRoomInfo(store) {
     return {
         // retrieve JitsiConference object
         conference: store.getState()['features/base/conference'],

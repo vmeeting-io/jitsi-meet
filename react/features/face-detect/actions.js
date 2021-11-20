@@ -51,7 +51,7 @@ export function openAttentionAnalysis() {
             childWindow = window.open(
                 `${AUTH_PAGE_BASE}/learnersattention?meetingId=${meetingId}`,
                 '_blank',
-                'status=no,location=no,toolbar=no,menubar=no,width=1024,height=700,left=100,top=100'
+                'status=no,location=no,titlebar=no,directories=no,toolbar=no,menubar=no,width=1024,height=700,left=100,top=100'
             );
 
             dispatch({

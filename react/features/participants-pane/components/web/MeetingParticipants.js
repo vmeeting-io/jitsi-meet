@@ -94,6 +94,7 @@ function MeetingParticipants({
     const toggleMenu = useCallback(participantID => e => {
         const { participantID: raisedParticipant } = raiseContext;
 
+        e.stopPropagation();
         if (raisedParticipant && raisedParticipant === participantID) {
             lowerMenu();
         } else {

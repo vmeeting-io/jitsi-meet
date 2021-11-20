@@ -15,14 +15,13 @@ import {
     IconMeetingUnlocked,
     IconMessage,
     IconMicDisabled,
-    IconMicrophone,
     IconMuteEveryoneElse,
     IconShareVideo,
+    IconUserFollow,
     IconVideoOff
 } from '../../../base/icons';
 import {
     getLocalParticipant,
-    getLocalParticipantDisplayName,
     getParticipantByIdOrUndefined,
     getParticipantCount,
     isLocalParticipantModerator,
@@ -41,7 +40,6 @@ import { GrantModeratorDialog, KickRemoteParticipantDialog, MuteEveryoneDialog }
 import { VolumeSlider } from '../../../video-menu/components/web';
 import MuteRemoteParticipantsVideoDialog from '../../../video-menu/components/web/MuteRemoteParticipantsVideoDialog';
 import { getComputedOuterHeight, isTodayParticipantBirthday } from '../../functions';
-import BirthdayHatApprove from '../../../ar-effect/components/BirthdayHatApprove';
 
 import {
     ContextMenu,
@@ -51,6 +49,7 @@ import {
     ignoredChildClassName
 } from './styled';
 import { notifyBirthdayHatOn } from '../../actions.any';
+import GrantFollowMeModeratorDialog from '../../../video-menu/components/web/GrantFollowMeModeratorDialog';
 
 type Props = {
 
@@ -221,6 +220,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
 
         this._getCurrentParticipantId = this._getCurrentParticipantId.bind(this);
         this._onGrantModerator = this._onGrantModerator.bind(this);
+        this._onGrantFollowMeModerator = this._onGrantFollowMeModerator.bind(this);
         this._onKick = this._onKick.bind(this);
         this._onMuteEveryoneElse = this._onMuteEveryoneElse.bind(this);
         this._onMuteVideo = this._onMuteVideo.bind(this);
@@ -254,6 +254,19 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
      */
     _onGrantModerator() {
         this.props.dispatch(openDialog(GrantModeratorDialog, {
+            participantID: this._getCurrentParticipantId()
+        }));
+    }
+
+    _onGrantFollowMeModerator: () => void;
+
+    /**
+     * Grant follow me moderator permissions.
+     *
+     * @returns {void}
+     */
+    _onGrantFollowMeModerator() {
+        this.props.dispatch(openDialog(GrantFollowMeModeratorDialog, {
             participantID: this._getCurrentParticipantId()
         }));
     }
@@ -442,6 +455,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
             _isLocalModerator,
             _isChatButtonEnabled,
             _isHatOn,
+            _isFollowMeModerator,
             _isParticipantBirthday,
             _isParticipantModerator,
             _isParticipantVideoMuted,
@@ -484,6 +498,14 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                 </>
             ) : (
                 <>
+                    {_isLocalModerator && !isRemote && !_isFollowMeModerator && (
+                        <ContextMenuItemGroup>
+                            <ContextMenuItem onClick = { this._onGrantFollowMeModerator }>
+                                <ContextMenuIcon src = { IconUserFollow } />
+                                <span>{ t('videothumbnail.grantFollowMeModerator') }</span>
+                            </ContextMenuItem>
+                        </ContextMenuItemGroup>
+                    )}
                     {_isLocalModerator && isRemote && (
                         <ContextMenuItemGroup>
                             <>
@@ -515,26 +537,34 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                         </ContextMenuItemGroup>
                     )}
                     { isRemote && 
-                    <ContextMenuItemGroup>
+                        <ContextMenuItemGroup>
                         {
                             _isLocalModerator && (
-                                    <>
-                                        {
-                                            !_isParticipantModerator && (
-                                                <ContextMenuItem onClick = { this._onGrantModerator }>
-                                                    <ContextMenuIcon src = { IconCrown } />
-                                                    <span>{t('toolbar.accessibilityLabel.grantModerator')}</span>
-                                                </ContextMenuItem>
-                                            )
-                                        }
-                                        {
-                                            _participantCount > 1
-                                            && <ContextMenuItem onClick = { this._onKick }>
-                                                <ContextMenuIcon src = { IconCloseCircle } />
-                                                <span>{ t('videothumbnail.kick') }</span>
+                                <>
+                                    {
+                                        !_isParticipantModerator && (
+                                            <ContextMenuItem onClick = { this._onGrantModerator }>
+                                                <ContextMenuIcon src = { IconCrown } />
+                                                <span>{t('toolbar.accessibilityLabel.grantModerator')}</span>
                                             </ContextMenuItem>
-                                        }
-                                    </>
+                                        )
+                                    }
+                                    {
+                                        _participantCount > 1
+                                        && <ContextMenuItem onClick = { this._onKick }>
+                                            <ContextMenuIcon src = { IconCloseCircle } />
+                                            <span>{ t('videothumbnail.kick') }</span>
+                                        </ContextMenuItem>
+                                    }
+                                    {
+                                        _isParticipantModerator && !_isFollowMeModerator && (
+                                            <ContextMenuItem onClick = { this._onGrantFollowMeModerator }>
+                                                <ContextMenuIcon src = { IconUserFollow } />
+                                                <span>{ t('videothumbnail.grantFollowMeModerator') }</span>
+                                            </ContextMenuItem>
+                                        )
+                                    }
+                                </>
                             )
                         }
                             
@@ -664,11 +694,13 @@ function _mapStateToProps(state, ownProps): Object {
     const _participantCount = getParticipantCount(state);
     const id = participant?.id;
     const isLocal = participant?.local ?? true;
+    const _followMeModerator = state['features/follow-me'].moderator;
 
     return {
         _currentRoomId,
         _isLocalModerator,
         _isChatButtonEnabled,
+        _isFollowMeModerator: Boolean(_followMeModerator === participant.id),
         _isParticipantModerator,
         _isParticipantVideoMuted,
         _isParticipantAudioMuted,

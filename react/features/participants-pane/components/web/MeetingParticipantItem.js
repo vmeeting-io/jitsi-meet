@@ -19,6 +19,7 @@ import {
     isParticipantAudioMuted,
     isParticipantVideoMuted
 } from '../../../base/tracks';
+import { isFollowMeEnabled } from '../../../follow-me';
 import { ACTION_TRIGGER, type MediaState, MEDIA_STATE } from '../../constants';
 import {
     getParticipantAudioMediaState,
@@ -176,6 +177,7 @@ function MeetingParticipantItem({
     _audioTrack,
     _disableModeratorIndicator,
     _displayName,
+    _followMeModerator,
     _isParticipantBirthday,
     _isVideoMuted,
     _local,
@@ -244,6 +246,7 @@ function MeetingParticipantItem({
             audioMediaState = { audioMediaState }
             disableModeratorIndicator = { _disableModeratorIndicator }
             displayName = { _displayName }
+            followMeModerator = { _followMeModerator }
             isHighlighted = { isHighlighted }
             isModerator = { isParticipantModerator(_participant) }
             isParticipantBirthday = { _isParticipantBirthday }
@@ -270,6 +273,12 @@ function MeetingParticipantItem({
                         aria-label = { participantActionEllipsisLabel }
                         onClick = { onContextMenu } />
                 </>
+            }
+
+            {!overflowDrawer && _local && !_participant?.isFakeParticipant &&
+                <ParticipantActionEllipsis
+                    aria-label = { participantActionEllipsisLabel }
+                    onClick = { onContextMenu } />
             }
 
             {!overflowDrawer && _localVideoOwner && _participant?.isFakeParticipant && (
@@ -310,6 +319,11 @@ function _mapStateToProps(state, ownProps): Object {
         ? getLocalAudioTrack(tracks) : getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.AUDIO, participantID);
 
     const { disableModeratorIndicator } = state['features/base/config'];
+    let _followMeModerator = state['features/follow-me'].moderator;
+
+    if (!_followMeModerator && isFollowMeEnabled(state)) {
+        _followMeModerator = getLocalParticipant(state).id;
+    }
 
     return {
         _aiAttentionAnalysisEnabled: aiAttentionAnalysisEnabled,
@@ -317,6 +331,7 @@ function _mapStateToProps(state, ownProps): Object {
         _audioTrack,
         _disableModeratorIndicator: disableModeratorIndicator,
         _displayName: getParticipantDisplayName(state, participant?.id),
+        _followMeModerator,
         _isParticipantBirthday: isParticipantBirthday,
         _isPinned: participant === pinnedParticipant,
         _isVideoMuted,

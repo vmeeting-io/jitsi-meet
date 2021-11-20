@@ -348,10 +348,17 @@ export const ParticipantNameContainer = styled.div`
   overflow: hidden;
 `;
 
+export const LabelContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+`
+
 export const ModeratorLabel = styled.div`
   font-size: 12px;
   line-height: 16px;
   color: #858585;
+  white-space: nowrap;
 `;
 
 export const ParticipantDetailsContainer = styled.div`

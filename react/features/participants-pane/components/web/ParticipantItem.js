@@ -19,6 +19,7 @@ import {
 import { RaisedHandIndicator } from './RaisedHandIndicator';
 import { BirthdayIndicator } from './BirthdayIndicator';
 import {
+    LabelContainer,
     ModeratorLabel,
     ParticipantActionsHover,
     ParticipantActionsPermanent,
@@ -136,6 +137,7 @@ function ParticipantItem({
     isParticipantBirthday,
     isPinned,
     children,
+    followMeModerator,
     isHighlighted,
     isModerator,
     onLeave,
@@ -195,9 +197,14 @@ function ParticipantItem({
                         </ParticipantName>
                         { local ? <span>&nbsp;({ youText })</span> : null }
                     </ParticipantNameContainer>
-                    {isModerator && <ModeratorLabel>
-                        {t('videothumbnail.moderator')}
-                    </ModeratorLabel>}
+                    { isModerator && <LabelContainer>
+                        <ModeratorLabel>
+                            {t('videothumbnail.moderator')}
+                        </ModeratorLabel>
+                        { followMeModerator === participantID && <ModeratorLabel>
+                            , {t('videothumbnail.following')}
+                        </ModeratorLabel> }
+                    </LabelContainer>}
                 </ParticipantDetailsContainer>
                 { <ParticipantActions children = { children } /> }
                 <ParticipantStates>

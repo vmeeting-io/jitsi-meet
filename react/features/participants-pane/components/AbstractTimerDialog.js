@@ -49,8 +49,8 @@ export default class AbstractTimerDialog<P:Props = Props>
         super(props);
         
         this.state = {
-            min: 0,
-            seconds:9
+            min: '00',
+            seconds: '00'
         };
 
         // Bind event handlers so they are only bound once per instance.
@@ -68,8 +68,8 @@ export default class AbstractTimerDialog<P:Props = Props>
      */
     _onSubmit(duration) {
         const { dispatch, initiator } = this.props;
-        duration.min = duration.min > 59 ? 59 : duration.min;
-        duration.seconds = duration.seconds > 59 ? 59 : duration.seconds;
+        duration.min = duration.min > 59 ? 59 : parseInt(duration.min);
+        duration.seconds = duration.seconds > 59 ? 59 : parseInt(duration.seconds);
 
         var currentDateTime = new Date();
         currentDateTime.setMinutes( currentDateTime.getMinutes() + duration.min ); 

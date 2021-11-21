@@ -19,7 +19,6 @@ import { loadSpeakerStats } from '../actions';
 import SpeakerStatsItem from './SpeakerStatsItem';
 import SpeakerStatsLabels from './SpeakerStatsLabels';
 
-import s from './SpeakerStats.module.scss';
 import { MEDIA_TYPE, VIDEO_TYPE } from '../../base/media';
 import { getLocalVideoTrack, getTrackByMediaTypeAndParticipant, isLocalTrackMuted, isLocalCameraTrackMuted, isRemoteTrackMuted } from '../../base/tracks';
 import { getParticipantById, PARTICIPANT_ROLE } from '../../base/participants';
@@ -147,13 +146,13 @@ class SpeakerStats extends Component<Props, State> {
 
         return (
             <ModalHeader {...props}>
-                <h4 className={ s.titleContainer }>
+                <h4 className = 'speaker-stats-title'>
                     <span>
                         { t('speakerStats.speakerStats') }
                     </span>
                     { !loading && (
                         <div
-                            className = { `${s.button} ${showSearch ? s.pressed : ''}` }
+                            className = { `button ${showSearch ? 'pressed' : ''}` }
                             onClick = { this._onToggleSearch }>
                             <Tooltip content = { t('speakerStats.search') } position = 'top'>
                                 <Icon size = { 24 } src = { IconSearch } />
@@ -227,7 +226,7 @@ class SpeakerStats extends Component<Props, State> {
                 titleKey = 'speakerStats.speakerStats'>
                 
                 { this.state.showSearch && (
-                    <div className = {`speaker-stats-searchbox ${s.searchContainer}`}>
+                    <div className = 'speaker-stats-searchbox'>
                         <TextField
                             autoFocus = { true }
                             compact = { true }
@@ -240,16 +239,16 @@ class SpeakerStats extends Component<Props, State> {
                             type = 'text'
                             value = { this.state.searchQuery } />
                         <div
-                            className = { s.closeIcon }
+                            className = 'close-icon'
                             onClick = { this._onToggleSearch }>
                             <CrossCircleIcon size = 'small' />
                         </div>
                     </div>
                 )}
 
-                <hr className = { s.divider } />
+                <hr className = 'speaker-stats-divider' />
 
-                <div className = { `speaker-stats ${s.container}` }>
+                <div className = 'speaker-stats'>
                     <SpeakerStatsLabels />
                     { this.state.loading
                         ? <Spinner appearance = 'invert' />

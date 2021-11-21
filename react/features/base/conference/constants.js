@@ -13,6 +13,20 @@ export const AVATAR_URL_COMMAND = 'avatar-url';
 export const EMAIL_COMMAND = 'email';
 
 /**
+ * The command type for updating a participant's birthDate.
+ * 
+ * @type {string}
+ */
+export const BIRTHDATE_COMMAND = 'birthDate';
+
+/**
+ * The command type for updating a participant's hatOn variable.
+ * 
+ * @type {string}
+ */
+export const HAT_COMMAND = 'hatOn';
+
+/**
  * The name of the {@code JitsiConference} property which identifies the URL of
  * the conference represented by the {@code JitsiConference} instance.
  *
@@ -27,3 +41,10 @@ export const EMAIL_COMMAND = 'email';
  * from the outside is not cool but it should suffice for now.
  */
 export const JITSI_CONFERENCE_URL_KEY = Symbol('url');
+
+/**
+ * The command type for updating a participant's status.
+ * 
+ * @type {string}
+ */
+export const STATUS_COMMAND = 'status';

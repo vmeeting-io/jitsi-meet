@@ -23,6 +23,7 @@ const DEFAULT_STATE = {
     disableP2P: undefined,
     displayName: undefined,
     email: undefined,
+    birthDate: undefined,
     localFlipX: true,
     micDeviceId: undefined,
     serverURL: 'https://vmeeting.io',
@@ -35,6 +36,7 @@ const DEFAULT_STATE = {
     startAudioOnly: false,
     startWithAudioMuted: false,
     startWithVideoMuted: false,
+    aiAttentionAnalysisEnabled: true,
     userSelectedAudioOutputDeviceId: undefined,
     userSelectedCameraDeviceId: undefined,
     userSelectedMicDeviceId: undefined,
@@ -65,6 +67,7 @@ filterSubtree.soundsReactions = false;
 filterSubtree.soundsIncomingMessage = false;
 filterSubtree.soundsParticipantJoined = false;
 filterSubtree.soundsParticipantLeft = false;
+filterSubtree.aiAttentionAnalysisEnabled = true; // keep it true for persistent storage
 
 PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
 

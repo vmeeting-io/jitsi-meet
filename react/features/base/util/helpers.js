@@ -97,6 +97,54 @@ export function getBaseUrl(w: Object = window) {
 }
 
 /**
+ * Returns the size of the file contained within a URL
+ *
+ * @param {string} url - the url pointing the directory of the uploaded file;
+ * @returns {string}
+ * 
+ * This method may throw an error while fetching data from a cross-origin site; luckily all our files uploads are contained within the same site
+ */
+ export function getFileSize(url)
+ {
+    let fileSize = '';
+    let http = new XMLHttpRequest();
+    http.open('HEAD', url, false); // false = Synchronous
+
+    http.send(null); // it will stop here until this http request is complete
+ 
+    if (http.status === 200) {
+        fileSize = http.getResponseHeader("Content-Length");
+    }
+ 
+    return fileSize;
+}
+
+/**
+ * Given the size of a file (in units bytes) converts appropriately into KB or MB
+ * 
+ * @param {number} fsize 
+ * @returns {string}
+ */
+export function processFileSize(fsize) 
+{
+    const oneMB = 1024 * 1024; // units in bytes
+    const oneKB = 1024;
+    if(fsize < oneMB) {
+        const sizeinKB = parseFloat(fsize / oneKB).toFixed(2);
+        return `${sizeinKB} KB`;
+    } else {
+        const sizeinMB = parseFloat(fsize / oneMB).toFixed(2);
+        return `${sizeinMB} MB`;
+    }
+}
+
+export function truncateDateTimeStamp(filename) {
+    const x = filename.lastIndexOf('_')
+    const y = filename.lastIndexOf('.')
+    return filename.substring(0,x) + filename.substring(y,filename.length);
+}
+
+/**
  * Returns the namespace for all global variables, functions, etc that we need.
  *
  * @returns {Object} The namespace.

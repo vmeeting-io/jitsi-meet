@@ -18,6 +18,11 @@ import { IconPhone } from '../icons';
 export const DEFAULT_AVATAR_RELATIVE_PATH = 'images/avatar.png';
 
 /**
+ * Default birthdate to be exported in case participant has not set his/her birthdate
+ */
+export const DEFAULT_BIRTHDATE = '1980-01-01';
+
+/**
  * The value for the "var" attribute of feature tag in disco-info packets.
  */
 export const DISCO_REMOTE_CONTROL_FEATURE = 'http://jitsi.org/meet/remotecontrol';
@@ -68,3 +73,14 @@ export const PARTICIPANT_ROLE = {
     NONE: 'none',
     PARTICIPANT: 'participant'
 };
+
+/**
+ * The set of possible consent status.
+ * 
+ * @enum String
+ */
+export const PIC_CONSENT = {
+    UNAPPROVED: 0,
+    APPROVED: 1,
+    DENIED: 2
+}

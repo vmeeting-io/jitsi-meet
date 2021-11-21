@@ -41,6 +41,7 @@ $flagsImagePath: "../images/";
 @import 'modals/desktop-picker/desktop-picker';
 @import 'modals/device-selection/device-selection';
 @import 'modals/dialog';
+@import 'modals/did-consent/consent';
 @import 'modals/embed-meeting/embed-meeting';
 @import 'modals/feedback/feedback';
 @import 'modals/invite/info';
@@ -110,5 +111,9 @@ $flagsImagePath: "../images/";
 @import 'reactions-menu';
 @import 'plan-limit';
 @import 'polls';
+@import 'components/picker';
+@import 'components/progress';
+@import 'timer-dialog';
+@import 'timer-label';
 
 /* Modules END */

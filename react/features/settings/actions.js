@@ -7,7 +7,7 @@ import tokenLocalStorage from '../../api/tokenLocalStorage';
 import { setFollowMe, setStartMutedPolicy, setUserDeviceAccessDisabled } from '../base/conference';
 import { hideDialog, openDialog } from '../base/dialog';
 import { i18next } from '../base/i18n';
-import { updateSettings } from '../base/settings';
+import { setAIAttentionSettings, updateSettings } from '../base/settings';
 import { setPrejoinPageVisibility } from '../prejoin/actions';
 import { PREJOIN_SCREEN_STATES } from '../prejoin/constants';
 import { setScreenshareFramerate } from '../screen-share/actions';
@@ -118,6 +118,12 @@ export function submitMoreTab(newState: Object): Function {
 
             dispatch(setScreenshareFramerate(frameRate));
         }
+
+        if (newState.aiAttentionFlag !== currentState.aiAttentionFlag) {
+            dispatch(updateSettings({
+                aiAttentionAnalysisEnabled: newState.aiAttentionFlag
+            }));
+        }
     };
 }
 
@@ -171,6 +177,21 @@ export function submitProfileTab(newState: Object): Function {
                     console.log(err);
                 }
 
+            }
+            
+            // patching changes to the birthdate information
+            if (newState.birthdate !== currentState.birthdate) {
+                APP.conference.changeBirthDate(newState.birthdate)
+                try {
+                    axios.patch(`${_apiBase}/account`, { birthDate: String(newState.birthdate) }, config).then((resp) => {
+                        const token = resp.data;
+                        tokenLocalStorage.setItem(token, APP.store.getState());
+                        // update the JWT token when birthday information is updated
+                        dispatch(setJWT(resp.data));
+                    });
+                } catch(err) {
+                    console.log(err);
+                }
             }
             
             // previously hideDialog was called on every onSubmit Button, but here we check the above condition

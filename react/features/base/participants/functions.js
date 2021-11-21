@@ -8,13 +8,17 @@ import { MEDIA_TYPE, shouldRenderVideoTrack } from '../media';
 import { toState } from '../redux';
 import { getTrackByMediaTypeAndParticipant } from '../tracks';
 import { createDeferred } from '../util';
+import axios from 'axios';
 
 import {
     JIGASI_PARTICIPANT_ICON,
     MAX_DISPLAY_NAME_LENGTH,
-    PARTICIPANT_ROLE
+    PARTICIPANT_ROLE,
+    PIC_CONSENT
 } from './constants';
 import { preloadImage } from './preloadImage';
+import tokenLocalStorage from '../../../api/tokenLocalStorage';
+import { getAuthUrl } from '../../../api/url';
 
 declare var interfaceConfig: Object;
 
@@ -44,6 +48,75 @@ const AVATAR_CHECKER_FUNCTIONS = [
     // }
 ];
 /* eslint-enable arrow-body-style, no-unused-vars */
+
+export function openOnNewTab(url){
+    window.open(url, "_blank");
+}
+
+
+export function askForConsent(email: String){
+
+    const state = APP.store.getState();
+    const config = {
+        headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(state)}`}
+    };
+
+    const _apiBase = getAuthUrl(state);
+
+    try {
+        axios.get(`${_apiBase}/verifyConsent`, config).then((resp) => {
+            switch(resp.data.consent){
+                case PIC_CONSENT.UNAPPROVED:
+                    //Open a new tab with verification.
+                    openOnNewTab('/auth/page/consent')
+                    break;
+                case PIC_CONSENT.APPROVED:
+                    //Continue without any action.
+                    console.log("vmchg: PIC_CONSENT ",PIC_CONSENT.APPROVED ) 
+                    break;
+                case PIC_CONSENT.DENIED:
+                    console.log("vmchg: PIC_CONSENT ",PIC_CONSENT.DENIED ) 
+                    break;
+            }
+        });
+    } catch(err) {
+        console.log("vmchg: ", err);
+    }
+
+    //make an axios call and get the user status.
+}
+export async function isDIDDenied(){
+    const state = APP.store.getState();
+    const config = {
+        headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(state)}`}
+    };
+    const _apiBase = getAuthUrl(state);
+
+    try {
+        const resp = await axios.get(`${_apiBase}/isDIDDenied`, config)
+        return resp.data.denied
+    } catch(err) {
+        console.log("vmchg: ", err);
+        return err
+    }
+}
+
+export async function denyDID(){
+    const state = APP.store.getState();
+    const config = {
+        headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(state)}`}
+    };
+    const _apiBase = getAuthUrl(state);
+
+    try {
+        const resp = await axios.post(`${_apiBase}/denyDID`, config)
+        return resp.data
+    } catch(err) {
+        console.log("vmchg: ", err);
+        return err
+    }
+}
+
 
 /**
  * Resolves the first loadable avatar URL for a participant.

@@ -116,7 +116,6 @@ class VideoSettingsButton extends Component<Props> {
 
         if (handleClick) {
             handleClick();
-
             return;
         }
 

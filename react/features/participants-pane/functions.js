@@ -3,7 +3,8 @@
 import {
     isParticipantApproved,
     isEnabledFromState,
-    isLocalParticipantApprovedFromState
+    isLocalParticipantApprovedFromState,
+    isSupported
 } from '../av-moderation/functions';
 import { getFeatureFlag, INVITE_ENABLED } from '../base/flags';
 import { MEDIA_TYPE, type MediaType } from '../base/media/constants';
@@ -170,11 +171,11 @@ export const getParticipantsPaneOpen = (state: Object) => Boolean(getState(state
 export function getQuickActionButtonType(participant: Object, isAudioMuted: Boolean, state: Object) {
     // handled only by moderators
     if (isLocalParticipantModerator(state)) {
-        if (isForceMuted(participant, MEDIA_TYPE.AUDIO, state) || isForceMuted(participant, MEDIA_TYPE.VIDEO, state)) {
-            return QUICK_ACTION_BUTTON.ASK_TO_UNMUTE;
-        }
         if (!isAudioMuted) {
             return QUICK_ACTION_BUTTON.MUTE;
+        }
+        if (isSupported()(state)) {
+            return QUICK_ACTION_BUTTON.ASK_TO_UNMUTE;
         }
     }
 
@@ -193,3 +194,40 @@ export const shouldRenderInviteButton = (state: Object) => {
 
     return flagEnabled && !disableInviteFunctions;
 };
+
+/** 
+ * Helper function that retrieves today's date and returns a string in the format YYYY-MM-DD 
+ * Not relevant to a particular participant
+ */
+ export function getTodaysDate(separator='-') {
+    let newDate = new Date()
+    let date = newDate.getDate();
+    let month = newDate.getMonth() + 1;
+    let year = newDate.getFullYear();
+
+    return `${year}${separator}${month<10?`0${month}`:`${month}`}${separator}${date<10?`0${date}`:`${date}`}`
+
+}
+
+/**
+ * Function that is used for deciding whether or not to display birthday cake icon in {ParticipantItem} component
+ * as well as showing birthday hat menu option in {MeetingParticipantContextMenu}
+ * @param {Object} participant - The participant object
+ * @returns {boolean} true if participant's birthday is today, else returns false
+ */
+export function isTodayParticipantBirthday(participant: Object) {
+    let birthDate = participant.birthDate;
+    if(birthDate === undefined) {
+        return false;
+    }
+
+    let participantMD = birthDate.substr(5, 5); // retrieve the substring of birthdate starting at index 5 for a length of 5 characters of the string
+    const todayDate = getTodaysDate();
+    let currentMD = todayDate.substr(5, 5); // retrieve the substring of birthdate starting at index 5 for a length of 5 characters of the string
+
+    if(participantMD === currentMD) {
+        return true;
+    } else {
+        return false;
+    }
+}

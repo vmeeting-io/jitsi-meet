@@ -408,13 +408,14 @@ export function trackAdded(track) {
                 }
             }
 
-            track.on(JitsiTrackEvents.LOCAL_TRACK_STOPPED,
-                () => dispatch({
+            track.on(JitsiTrackEvents.LOCAL_TRACK_STOPPED, () => {
+                dispatch({
                     type: TRACK_STOPPED,
                     track: {
                         jitsiTrack: track
                     }
-                }));
+                });
+            });
         } else {
             participantId = track.getParticipantId();
             isReceivingData = true;

@@ -4,8 +4,6 @@ import React, { Component } from 'react';
 
 import { translate } from '../../base/i18n';
 
-import s from './SpeakerStatsItem.module.scss';
-
 /**
  * The type of the React {@code Component} props of {@link SpeakerStatsLabels}.
  */
@@ -34,19 +32,16 @@ class SpeakerStatsLabels extends Component<Props> {
 
         return (
             <div className = 'speaker-stats-item__labels'>
-                <div className = { `speaker-stats-item__name ${s.nameContainer}` }>
+                <div className = 'speaker-stats-item__name'>
                     { t('speakerStats.name') }
                 </div>
-                <div className = { s.statusContainer }>
-                    { t('speakerStats.status') }
-                </div>
-                <div className = { `speaker-stats-item__s_time ${s.joinTime}` }>
+                <div className = 'speaker-stats-item__s_time'>
                     { t('speakerStats.joinTime') }
                 </div>
-                <div className = { `speaker-stats-item__l_time ${s.leaveTime}` }>
+                <div className = 'speaker-stats-item__l_time'>
                     { t('speakerStats.leaveTime') }
                 </div>
-                <div className = { s.duration }>
+                <div className = 'speaker-stats-item__duration'>
                     { t('speakerStats.duration') }
                 </div>
             </div>

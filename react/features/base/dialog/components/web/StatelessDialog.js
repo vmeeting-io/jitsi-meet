@@ -145,13 +145,14 @@ class StatelessDialog extends Component<Props> {
             customHeader,
             children,
             className,
+            consentDialog,//Flag set to true, only for did consent Dialog.  
             hideCloseIconButton,
+            onX,
             t /* The following fixes a flow error: */ = _.identity,
             titleString,
             titleKey,
             width
         } = this.props;
-
         return (
             <Modal
                 autoFocus = { true }
@@ -160,6 +161,8 @@ class StatelessDialog extends Component<Props> {
                         <ModalHeader
                             { ...props }
                             heading = { titleString || t(titleKey) }
+                            consentDialog = { consentDialog }
+                            onX = { onX }
                             hideCloseIconButton = { hideCloseIconButton } />
                     )
                 }}

@@ -2,12 +2,14 @@
 import { withStyles } from '@material-ui/core/styles';
 import React, { Component } from 'react';
 
+import { arApprovalDialog, enableARHat } from '../../../ar-effect';
 import { Avatar } from '../../../base/avatar';
 import { isToolbarButtonEnabled } from '../../../base/config/functions.web';
 import { openDialog } from '../../../base/dialog';
 import { isIosMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import {
+    IconBirthdayHat,
     IconCloseCircle,
     IconCrown,
     IconMeetingUnlocked,
@@ -15,13 +17,16 @@ import {
     IconMicDisabled,
     IconMuteEveryoneElse,
     IconShareVideo,
+    IconUserFollow,
     IconVideoOff
 } from '../../../base/icons';
 import {
     getLocalParticipant,
     getParticipantByIdOrUndefined,
+    getParticipantCount,
     isLocalParticipantModerator,
-    isParticipantModerator
+    isParticipantModerator,
+    updateParticipantBirthdayHatFlag
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { withPixelLineHeight } from '../../../base/styles/functions.web';
@@ -34,7 +39,7 @@ import { Drawer, DrawerPortal } from '../../../toolbox/components/web';
 import { GrantModeratorDialog, KickRemoteParticipantDialog, MuteEveryoneDialog } from '../../../video-menu';
 import { VolumeSlider } from '../../../video-menu/components/web';
 import MuteRemoteParticipantsVideoDialog from '../../../video-menu/components/web/MuteRemoteParticipantsVideoDialog';
-import { getComputedOuterHeight } from '../../functions';
+import { getComputedOuterHeight, isTodayParticipantBirthday } from '../../functions';
 
 import {
     ContextMenu,
@@ -43,6 +48,8 @@ import {
     ContextMenuItemGroup,
     ignoredChildClassName
 } from './styled';
+import { notifyBirthdayHatOn } from '../../actions.any';
+import GrantFollowMeModeratorDialog from '../../../video-menu/components/web/GrantFollowMeModeratorDialog';
 
 type Props = {
 
@@ -60,6 +67,11 @@ type Props = {
      * True if the chat button is enabled and false otherwise.
      */
     _isChatButtonEnabled: boolean,
+
+    /**
+     * True if today is participant's birthday
+     */
+    _isParticipantBirthday: Boolean,
 
     /**
      * True if the participant is moderator and false otherwise.
@@ -208,6 +220,7 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
 
         this._getCurrentParticipantId = this._getCurrentParticipantId.bind(this);
         this._onGrantModerator = this._onGrantModerator.bind(this);
+        this._onGrantFollowMeModerator = this._onGrantFollowMeModerator.bind(this);
         this._onKick = this._onKick.bind(this);
         this._onMuteEveryoneElse = this._onMuteEveryoneElse.bind(this);
         this._onMuteVideo = this._onMuteVideo.bind(this);
@@ -215,6 +228,8 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
         this._onSendToRoom = this._onSendToRoom.bind(this);
         this._position = this._position.bind(this);
         this._onVolumeChange = this._onVolumeChange.bind(this);
+        this._onBirthdayHatOn = this._onBirthdayHatOn.bind(this);
+        this._onBirthdayHatOff = this._onBirthdayHatOff.bind(this);
     }
 
     _getCurrentParticipantId: () => string;
@@ -243,6 +258,19 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
         }));
     }
 
+    _onGrantFollowMeModerator: () => void;
+
+    /**
+     * Grant follow me moderator permissions.
+     *
+     * @returns {void}
+     */
+    _onGrantFollowMeModerator() {
+        this.props.dispatch(openDialog(GrantFollowMeModeratorDialog, {
+            participantID: this._getCurrentParticipantId()
+        }));
+    }
+
     _onKick: () => void;
 
     /**
@@ -254,6 +282,31 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
         this.props.dispatch(openDialog(KickRemoteParticipantDialog, {
             participantID: this._getCurrentParticipantId()
         }));
+    }
+
+    /**
+     * 
+     * Put a birthday hat on the participant.
+     * 
+     * @returns {void}
+     */
+    _onBirthdayHatOn(){
+        const selectedParticipantID = this._getCurrentParticipantId();
+        this.props.dispatch(updateParticipantBirthdayHatFlag(selectedParticipantID, true));
+        notifyBirthdayHatOn(getLocalParticipant(APP.store.getState()).name,this._getCurrentParticipantId());
+    }
+    
+    /**
+     * 
+     * Put birthday hat off the participant.
+     * 
+     * @returns {void}
+     */
+    _onBirthdayHatOff(){
+        const selectedParticipantID = this._getCurrentParticipantId();
+        this.props.dispatch(updateParticipantBirthdayHatFlag(selectedParticipantID, false));
+        this.props.dispatch(arApprovalDialog(false));
+        enableARHat(this.props.dispatch,false); 
     }
 
     _onStopSharedVideo: () => void;
@@ -401,11 +454,15 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
             _currentRoomId,
             _isLocalModerator,
             _isChatButtonEnabled,
+            _isHatOn,
+            _isFollowMeModerator,
+            _isParticipantBirthday,
             _isParticipantModerator,
             _isParticipantVideoMuted,
             _isParticipantAudioMuted,
             _localVideoOwner,
             _participant,
+            _participantCount,
             _rooms,
             _volume = 1,
             classes,
@@ -427,7 +484,8 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
               && overflowDrawer
               && typeof _volume === 'number'
               && !isNaN(_volume);
-
+        const isRemote = !(APP.store.getState()["features/base/participants"].local.id == _participant?.id);
+    
         const actions
             = _participant?.isFakeParticipant ? (
                 <>
@@ -440,7 +498,15 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                 </>
             ) : (
                 <>
-                    {_isLocalModerator && (
+                    {_isLocalModerator && !isRemote && !_isFollowMeModerator && (
+                        <ContextMenuItemGroup>
+                            <ContextMenuItem onClick = { this._onGrantFollowMeModerator }>
+                                <ContextMenuIcon src = { IconUserFollow } />
+                                <span>{ t('videothumbnail.grantFollowMeModerator') }</span>
+                            </ContextMenuItem>
+                        </ContextMenuItemGroup>
+                    )}
+                    {_isLocalModerator && isRemote && (
                         <ContextMenuItemGroup>
                             <>
                                 {
@@ -451,14 +517,17 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                                     </ContextMenuItem>
                                 }
 
-                                <ContextMenuItem onClick = { this._onMuteEveryoneElse }>
-                                    <ContextMenuIcon src = { IconMuteEveryoneElse } />
-                                    <span>{t('toolbar.accessibilityLabel.muteEveryoneElse')}</span>
-                                </ContextMenuItem>
+                                {
+                                    _participantCount > 1
+                                    && <ContextMenuItem onClick = { this._onMuteEveryoneElse }>
+                                        <ContextMenuIcon src = { IconMuteEveryoneElse } />
+                                        <span>{t('toolbar.accessibilityLabel.muteEveryoneElse')}</span>
+                                    </ContextMenuItem>
+                                }
                             </>
 
                             {
-                                _isParticipantVideoMuted || (
+                                (_participantCount === 1 || _isParticipantVideoMuted) || (
                                     <ContextMenuItem onClick = { this._onMuteVideo }>
                                         <ContextMenuIcon src = { IconVideoOff } />
                                         <span>{t('participantsPane.actions.stopVideo')}</span>
@@ -467,35 +536,73 @@ class MeetingParticipantContextMenu extends Component<Props, State> {
                             }
                         </ContextMenuItemGroup>
                     )}
-
-                    <ContextMenuItemGroup>
+                    { isRemote && 
+                        <ContextMenuItemGroup>
                         {
                             _isLocalModerator && (
-                                    <>
-                                        {
-                                            !_isParticipantModerator && (
-                                                <ContextMenuItem onClick = { this._onGrantModerator }>
-                                                    <ContextMenuIcon src = { IconCrown } />
-                                                    <span>{t('toolbar.accessibilityLabel.grantModerator')}</span>
-                                                </ContextMenuItem>
-                                            )
-                                        }
-                                        <ContextMenuItem onClick = { this._onKick }>
+                                <>
+                                    {
+                                        !_isParticipantModerator && (
+                                            <ContextMenuItem onClick = { this._onGrantModerator }>
+                                                <ContextMenuIcon src = { IconCrown } />
+                                                <span>{t('toolbar.accessibilityLabel.grantModerator')}</span>
+                                            </ContextMenuItem>
+                                        )
+                                    }
+                                    {
+                                        _participantCount > 1
+                                        && <ContextMenuItem onClick = { this._onKick }>
                                             <ContextMenuIcon src = { IconCloseCircle } />
                                             <span>{ t('videothumbnail.kick') }</span>
                                         </ContextMenuItem>
-                                    </>
+                                    }
+                                    {
+                                        _isParticipantModerator && !_isFollowMeModerator && (
+                                            <ContextMenuItem onClick = { this._onGrantFollowMeModerator }>
+                                                <ContextMenuIcon src = { IconUserFollow } />
+                                                <span>{ t('videothumbnail.grantFollowMeModerator') }</span>
+                                            </ContextMenuItem>
+                                        )
+                                    }
+                                </>
                             )
                         }
+                            
                         {
-                            _isChatButtonEnabled && (
+                            _isParticipantBirthday && config.enableBirthdayARHat && !_isHatOn && <ContextMenuItem onClick = { this._onBirthdayHatOn }>
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ t('participantsPane.actions.applyBirthdayARHat') }</span>
+                            </ContextMenuItem>
+                        }
+                        
+                        {
+                            (_participantCount > 1 && _isChatButtonEnabled) && (
                                 <ContextMenuItem onClick = { this._onSendPrivateMessage }>
                                     <ContextMenuIcon src = { IconMessage } />
                                     <span>{t('toolbar.accessibilityLabel.privateMessage')}</span>
                                 </ContextMenuItem>
                             )
                         }
-                    </ContextMenuItemGroup>
+                    </ContextMenuItemGroup> }
+                    
+                    { !isRemote && <ContextMenuItemGroup>
+                        {/* Code portion to self-remove AR hat */}
+                        {
+                            _isParticipantBirthday && _isHatOn && config.enableBirthdayARHat && <ContextMenuItem onClick = { this._onBirthdayHatOff }>
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ t('participantsPane.actions.removeBirthdayARHat') }</span>
+                            </ContextMenuItem>
+                        }
+
+                        {/* Code portion to self-apply AR hat */}
+                        {
+                            _isParticipantBirthday && !_isHatOn && config.enableBirthdayARHat && <ContextMenuItem onClick = { this._onBirthdayHatOn }>
+                            <ContextMenuIcon src = { IconBirthdayHat } />
+                                <span>{ t('participantsPane.actions.applyBirthdayARHat') }</span>
+                            </ContextMenuItem>
+                        }
+                    </ContextMenuItemGroup> }
+
                     { showVolumeSlider
                         && <ContextMenuItemGroup>
                             <VolumeSlider
@@ -573,27 +680,35 @@ function _mapStateToProps(state, ownProps): Object {
     const participant = getParticipantByIdOrUndefined(state,
         overflowDrawer ? drawerParticipant?.participantID : participantID);
 
+    const isHatOn = participant.hatOn;
     const _currentRoomId = getCurrentRoomId(state);
     const _isLocalModerator = isLocalParticipantModerator(state);
     const _isChatButtonEnabled = isToolbarButtonEnabled('chat', state);
+    const _isParticipantBirthday = isTodayParticipantBirthday(participant);
     const _isParticipantVideoMuted = isParticipantVideoMuted(participant, state);
     const _isParticipantAudioMuted = isParticipantAudioMuted(participant, state);
     const _isParticipantModerator = isParticipantModerator(participant);
     const _rooms = Object.values(getRooms(state));
 
     const { participantsVolume } = state['features/filmstrip'];
+    const _participantCount = getParticipantCount(state);
     const id = participant?.id;
     const isLocal = participant?.local ?? true;
+    const _followMeModerator = state['features/follow-me'].moderator;
 
     return {
         _currentRoomId,
         _isLocalModerator,
         _isChatButtonEnabled,
+        _isFollowMeModerator: Boolean(_followMeModerator === participant.id),
         _isParticipantModerator,
         _isParticipantVideoMuted,
         _isParticipantAudioMuted,
         _localVideoOwner: Boolean(ownerId === localParticipantId),
         _participant: participant,
+        _participantCount,
+        _isParticipantBirthday,
+        _isHatOn: isHatOn,
         _rooms,
         _volume: isLocal ? undefined : id ? participantsVolume[id] : undefined
     };

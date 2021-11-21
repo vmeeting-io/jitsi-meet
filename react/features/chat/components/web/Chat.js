@@ -5,7 +5,7 @@ import React from 'react';
 import { FieldTextStateless as TextField } from '@atlaskit/field-text';
 import CrossCircleIcon from '@atlaskit/icon/glyph/cross-circle';
 import DropdownMenu, { DropdownItem, DropdownItemGroup } from '@atlaskit/dropdown-menu';
-
+import { uploadFile } from '../../functions';
 import { translate } from '../../../base/i18n';
 import { Icon, IconClose, IconMenu, IconMenuThumb, IconSearch } from '../../../base/icons';
 import { connect } from '../../../base/redux';
@@ -29,7 +29,6 @@ import { getLocalParticipant } from '../../../base/participants';
 import ChatDisableButtonForAll from './ChatDisableButtonForAll';
 import TouchmoveHack from './TouchmoveHack';
 
-import s from './Chat.module.scss';
 import { openDialog } from '../../../base/dialog';
 import EnableChatForAllParticipantsDialog from '../../../video-menu/components/web/EnableChatForAllParticipantsDialog';
 import DisableChatForAllParticipantsDialog from '../../../video-menu/components/web/DisableChatForAllParticipantsDialog';
@@ -37,6 +36,7 @@ import { setPrivateMessageRecipient } from '../../actions';
 import { showToast } from '../../../notifications';
 
 import Mark from 'mark.js';
+import DragAndDrop from './DragAndDrop';
 
 declare var APP: Object;
 
@@ -247,22 +247,43 @@ class Chat extends AbstractChat<Props> {
         return (
             <>
                 {this.props._isPollsEnabled && this._renderTabs()}
-                <TouchmoveHack isModal = { this.props._isModal }>
-                    <MessageContainer
-                        messages = { this.props._messages }
-                        ref = { this._messageContainerRef } />
-                </TouchmoveHack>
-                { _showMessageRecipient && <MessageRecipient /> }
-                { _showChatInput && (
-                    <>
-                        <ChatInput
-                            onResize = { this._onChatInputResize }
-                            onSend = { this._onSendMessage } />
-                        <KeyboardAvoider />
-                    </>
-                )}
+                <DragAndDrop handleDrop={this._fileDropHandler}>
+                    <TouchmoveHack isModal = { this.props._isModal }>
+                        <MessageContainer
+                            fileUploadPercentage = { this.props._fileUploadPercentage }
+                            fileName = { this.props._fileName }
+                            fileSize = { this.props._fileSize }
+                            isUploading = { this.props._isUploading }
+                            messages = { this.props._messages }
+                            ref = { this._messageContainerRef } />
+                    </TouchmoveHack>
+                    { _showMessageRecipient && <MessageRecipient /> }
+                    { _showChatInput && (
+                        <>
+                            <ChatInput
+                                onResize = { this._onChatInputResize }
+                                onSend = { this._onSendMessage } />
+                            <KeyboardAvoider />
+                        </>
+                    )}
+                </DragAndDrop>
             </>
         );
+    }
+
+    _fileDropHandler(file) {
+        const state = APP.store.getState();
+        
+        // code block that identifies whether or not there is a file upload, currently in progress or not
+        // if so upload is not processed.
+        const existingFileName = state['features/chat'].fileName || undefined;
+        const existingFileUploadP = state['features/chat'].fileUploadPercentage;
+        let fileUploadInProgress = false;
+        if((existingFileName !== undefined) && (existingFileUploadP > 0 && existingFileUploadP < 100)) {
+            fileUploadInProgress = true;
+        }
+
+        uploadFile(file, APP.store, fileUploadInProgress);
     }
 
     toggleChatHeaderMenuDialog = () => {
@@ -273,7 +294,7 @@ class Chat extends AbstractChat<Props> {
         const { t } = this.props;
 
         return (
-            <div className = { s.searchContainer }>
+            <div className = 'search-container'>
                 <TextField
                     compact = { true }
                     id = 'chatHeaderSearchBox'
@@ -285,7 +306,7 @@ class Chat extends AbstractChat<Props> {
                     onChange = { this._updateChatSearchInput }
                     type = 'text' />
                 <div
-                    className = { s.closeIcon }
+                    className = 'close-icon'
                     onClick = { this._onToggleSearch }>
                     <CrossCircleIcon size = 'small' />
                 </div>
@@ -353,13 +374,13 @@ class Chat extends AbstractChat<Props> {
             localParticipant.role === 'moderator';
 
         return (
-            <div className = {`chat-header ${s.chatHeader}`}>
+            <div className = 'chat-header'>
                 { !showSearch ? t('chat.title') : this._renderSearch() }
                 {/* Portion for rendering the chat close icon */}
-                <div className = { s.toolContainer }>
+                <div className = 'tool-container'>
                     { !showSearch && (
                         <div
-                            className = { s.button }
+                            className = 'button'
                             onClick = { this._onToggleSearch }>
                             <Tooltip
                                 content = { t('chat.search') }
@@ -387,7 +408,7 @@ class Chat extends AbstractChat<Props> {
                         </DropdownMenu>
                     ) : (
                         <div
-                            className = { s.button }
+                            className = 'button'
                             onClick = { this._onToggleChat }>
                             <Tooltip
                                 content = { t('dialog.close') }

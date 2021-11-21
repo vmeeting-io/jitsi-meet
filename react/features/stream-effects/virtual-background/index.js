@@ -8,20 +8,24 @@ import JitsiStreamBackgroundEffect from './JitsiStreamBackgroundEffect';
 import createTFLiteModule from './vendor/tflite/tflite';
 import createTFLiteSIMDModule from './vendor/tflite/tflite-simd';
 const models = {
-    model96: 'libs/segm_lite_v681.tflite',
-    model144: 'libs/segm_full_v679.tflite'
+    model_general: 'libs/selfie_segmentation.tflite',
+    model_landscape: 'libs/selfie_segmentation_landscape.tflite'
 };
 
 const segmentationDimensions = {
-    model96: {
-        height: 96,
-        width: 160
+    model_general: {
+        height: 256,
+        width: 256
     },
-    model144: {
+    model_landscape: {
         height: 144,
         width: 256
     }
 };
+
+let tflite;
+let wasmCheck;
+let isWasmDisabled = false;
 
 /**
  * Creates a new instance of JitsiStreamBackgroundEffect. This loads the Meet background model that is used to
@@ -36,42 +40,44 @@ export async function createVirtualBackgroundEffect(virtualBackground: Object, d
     if (!MediaStreamTrack.prototype.getSettings && !MediaStreamTrack.prototype.getConstraints) {
         throw new Error('JitsiStreamBackgroundEffect not supported!');
     }
-    let tflite;
-    let wasmCheck;
 
     // Checks if WebAssembly feature is supported or enabled by/in the browser.
     // Conditional import of wasm-check package is done to prevent
     // the browser from crashing when the user opens the app.
 
-    try {
-        wasmCheck = require('wasm-check');
-        const tfliteTimeout = 10000;
+    if (!tflite && !isWasmDisabled) {
+        try {
+            wasmCheck = require('wasm-check');
+            const tfliteTimeout = 10000;
+    
+            if (wasmCheck?.feature?.simd) {
+                tflite = await timeout(tfliteTimeout, createTFLiteSIMDModule());
+            } else {
+                tflite = await timeout(tfliteTimeout, createTFLiteModule());
+            }
+        } catch (err) {
+            isWasmDisabled = true;
 
-        if (wasmCheck?.feature?.simd) {
-            tflite = await timeout(tfliteTimeout, createTFLiteSIMDModule());
-        } else {
-            tflite = await timeout(tfliteTimeout, createTFLiteModule());
+            if (err?.message === '408') {
+                logger.error('Failed to download tflite model!');
+                dispatch(showWarningNotification({
+                    titleKey: 'virtualBackground.backgroundEffectError'
+                }));
+            } else {
+                logger.error('Looks like WebAssembly is disabled or not supported on this browser');
+                dispatch(showWarningNotification({
+                    titleKey: 'virtualBackground.webAssemblyWarning',
+                    description: 'WebAssembly disabled or not supported by this browser'
+                }));
+            }
+    
+            return;
+    
         }
-    } catch (err) {
-        if (err?.message === '408') {
-            logger.error('Failed to download tflite model!');
-            dispatch(showWarningNotification({
-                titleKey: 'virtualBackground.backgroundEffectError'
-            }));
-        } else {
-            logger.error('Looks like WebAssembly is disabled or not supported on this browser');
-            dispatch(showWarningNotification({
-                titleKey: 'virtualBackground.webAssemblyWarning',
-                description: 'WebAssembly disabled or not supported by this browser'
-            }));
-        }
-
-        return;
-
     }
 
     const modelBufferOffset = tflite._getModelBufferMemoryOffset();
-    const modelResponse = await fetch(wasmCheck.feature.simd ? models.model144 : models.model96);
+    const modelResponse = await fetch(models.model_landscape);
 
     if (!modelResponse.ok) {
         throw new Error('Failed to download tflite model!');
@@ -84,7 +90,7 @@ export async function createVirtualBackgroundEffect(virtualBackground: Object, d
     tflite._loadModel(model.byteLength);
 
     const options = {
-        ...wasmCheck.feature.simd ? segmentationDimensions.model144 : segmentationDimensions.model96,
+        ...segmentationDimensions.model_landscape,
         virtualBackground
     };
 

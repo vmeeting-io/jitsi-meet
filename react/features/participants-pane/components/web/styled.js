@@ -256,6 +256,7 @@ export const ParticipantContent = styled.div`
   height: 100%;
   overflow: hidden;
   padding-right: ${props => props.theme.panePadding}px;
+  padding-left: ${props => props.theme.panePadding}px;
 `;
 
 export const ParticipantStates = styled.div`
@@ -347,10 +348,17 @@ export const ParticipantNameContainer = styled.div`
   overflow: hidden;
 `;
 
+export const LabelContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+`
+
 export const ModeratorLabel = styled.div`
   font-size: 12px;
   line-height: 16px;
   color: #858585;
+  white-space: nowrap;
 `;
 
 export const ParticipantDetailsContainer = styled.div`
@@ -364,6 +372,13 @@ export const ParticipantDetailsContainer = styled.div`
 
 export const RaisedHandIndicatorBackground = styled.div`
   background-color: #ed9e1b;
+  border-radius: 3px;
+  height: 24px;
+  width: 24px;
+`;
+
+export const BirthdayIndicatorBackground = styled.div`
+  background-color: #ffffff;
   border-radius: 3px;
   height: 24px;
   width: 24px;

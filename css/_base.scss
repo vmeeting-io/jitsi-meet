@@ -115,14 +115,6 @@ form {
     display: block;
 }
 
-.watermark {
-    width: $watermarkWidth;
-    height: $watermarkHeight;
-    background-size: contain;
-    background-repeat: no-repeat;
-    z-index: $zindex2;
-}
-
 .leftwatermark {
     background-position: center left;
     background-repeat: no-repeat;
@@ -131,6 +123,7 @@ form {
     max-height: 40px;
     margin: 16px;
     position: relative;
+    z-index: 10;
 
     @include media-breakpoint-up(md) {
       max-width: 140px;

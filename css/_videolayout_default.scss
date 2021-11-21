@@ -260,6 +260,15 @@
             }
         }
     }
+
+    .watermark {
+        display: none !important;
+        margin: 24px 0 0 24px !important;
+    
+        @include media-breakpoint-up(sm) {
+            display: block !important;
+        }
+    }
 }
 
 #localVideoWrapper {
@@ -791,4 +800,22 @@
     top: calc(50% + 30px);
     white-space: nowrap;
     width: 100%;
+}
+
+.indicator-container {
+    display: flex;
+    width: 20px;
+    align-items: center;
+    justify-content: flex-start;
+    margin-right: 4px;
+}
+
+.face-detect-canvas {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    pointer-events: none;
 }

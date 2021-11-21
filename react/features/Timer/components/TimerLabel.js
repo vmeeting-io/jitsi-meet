@@ -16,7 +16,6 @@ import AbstractTimerLabel, {
 } from './AbstractTimerLabel';
 
 import { notifyTimerStopped } from '../../participants-pane/actions.any'
-import s from './TimerLabel.module.scss';
 
 type Props = AbstractProps & {
 
@@ -45,8 +44,7 @@ export class TimerLabel extends Component<Props> {
 
         this.state = {
             timerValue: getLocalizedDurationFormatter(0),
-            className: 'label--green',
-            ended: false
+            className: 'custom-label'
         };
 
         let interval;
@@ -66,12 +64,15 @@ export class TimerLabel extends Component<Props> {
                 // Display gif and audio.
                 setTimeout(()=>{
                     notifyTimerStopped("TIMER_OFF");
-                },2000);
+                    this.props.displayTimerOffGif(false);
+                },10000);
+                
+                this.props.displayTimerOffGif(true);
 
-                this.setState({ timerValue: getLocalizedDurationFormatter(0), 
-                    className: 'label--red',
-                    ended: true
-                    });
+                this.setState({
+                    timerValue: getLocalizedDurationFormatter(0),
+                    className: 'custom-label-red'
+                });
                 clearInterval(this.interval);
                 
             }else{
@@ -87,24 +88,21 @@ export class TimerLabel extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const {
-            t
-        } = this.props;
+        const { t } = this.props;
 
         return (
             <>
                 <Tooltip
                     position = { 'bottom' }>
-                    <Label
-                        className = { this.state.className }
-                        icon = { IconStopWatch }
-                        id = 'timerLabel'
-                        text = { "Timer " + this.state.timerValue } />
+                    <div className = 'timer-label' >
+                        <Label
+                            className = { this.state.className}
+                            icon = { IconStopWatch }
+                            id = 'timerLabel'
+                            text = { "Timer " + this.state.timerValue } />
+                    </div>
                 </Tooltip>
-
-                { this.state.ended && <div className={s.imgWrap} id='timer-end-clock'>
-                    <img className={s.gif} src='/static/clock-buzz.gif'/>
-                </div> }
+                
             </>
         );
     }

@@ -1,7 +1,7 @@
 /* @flow */
 /* global $ */
 
-import React, { useCallback } from 'react';
+import React, { useCallback,useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
@@ -29,6 +29,7 @@ import { InsecureRoomNameLabel } from '.';
 import { setSubject } from '../../../base/conference';
 import { showConfirmDialog } from '../../../notifications/functions.web';
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
+import { TimerOffGif } from '../../../Timer/components';
 
 /**
  * The type of the React {@code Component} props of {@link ConferenceInfo}.
@@ -91,6 +92,13 @@ const getLeftMargin = () => {
  * @class ConferenceInfo
  */
 function ConferenceInfo(props: Props) {
+    const [displayClockGif, setDisplayClockGif] = useState(false);
+ 
+
+    const _displayTimerOffGif = (flag)=>{
+        setDisplayClockGif(flag);
+    }
+
     const {
         _hideConferenceNameAndTimer,
         _hideConferenceTimer,
@@ -193,9 +201,10 @@ function ConferenceInfo(props: Props) {
                 style = {{
                     marginTop: '30px'
                 }}>
-                {_timerStarted && <TimerLabel />}
+                {_timerStarted && <TimerLabel displayTimerOffGif={ _displayTimerOffGif }/>}
             </div>
         </div>
+        {displayClockGif && <TimerOffGif />}
         </>
     );
 }

@@ -2,9 +2,38 @@
 
 import { PersistenceRegistry, ReducerRegistry } from '../base/redux';
 
-import { AR_ENABLED, SET_AR } from './actionTypes';
+import { AR_ENABLED, SET_AR, AR_APPROVAL_DIALOG } from './actionTypes';
+
+/**
+ * The default/initial redux state of the feature {@code base/settings}.
+ *
+ * @type Object
+ */
+const DEFAULT_STATE = {
+    arApprovalDialog: true,
+    arEffectEnabled: false
+}
 
 const STORE_NAME = 'features/ar-effect';
+
+/**
+ * Sets up the persistence of the feature {@code base/settings}.
+ */
+const filterSubtree = {};
+
+// start with the default state
+Object.keys(DEFAULT_STATE).forEach(key => {
+    filterSubtree[key] = true;
+});
+
+// we want to filter these props, to not be stored as they represent
+// what is currently opened/used as devices
+// filterSubtree.audioOutputDeviceId = false;
+// filterSubtree.cameraDeviceId = false;
+// filterSubtree.micDeviceId = false;
+
+// commented out persistence registry because we don't want ar-effect to be stored within the browser's local storage
+// PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
 
 /**
  * Reduces redux actions which activate/deactivate virtual background image, or
@@ -18,12 +47,14 @@ const STORE_NAME = 'features/ar-effect';
  * specified action.
  */
 ReducerRegistry.register(STORE_NAME, (state = {}, action) => {
-    const { arSource, arEffectEnabled } = action;
+    const { arSource, arEffectEnabled, arApprovalDialog } = action;
 
     /**
      * Sets up the persistence of the feature {@code virtual-background}.
      */
-    PersistenceRegistry.register(STORE_NAME);
+
+    // commented out persistence registry because we don't want ar-effect to be stored within the browser's local storage
+    // PersistenceRegistry.register(STORE_NAME); 
 
     switch (action.type) {
     case SET_AR: {
@@ -37,6 +68,12 @@ ReducerRegistry.register(STORE_NAME, (state = {}, action) => {
         return {
             ...state,
             arEffectEnabled
+        };
+    }
+    case AR_APPROVAL_DIALOG: {
+        return {
+            ...state,
+            arApprovalDialog
         };
     }
     }

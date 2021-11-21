@@ -50,7 +50,25 @@
     .profile-edit-field {
         flex: 1;
     }
+
+    .birthday-edit {
+        display: flex;
+        width: 100%;
+    }
+
+    .birthday-edit-field {
+        flex: 1;
+        padding-right: 20px;
+    }
+
+    .birthday-footnote {
+        font-size: small;
+        position: relative;
+        top: 4px;
+    }
+
     .settings-sub-pane {
+        margin: 10px;
         flex: 1;
     }
 

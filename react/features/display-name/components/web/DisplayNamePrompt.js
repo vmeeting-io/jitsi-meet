@@ -10,7 +10,8 @@ import AbstractDisplayNamePrompt, {
     type Props
 } from '../AbstractDisplayNamePrompt';
 import { showToast } from '../../../notifications';
-import s from './DisplayNamePrompt.module.scss';
+import { getLocalParticipant } from '../../../base/participants';
+import { openLoginDialogDIDPopUp } from '../../../DIDConsent/actions.any';
 
 /**
  * The type of the React {@code Component} props of {@link DisplayNamePrompt}.
@@ -133,7 +134,12 @@ class DisplayNamePrompt extends AbstractDisplayNamePrompt<State> {
                 icon: 'info',
                 animation: false });
         }
-        return this._onSetDisplayName(this.state.displayName);
+        this._onSetDisplayName(this.state.displayName);
+        const participant = getLocalParticipant(APP.store.getState());
+        if (participant.email == undefined){
+            APP.store.dispatch(openLoginDialogDIDPopUp());
+        }
+
     }
 }
 

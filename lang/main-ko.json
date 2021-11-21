@@ -83,6 +83,10 @@
         "enter": "방 입장",
         "error": "메시지가 전송되지 않았습니다.\n수신인이 회의실에 없습니다.",
         "fieldPlaceHolder": "여기에 메시지를 입력하세요",
+        "filesize": "용량: ",
+        "message": "메시지",
+        "messageAccessibleTitle": "{{user}}:",
+        "messageAccessibleTitleMe": "나:",
         "messagebox": "메시지 입력",
         "messageTo": "{{recipient}}에게 개인메시지",
         "noMessagesMessage": "회의에 아직 메시지가 없습니다. 여기서 대화를 시작하십시오!",
@@ -93,6 +97,8 @@
         },
         "privateNotice": "{{recipient}}에게 개인메시지",
         "search": "대화내용 검색",
+        "send": "전송",
+        "smileys": "이모티콘",
         "smileysPanel": "이모지 패널",
         "tabs": {
             "chat": "채팅",
@@ -233,6 +239,32 @@
         "connectError": "죄송합니다. 문제가 발생하여 회의에 연결할 수 없습니다",
         "connectErrorWithMsg": "죄송합니다. 뭔가 잘못되어 회의에 연결할 수 없습니다: {{msg}}",
         "connecting": "연결 중",
+        "consent":{
+            "agree": "동의",
+            "cancel": "취소",
+            "complete":"완료",
+            "dialogOneMessage":"한국지능정보사회진흥원(NIA)에서 주관하는 데이터 플래그십사업 (주)케이에듀텍 주관 제안과제 '실시간 온라인 영상 수업에서 상호작용 향상 혁신 서비스 개발' 을 위하여 개인정보 보호법 제15조 및 제17조에 따라 이용자의 개인정보를 수집, 이용, 제3자 제공합니다.",
+            "dialogTwoMessage":"데이터 저장 동의 확인을 위해 본인계정 및 전화번호 확인 또는 입력해 주세요. <br>전화번호와 저장 동의 인증 전화번호와 동일해야 인증이 확인됩니다.<br>",
+            "dialogThreeMessage":"QR코드를 스캔하시면 간편 인증 및 데이터 저장 동의 할 수 있는 APP으로 이동됩니다. <br><br><br> 완료 후엔 완료 버튼을 눌러주세요",
+            "dialogLoginMessage":"한국지능정보사회진흥원(NIA) 주관하는 데이터 플래그십 사업의 일환으로  '실시간 온라인 영상 수업에서 상호작용 향상 혁신 서비스 개발'의 서비스를 위해 로그인이 필요합니다.",
+            "disagree": "미동의",
+            "invalidPhoneNumber": "유효하지 않은 번호입니다",
+            "titleDialogOne": "데이터플래그십 데이터 저장 동의 요청",
+            "titleDialogTwo": "데이터플래그십 데이터 저장 동의 요청",
+            "titleDialogThree": "데이터플래그십 데이터 저장 동의 요청",
+            "next":"다음",
+            "phoneNumber":"전화번호",
+            "prev":"이전",
+            "notice": {
+                "dummyName":"홍길동",
+                "disagreeTitle":"데이터플래그십 데이터 저장 동의.",
+                "disagreeNotice":"데이터플래그십 데이터 저장에 동의하지 않으셨습니다.",
+                "agreeTitle":"데이터플래그십 데이터 저장 동의.",
+                "agreeNotice":"데이터플래그십 데이터 저장에 동의하셨습니다.",
+                "verificationOnProcess": "데이터 플래그십 데이터 동의 진행중입니다. 동의 절차가 완료되면 완료버튼을 클릭해주세요.",
+                "viewMore": "상세 보기"
+            }
+        }, 
         "contactSupport": "문의하기",
         "copied": "복사됨",
         "copy": "복사",
@@ -270,6 +302,8 @@
         "error": "에러",
         "goHome": "홈으로",
         "gracefulShutdown": "서비스는 현재 유지 관리를 위해 중단되었습니다. 나중에 다시 시도 해주십시오.",
+        "grantFollowMeModeratorDialog": "모두가 이 참가자의 화면을 팔로잉하도록 지정하시겠습니까?",
+        "grantFollowMeModeratorTitle": "화면 팔로잉",
         "grantModeratorDialog": "이 참가자를 방장으로 지정 하시겠습니까?",
         "grantModeratorTitle": "방장 위임",
         "hangupAllTitle": "{{participantDisplayName}}님이 회의를 종료했습니다!",
@@ -310,6 +344,8 @@
         "micPermissionDeniedError": "마이크를 사용할 수있는 권한을 부여하지 않았습니다. 회의에 계속 참가할 수는 있지만 다른 사람들은 듣지 않습니다. 검색 주소창의 카메라 버튼을 사용하여 문제를 해결하십시오.",
         "micTimeoutError": "마이크를 시작할 수 없습니다. 시간 초과!",
         "micUnknownError": "알 수 없는 이유로 마이크를 사용할 수 없습니다",
+        "moderationAudioLabel": "참가자 음소거 해제 허용",
+        "moderationVideoLabel": "참가자 카메라 켜기 허용",
         "muteEveryoneElseDialog": "음소거 된 후에도 참가자는 언제든지 스스로 음소거를 해제 할 수 있습니다.",
         "muteEveryoneElseTitle": "{{whom}}을 제외한 모든 참가자를 음소거 하시겠습니까?",
         "muteEveryoneDialog": "모두 음소거 하시겠습니까? 참가자는 언제든지 스스로 음소거를 해제 할 수 있습니다.",
@@ -488,6 +524,9 @@
         "webAssemblyWarning": "WebAssembly가 지원되지 않습니다.",
         "backgroundEffectError": "배경 적용에 실패했습니다."
     },
+    "faceDetect": {
+        "failToLoadError": "얼글 인식 적용에 실패했습니다."
+    },
     "feedback": {
         "average": "보통",
         "bad": "나쁨",
@@ -496,6 +535,12 @@
         "rateExperience": "회의 경험 평가하기",
         "veryBad": "매우 나쁨",
         "veryGood": "매우 좋음"
+    },
+    "fileupload": {
+        "title": "파일 전송",
+        "error": "파일을 업로드하는 중에 오류가 발생되었니다.",
+        "fileuploadinprogress": "파일 업로드 중입니다. 업로드가 완료된 후 다시 시도해 주세요.",
+        "maxfilesizeexceeded": "업로드된 파일이 허용되는 최대 파일 크기를 초과합니다."
     },
     "footer": {
         "contactUs": "문의하기",
@@ -673,7 +718,7 @@
         "moderator": "방장 권한이 부여되었습니다!",
         "muted": "음소거로 회의가 시작되었습니다",
         "mutedTitle": "음소거 상태입니다!",
-        "mutedRemotelyTitle": "{{participantDisplayName}}님에 의해 음소거 되었습니다!",
+        "mutedRemotelyTitle": "{{moderator}}님에 의해 음소거 되었습니다!",
         "mutedRemotelyDescription": "말할 준비가되면 언제든지 음소거를 해제 할 수 있습니다.",
         "videoMuted": "카메라 꺼짐 상태로 회의가 시작되었습니다.",
         "videoMutedTitle": "카메라 꺼짐 상태입니다!",
@@ -723,6 +768,10 @@
         "timerTitle": "타이머 설정",
         "timerInitiatedBy": "{{initiator}}님에 의해 타이머가 시작되었습니다.",
         "timerFinishedBy": "{{initiator}}님에 의해 타이머가 해제되었습니다.",
+        "birthDayAlert": "생일 알림",
+        "birthDayAlertMessage": "{{bParticipant}}님의 생일을 축하합니다",
+        "birthdayHatOn": "{{initiator}}님이 {{participant}}님에게 생일모자을 적용했습니다.",
+        "birthdayHatOnTitle": "생일 모자",
         "groupTitle": "알림"
     },
     "participantsPane": {
@@ -735,7 +784,10 @@
             "waitingLobby": "로비에서 대기중 ({{count}})"
         },
         "actions": {
+            "aiAttentionAnalysis": "집중도",
             "allow": "참가자에게 아래와 같이 허용:",
+            "applyBirthdayARHat": "생일 모자 켜기",
+            "removeBirthdayARHat": "생일 모자 끄기",
             "blockEveryoneMicCamera": "마이크와 카메라 모두 차단",
             "invite": "초대하기",
             "askUnmute": "음소거 해제 요청",
@@ -858,7 +910,8 @@
         "setDisplayNameLabel": "이름 설정",
         "setEmailInput": "이메일 입력",
         "setEmailLabel": "이메일 설정",
-        "title": "프로필"
+        "title": "프로필",
+        "birthDayFootNote": "1980-01-01은 기본 생년월일이며 수동으로 변경하지 않는 한 경우에 AR 모자를 사용되지 않습니다."
     },
     "raisedHand": "말하기 요청",
     "recording": {
@@ -907,6 +960,7 @@
         "toggleLabel": "회의 공개"
     },
     "settings": {
+        "aiAttention": "집중도 사용여부",
         "background": "배경",
         "calendar": {
             "about": "{{appName}} 캘린더 통합은 향후 일정을 읽을 수 있도록 캘린더에 안전하게 액세스하는 데 사용됩니다.",
@@ -919,7 +973,7 @@
         "desktopShareWarning": "새 설정을 적용하려면 화면 공유를 다시 시작해야 합니다.",
         "desktopShareHighFpsWarning": "화면 공유를 위한 더 높은 프레임 속도는 네트웍 대역폭에 영향을 미칠 수 있습니다. 새 설정을 적용하려면 화면 공유를 다시 시작해야 합니다.",
         "devices": "장치",
-        "followMe": "모두 나와 같은 화면 상태로",
+        "followMe": "내 화면 팔로잉",
         "framesPerSecond": "프레임/초",
         "incomingMessage": "수신 메시지",
         "language": "언어",
@@ -944,7 +998,9 @@
         "startVideoMuted": "모두가 카메라 꺼짐 상태로 시작합니다",
         "disableDeviceAccess": "참가자 마이크와 카메라 제어를 제한",
         "talkWhileMuted": "음소거 상태로 대화 중",
-        "title": "설정"
+        "title": "설정",
+        "turnOffAIAttentionAnalysis": "미사용",
+        "turnOnAIAttentionAnalysis": "사용"
     },
     "settingsView": {
         "advanced": "고급 설정",
@@ -1003,6 +1059,7 @@
         "accessibilityLabel": {
             "audioOnly": "음성전용 모드 토글",
             "audioRoute": "음성 장비 선택하기",
+            "birthday": "축하",
             "boo": "우우",
             "breakoutRoom": "소회의실 입장/나가기",
             "callQuality": "품질 설정하기",
@@ -1061,6 +1118,7 @@
             "shareYourScreen": "화면공유 토글",
             "shortcuts": "단축키 보기",
             "show": "화면에 표시",
+            "silence": "조용",
             "speakerStats": "발표자 통계 토글",
             "surprised": "놀람",
             "tileView": "타일뷰 토글",
@@ -1075,6 +1133,7 @@
         "audioOnlyOn": "음성회의로 전환",
         "audioRoute": "음성 장비 선택하기",
         "authenticate": "인증하기",
+        "birthday": "축하",
         "boo": "우우",
         "callQuality": "품질 설정하기",
         "chat": "채팅창 열기/닫기",
@@ -1152,6 +1211,7 @@
         "sharedvideo": "YouTube 비디오 공유",
         "shareRoom": "친구 초대하기",
         "shortcuts": "단축키 보기",
+        "silence": "조용",
         "speakerStats": "접속자 통계",
         "startScreenSharing": "화면공유 시작",
         "startSubtitles": "자막 보이기",
@@ -1228,6 +1288,8 @@
         "dounmute": "음소거 해제",
         "dounmuteVideo": "카메라 켜기",
         "flip": "수평 뒤집기",
+        "following": "팔로잉",
+        "grantFollowMeModerator": "화면 팔로잉",
         "grantModerator": "방장 위임",
         "kick": "내보내기",
         "moderator": "방장",
@@ -1282,6 +1344,7 @@
         "login": "로그인",
         "loginRequired": "로그인이 필요합니다.",
         "join": "회의 입장",
+        "meetingDetails": "회의관리",
         "moderatedMessage": "또는 본인이 방장인 경우 사전에 <a href=\"{{url}}\" rel=\"noopener noreferrer\" target=\"_blank\">회의 URL을 예약</a>하세요.",
         "privacy": "개인정보",
         "recentList": "최근 이력",
@@ -1307,10 +1370,13 @@
     },
     "lobby": {
         "admit": "수락",
-        "admitAll": "모두 수략",
+        "admitAll": "모두 수락",
         "knockingParticipantList": "참가 요청",
         "allow": "수락",
         "backToKnockModeButton": "암호 없음, 대신 가입 요청",
+        "birthdayARHat": "생일 모자",
+        "birthdayARHatKeep": "유지",
+        "birthdayARHatReject": "해제",
         "dialogTitle": "로비 모드",
         "disableDialogContent": "현재 로비 모드가 활성화되어 있습니다. 이 기능은 원치 않는 참가자가 회의에 참가할 수 없도록합니다. 비활성화 하시겠습니까?",
         "disableDialogSubmit": "비활성화",

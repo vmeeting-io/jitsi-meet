@@ -80,6 +80,10 @@
         "enter": "Enter room",
         "error": "Your message was not sent.\n{{error}}",
         "fieldPlaceHolder": "Type your message here",
+        "filesize": "Size: ",
+        "message": "Message",
+        "messageAccessibleTitle": "{{user}}:",
+        "messageAccessibleTitleMe": "me:",
         "messagebox": "Type a message",
         "messageTo": "Private message to {{recipient}}",
         "noMessagesMessage": "There are no messages in the meeting yet. Start a conversation here!",
@@ -90,9 +94,8 @@
         },
         "privateNotice": "Private message to {{recipient}}",
         "search": "Search for chat messages",
-        "message": "Message",
-        "messageAccessibleTitle": "{{user}} says:",
-        "messageAccessibleTitleMe": "me says:",
+        "send": "Send",
+        "smileys": "Emoji",
         "smileysPanel": "Emoji panel",
         "tabs": {
             "chat": "Chat",
@@ -241,6 +244,33 @@
         "connectError": "Oops! Something went wrong and we couldn't connect to the conference.",
         "connectErrorWithMsg": "Oops! Something went wrong and we couldn't connect to the conference: {{msg}}",
         "connecting": "Connecting",
+        "consent":{
+            "agree": "Agree",
+            "cancel": "Cancel",
+            "complete":"Complete",
+            "dialogOneMessage":"We are informing you that your personal data may be collected, utilized or provided to the third parties based on Personal Information Protection Act article 15 and 17. This is as a part of Kedutech’s Dataflagship Project (2021), sponsored by National Information Society Agency (NIA), titled “Developing an innovative service to enhance the interaction among the users on real-time online classes.",
+            "dialogTwoMessage":"Please type your phone number in to agree to provide your data. <br>This phone number has to match with what is to be used in the APP for verification.",
+            "dialogThreeMessage":"Scan the QR code to open the APP to verify yourself. <br><br><br> Click Complete once the app procedure is completed.",
+            "dialogLoginMessage":"As part of the data flagship project sponsored by the Korea Intelligence Information Society Agency (NIA), login is needed for the service of 'development of innovative services to improve interaction in real-time online video classes.'",
+            "disagree": "Disagree",
+            "invalidPhoneNumber": "Invalid Phone Number",
+            "titleDialogOne": "Data request for Dataflagship Project",
+            "titleDialogTwo": "Data request for Dataflagship Project",
+            "titleDialogThree": "Data request for Dataflagship Project",
+            "next":"Next",
+            "phoneNumber":"Phone Number",
+            "prev":"Previous",
+            "notice": {
+                "dummyName":"John Doe",
+                "disagreeTitle":"Data request Dataflagship Project",
+                "disagreeNotice":"You have disagreed to provide your data",
+                "agreeTitle":"Data request for Dataflagship Project",
+                "agreeNotice":"You have agreed to provide your data",
+                "viewMore": "View More",
+                "verificationOnProcess": "Data flagship data consent is in progress. When the consent process is completed, please click the Complete button."
+            }
+        },
+       
         "contactSupport": "Contact support",
         "copied": "Copied",
         "copy": "Copy",
@@ -279,6 +309,8 @@
         "error": "Error",
         "goHome": "Home",
         "gracefulShutdown": "Our service is currently down for maintenance. Please try again later.",
+        "grantFollowMeModeratorDialog": "Are you sure you want to make this participant a follow me moderator?",
+        "grantFollowMeModeratorTitle": "Grant follow me moderator",
         "grantModeratorDialog": "Are you sure you want to make this participant a moderator?",
         "grantModeratorTitle": "Grant moderator",
         "hangupAllTitle": "{{participantDisplayName}} terminated the meeting!",
@@ -501,6 +533,9 @@
         "webAssemblyWarning": "WebAssembly not supported",
         "backgroundEffectError": "Failed to apply background effect."
     },
+    "faceDetect": {
+        "failToLoadError": "Failed to apply face detect."
+    },
     "feedback": {
         "average": "Average",
         "bad": "Bad",
@@ -510,6 +545,12 @@
         "veryBad": "Very Bad",
         "veryGood": "Very Good",
         "star": "Star"
+    },
+    "fileupload": {
+        "title": "File Upload",
+        "error": "There was an error in uploading file",
+        "fileuploadinprogress": "A file upload is currently in progress. Please try again after completing the current upload.",
+        "maxfilesizeexceeded": "Uploaded file exceeds the maximum file size allowed."
     },
     "footer": {
         "contactUs": "Contact Us",
@@ -680,6 +721,8 @@
         "focus": "Conference focus",
         "focusFail": "{{component}} not available - retry in {{ms}} sec",
         "hostAskedUnmute": "The moderator would like you to speak",
+        "invalidTimer": "Invalid Timer Settings",
+        "invalidTimerDescription": "Please add minutes or seconds before starting the timer",
         "invitedOneMember": "{{name}} has been invited",
         "invitedThreePlusMembers": "{{name}} and {{count}} others have been invited",
         "invitedTwoMembers": "{{first}} and {{second}} have been invited",
@@ -712,6 +755,10 @@
         "timerTitle": "Timer Setting",
         "timerInitiatedBy": "The timer has been started by {{initiator}}.",
         "timerFinishedBy": "The timer has been stopped by {{initiator}}.",
+        "birthDayAlert": "Birthday Alert",
+        "birthDayAlertMessage": "Happy Birthday {{bParticipant}}",
+        "birthdayHatOn": "{{initiator}} has applied a birthday hat to {{participant}}.",
+        "birthdayHatOnTitle": "AR Birthday Hat",
         "unmute": "Unmute",
         "unmuteByHost": "Host would like you unmute.",
         "unmuteVideoByHost": "Host would like you unmute video.",
@@ -751,7 +798,10 @@
             "waitingLobby": "Waiting in lobby ({{count}})"
         },
         "actions": {
+            "aiAttentionAnalysis": "Learner's Attention",
             "allow": "Allow attendees to:",
+            "applyBirthdayARHat": "Birthday Hat ON",
+            "removeBirthdayARHat": "Birthday Hat OFF",
             "audioModeration": "Unmute themselves",
             "blockEveryoneMicCamera": "Block everyone's mic and camera",
             "invite": "Invite Someone",
@@ -764,7 +814,7 @@
             "startRandomSelection": "Random Selection",
             "startTimerLabel": "Timer",
             "stopTimer": "Stop Timer",
-            "stopEveryonesVideo": "Mute everyone's video",
+            "stopEveryonesVideo": "Disable everyone's video",
             "stopVideo": "Disable video",
             "unblockEveryoneMicCamera": "Unblock everyone's mic and camera"
         }
@@ -878,7 +928,8 @@
         "setDisplayNameLabel": "Set your display name",
         "setEmailInput": "Enter e-mail",
         "setEmailLabel": "Set your email",
-        "title": "Profile"
+        "title": "Profile",
+        "birthDayFootNote": "*1980-01-01 is the default birth date and is not used for AR hat unless changed manually."
     },
     "raisedHand": "Would like to speak",
     "recording": {
@@ -928,6 +979,7 @@
         "toggleLabel": "Public Conference"
     },
     "settings": {
+        "aiAttention": "Attention Analysis Usage",
         "background": "Background",
         "calendar": {
             "about": "The {{appName}} calendar integration is used to securely access your calendar so it can read upcoming events.",
@@ -965,7 +1017,9 @@
         "startVideoMuted": "Everyone starts hidden",
         "disableDeviceAccess": "Disable user's device access",
         "talkWhileMuted": "Talk while muted",
-        "title": "Settings"
+        "title": "Settings",
+        "turnOffAIAttentionAnalysis": "Do Not Use",
+        "turnOnAIAttentionAnalysis": "Use"
     },
     "settingsView": {
         "advanced": "Advanced",
@@ -1024,6 +1078,7 @@
         "accessibilityLabel": {
             "audioOnly": "Toggle audio only",
             "audioRoute": "Select the sound device",
+            "birthday": "Congrats",
             "boo": "Boo",
             "breakoutRoom": "Join/leave breakout room",
             "callQuality": "Manage video quality",
@@ -1100,6 +1155,7 @@
         "audioOnlyOn": "Enable low bandwidth mode",
         "audioRoute": "Select the sound device",
         "authenticate": "Authenticate",
+        "birthday": "Congrats",
         "boo": "Boo",
         "callQuality": "Manage video quality",
         "chat": "Open / Close chat",
@@ -1255,6 +1311,8 @@
         "dounmute": "Unmute",
         "dounmuteVideo": "Unmute video",
         "flip": "Flip",
+        "following": "Following",
+        "grantFollowMeModerator": "Grant Following Rights",
         "grantModerator": "Grant Moderator Rights",
         "kick": "Kick out",
         "moderator": "Moderator",
@@ -1313,6 +1371,7 @@
         "jitsiOnMobile": "Vmeeting on mobile – download our apps and start a meeting from anywhere",
         "login": "Login",
         "loginRequired": "Login is required.",
+        "meetingDetails": "Meeting Details",
         "mobileDownLoadLinkIos": "Download mobile app for iOS",
         "mobileDownLoadLinkAndroid": "Download mobile app for Android",
         "mobileDownLoadLinkFDroid": "Download mobile app for F-Droid",
@@ -1354,6 +1413,9 @@
         "knockingParticipantList": "Knocking participant list",
         "allow": "Allow",
         "backToKnockModeButton": "Ask to join",
+        "birthdayARHat": "Birthday Hat",
+        "birthdayARHatKeep": "Allow",
+        "birthdayARHatReject": "Reject",
         "dialogTitle": "Lobby mode",
         "disableDialogContent": "Lobby mode is currently enabled. This feature ensures that unwanted participants can't join your meeting. Do you want to disable it?",
         "disableDialogSubmit": "Disable",

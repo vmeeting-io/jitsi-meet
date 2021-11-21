@@ -110,6 +110,7 @@ export function getMoreTabProps(stateful: Object | Function) {
         typeof state['features/base/config'].followMeEnabled !== 'undefined';
     const followMeEnabled = isFollowMeEnabled(state);
     const configuredTabs = interfaceConfig.SETTINGS_SECTIONS || [];
+    const _aiAttentionFlag = state['features/base/settings'].aiAttentionAnalysisEnabled;
 
     // The settings sections to display.
     const showModeratorSettings = Boolean(
@@ -121,14 +122,15 @@ export function getMoreTabProps(stateful: Object | Function) {
         currentFramerate: framerate,
         currentLanguage: language,
         desktopShareFramerates: SS_SUPPORTED_FRAMERATES,
+        enableUserDeviceAccessDisabledOption: state['features/base/config'].enableUserDeviceAccessDisabledOption,
         followMeActive: Boolean(conference && followMeActive),
         followMeEnabled: Boolean(conference && followMeEnabled),
         languages: LANGUAGES,
+        aiAttentionFlag: _aiAttentionFlag,
         showLanguageSettings: configuredTabs.includes('language'),
         showModeratorSettings,
         showPrejoinSettings: state['features/base/config'].prejoinPageEnabled,
         showShortcutSettings: !Boolean(state['features/base/config'].disableShortcuts),
-        enableUserDeviceAccessDisabledOption: state['features/base/config'].enableUserDeviceAccessDisabledOption,
         showPrejoinPage: !state['features/base/settings'].userSelectedSkipPrejoin,
         startAudioMuted: Boolean(conference && startAudioMutedPolicy),
         startVideoMuted: Boolean(conference && startVideoMutedPolicy),
@@ -153,12 +155,15 @@ export function getProfileTabProps(stateful: Object | Function) {
         conference
     } = state['features/base/conference'];
     const localParticipant = getLocalParticipant(state);
+    const language = i18next.language || DEFAULT_LANGUAGE;
 
     return {
         authEnabled: Boolean(conference && authEnabled),
         authLogin,
+        currentLanguage: language,
         displayName: localParticipant.name,
-        email: localParticipant.email
+        email: localParticipant.email,
+        birthDate: localParticipant.birthDate
     };
 }
 
@@ -272,3 +277,4 @@ export function getAudioSettingsVisibility(state: Object) {
 export function getVideoSettingsVisibility(state: Object) {
     return state['features/settings'].videoSettingsVisible;
 }
+

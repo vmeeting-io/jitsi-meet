@@ -262,6 +262,8 @@ type State = {
     reactionsShortcutsRegistered: boolean
 };
 
+const { browser } = JitsiMeetJS.util;
+
 /**
  * Implements the conference toolbox on React/Web.
  *
@@ -632,7 +634,7 @@ class Toolbox extends Component<Props, State> {
             group: 0
         };
 
-        const camera = {
+        const camera = this._isVideoSettingsVisible() && {
             key: 'camera',
             Content: VideoSettingsButton,
             group: 0
@@ -844,7 +846,6 @@ class Toolbox extends Component<Props, State> {
             etherpad,
             virtualBackground,
             speakerStats,
-            arFeature,
             settings,
             shortcuts,
             embed,
@@ -1261,6 +1262,15 @@ class Toolbox extends Component<Props, State> {
     }
 
     /**
+     * Returns true if the video settings button is visible and false otherwise.
+     *
+     * @returns {boolean}
+     */
+    _isVideoSettingsVisible() {
+        return this.props._isVideoSettingsVisible;
+    }
+
+    /**
      * Renders the toolbox content.
      *
      * @returns {ReactElement}
@@ -1393,6 +1403,8 @@ function _mapStateToProps(state, ownProps) {
         toolbarButtons = stateToolbarButtons;
     }
 
+    const _screenSharing = isScreenVideoShared(state);
+
     return {
         _backgroundType: state['features/virtual-background'].backgroundType,
         _buttonsWithNotifyClick: buttonsWithNotifyClick,
@@ -1405,9 +1417,9 @@ function _mapStateToProps(state, ownProps) {
         _disableShortcuts: Boolean(disableShortcuts),
         _feedbackConfigured: Boolean(callStatsID),
         _fullScreen: fullScreen,
-        _isProfileDisabled: Boolean(disableProfile),
         _isMobile: isMobileBrowser(),
-        _isProfileDisabled: Boolean(state['features/base/config'].disableProfile),
+        _isProfileDisabled: Boolean(disableProfile),
+        _isVideoSettingsVisible: !_screenSharing || !browser.isSafari(),
         _isVpaasMeeting: isVpaasMeeting(state),        
         _localParticipantID: localParticipant?.id,
         _localVideo: localVideo,
@@ -1416,7 +1428,7 @@ function _mapStateToProps(state, ownProps) {
         _participantsPaneOpen: getParticipantsPaneOpen(state),
         _raisedHand: localParticipant?.raisedHand,
         _reactionsEnabled: participantCount > 1 && isReactionsEnabled(state),
-        _screenSharing: isScreenVideoShared(state),
+        _screenSharing,
         _tileViewEnabled: shouldDisplayTileView(state),
         _toolbarButtons: toolbarButtons,
         _virtualSource: state['features/virtual-background'].virtualSource,

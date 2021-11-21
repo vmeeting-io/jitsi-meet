@@ -3,13 +3,12 @@
 import React, { PureComponent } from 'react';
 
 import { Dialog } from '../../../base/dialog';
-import { translate, translateToHTML } from '../../../base/i18n';
+import { translate } from '../../../base/i18n';
 import { connect } from '../../../base/redux';
 import AbstractTimerDialog from '../AbstractTimerDialog';
 import { FieldTextStateless } from '@atlaskit/field-text';
 import Button, { ButtonGroup } from '@atlaskit/button';
-import * as s from './TimerDialog.module.scss';
-import { trackNoDataFromSourceNotificationInfoChanged } from '../../../base/tracks';
+import { showNotification } from '../../../notifications';
 
 /**
  * A React Component for setting timer duration to be set to the user.
@@ -43,20 +42,22 @@ class TimerDialog extends AbstractTimerDialog {
      * Resets the timer values.
      */
     _reset() {
-        this.setState({ min: 0, seconds: 9 });
+        this.setState({ min: '00', seconds: '00' });
     }
 
     /**
      * Adds 30 Sec to the timer value.
      */
     _add30Sec() {
-
-        if ((this.state.seconds + 30) > 60) {
+        let newSeconds = parseInt(this.state.seconds) + 30;
+        if ((newSeconds) >= 60) {
             if (this._addMin(1)) {
-                this.setState({ seconds: (parseInt(this.state.seconds) + 30) % 60 })
+                let formattedNewSeconds = newSeconds % 60;
+                formattedNewSeconds = (formattedNewSeconds < 10) ? `0${formattedNewSeconds}` : formattedNewSeconds;
+                this.setState({ seconds: formattedNewSeconds })
             }
         } else {
-            this.setState({ seconds: parseInt(this.state.seconds) + 30 })
+            this.setState({ seconds: newSeconds })
         }
     }
 
@@ -92,11 +93,12 @@ class TimerDialog extends AbstractTimerDialog {
         let incremented = true;
         let newMinVal = parseInt(this.state.min) + val;
 
-        if (parseInt(this.state.min) + val > 59) {
+        if (newMinVal > 59) {
             newMinVal = 59;
             incremented = false;
         }
 
+        newMinVal = (newMinVal < 10) ? `0${newMinVal}` : newMinVal;
         this.setState({ min: newMinVal })
 
         return incremented
@@ -108,7 +110,10 @@ class TimerDialog extends AbstractTimerDialog {
      * @param {*} event Object
      */
     _onMinValChange(e: Object) {
-        this.setState({ min: e.target.value })
+        let newMinutes = e.target.value;
+        newMinutes = (newMinutes > 59) ? 59 : newMinutes
+        newMinutes = (newMinutes < 0) ? 0 : newMinutes;
+        this.setState({ min: newMinutes })
     }
 
     /**
@@ -116,7 +121,10 @@ class TimerDialog extends AbstractTimerDialog {
      * @param {*} e 
      */
     _onSecondsValChange(e: Object) {
-        this.setState({ seconds: e.target.value })
+        let newSeconds = e.target.value;
+        newSeconds = (newSeconds > 59) ? 59 : newSeconds;
+        newSeconds = (newSeconds < 0) ? 0 : newSeconds;
+        this.setState({ seconds: newSeconds })
     }
 
     _onSubmit: Object => boolean;
@@ -128,10 +136,19 @@ class TimerDialog extends AbstractTimerDialog {
      * @returns boolean
      */
     _onSubmitForm(e: Object) {
+        const { t } = this.props;
         const time = {"min":  parseInt(this.state.min) ,
                       "seconds": parseInt(this.state.seconds) };
-        this._onSubmit(time);
-        return true;
+        if((time.min === 0) && (time.seconds === 0)) {
+            APP.store.dispatch(showNotification({
+                descriptionKey: t('notify.invalidTimerDescription'),
+                titleKey: t('notify.invalidTimer'),
+            }, 5000));
+        } else {
+            this._onSubmit(time);
+            return true;
+        }
+        
     }
 
     render() {
@@ -142,14 +159,14 @@ class TimerDialog extends AbstractTimerDialog {
                 onSubmit={this._onSubmitForm}
                 titleKey='dialog.timerTitle'
                 width='small'>
-                <div>
+                <div className = 'timer-dialog'>
                     <span>
                         {t('dialog.timerBodyMessage')}
                     </span>
-                    <div className={s.row}>
-                        <div className={s.col}>
+                    <div className='row'>
+                        <div className='col'>
                         </div>
-                        <div className={s.col}>
+                        <div className='col'>
                             <FieldTextStateless
                                 autoFocus={true}
                                 className='input-control'
@@ -159,10 +176,10 @@ class TimerDialog extends AbstractTimerDialog {
                                 type="number"
                                 onChange={this._onMinValChange}
                                 value={this.state.min}
-                                isInvalid={this.state.min > 59}
+                                // isInvalid={parseInt(this.state.min) > 60}
                             />
                         </div>
-                        <div className={s.col}>
+                        <div className='col'>
                             <FieldTextStateless
                                 className='input-control'
                                 label={t('dialog.timerSec')}
@@ -171,11 +188,11 @@ class TimerDialog extends AbstractTimerDialog {
                                 type="number"
                                 onChange={this._onSecondsValChange}
                                 value={this.state.seconds}
-                                isInvalid={this.state.seconds > 59}
+                                // isInvalid={this.state.seconds > 59}
                             />
                         </div>
-                        <div className={s.col, s.resetButtonContainer}>
-                            <div className={ s.resetButton }>
+                        <div className='col reset-button-container'>
+                            <div className='reset-button'>
                                 <Button
                                     onClick={this._reset}
                                     appearance='warning'>
@@ -183,41 +200,41 @@ class TimerDialog extends AbstractTimerDialog {
                                 </Button>
                             </div>
                         </div>
-                        <div className={s.coll}>
+                        <div className='coll'>
                         </div>
                     </div>
 
-                    <div className={s.settingHeader}>
+                    <div className='setting-header'>
                         <span>
                             {t('dialog.timerSimpleSetup')}
                         </span>
                     </div>
 
-                    <div className={s.row}>
-                        <div className={s.buttonGroup}>
+                    <div className='row'>
+                        <div className='button-group'>
                             <ButtonGroup>
-                                <div className={s.col}>
+                                <div className='col'>
                                     <Button
                                         onClick={this._add5Min}
                                         appearance='primary'>
                                         + 5 {t('dialog.timerMin')}
                                     </Button>
                                 </div>
-                                <div className={s.col}>
+                                <div className='col'>
                                     <Button
                                         onClick={this._add3Min}
                                         appearance='primary'>
                                         + 3 {t('dialog.timerMin')}
                                     </Button>
                                 </div>
-                                <div className={s.col}>
+                                <div className='col'>
                                     <Button
                                         onClick={this._add1Min}
                                         appearance='primary'>
                                         + 1 {t('dialog.timerMin')}
                                     </Button>
                                 </div>
-                                <div className={s.coll}>
+                                <div className='coll'>
                                     <Button
                                         onClick={this._add30Sec}
                                         appearance='primary'>

@@ -8,7 +8,6 @@ import { setColorAlpha } from '../../base/util';
 import { fetchCustomBrandingData } from '../../dynamic-branding';
 import { SharedVideo } from '../../shared-video/components/web';
 import { Captions } from '../../subtitles/';
-import s from './LargeVideo.module.scss';
 
 declare var interfaceConfig: Object;
 
@@ -84,7 +83,7 @@ class LargeVideo extends Component<Props> {
                 <SharedVideo />
                 <div id = 'etherpad' />
 
-                <Watermarks className = { s.watermark } />
+                <Watermarks className = 'watermark' />
 
                 <div id = 'dominantSpeaker'>
                     <div className = 'dynamic-shadow' />

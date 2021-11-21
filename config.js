@@ -33,13 +33,13 @@ var config = {
     // enableDIDConsent: true,
 
     // whether or not we want to use the birthday AR hat feature
-    enableBirthdayARHat: true,
+    // enableBirthdayARHat: true,
 
     // whether or not to allow moderator to disable other participant's device
     enableUserDeviceAccessDisabledOption: false,
 
     // whether or not we want to use AI attention analysis
-    useAIAttentionAnalysis: true, // default value is true for flagship project
+    // useAIAttentionAnalysis: true, // default value is true for flagship project
 
     hosts: {
         // XMPP domain.

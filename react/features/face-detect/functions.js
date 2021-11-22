@@ -25,3 +25,9 @@ export function getAttentionAnalysisWindow(state) {
     return (childWindow && !childWindow.closed)
         ? childWindow : null;
 }
+
+export function isAttentionAnalysisEnabled(state) {
+    const { aiAttentionAnalysisEnabled = false } = state['features/base/settings'];
+
+    return aiAttentionAnalysisEnabled;
+}

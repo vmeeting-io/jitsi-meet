@@ -36,7 +36,7 @@ const DEFAULT_STATE = {
     startAudioOnly: false,
     startWithAudioMuted: false,
     startWithVideoMuted: false,
-    aiAttentionAnalysisEnabled: true,
+    aiAttentionAnalysisEnabled: false,
     userSelectedAudioOutputDeviceId: undefined,
     userSelectedCameraDeviceId: undefined,
     userSelectedMicDeviceId: undefined,
@@ -67,7 +67,7 @@ filterSubtree.soundsReactions = false;
 filterSubtree.soundsIncomingMessage = false;
 filterSubtree.soundsParticipantJoined = false;
 filterSubtree.soundsParticipantLeft = false;
-filterSubtree.aiAttentionAnalysisEnabled = true; // keep it true for persistent storage
+filterSubtree.aiAttentionAnalysisEnabled = false; // keep it true for persistent storage
 
 PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
 

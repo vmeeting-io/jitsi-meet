@@ -2,6 +2,7 @@ import { getCurrentConference, STATUS_COMMAND } from '../base/conference';
 import { getLocalParticipant, participantPresenceChanged } from '../base/participants';
 import { isParticipantVideoMuted } from '../base/tracks';
 import { STATUS_TABLE } from './constants';
+import { isAttentionAnalysisEnabled } from './functions';
 import {
     CLEAR_TIMEOUT,
     TIMEOUT_TICK,
@@ -24,7 +25,6 @@ export default class FaceDetect {
             patience = 1000,
             showResult = false
         } = config.testing.faceDetect || {};
-        const { aiAttentionAnalysisEnabled } = getState()['features/base/settings'];
 
         // Bind event handler so it is only bound once for every instance.
         this._dispatch = dispatch;
@@ -33,7 +33,7 @@ export default class FaceDetect {
         this._initialized = false;
         this._isWaiting = false;
         this._showResult = showResult;
-        this._enabled = !Boolean(aiAttentionAnalysisEnabled);
+        this._enabled = false;
         this._prevStatus = -1;
 
         this._inputVideo = document.getElementById('localVideo_container');
@@ -232,8 +232,7 @@ export default class FaceDetect {
         this.runInference();
 
         const state = this._getState();
-        const { aiAttentionAnalysisEnabled } = state['features/base/settings'];
-        this._enabled = Boolean(aiAttentionAnalysisEnabled);
+        this._enabled = isAttentionAnalysisEnabled(state);
 
         this._frameTimerWorker.postMessage({
             id: SET_TIMEOUT,

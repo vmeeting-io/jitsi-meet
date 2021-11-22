@@ -200,7 +200,7 @@ class TimerDialog extends AbstractTimerDialog {
                                 </Button>
                             </div>
                         </div>
-                        <div className='coll'>
+                        <div className='col'>
                         </div>
                     </div>
 

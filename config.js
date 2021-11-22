@@ -30,7 +30,7 @@ var config = {
     },
 
     // enable DID Consent for flagship
-    enableDIDConsent: true,
+    // enableDIDConsent: true,
 
     // whether or not we want to use the birthday AR hat feature
     enableBirthdayARHat: true,
@@ -119,7 +119,7 @@ var config = {
             referenceInterval: 1000 / 10,
             frameInterval: 1000,
             patience: 100,
-            showResult: true
+            showResult: false
         }
     },
 

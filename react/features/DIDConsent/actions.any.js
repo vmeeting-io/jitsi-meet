@@ -15,7 +15,12 @@ import {ConsentDialogOne,ConsentDialogTwo,ConsentDialogThree} from './components
  * @returns {Action}
  */
 export function openConsentDialogOne() {
-    return openDialog(ConsentDialogOne);
+    return function(dispatch, getState) {
+        const { enableDIDConsent } = getState()['features/base/config'];
+        if (enableDIDConsent) {
+            dispatch(openDialog(ConsentDialogOne));
+        }
+    }
 }
 
 /**
@@ -40,7 +45,12 @@ export function closeConsentDialogOne() {
  */
 export function openConsentDialogTwo() {
     // console.log("vmchg: Open Consent Dialog Two")
-    return openDialog(ConsentDialogTwo);
+    return function(dispatch, getState) {
+        const { enableDIDConsent } = getState()['features/base/config'];
+        if (enableDIDConsent) {
+            dispatch(openDialog(ConsentDialogTwo));
+        }
+    }
 }
 
 /**
@@ -63,7 +73,12 @@ export function openConsentDialogTwo() {
  * @returns {Action}
  */
 export function openConsentDialogThree() {
-    return openDialog(ConsentDialogThree);
+    return function(dispatch, getState) {
+        const { enableDIDConsent } = getState()['features/base/config'];
+        if (enableDIDConsent) {
+            dispatch(openDialog(ConsentDialogThree));
+        }
+    }
 }
 
 /**
@@ -84,5 +99,10 @@ export function closeConsentDialogThree() {
  * @returns{Action} 
  */
 export function openLoginDialogDIDPopUp() {
-    return openDialog(LoginDialogDID);
+    return function(dispatch, getState) {
+        const { enableDIDConsent } = getState()['features/base/config'];
+        if (enableDIDConsent) {
+            dispatch(openDialog(LoginDialogDID));
+        }
+    }
 }

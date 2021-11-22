@@ -1,13 +1,9 @@
 // @flow
 
 import { Component } from 'react';
-import { getCurrentConference } from '../../base/conference';
 
 import { JitsiRecordingConstants } from '../../base/lib-jitsi-meet';
-import { getLocalParticipant } from '../../base/participants';
-import { FOLLOW_ME_COMMAND } from '../../follow-me/constants';
-import { getFollowMeState } from '../../follow-me/subscriber';
-import { getActiveSession, getSessionStatusToShow } from '../functions';
+import { getSessionStatusToShow } from '../functions';
 
 /**
  * NOTE: Web currently renders multiple indicators if multiple recording
@@ -18,6 +14,11 @@ import { getActiveSession, getSessionStatusToShow } from '../functions';
  * easier to align web's behaviour to mobile's later if necessary.
  */
 type Props = {
+
+    /**
+     * Whether this is the Jibri recorder participant.
+     */
+    _iAmRecorder: boolean,
 
     /**
      * The status of the highermost priority session.
@@ -104,11 +105,11 @@ export default class AbstractRecordingLabel
      * @inheritdoc
      */
     render() {
-        return this.props._status && !this.state.staleLabel
+        return this.props._status && !this.state.staleLabel && !this.props._iAmRecorder
             ? this._renderLabel() : null;
     }
 
-    _getLabelKey: () => ?string
+    _getLabelKey: () => ?string;
 
     /**
      * Returns the label key that this indicator should render.
@@ -134,7 +135,7 @@ export default class AbstractRecordingLabel
      * @protected
      * @returns {React$Element}
      */
-    _renderLabel: () => React$Element<*>
+    _renderLabel: () => React$Element<*>;
 
     /**
      * Updates the stale status of the label on a prop change. A label is stale
@@ -145,25 +146,6 @@ export default class AbstractRecordingLabel
      * @returns {void}
      */
     _updateStaleStatus(oldProps, newProps) {
-        // 녹화 시작을 내가 한 경우, initiator가 local이기 때문에 undefined 임.
-        if (newProps._status !== oldProps._status &&
-            newProps._session?.initiator == newProps._localParticipantId) {
-
-            if (newProps._status === JitsiRecordingConstants.status.OFF) {
-                newProps._conference.sendCommandOnce(
-                    FOLLOW_ME_COMMAND,
-                    { attributes: { off: true } }
-                );
-            } else if (newProps._status === JitsiRecordingConstants.status.ON) {
-                setTimeout(() => {
-                    newProps._conference.sendCommand(
-                        FOLLOW_ME_COMMAND,
-                        { attributes: newProps._followMeState }
-                    );
-                }, 1000);
-            }
-        }
-
         if (newProps._status === JitsiRecordingConstants.status.OFF) {
             if (oldProps._status !== JitsiRecordingConstants.status.OFF) {
                 setTimeout(() => {
@@ -195,10 +177,7 @@ export function _mapStateToProps(state: Object, ownProps: Props) {
     const { mode } = ownProps;
 
     return {
-        _conference: getCurrentConference(state),
-        _followMeState: getFollowMeState(state),
-        _localParticipantId: getLocalParticipant(state)?.id,
-        _status: getSessionStatusToShow(state, mode),
-        _session: getActiveSession(state, mode)
+        _iAmRecorder: state['features/base/config'].iAmRecorder,
+        _status: getSessionStatusToShow(state, mode)
     };
 }

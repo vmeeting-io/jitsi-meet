@@ -16,6 +16,10 @@ var config = {
             enLink : "/static/doc/manual/Vmeeting_Manual_EN_v2.pdf"
         }
     },
+    DID:{
+        enLink : "https://sites.google.com/kedutech.kr/dataflagship-notice-en",
+        krLink : "https://sites.google.com/kedutech.kr/dataflagship-notice-kr"
+    },
     //Capatcha Configs
     captcha: {
         enabled: true,           // flag to enable/disable captcha.

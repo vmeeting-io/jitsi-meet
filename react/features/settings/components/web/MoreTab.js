@@ -557,6 +557,7 @@ class MoreTab extends AbstractDialogTab<Props, State> {
                                 super._onChange({ userDeviceAccessDisabled : checked })
                         } />
                 )}
+                { this._renderAIAttentionFeatureSelect() }
             </div>
         );
     }
@@ -623,7 +624,6 @@ class MoreTab extends AbstractDialogTab<Props, State> {
                 { showPrejoinSettings && this._renderPrejoinScreenSettings() }
                 { showShortcutSettings && this._renderKeyboardShortcutCheckbox() }
                 { showModeratorSettings && this._renderModeratorSettings() }
-                { this._renderAIAttentionFeatureSelect() }
             </div>
         );
     }

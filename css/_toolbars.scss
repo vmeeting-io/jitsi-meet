@@ -30,7 +30,6 @@
     bottom: 0;
     transition: opacity .3s ease-in;
     width: 100%;
-    z-index: 300;
     pointer-events: none;
 
     &.visible {

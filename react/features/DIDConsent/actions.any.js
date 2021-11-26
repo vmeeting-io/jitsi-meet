@@ -3,7 +3,7 @@
 import type { Dispatch } from 'redux';
 
 import { openDialog,closeDialog, toggleDialog, hideDialog } from '../base/dialog';
-import { LoginDialogDID } from './components/web';
+import { DIDProcessingDialog, LoginDialogDID } from './components/web';
 import {ConsentDialogOne,ConsentDialogTwo,ConsentDialogThree} from './components/web';
 
 
@@ -89,7 +89,7 @@ export function openConsentDialogThree() {
  * @returns {Action}
  */
 export function closeConsentDialogThree() {
-    return openDialog(ConsentDialogThree);
+    return closeDialog(ConsentDialogThree);
 }
 
 /**
@@ -103,6 +103,16 @@ export function openLoginDialogDIDPopUp() {
         const { enableDIDConsent } = getState()['features/base/config'];
         if (enableDIDConsent) {
             dispatch(openDialog(LoginDialogDID));
+        }
+    }
+}
+
+export function openDIDProcessingDialog(){
+    return function(dispatch, getState){
+        const { enableDIDConsent } = getState()['features/base/config'];
+        if (enableDIDConsent) {
+            console.log("DISPATCH EVENT")
+            dispatch(openDialog(DIDProcessingDialog));
         }
     }
 }

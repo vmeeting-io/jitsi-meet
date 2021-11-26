@@ -108,36 +108,36 @@ MiddlewareRegistry.register(store => next => action => {
             const { id, pinned } = participant;
             const { isHost } = state['features/base/conference'].roomInfo || {};
             const { autoPinEnabled, autoRecord } = state['features/base/config'];
-            if (config.enableDIDConsent){
-                if (participant.email !== undefined){
-                    //Logged in case.
-                    isDIDDenied().then(denied => {// Check if DID has been denied.
-                        if(denied == false){
-                            let checkConsent = true;
-                            checkPhoneNumber().then(cellPhoneNumber=>{
-                                if (cellPhoneNumber===false){// If there is not cell phone number in the database, show popup.
-                                    checkConsent = false
-                                    store.dispatch(openConsentDialogOne()); 
-                                }
-                            })
+            // if (config.enableDIDConsent){
+            //     if (participant.email !== undefined){
+            //         //Logged in case.
+            //         isDIDDenied().then(denied => {// Check if DID has been denied.
+            //             if(denied == false){
+            //                 let checkConsent = true;
+            //                 checkPhoneNumber().then(cellPhoneNumber=>{
+            //                     if (cellPhoneNumber===false){// If there is not cell phone number in the database, show popup.
+            //                         checkConsent = false
+            //                         store.dispatch(openConsentDialogOne()); 
+            //                     }
+            //                 })
 
-                            checkConsent ? checkDIDConsent().then(resp=>{
-                                if(resp.data.consent !== PIC_CONSENT.APPROVED){ // If consent has not been approved, show popup
-                                    store.dispatch(openConsentDialogOne());
-                                }
-                            }):false;
+            //                 checkConsent ? checkDIDConsent().then(resp=>{
+            //                     if(resp.data.consent !== PIC_CONSENT.APPROVED){ // If consent has not been approved, show popup
+            //                         store.dispatch(openConsentDialogOne());
+            //                     }
+            //                 }):false;
 
-                        }
+            //             }
 
-                    }) 
+            // //         }) 
 
 
-                }else{
-                    //Not logged in case.
-                    store.dispatch(openLoginDialogDIDPopUp());
+            // //     }else{
+            // //         //Not logged in case.
+            // //         store.dispatch(openLoginDialogDIDPopUp());
 
-                }
-            }
+            // //     }
+            // }
 
             
             // 내가 방장이면 자동 PIN이 되도록...

@@ -98,7 +98,6 @@ class DIDProcessingDialog extends PureComponent<Props> {
 
             }else{
                 // NOT completed do nothing...
-                // sendConsentVerifyOnProgressNotification(APP.store.dispatch)
             }
         });
     }

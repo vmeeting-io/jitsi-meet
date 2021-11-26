@@ -144,7 +144,6 @@ class PreMeetingScreen extends PureComponent<Props> {
         this._onCancel            = this._onCancel.bind(this);
         this._onAgreePageOne      = this._onAgreePageOne.bind(this);
 
-        this._onX                 = this._onX.bind(this);
         this._onPrev              = this._onPrev.bind(this);
         this._onNext              = this._onNext.bind(this);
         this._onPhoneNumberChange = this._onPhoneNumberChange.bind(this);
@@ -207,18 +206,6 @@ class PreMeetingScreen extends PureComponent<Props> {
         
     }
 
-     _onX: () => void;
-
-    /**
-     * Called when the cancel button is clicked.
-     *
-     * @private
-     * @returns {void}
-     */
-    _onX() {
-        this.setState({show: false});
-        // alert("TODO: DID Disagreed.. Will be handled on integration.")
-    }
 
     _onPrev: () => void;
 
@@ -369,9 +356,14 @@ class PreMeetingScreen extends PureComponent<Props> {
     _didContentLoginPage(){
         const {t} = this.props;
         return(
-            <div>
-                <div className="consent-message-login">
+            <div className="prejoin-did">
+                <div className={`consent-message-title`}>
                     <span>
+                        {t('dialog.consent.titleDialogOne')}
+                    </span>
+                </div>
+                <div className="consent-message-login">
+                    <span className="did-v2-font">
                         {translateToHTML(t, t('dialog.consent.dialogLoginMessage'))}
                     </span>
                 </div>
@@ -402,13 +394,18 @@ class PreMeetingScreen extends PureComponent<Props> {
         const {t} = this.props;
 
         return (
-            <div>
-                <div className={`consent-message${this.state.class}`}>
+            <div className="prejoin-did">
+                <div className={`consent-message-title`}>
                     <span>
+                        {t('dialog.consent.titleDialogOne')}
+                    </span>
+                </div>
+                <div className={`consent-message${this.state.class}`}>
+                    <span className="did-v2-font">
                         {t('dialog.consent.dialogOneMessage')}
                     </span>
                     <div className={`view-more${this.state.class}`}>
-                        <a href onClick={this._openOnNewTab} >{t('dialog.consent.notice.viewMore')}</a>
+                        <a href className="did-v2-font" onClick={this._openOnNewTab} >{t('dialog.consent.notice.viewMore')}</a>
                     </div>
                 </div>
                 <div>
@@ -439,12 +436,17 @@ class PreMeetingScreen extends PureComponent<Props> {
         const {t} = this.props;
 
         return (
-            <div>
+            <div className="prejoin-did">
+                <div className={`consent-message-title`}>
+                    <span>
+                        {t('dialog.consent.titleDialogTwo')}
+                    </span>
+                </div>
                 <div className={`consent-message${this.state.class}`}>
                     <div className="consent-two-wrapper">
                     
                         <div className={`consent-two-info${this.state.class}`}>
-                            <span>
+                            <span className="did-v2-font">
                                 {t('dialog.consent.dialogTwoMessage')}
                             </span>
                         </div>
@@ -452,17 +454,17 @@ class PreMeetingScreen extends PureComponent<Props> {
                         <div className="phone-input-block"> 
                             <div className="consent-form">
                                 <div className="consent-form-title">
-                                    <strong><span>{ t('dialog.name')}</span></strong>
+                                    <strong className="did-v2-font"><span>{ t('dialog.name')}</span></strong>
                                 </div> 
                                 <div className="consent-form-input"> 
-                                    <span>{this._getShortName(APP.store.getState()["features/base/participants"].local.name)}</span>
+                                    <span className="did-v2-font">{this._getShortName(APP.store.getState()["features/base/participants"].local.name)}</span>
                                 </div> 
                                 <div className="consent-form-gap"></div>
                             </div> 
 
                             <div className="consent-form-phone">
                                 <div className={`consent-form-phone-title${this.state.class}`}>
-                                   <strong> {t('dialog.consent.phoneNumber')} </strong>
+                                   <strong className="did-v2-font"> {t('dialog.consent.phoneNumber')} </strong>
                                 </div>
                                 <div className="consent-form-input">
                                 <input
@@ -516,14 +518,19 @@ class PreMeetingScreen extends PureComponent<Props> {
         const {t} = this.props;
 
         return (
-            <div>
+            <div className="prejoin-did">
+                <div className={`consent-message-title`}>
+                    <span>
+                        {t('dialog.consent.titleDialogThree')}
+                    </span>
+                </div>
                 <div className={`consent-message${this.state.class}`}>
                     <div className="consent-three-wrapper">
                         <div className = 'barcode'>
                             <img src='/static/consentBarcode.png' />
                         </div>
                         <div className = 'consent-three-info'>
-                            <span>
+                            <span className="did-v2-font">
                                 {translateToHTML(t,t('dialog.consent.dialogThreeMessage'))}
                             </span>
                         </div>

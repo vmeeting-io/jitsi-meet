@@ -131,7 +131,7 @@ class PreMeetingScreen extends PureComponent<Props> {
         super(props);
         this.state = {
             class: localStorage.language !== "ko" ? "":"-kr",
-            showDID: false,
+            showDID: true,
             page: 1,
             phoneNumber:"",
             phoneNumberError:false,

@@ -1,8 +1,10 @@
 import { getCurrentConference, STATUS_COMMAND } from '../base/conference';
 import { getLocalParticipant, participantPresenceChanged } from '../base/participants';
 import { isParticipantVideoMuted } from '../base/tracks';
+import { isPrejoinPageVisible } from '../prejoin/functions';
+import { setAttentionAnalysisReady } from './actions';
 import { STATUS_TABLE } from './constants';
-import { isAttentionAnalysisEnabled } from './functions';
+import { getAttentionAnalysisReady, isAttentionAnalysisEnabled } from './functions';
 import {
     CLEAR_TIMEOUT,
     TIMEOUT_TICK,
@@ -20,11 +22,14 @@ export default class FaceDetect {
      * Represents a modified video MediaStream track.
      */
     constructor(dispatch, getState) {
+        const state = getState();
+        const { faceDetect = {} } = state['features/base/config'].testing || {};
         const {
-            referenceInterval = (1000 / 10),
-            patience = 1000,
+            referenceInterval = (1000 / 5),
+            frameInterval = 1000,
+            patience,
             showResult = false
-        } = config.testing.faceDetect || {};
+        } = faceDetect;
 
         // Bind event handler so it is only bound once for every instance.
         this._dispatch = dispatch;
@@ -46,7 +51,7 @@ export default class FaceDetect {
         this._onFrameTimer = this._onFrameTimer.bind(this);
         this._onMessage = this._onMessage.bind(this);
         this._worker.onmessage = this._onMessage;
-        this._worker.postMessage({ command: 'initialize', data: { patience } });
+        this._worker.postMessage({ command: 'initialize', nms: 0.4, patience });
     }
 
     /**
@@ -95,7 +100,7 @@ export default class FaceDetect {
 
             if (videoMuted) {
                 this._updateParticipantStatus(2);
-            } else {
+            } else if (!this._ready || this._started) {
                 try {
                     // Get face detect output
                     // console.time('inferenceImage');
@@ -131,18 +136,23 @@ export default class FaceDetect {
 
         this._isWaiting = false;
 
-        if (!result.data) {
+        if (!getAttentionAnalysisReady(this._getState()) && result.ready) {
+            this._ready = result.ready;
+            this._dispatch(setAttentionAnalysisReady(this._ready));
+            return;
+        }
+
+        if (!this._started || !result.data) {
             return;
         }
 
         const { status, eyeClose, box, landmarks } = result.data;
         // console.log(`status=${status}, eyeClose=${eyeClose}`);
 
-        this._frameInterval = config.testing.faceDetect?.frameInterval || 1000;
-
         const largeVideo = document.getElementById('largeVideo');
         const rc = largeVideo.getClientRects()[0];
         const { videoWidth, videoHeight } = this._inputVideo;
+
         if (rc && videoWidth > 0 && videoHeight > 0 && this._showResult) {
             // console.log('video: clientRect', rc);
             
@@ -215,7 +225,10 @@ export default class FaceDetect {
         const participant = getLocalParticipant(state);
         const statusValue = STATUS_TABLE[status];
 
-        if (conference && statusValue && statusValue !== this._prevStatus) {
+        if (!isPrejoinPageVisible(state)
+            && conference
+            && statusValue
+            && statusValue !== this._prevStatus) {
             conference.sendCommand(STATUS_COMMAND, { value: statusValue });
             this._dispatch(participantPresenceChanged(participant.id, statusValue));
             this._prevStatus = statusValue;
@@ -246,16 +259,28 @@ export default class FaceDetect {
      * @param {MediaStream} stream - Stream to be used for processing.
      * @returns {MediaStream} - The stream with the applied effect.
      */
-    startEffect(granted) {
-        if (granted) {
-            this._frameTimerWorker = new Worker(timerWorkerScript, { name: 'face effect worker' });
-            this._frameTimerWorker.onmessage = this._onFrameTimer;
-    
-            this._frameTimerWorker.postMessage({
-                id: SET_TIMEOUT,
-                timeMs: this._frameInterval
-            });
-        }
+    init() {
+        this._frameTimerWorker = new Worker(timerWorkerScript, { name: 'face effect worker' });
+        this._frameTimerWorker.onmessage = this._onFrameTimer;
+
+        this._frameTimerWorker.postMessage({
+            id: SET_TIMEOUT,
+            timeMs: this._frameInterval
+        });
+    }
+
+    /**
+     * Start the inference.
+     *
+     * @returns {void}
+     */
+    start() {
+        const { faceDetect = {} } = this._getState()['features/base/config'].testing || {};
+        const { frameInterval = 1000 } = faceDetect;
+
+        this._started = true;
+        this._frameInterval = frameInterval;
+        this._worker.postMessage({ command: 'inference' });
     }
 
     /**
@@ -263,7 +288,7 @@ export default class FaceDetect {
      *
      * @returns {void}
      */
-    stopEffect() {
+    stop() {
         this._frameTimerWorker.postMessage({
             id: CLEAR_TIMEOUT
         });

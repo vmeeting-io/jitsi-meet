@@ -1,6 +1,5 @@
 // @flow
 
-import { closeAttentionAnalysis, updateAttentionAnalysis } from '.';
 import { CONFERENCE_LEFT } from '../base/conference';
 import { CONNECTION_ESTABLISHED } from '../base/connection';
 import {
@@ -9,20 +8,34 @@ import {
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED
 } from '../base/participants';
-import { MiddlewareRegistry } from '../base/redux';
-import { startFaceDetect } from './actions';
+import { batch, MiddlewareRegistry } from '../base/redux';
+import { PREJOIN_INITIALIZED, PREJOIN_START_CONFERENCE } from '../prejoin';
+
+import {
+    closeAttentionAnalysis,
+    initFaceDetect,
+    startFaceDetect,
+    stopFaceDetect,
+    updateAttentionAnalysis
+} from './actions';
 
 import './subscriber';
 
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
-    case CONNECTION_ESTABLISHED: {
-        const result = next(action);
+    case PREJOIN_INITIALIZED: {
+        store.dispatch(initFaceDetect());
+        break;
+    }
+    case PREJOIN_START_CONFERENCE: {
         store.dispatch(startFaceDetect());
-        return result;
+        break;
     }
     case CONFERENCE_LEFT:
-        store.dispatch(closeAttentionAnalysis());
+        batch(() => {
+            store.dispatch(closeAttentionAnalysis());
+            store.dispatch(stopFaceDetect());
+        });
         break;
     case PARTICIPANT_UPDATED: {
         const { id, presence } = action.participant;

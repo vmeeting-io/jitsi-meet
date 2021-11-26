@@ -27,7 +27,17 @@ export function getAttentionAnalysisWindow(state) {
 }
 
 export function isAttentionAnalysisEnabled(state) {
-    const { aiAttentionAnalysisEnabled = false } = state['features/base/settings'];
+    const { useAIAttentionAnalysis = false } = state['features/base/config'];
 
-    return aiAttentionAnalysisEnabled;
+    return useAIAttentionAnalysis;
+}
+
+export function getAttentionAnalysisReady(state) {
+    const { ready } = state['features/face-detect'];
+    return ready;
+}
+
+export function getFaceDetector(state) {
+    const { instance } = state['features/face-detect'];
+    return instance;
 }

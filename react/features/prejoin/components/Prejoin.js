@@ -11,6 +11,7 @@ import { ActionButton, InputField, PreMeetingScreen } from '../../base/premeetin
 import { connect } from '../../base/redux';
 import { getDisplayName, updateSettings } from '../../base/settings';
 import { getLocalJitsiVideoTrack } from '../../base/tracks';
+import { getAttentionAnalysisReady, isAttentionAnalysisEnabled } from '../../face-detect/functions';
 import {
     joinConference as joinConferenceAction,
     joinConferenceWithoutAudio as joinConferenceWithoutAudioAction,
@@ -286,7 +287,9 @@ class Prejoin extends Component<Props, State> {
             showCameraPreview,
             showDialog,
             t,
-            videoTrack
+            videoTrack,
+            attentionAnalysisEnabled,
+            canJoinMeeting
         } = this.props;
 
         const { _closeDialog, _onDropdownClose, _onJoinButtonClick, _onJoinKeyPress, _showDialogKeyPress,
@@ -353,6 +356,7 @@ class Prejoin extends Component<Props, State> {
                                 ariaDropDownLabel = { t('prejoin.joinWithoutAudio') }
                                 ariaLabel = { t('prejoin.joinMeeting') }
                                 ariaPressed = { showJoinByPhoneButtons }
+                                disabled = { !canJoinMeeting }
                                 hasOptions = { true }
                                 onClick = { _onJoinButtonClick }
                                 onKeyPress = { _onJoinKeyPress }
@@ -361,7 +365,9 @@ class Prejoin extends Component<Props, State> {
                                 tabIndex = { 0 }
                                 testId = 'prejoin.joinMeeting'
                                 type = 'primary'>
-                                { t('prejoin.joinMeeting') }
+                                { (attentionAnalysisEnabled && !canJoinMeeting)
+                                ? t('prejoin.preparingMeeting')
+                                : t('prejoin.joinMeeting') }
                             </ActionButton>
                         </InlineDialog>
                     </div>
@@ -385,6 +391,8 @@ class Prejoin extends Component<Props, State> {
 function mapStateToProps(state): Object {
     const name = getDisplayName(state);
     const showErrorOnJoin = isDisplayNameRequired(state) && !name;
+    const attentionAnalysisEnabled = isAttentionAnalysisEnabled(state);
+    const canJoinMeeting = Boolean(!attentionAnalysisEnabled || getAttentionAnalysisReady(state));
 
     return {
         name,
@@ -394,7 +402,9 @@ function mapStateToProps(state): Object {
         showErrorOnJoin,
         hasJoinByPhoneButton: isJoinByPhoneButtonVisible(state),
         showCameraPreview: !isVideoMutedByUser(state),
-        videoTrack: getLocalJitsiVideoTrack(state)
+        videoTrack: getLocalJitsiVideoTrack(state),
+        attentionAnalysisEnabled,
+        canJoinMeeting,
     };
 }
 

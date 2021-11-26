@@ -118,6 +118,7 @@ addEventListener('message', async event => {
   // console.log('worker:', command, data);
 
   if (command === 'initialize') {
+    console.time('initialize');
     self.nFrame = 1;
     self.prepared = false;
     self.refData = [];
@@ -131,14 +132,14 @@ addEventListener('message', async event => {
 
     // for load at start time
     await getReferenceData(self.model, self.landmarkModel, tf.zeros([720, 1280, 3]));
+    await getReferenceData(self.model, self.landmarkModel, tf.zeros([720, 1280, 3]));
+    console.timeEnd('initialize');
 
     console.time('get references');
     postMessage({ done: true, data: 'initialized' });
     return;
   } else if (command === 'inference') {
     self.prepared = true;
-
-    console.timeEnd('get references');
     postMessage({ done: true, data: 'started' });
     return;
   }
@@ -152,10 +153,10 @@ addEventListener('message', async event => {
 
   if (!self.prepared) {
     try {
-      console.time('getReferenceData');
+      // console.time('getReferenceData');
       // console.log('frame.shape', frame.shape);
       const [data, ret, box] = await getReferenceData(self.model, self.landmarkModel, frame);
-      console.timeEnd('getReferenceData');
+      // console.timeEnd('getReferenceData');
       // console.log('getReferenceData:', data, ret, box);
   
       if (ret && !isEqual(box, self.prevBox)) {
@@ -165,6 +166,7 @@ addEventListener('message', async event => {
         if (self.nFrame > self.patience) {
           self.refData.shift();
           self.ready = true;
+          console.timeEnd('get references');
         }
       }
       self.prevBox = box;

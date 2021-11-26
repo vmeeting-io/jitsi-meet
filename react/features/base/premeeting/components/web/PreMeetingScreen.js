@@ -12,7 +12,7 @@ import Preview from './Preview';
 import { withTranslation } from 'react-i18next';
 import ButtonGroup from '@atlaskit/button/button-group';
 import Button from '@atlaskit/button/standard-button';
-import { getLocalParticipant, openOnNewTab, PIC_CONSENT } from '../../../participants';
+import { getLocalParticipant, isDIDDenied, openOnNewTab, PIC_CONSENT } from '../../../participants';
 import { translateToHTML } from '../../../i18n';
 import * as validators from '../../../../../utils/validator';
 import { savePhoneNumber, checkPhoneNumber, checkDIDConsent } from '../../../../DIDConsent/components/web/functions';
@@ -131,7 +131,7 @@ class PreMeetingScreen extends PureComponent<Props> {
         super(props);
         this.state = {
             class: localStorage.language !== "ko" ? "":"-kr",
-            showDID: config.enableDIDConsent,
+            showDID: false,
             page: 1,
             phoneNumber:"",
             phoneNumberError:false,
@@ -151,10 +151,45 @@ class PreMeetingScreen extends PureComponent<Props> {
 
         this._onCancelLoginDialog = this._onCancelLoginDialog.bind(this);
         this._onLogin             = this._onLogin.bind(this);
-        this._isLoggedIn          = this._isLoggedIn.bind(this);
+        this._notLoggedIn          = this._notLoggedIn.bind(this);
         this._onComplete          = this._onComplete.bind(this);
+        this._onCheckAlreadyVerified = this._onCheckAlreadyVerified.bind(this);
+        
         this._checkIfPhoneExists();
+    }
 
+    componentWillMount(){
+        this._onCheckAlreadyVerified();
+    }
+    /**
+     * Decide if DID popup should be shown or not.
+     */
+    _onCheckAlreadyVerified(){
+        if (config.enableDIDConsent){
+            if (!this._notLoggedIn()){
+                //Logged in case.
+                isDIDDenied().then(denied => {// Check if DID has been denied.
+                    if(denied == false){
+                        let checkConsent = true;
+                        
+                        checkPhoneNumber().then(cellPhoneNumber=>{
+                            if (cellPhoneNumber===false){
+                                checkConsent = false
+                                this.setState({showDID: true});
+                            }
+                        })
+
+                        checkConsent ? checkDIDConsent().then(resp=>{
+                            if(resp.data.consent !== PIC_CONSENT.APPROVED){ // If consent has not been approved, show popup
+                                this.setState({showDID: true});
+                            }else{
+                                this.setState({showDID: false});
+                            }
+                        }):false;
+                    }
+                }) 
+            }
+        }
     }
 
     _onComplete(){
@@ -170,7 +205,12 @@ class PreMeetingScreen extends PureComponent<Props> {
         });
     }
 
-    _isLoggedIn(){
+    /**
+     *Check if user is logged in or not.
+     *  
+     * @returns Returns true if not logged in, else false
+     */
+    _notLoggedIn(){
         const state = APP.store.getState();
         const participant = getLocalParticipant(state);
         
@@ -560,15 +600,15 @@ class PreMeetingScreen extends PureComponent<Props> {
     }
 
     _renderDid(){
-        const loggedIn = this._isLoggedIn();
+        const notLoggedIn = this._notLoggedIn();
         return(
             <div className = 'content-controls'>
-                { loggedIn && this._didContentLoginPage()}
-                { !loggedIn && this.state.page===1 
+                { notLoggedIn && this._didContentLoginPage()}
+                { !notLoggedIn && this.state.page===1 
                     && this._didContentPageOne()}
-                { !loggedIn && this.state.page===2
+                { !notLoggedIn && this.state.page===2
                     && this._didContentPageTwo()}
-                { !loggedIn && this.state.page===3 
+                { !notLoggedIn && this.state.page===3 
                     && this._didContentPageThree()}
             </div>
         )

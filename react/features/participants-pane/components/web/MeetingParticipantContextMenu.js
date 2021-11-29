@@ -680,7 +680,7 @@ function _mapStateToProps(state, ownProps): Object {
     const participant = getParticipantByIdOrUndefined(state,
         overflowDrawer ? drawerParticipant?.participantID : participantID);
 
-    const isHatOn = participant.hatOn;
+    const isHatOn = participant?.hatOn;
     const _currentRoomId = getCurrentRoomId(state);
     const _isLocalModerator = isLocalParticipantModerator(state);
     const _isChatButtonEnabled = isToolbarButtonEnabled('chat', state);
@@ -700,7 +700,7 @@ function _mapStateToProps(state, ownProps): Object {
         _currentRoomId,
         _isLocalModerator,
         _isChatButtonEnabled,
-        _isFollowMeModerator: Boolean(_followMeModerator === participant.id),
+        _isFollowMeModerator: Boolean(_followMeModerator === participant?.id),
         _isParticipantModerator,
         _isParticipantVideoMuted,
         _isParticipantAudioMuted,

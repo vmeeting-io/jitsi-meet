@@ -140,7 +140,6 @@ class Prejoin extends Component<Props, State> {
     }
     componentWillMount(){
         this._onCheckAlreadyVerified().then((resp) => {
-            console.log("vmchg: GOT RESPIONSE FROM ICON LOOP ", resp)
             this.setState({showDID: resp, completed: true});
         })
     }
@@ -154,47 +153,28 @@ class Prejoin extends Component<Props, State> {
         const state = APP.store.getState();
         const participant = getLocalParticipant(state);
          
-        const showLogin = participant.email === undefined ? true : false;
-        return showLogin
+        return participant.email === undefined ? true : false;
     } 
     /**
      * Decide if DID popup should be shown or not.
      */
     _onCheckAlreadyVerified = async () => {
-        console.log("vmchg: Calling IconLOOP")
         if (config.enableDIDConsent){
             if(!this._notLoggedIn()){
-            //Logged in case.
-            
             const denied =  await isDIDDenied();
-           
-                    console.log("vmchg: DENIED -- ", denied)
-
                 if(denied == false){
-                    let checkConsent = true;
-                    
-                    console.log("vmchg: DENIED -- ", denied)
-                    
                     checkPhoneNumber().then(cellPhoneNumber=>{
                         if (cellPhoneNumber===false){
-                            checkConsent = false
-                            console.log("vmchg: NO PHONE NUMBER !!!")
-                            // this.setState({showDID: true});
                             return true
                         }
                     })
-                    console.log("vmchg: Check DID -- ")
 
                     const resp = await checkDIDConsent()
                     
                     if(resp.data.consent !== PIC_CONSENT.APPROVED){ // If consent has not been approved, show popup
-                        console.log("vmchg: CONSENT UNAPPROVED !!!")
                         return true
-                        // this.setState({showDID: true});
                     }else{
-                        console.log("vmchg: CONSENT APPROVED !!!")
                         return false
-                        // this.setState({showDID: false});
                     }
                     
                 }

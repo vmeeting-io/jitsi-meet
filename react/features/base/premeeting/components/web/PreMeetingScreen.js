@@ -129,7 +129,6 @@ class PreMeetingScreen extends PureComponent<Props> {
     };
     constructor(props) {
         super(props);
-        console.log("vmchg: AAA ", this.props.showDID)
         this.state = {
             class: localStorage.language !== "ko" ? "":"-kr",
             showDID: this.props.showDID,
@@ -154,53 +153,16 @@ class PreMeetingScreen extends PureComponent<Props> {
         this._onLogin             = this._onLogin.bind(this);
         this._notLoggedIn          = this._notLoggedIn.bind(this);
         this._onComplete          = this._onComplete.bind(this);
-        this._onCheckAlreadyVerified = this._onCheckAlreadyVerified.bind(this);
         
         this._checkIfPhoneExists();
     }
 
-    componentWillMount(){
-        // this._onCheckAlreadyVerified();
-    }
-    /**
-     * Decide if DID popup should be shown or not.
-     */
-    _onCheckAlreadyVerified(){
-        console.log("HOLA!!!")
-        if (config.enableDIDConsent){
-            this.setState({showDID: false});
-            if (!this._notLoggedIn()){
-                //Logged in case.
-                isDIDDenied().then(denied => {// Check if DID has been denied.
-                    if(denied == false){
-                        let checkConsent = true;
-                        
-                        checkPhoneNumber().then(cellPhoneNumber=>{
-                            if (cellPhoneNumber===false){
-                                checkConsent = false
-                                this.setState({showDID: true});
-                            }
-                        })
-
-                        checkConsent ? checkDIDConsent().then(resp=>{
-                            if(resp.data.consent !== PIC_CONSENT.APPROVED){ // If consent has not been approved, show popup
-                                this.setState({showDID: true});
-                            }else{
-                                this.setState({showDID: false});
-                            }
-                        }):false;
-                    }
-                }) 
-            }
-        }
-    }
 
     _onComplete(){
          // 1. Check consent at DID server and save current state. 
          checkDIDConsent().then(resp=>{
             if(resp.data.consent===PIC_CONSENT.APPROVED){
                 this._onCancel();
-                alert("TODO: DID Agreed.. Will be handled on integration.")
             }else{
                 APP.store.dispatch(openDIDProcessingDialog());
                 //TODO Handle 
@@ -217,8 +179,7 @@ class PreMeetingScreen extends PureComponent<Props> {
         const state = APP.store.getState();
         const participant = getLocalParticipant(state);
         
-        const showLogin = participant.email === undefined ? true : false;
-        return showLogin
+        return participant.email === undefined ? true : false;
     }
 
     _onCancelLoginDialog: () => void;

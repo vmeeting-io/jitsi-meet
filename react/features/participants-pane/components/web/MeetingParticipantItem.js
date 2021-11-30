@@ -275,11 +275,12 @@ function MeetingParticipantItem({
                 </>
             }
 
-            {!overflowDrawer && _local && !_participant?.isFakeParticipant &&
+            {/* Commented out the redundant ParticipantActionEllipsis button, don't know why Taehwan added */}
+            {/* {!overflowDrawer && _local && !_participant?.isFakeParticipant &&
                 <ParticipantActionEllipsis
                     aria-label = { participantActionEllipsisLabel }
                     onClick = { onContextMenu } />
-            }
+            } */}
 
             {!overflowDrawer && _localVideoOwner && _participant?.isFakeParticipant && (
                 <ParticipantActionEllipsis

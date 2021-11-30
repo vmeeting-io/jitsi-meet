@@ -85,20 +85,24 @@ class Subject extends Component<Props> {
             <div className = { `subject ${_visible ? 'visible' : ''} ${s.container}` }>
                 { _showSubject && (
                     <div className = {s.textContainer}>
-                        <span className = 'subject-text'>{ _subject }</span>
-                        { _isHost && (
-                            <div
-                                className = { s.button }
+                        { _isHost ? (
+                            <Tooltip content = { t('dialog.edit') } position = 'bottom'>
+                            <span
+                                className = 'subject-text editable'
                                 onClick = { this._onEditSubject }>
-                                <Tooltip content = { t('dialog.edit') } position = 'bottom'>
+                                { _subject }
+                                <div className = 'button'>
                                     <Icon size = { 16 } src = { IconEdit } />
-                                </Tooltip>
-                            </div>
+                                </div>
+                            </span>
+                            </Tooltip>
+                        ) : (
+                            <span className = 'subject-text'>{ _subject }</span>
                         )}
                     </div>
                 )}
-                { _showParticipantCount && <ParticipantsCount /> }
                 { !_hideConferenceTimer && <ConferenceTimer /> }
+                { _showParticipantCount && <ParticipantsCount /> }
             </div>
         );
     }

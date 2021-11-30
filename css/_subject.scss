@@ -25,7 +25,33 @@
     }
 
     &-text {
+        display: flex;
         vertical-align: middle;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        position: relative;
+        padding: 2px 16px;
+
+        &.editable {
+            pointer-events: auto;
+            cursor: pointer;
+    
+            &:hover {
+                padding-right: 34px;
+        
+                .button {
+                    visibility: visible;
+                }
+            }
+        }
+    
+        .button {
+            padding: 4px;
+            border-radius: 5px;
+            position: absolute;
+            right: 4;
+            visibility: hidden;
+        }
     }
 
     &-conference-timer {

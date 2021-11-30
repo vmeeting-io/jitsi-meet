@@ -32,7 +32,7 @@ type Props = {
 }
 
 /**
- * Data flagship Consent Form 1 .
+ * Data flagship Consent Form - Prejoin .
  *
  * @returns {React$Element<any>}
  */
@@ -51,7 +51,6 @@ class DIDProcessingDialog extends PureComponent<Props> {
         }
 
         this._onCancelDialog = this._onCancelDialog.bind(this);
-        this._onAgree = this._onAgree.bind(this);
         this._onX = this._onX.bind(this);
     }
 
@@ -64,10 +63,7 @@ class DIDProcessingDialog extends PureComponent<Props> {
      * @returns {void}
      */
     _onCancelDialog() {
-        sendConsentDisagreeNotification(APP.store.dispatch)
         this._closeModal();
-        // alert("TODO: DID Disagreed.. Will be handled on integration.")
-
     }
 
     _onX: () => void;
@@ -79,27 +75,6 @@ class DIDProcessingDialog extends PureComponent<Props> {
      */
     _onX(){
         this._onCancelDialog();
-    }
-
-    _onAgree: () => void;
-
-    /**
-     * Called when the OK button is clicked.
-     *
-     * @private
-     * @returns {void}
-     */
-    _onAgree() {
-        // 1. Check consent at DID server and save current state. 
-        checkDIDConsent().then(resp=>{
-            if(resp.data.consent===PIC_CONSENT.APPROVED){
-                this._closeModal();
-                alert("TODO: DID Agreed.. Will be handled on integration.")
-
-            }else{
-                // NOT completed do nothing...
-            }
-        });
     }
 
     /**
@@ -125,20 +100,19 @@ class DIDProcessingDialog extends PureComponent<Props> {
         return (
             <div>
                 {this.state.show && <Dialog
-                    okKey = { 'dialog.consent.complete' }
-                    disableBlanketClickDismiss = { true }
-                    onX={ this._onX }
+                    okKey = { 'dialog.Ok' }
+                    disableBlanketClickDismiss = { false }
+                    onX={ this._onCancelDialog }
                     consentDialog={true}
                     hideCancelButton = { true }
-                    hideCloseIconButton = { false }
-                    onSubmit = { this._onAgree }
+                    onSubmit = { this._onCancelDialog }
                     titleKey = { 'dialog.consent.titleDialogThree' }
                     width = { 'small' }
                     >
                     
                     <div className="consent-message-login">
                         <span>
-                            {translateToHTML(t, t('dialog.consent.dialogOnProcess'))}
+                            {translateToHTML(t, t('dialog.consent.notice.verificationOnProcess'))}
                         </span>
                     </div>                    
                 </Dialog>}

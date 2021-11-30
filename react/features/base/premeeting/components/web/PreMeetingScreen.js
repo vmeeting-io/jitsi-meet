@@ -165,7 +165,9 @@ class PreMeetingScreen extends PureComponent<Props> {
      * Decide if DID popup should be shown or not.
      */
     _onCheckAlreadyVerified(){
+        console.log("HOLA!!!")
         if (config.enableDIDConsent){
+            this.setState({showDID: false});
             if (!this._notLoggedIn()){
                 //Logged in case.
                 isDIDDenied().then(denied => {// Check if DID has been denied.
@@ -620,6 +622,7 @@ class PreMeetingScreen extends PureComponent<Props> {
      * @inheritdoc
      */
     render() {
+    
         const {
             _buttons,
             _premeetingBackground,

@@ -111,7 +111,6 @@ export function openDIDProcessingDialog(){
     return function(dispatch, getState){
         const { enableDIDConsent } = getState()['features/base/config'];
         if (enableDIDConsent) {
-            console.log("DISPATCH EVENT")
             dispatch(openDialog(DIDProcessingDialog));
         }
     }

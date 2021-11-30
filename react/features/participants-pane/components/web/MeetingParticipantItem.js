@@ -238,6 +238,8 @@ function MeetingParticipantItem({
         askToUnmuteText = t('participantsPane.actions.allowVideo');
     }
 
+    console.log("In line 241, props are: ", { overflowDrawer, _isParticipantBirthday, _local, _participant, _localVideoOwner });
+
     return (
         <ParticipantItem
             actionsTrigger = { ACTION_TRIGGER.HOVER }
@@ -261,26 +263,22 @@ function MeetingParticipantItem({
             videoMediaState = { _videoMediaState }
             youText = { youText }>
 
-            {!overflowDrawer && (_isParticipantBirthday || !_local) && !_participant?.isFakeParticipant
-                && <>
-                    <ParticipantQuickAction
+            {!overflowDrawer && !_local && !_participant?.isFakeParticipant &&
+                <ParticipantQuickAction
                         askUnmuteText = { askToUnmuteText }
                         buttonType = { _quickActionButtonType }
                         muteAudio = { muteAudio }
                         muteParticipantButtonText = { muteParticipantButtonText }
                         participantID = { _participantID } />
+            }
+
+            {!overflowDrawer && (_isParticipantBirthday || !_local) && !_participant?.isFakeParticipant
+                && <>
                     <ParticipantActionEllipsis
                         aria-label = { participantActionEllipsisLabel }
                         onClick = { onContextMenu } />
                 </>
             }
-
-            {/* Commented out the redundant ParticipantActionEllipsis button, don't know why Taehwan added */}
-            {/* {!overflowDrawer && _local && !_participant?.isFakeParticipant &&
-                <ParticipantActionEllipsis
-                    aria-label = { participantActionEllipsisLabel }
-                    onClick = { onContextMenu } />
-            } */}
 
             {!overflowDrawer && _localVideoOwner && _participant?.isFakeParticipant && (
                 <ParticipantActionEllipsis

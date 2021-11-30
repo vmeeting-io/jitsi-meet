@@ -129,9 +129,10 @@ class PreMeetingScreen extends PureComponent<Props> {
     };
     constructor(props) {
         super(props);
+        console.log("vmchg: AAA ", this.props.showDID)
         this.state = {
             class: localStorage.language !== "ko" ? "":"-kr",
-            showDID: true,
+            showDID: this.props.showDID,
             page: 1,
             phoneNumber:"",
             phoneNumberError:false,
@@ -159,7 +160,7 @@ class PreMeetingScreen extends PureComponent<Props> {
     }
 
     componentWillMount(){
-        this._onCheckAlreadyVerified();
+        // this._onCheckAlreadyVerified();
     }
     /**
      * Decide if DID popup should be shown or not.

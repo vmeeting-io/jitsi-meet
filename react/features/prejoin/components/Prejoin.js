@@ -7,10 +7,12 @@ import { getRoomName } from '../../base/conference';
 import { translate } from '../../base/i18n';
 import { Icon, IconArrowDown, IconArrowUp, IconPhone, IconVolumeOff } from '../../base/icons';
 import { isVideoMutedByUser } from '../../base/media';
+import { getLocalParticipant, isDIDDenied, PIC_CONSENT } from '../../base/participants';
 import { ActionButton, InputField, PreMeetingScreen } from '../../base/premeeting';
 import { connect } from '../../base/redux';
 import { getDisplayName, updateSettings } from '../../base/settings';
 import { getLocalJitsiVideoTrack } from '../../base/tracks';
+import { checkDIDConsent, checkPhoneNumber } from '../../DIDConsent/components/web/functions';
 import {
     joinConference as joinConferenceAction,
     joinConferenceWithoutAudio as joinConferenceWithoutAudioAction,
@@ -120,7 +122,9 @@ class Prejoin extends Component<Props, State> {
 
         this.state = {
             showError: false,
-            showJoinByPhoneButtons: false
+            showJoinByPhoneButtons: false,
+            showDID: undefined,
+            completed: false
         };
 
         this._closeDialog = this._closeDialog.bind(this);
@@ -132,7 +136,79 @@ class Prejoin extends Component<Props, State> {
         this._onJoinConferenceWithoutAudioKeyPress = this._onJoinConferenceWithoutAudioKeyPress.bind(this);
         this._showDialogKeyPress = this._showDialogKeyPress.bind(this);
         this._onJoinKeyPress = this._onJoinKeyPress.bind(this);
+        this._onCheckAlreadyVerified = this._onCheckAlreadyVerified.bind(this);
     }
+    componentWillMount(){
+        this._onCheckAlreadyVerified().then((resp) => {
+            console.log("vmchg: GOT RESPIONSE FROM ICON LOOP ", resp)
+            this.setState({showDID: resp, completed: true});
+        })
+    }
+   
+    /**
+     *Check if user is logged in or not.
+     *  
+     * @returns Returns true if not logged in, else false
+     */
+     _notLoggedIn(){
+        const state = APP.store.getState();
+        const participant = getLocalParticipant(state);
+         
+        const showLogin = participant.email === undefined ? true : false;
+        return showLogin
+    } 
+    /**
+     * Decide if DID popup should be shown or not.
+     */
+    _onCheckAlreadyVerified = async () => {
+        console.log("vmchg: Calling IconLOOP")
+        if (config.enableDIDConsent){
+            if(!this._notLoggedIn()){
+            //Logged in case.
+            
+            const denied =  await isDIDDenied();
+           
+                    console.log("vmchg: DENIED -- ", denied)
+
+                if(denied == false){
+                    let checkConsent = true;
+                    
+                    console.log("vmchg: DENIED -- ", denied)
+                    
+                    checkPhoneNumber().then(cellPhoneNumber=>{
+                        if (cellPhoneNumber===false){
+                            checkConsent = false
+                            console.log("vmchg: NO PHONE NUMBER !!!")
+                            // this.setState({showDID: true});
+                            return true
+                        }
+                    })
+                    console.log("vmchg: Check DID -- ")
+
+                    const resp = await checkDIDConsent()
+                    
+                    if(resp.data.consent !== PIC_CONSENT.APPROVED){ // If consent has not been approved, show popup
+                        console.log("vmchg: CONSENT UNAPPROVED !!!")
+                        return true
+                        // this.setState({showDID: true});
+                    }else{
+                        console.log("vmchg: CONSENT APPROVED !!!")
+                        return false
+                        // this.setState({showDID: false});
+                    }
+                    
+                }
+                
+            }else{
+                //Non Logged in case, show login pop message
+                return true
+            }
+        }else{
+            // DID is disabled from config.js.
+            return false
+        }
+    }
+
     _onJoinButtonClick: () => void;
 
     /**
@@ -291,14 +367,16 @@ class Prejoin extends Component<Props, State> {
 
         const { _closeDialog, _onDropdownClose, _onJoinButtonClick, _onJoinKeyPress, _showDialogKeyPress,
             _onJoinConferenceWithoutAudioKeyPress, _onOptionsClick, _setName, _showDialog } = this;
-        const { showJoinByPhoneButtons, showError } = this.state;
+        const { showJoinByPhoneButtons, showError,showDID, completed} = this.state;
 
         return (
-            <PreMeetingScreen
+            <div>
+            { completed && <PreMeetingScreen
                 showDeviceStatus = { deviceStatusVisible }
                 title = { t('prejoin.joinMeeting') }
                 videoMuted = { !showCameraPreview }
-                videoTrack = { videoTrack }>
+                videoTrack = { videoTrack }
+                showDID = {showDID}>
                 <div
                     className = 'prejoin-input-area'
                     data-testid = 'prejoin.screen'>
@@ -371,7 +449,8 @@ class Prejoin extends Component<Props, State> {
                         joinConferenceWithoutAudio = { joinConferenceWithoutAudio }
                         onClose = { _closeDialog } />
                 )}
-            </PreMeetingScreen>
+            </PreMeetingScreen>}
+            </div>
         );
     }
 }

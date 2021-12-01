@@ -96,20 +96,14 @@ class DIDProcessingDialog extends PureComponent<Props> {
             t,
             ...dialogProps
         } = this.props;
-
         return (
             <div>
                 {this.state.show && <Dialog
                     okKey = { 'dialog.Ok' }
-                    disableBlanketClickDismiss = { false }
-                    onX={ this._onCancelDialog }
-                    consentDialog={true}
                     hideCancelButton = { true }
-                    onSubmit = { this._onCancelDialog }
                     titleKey = { 'dialog.consent.titleDialogThree' }
                     width = { 'small' }
                     >
-                    
                     <div className="consent-message-login">
                         <span>
                             {translateToHTML(t, t('dialog.consent.notice.verificationOnProcess'))}

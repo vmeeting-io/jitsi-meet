@@ -109,9 +109,6 @@ export function openLoginDialogDIDPopUp() {
 
 export function openDIDProcessingDialog(){
     return function(dispatch, getState){
-        const { enableDIDConsent } = getState()['features/base/config'];
-        if (enableDIDConsent) {
-            dispatch(openDialog(DIDProcessingDialog));
-        }
+        dispatch(openDialog(DIDProcessingDialog));
     }
 }

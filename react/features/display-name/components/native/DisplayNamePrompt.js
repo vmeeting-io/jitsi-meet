@@ -18,6 +18,7 @@ class DisplayNamePrompt extends AbstractDisplayNamePrompt<*> {
     render() {
         return (
             <InputDialog
+                allowEmpty={false}  
                 contentKey = 'dialog.enterDisplayName'
                 onSubmit = { this._onSetDisplayName } />
         );

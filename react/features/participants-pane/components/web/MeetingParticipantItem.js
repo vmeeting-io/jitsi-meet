@@ -238,8 +238,6 @@ function MeetingParticipantItem({
         askToUnmuteText = t('participantsPane.actions.allowVideo');
     }
 
-    console.log("In line 241, props are: ", { overflowDrawer, _isParticipantBirthday, _local, _participant, _localVideoOwner });
-
     return (
         <ParticipantItem
             actionsTrigger = { ACTION_TRIGGER.HOVER }
@@ -272,7 +270,7 @@ function MeetingParticipantItem({
                         participantID = { _participantID } />
             }
 
-            {!overflowDrawer && (_isParticipantBirthday || !_local) && !_participant?.isFakeParticipant
+            {!overflowDrawer && (_isParticipantBirthday || !_local || isParticipantModerator(_participant)) && !_participant?.isFakeParticipant
                 && <>
                     <ParticipantActionEllipsis
                         aria-label = { participantActionEllipsisLabel }

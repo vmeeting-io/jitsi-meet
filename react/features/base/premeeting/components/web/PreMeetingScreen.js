@@ -153,7 +153,8 @@ class PreMeetingScreen extends PureComponent<Props> {
         this._onLogin             = this._onLogin.bind(this);
         this._notLoggedIn          = this._notLoggedIn.bind(this);
         this._onComplete          = this._onComplete.bind(this);
-        
+        this._onPhoneNumberOutOfFocus = this._onPhoneNumberOutOfFocus.bind(this);
+
         this._checkIfPhoneExists();
     }
 
@@ -256,7 +257,13 @@ class PreMeetingScreen extends PureComponent<Props> {
     async _savePhoneNumber(){
        const res = await savePhoneNumber(this.state.phoneNumber)
     }
-    
+   
+    async _onPhoneNumberOutOfFocus(e){
+        if (!validators.phoneNumber(this.state.phoneNumber)){
+            await this._savePhoneNumber();
+        }
+    }
+
     async _onPhoneNumberChange(e){
         await this.setState({[e.target.name]: e.target.value});
         if(this.state.phoneNumber){
@@ -475,6 +482,7 @@ class PreMeetingScreen extends PureComponent<Props> {
                                     autoFocus = { true }
                                     className = 'consent-form-input-textbox remove-inc-dec-in-input-box'
                                     name = 'phoneNumber'
+                                    onBlur = { this._onPhoneNumberOutOfFocus }
                                     onChange = { this._onPhoneNumberChange }
                                     value = { this.state.phoneNumber ?? "" } 
                                     type = 'number' /> 

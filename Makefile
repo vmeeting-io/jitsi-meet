@@ -80,7 +80,7 @@ deploy-meet-models:
 		$(DEPLOY_DIR)	
 
 deploy-face-detect-models:
-	cp \
+	cp -rf \
 		$(FACE_DETECT_MODELS_DIR)/* \
 		$(DEPLOY_DIR)
 

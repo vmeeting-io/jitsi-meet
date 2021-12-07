@@ -414,7 +414,6 @@ function _mapStateToProps(state) {
         _reactionsQueue: getReactionsQueue(state),
         _roomName: getConferenceNameForTitle(state),
         _showLobby: getIsLobbyVisible(state),
-        _showPrejoin: isPrejoinPageVisible(state) || isPrejoinPageLoading(state),
         _startCountdown: startCountdown,
         _startCountdownFrom: startCountdownFrom,
         _showPrejoin: isPrejoinPageVisible(state)

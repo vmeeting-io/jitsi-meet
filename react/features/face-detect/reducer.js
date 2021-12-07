@@ -9,6 +9,8 @@ import {
     ATTENTION_ANALYSIS_OPENED,
     SET_ATTENTION_ANALYSIS_READY,
     INIT_FACE_DETECT,
+    SET_ATTENTION_ANALYSIS_COUNT,
+    SET_ATTENTION_ANALYSIS_TOTAL,
 } from './actionTypes';
 
 const DEFAULT_STATE = {
@@ -29,6 +31,8 @@ ReducerRegistry.register('features/face-detect', (state = DEFAULT_STATE, action)
     case STOP_FACE_DETECT:
     case UPDATE_ATTENTION_STATUSES:
     case SET_ATTENTION_ANALYSIS_READY:
+    case SET_ATTENTION_ANALYSIS_COUNT:
+    case SET_ATTENTION_ANALYSIS_TOTAL:
         return {
             ...state,
             ...data

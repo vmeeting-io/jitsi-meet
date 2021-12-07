@@ -162,7 +162,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
     case SET_LOADABLE_AVATAR_URL:
     case PARTICIPANT_UPDATED: {
         const { participant } = action;
-        let { id } = participant;
+        let { id, name } = participant;
         const { local } = participant;
 
         if (!id && local) {
@@ -172,6 +172,21 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
         let newParticipant;
 
         if (state.remote.has(id)) {
+            const remoteParticipant = state.remote.get(id);
+            if (name && name !== remoteParticipant.name) {
+                // delete the existing participant
+                state.sortedRemoteParticipants.delete(id);
+
+                // Insert the new participant.
+                const displayName = _getDisplayName(name);
+                const sortedRemoteParticipants = Array.from(state.sortedRemoteParticipants);
+        
+                sortedRemoteParticipants.push([ id, displayName ]);
+                sortedRemoteParticipants.sort((a, b) => a[1].localeCompare(b[1]));
+        
+                // The sort order of participants is preserved since Map remembers the original insertion order of the keys.
+                state.sortedRemoteParticipants = new Map(sortedRemoteParticipants);
+            }
             newParticipant = _participant(state.remote.get(id), action);
             state.remote.set(id, newParticipant);
         } else if (id === state.local?.id) {
@@ -372,7 +387,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
  */
 function _getDisplayName(name) {
     return name
-        ?? (typeof interfaceConfig === 'object' ? interfaceConfig.DEFAULT_REMOTE_DISPLAY_NAME : 'Fellow Jitser');
+        ?? (typeof interfaceConfig === 'object' ? interfaceConfig.DEFAULT_REMOTE_DISPLAY_NAME : 'Vmeeter');
 }
 
 /**

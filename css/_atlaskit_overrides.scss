@@ -193,12 +193,30 @@ div.Tooltip {
     #modal-dialog-ok-button {
         background: rgb(76, 154, 255);
         color: rgb(27, 38, 56) !important;
+        // width: 90px;
+        // height: 40px;
     }
 
     #modal-dialog-cancel-button {
         color: rgb(159, 176, 204) !important;
+        width: 90px;
+        height: 40px;
     }
 }
+
+.control-buttons {
+    display: flex;
+
+    #did-ok-button {
+        background: rgb(76, 154, 255);
+        color: rgb(27, 38, 56) !important;
+    }
+
+    #did-cancel-button {
+        color: rgb(159, 176, 204) !important;
+    }
+}
+
 
 .participants_pane {
     // footer

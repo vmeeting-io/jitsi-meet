@@ -12,7 +12,9 @@ import {
     STOP_FACE_DETECT,
     ATTENTION_ANALYSIS_OPENED,
     START_FACE_DETECT,
-    SET_ATTENTION_ANALYSIS_READY
+    SET_ATTENTION_ANALYSIS_READY,
+    SET_ATTENTION_ANALYSIS_COUNT,
+    SET_ATTENTION_ANALYSIS_TOTAL
 } from './actionTypes';
 import {
     getAttentionAnalysisWindow,
@@ -138,5 +140,19 @@ export function setAttentionAnalysisReady(ready) {
     return {
         type: SET_ATTENTION_ANALYSIS_READY,
         ready
+    };
+}
+
+export function setAttentionAnalysisCount(count) {
+    return {
+        type: SET_ATTENTION_ANALYSIS_COUNT,
+        count
+    };
+}
+
+export function setAttentionAnalysisTotal(total) {
+    return {
+        type: SET_ATTENTION_ANALYSIS_TOTAL,
+        total
     };
 }

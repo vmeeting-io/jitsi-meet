@@ -16,6 +16,10 @@ var config = {
             enLink : "/static/doc/manual/Vmeeting_Manual_EN_v2.pdf"
         }
     },
+    DID:{
+        enLink : "https://sites.google.com/kedutech.kr/dataflagship-notice-en",
+        krLink : "https://sites.google.com/kedutech.kr/dataflagship-notice-kr"
+    },
     //Capatcha Configs
     captcha: {
         enabled: true,           // flag to enable/disable captcha.
@@ -30,7 +34,7 @@ var config = {
     },
 
     // enable DID Consent for flagship
-    // enableDIDConsent: true,
+    enableDIDConsent: true,
 
     // whether or not we want to use the birthday AR hat feature
     enableBirthdayARHat: true,
@@ -526,7 +530,7 @@ var config = {
     // enableCalendarIntegration: false,
 
     // When 'true', it shows an intermediate page before joining, where the user can configure their devices.
-    prejoinPageEnabled: false,
+    prejoinPageEnabled: true,
 
     // If etherpad integration is enabled, setting this to true will
     // automatically open the etherpad when a participant joins.  This

@@ -216,8 +216,8 @@ export const shouldRenderInviteButton = (state: Object) => {
  * @returns {boolean} true if participant's birthday is today, else returns false
  */
 export function isTodayParticipantBirthday(participant: Object) {
-    let birthDate = participant.birthDate;
-    if(birthDate === undefined) {
+    const { birthDate } = participant || {};
+    if (!birthDate) {
         return false;
     }
 
@@ -225,7 +225,7 @@ export function isTodayParticipantBirthday(participant: Object) {
     const todayDate = getTodaysDate();
     let currentMD = todayDate.substr(5, 5); // retrieve the substring of birthdate starting at index 5 for a length of 5 characters of the string
 
-    if(participantMD === currentMD) {
+    if (participantMD === currentMD) {
         return true;
     } else {
         return false;

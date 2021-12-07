@@ -1,16 +1,14 @@
+import { uniq } from 'lodash';
+
 import { getCurrentConference, STATUS_COMMAND } from '../base/conference';
 import { getLocalParticipant, participantPresenceChanged } from '../base/participants';
 import { isParticipantVideoMuted } from '../base/tracks';
 import { isPrejoinPageVisible } from '../prejoin/functions';
 import { setAttentionAnalysisReady } from './actions';
 import { STATUS_TABLE } from './constants';
-import { getAttentionAnalysisReady, isAttentionAnalysisEnabled } from './functions';
-import {
-    CLEAR_TIMEOUT,
-    TIMEOUT_TICK,
-    SET_TIMEOUT,
-    timerWorkerScript
-} from './TimerWorker';
+import { isAttentionAnalysisEnabled } from './functions';
+
+const threshold = 3;
 
 /**
  * Represents a modified MediaStream that detect effects from video.
@@ -40,6 +38,11 @@ export default class FaceDetect {
         this._showResult = showResult;
         this._enabled = false;
         this._prevStatus = -1;
+        this._timerId = null;
+        this._timestamp = 0;
+        this._frames = [];
+        this._patience = patience;
+        this._statusList = [];
 
         this._inputVideo = document.getElementById('localVideo_container');
 
@@ -48,24 +51,10 @@ export default class FaceDetect {
             { name: 'worker', type: 'module' }
         );
 
-        this._onFrameTimer = this._onFrameTimer.bind(this);
         this._onMessage = this._onMessage.bind(this);
         this._worker.onmessage = this._onMessage;
         this._worker.postMessage({ command: 'initialize', nms: 0.4, patience });
-    }
-
-    /**
-     * EventHandler onmessage for the faceDetectTimerWorker WebWorker.
-     *
-     * @private
-     * @param {EventHandler} response - The onmessage EventHandler parameter.
-     * @returns {void}
-     */
-    _onFrameTimer(response: Object) {
-        // console.log('_onFrameTimer:', response);
-        if (response.data.id === TIMEOUT_TICK) {
-            this._loop();
-        }
+        this._loop = this._loop.bind(this);
     }
 
     /**
@@ -75,7 +64,7 @@ export default class FaceDetect {
      */
     async runInference() {
         if (!this._initialized) {
-            console.log('face-detect worker is not initialized.');
+            // console.log('face-detect worker is not initialized.');
             return;
         }
 
@@ -100,17 +89,26 @@ export default class FaceDetect {
 
             if (videoMuted) {
                 this._updateParticipantStatus(2);
-            } else if (!this._ready || this._started) {
+            } else if (this._videoCanvas && (!this._ready || this._started)) {
                 try {
                     // Get face detect output
                     // console.time('inferenceImage');
                     this._videoContext.drawImage(this._inputVideo, 0, 0, videoWidth, videoHeight);
                     const frame = this._videoContext.getImageData(0, 0, videoWidth, videoHeight);
-                    this._worker.postMessage({ command: 'frame', data: frame });
-                    this._isWaiting = true;
+                    if (this._started) {
+                        this._worker.postMessage({ command: 'frame', data: frame });
+                        this._isWaiting = true;
+                    } else {
+                        this._frames.push(frame);
+                        if (this._frames.length > this._patience) {
+                            this._frames.shift();
+                            this._dispatch(setAttentionAnalysisReady(true));
+                        }
+                    }
                     // console.timeEnd('inferenceImage');
                 } catch (e) {
                     // ignore
+                    console.error(e);
                 }
             }
         }
@@ -130,23 +128,22 @@ export default class FaceDetect {
                 console.log('face-detect worker is initialized!');
                 return;
             }
-            console.error('face-detect worker is not initialized.');
+            // console.error('face-detect worker is not initialized.');
             return;
         };
 
         this._isWaiting = false;
 
-        if (!getAttentionAnalysisReady(this._getState()) && result.ready) {
-            this._ready = result.ready;
-            this._dispatch(setAttentionAnalysisReady(this._ready));
+        if (!result.data) {
             return;
         }
 
-        if (!this._started || !result.data) {
+        if (result.data === 'started') {
+            this._started = true;
             return;
         }
 
-        const { status, eyeClose, box, landmarks } = result.data;
+        let { status, eyeClose, box, landmarks = [] } = result.data;
         // console.log(`status=${status}, eyeClose=${eyeClose}`);
 
         const largeVideo = document.getElementById('largeVideo');
@@ -156,6 +153,12 @@ export default class FaceDetect {
         if (rc && videoWidth > 0 && videoHeight > 0 && this._showResult) {
             // console.log('video: clientRect', rc);
             
+            // transform 640x640 to 1280x720
+            box = box.map((p, i) => i % 2 == 0 ? p * videoWidth / 640 : p * videoHeight / 640);
+            if (landmarks.length) {
+                landmarks = landmarks.map(m => m.map((p, i) => i % 2 == 0 ? p * videoWidth / 640 : p * videoHeight / 640));
+            }
+        
             if (!this._canvas) {
                 console.log('largeVideo.canvas:', videoWidth, videoHeight);
                 this._canvas = document.createElement('canvas');
@@ -181,42 +184,36 @@ export default class FaceDetect {
             this._ctx.font = `normal 18px 맑은 고딕`;
             this._ctx.fillStyle = '#00ff00';
             this._ctx.mlFillText(`${status}`, box[0] + 5, box[1] + 5, 100, 50, 'top', 'left', 20);
+            // eyeClose
+            this._ctx.mlFillText(`eyeClose: ${Boolean(eyeClose)}`, box[0] + 5, box[1] + 30, 200, 50, 'top', 'left', 20);
       
             if (landmarks.length) {
                 // landmark5
-                for (let i = 0; i < landmarks[0].length; i++) {
-                    const [x, y] = landmarks[0][i];
+                for (let i = 0; i < landmarks.length; i++) {
+                    const [x, y] = landmarks[i];
                     this._ctx.beginPath();
                     this._ctx.strokeStyle = '#00ff00';
                     this._ctx.arc(x, y, 2, 0, 2 * Math.PI);
                     this._ctx.fill();
                 }
-      
-                // face_landmarks
-                let marks = landmarks[1]['left_eye'];
-                for (let i = 0; i < marks.length; i++) {
-                    const [x, y] = marks[i];
-                    const scaled_x = (box[2] - box[0]) / 112 * x;
-                    const scaled_y = (box[3] - box[1]) / 112 * y;
-                    this._ctx.beginPath();
-                    this._ctx.strokeStyle = '#00ff00';
-                    this._ctx.arc(scaled_x + box[0], scaled_y + box[1], 2, 0, 2 * Math.PI);
-                    this._ctx.fill();
-                }
-                marks = landmarks[1]['right_eye'];
-                for (let i = 0; i < marks.length; i++) {
-                    const [x, y] = marks[i];
-                    const scaled_x = (box[2] - box[0]) / 112 * x;
-                    const scaled_y = (box[3] - box[1]) / 112 * y;
-                    this._ctx.beginPath();
-                    this._ctx.strokeStyle = '#00ff00';
-                    this._ctx.arc(scaled_x + box[0], scaled_y + box[1], 2, 0, 2 * Math.PI);
-                    this._ctx.fill();
-                }
             }
         }
 
-        this._updateParticipantStatus(status);
+        if (!this._started) {
+            return;
+        }
+
+        this._statusList.push(status);
+        if (this._statusList.length > threshold) {
+            this._statusList.shift();
+        }
+
+        // 튀는 값을 정리하기 위해서...
+        // threshold 동안 모든 값이 동일한 경우만 상태 업데이트를 진행
+        const unique = uniq(this._statusList);
+        if (unique.length === 1) {
+            this._updateParticipantStatus(status);
+        }
     }
 
     _updateParticipantStatus(status) {
@@ -241,16 +238,15 @@ export default class FaceDetect {
      * @private
      * @returns {void}
      */
-    _loop() {
-        this.runInference();
-
-        const state = this._getState();
-        this._enabled = isAttentionAnalysisEnabled(state);
-
-        this._frameTimerWorker.postMessage({
-            id: SET_TIMEOUT,
-            timeMs: this._frameInterval
-        });
+    async _loop(timestamp) {
+        if ((timestamp - this._timestamp) > this._frameInterval) {
+            this._timestamp = timestamp;
+            await this.runInference();
+            
+            this._enabled = isAttentionAnalysisEnabled(this._getState());
+        }
+        
+        this._timerId = requestAnimationFrame(this._loop);
     }
 
     /**
@@ -260,13 +256,7 @@ export default class FaceDetect {
      * @returns {MediaStream} - The stream with the applied effect.
      */
     init() {
-        this._frameTimerWorker = new Worker(timerWorkerScript, { name: 'face effect worker' });
-        this._frameTimerWorker.onmessage = this._onFrameTimer;
-
-        this._frameTimerWorker.postMessage({
-            id: SET_TIMEOUT,
-            timeMs: this._frameInterval
-        });
+        this._timerId = requestAnimationFrame(this._loop);
     }
 
     /**
@@ -278,9 +268,10 @@ export default class FaceDetect {
         const { faceDetect = {} } = this._getState()['features/base/config'].testing || {};
         const { frameInterval = 1000 } = faceDetect;
 
-        this._started = true;
         this._frameInterval = frameInterval;
-        this._worker.postMessage({ command: 'inference' });
+        this._worker.postMessage({ command: 'inference', data: this._frames });
+        this._frames = [];
+        this._isWaiting = true;
     }
 
     /**
@@ -289,10 +280,9 @@ export default class FaceDetect {
      * @returns {void}
      */
     stop() {
-        this._frameTimerWorker.postMessage({
-            id: CLEAR_TIMEOUT
-        });
-
-        this._frameTimerWorker.terminate();
+        if (this._timerId) {
+            cancelAnimationFrame(this._timerId);
+            this._timerId = null;
+        }
     }
 };

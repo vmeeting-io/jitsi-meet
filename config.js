@@ -121,8 +121,8 @@ var config = {
 
         faceDetect: {
             referenceInterval: 1000 / 10,
-            frameInterval: 1000,
-            patience: 100,
+            frameInterval: 1500,
+            patience: 5,
             showResult: false
         }
     },
@@ -530,7 +530,7 @@ var config = {
     // enableCalendarIntegration: false,
 
     // When 'true', it shows an intermediate page before joining, where the user can configure their devices.
-    prejoinPageEnabled: true,
+    // prejoinPageEnabled: true,
 
     // If etherpad integration is enabled, setting this to true will
     // automatically open the etherpad when a participant joins.  This

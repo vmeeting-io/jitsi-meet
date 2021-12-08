@@ -1,8 +1,10 @@
 // @flow
 
 import InlineDialog from '@atlaskit/inline-dialog';
+import axios from 'axios';
 import React, { Component } from 'react';
 
+import { getAuthUrl } from '../../../api/url';
 import { getRoomName } from '../../base/conference';
 import { translate } from '../../base/i18n';
 import { Icon, IconArrowDown, IconArrowUp, IconPhone, IconVolumeOff } from '../../base/icons';
@@ -141,13 +143,28 @@ class Prejoin extends Component<Props, State> {
         this._showDialogKeyPress = this._showDialogKeyPress.bind(this);
         this._onJoinKeyPress = this._onJoinKeyPress.bind(this);
         this._onCheckAlreadyVerified = this._onCheckAlreadyVerified.bind(this);
+        this._unload = this._unload.bind(this);
     }
+
     componentWillMount(){
         this._onCheckAlreadyVerified().then((resp) => {
             this.setState({ showDID: resp, completed: true });
-        })
+        });
+        window.addEventListener('beforeunload', this._unload);
     }
-   
+
+    componentWillUnmount() {
+        window.removeEventListener('beforeunload', this._unload);
+    }
+
+    // should remove conference
+    _unload() {
+        const { _apiBase, _user, roomInfo } = this.props;
+        if (_user?.email === roomInfo?.mail_owner) {
+            axios.delete(`${_apiBase}/conferences/${roomInfo._id}`);
+        }
+    }
+
     /**
      * Decide if DID popup should be shown or not.
      */
@@ -442,11 +459,13 @@ function mapStateToProps(state): Object {
     const _user = state['features/base/jwt'].user;
 
     return {
+        _apiBase: getAuthUrl(state),
         _attentionAnalysisEnabled,
         _user,
         name,
         deviceStatusVisible: isDeviceStatusVisible(state),
         roomName: getRoomName(state),
+        roomInfo: state['features/base/conference'].roomInfo,
         showDialog: isJoinByPhoneDialogVisible(state),
         showErrorOnJoin,
         hasJoinByPhoneButton: isJoinByPhoneButtonVisible(state),

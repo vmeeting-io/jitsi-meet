@@ -146,7 +146,7 @@ var config = {
     //
 
     // Enable unified plan implementation support on Chromium based browsers.
-    // enableUnifiedOnChrome: false,
+    enableUnifiedOnChrome: true,
 
     // Audio
 
@@ -721,7 +721,7 @@ var config = {
         enabled: true,
 
         // Enable unified plan implementation support on Chromium for p2p connection.
-        // enableUnifiedOnChrome: false,
+        enableUnifiedOnChrome: true,
 
         // Sets the ICE transport policy for the p2p connection. At the time
         // of this writing the list of possible values are 'all' and 'relay',

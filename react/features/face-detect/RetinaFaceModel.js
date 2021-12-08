@@ -45,10 +45,10 @@ function _whctrs(anchor) {
  * (x_ctr, y_ctr), output a set of anchors (windows).
  */
 function _mkanchors(ws, hs, x_ctr, y_ctr) {
-    const anchors = tf.tidy(() => {
+    return tf.tidy(() => {
         const ws1 = ws.expandDims(1);
         const hs1 = hs.expandDims(1);
-
+    
         // anchors = np.hstack(...)
         return tf.concat([
             // x_ctr - 0.5 * (ws1 - 1),
@@ -61,8 +61,6 @@ function _mkanchors(ws, hs, x_ctr, y_ctr) {
             y_ctr.add(hs1.sub(1).mul(0.5))
         ], 1);
     });
-
-    return anchors;
 }
 
 /*
@@ -71,10 +69,15 @@ function _mkanchors(ws, hs, x_ctr, y_ctr) {
  * ratios: tensor
  */
 function _ratio_enum(anchor, ratios) {
+    // w, h, x_ctr, y_ctr = _whctrs(anchor)
     const { w, h, x_ctr, y_ctr } = _whctrs(anchor);
+    // size = w * h
     const size = w * h;
-    const size_ratios = tf.scalar(size).div(ratios);
-    const ws = tf.round(size_ratios.sqrt(size_ratios));
+    // size_ratios = size / ratios
+    const size_ratios = tf.tensor(size).div(ratios);
+    // ws = np.round(np.sqrt(size_ratios))
+    const ws = tf.round(tf.sqrt(size_ratios));
+    // hs = np.round(ws * ratios)
     const hs = tf.round(ws.mul(ratios));
     const anchors = _mkanchors(ws, hs, x_ctr, y_ctr);
     return anchors;
@@ -84,9 +87,12 @@ function _ratio_enum(anchor, ratios) {
  * Enumerate a set of anchors for each scale wrt an anchor.
  */
 function _scale_enum(anchor, scales) {
+    // w, h, x_ctr, y_ctr = _whctrs(anchor)
     const { w, h, x_ctr, y_ctr } = _whctrs(anchor);
-    const ws = scales.mul(tf.scalar(w));
-    const hs = scales.mul(tf.scalar(h));
+    // ws = w * scales
+    const ws = tf.tensor(w).mul(scales);
+    // hs = h * scales
+    const hs = tf.tensor(h).mul(scales);
     const anchors = _mkanchors(ws, hs, x_ctr, y_ctr);
     return anchors;
 }
@@ -95,7 +101,7 @@ function _scale_enum(anchor, scales) {
  * Generate anchor (reference) windows by enumerating aspect ratios X
  * scales wrt a reference (0, 0, 15, 15) window.
  */
-function generate_anchors(base_size=16, ratios=tf.tensor([0.5, 1, 2]),
+function generate_anchors(base_size=16, ratios=[0.5, 1, 2],
                      scales=tf.scalar(2).pow(range(3, 6)), stride=16)
 {
     const base_anchor = tf.tensor([1, 1, base_size, base_size]).sub(tf.scalar(1));
@@ -122,23 +128,21 @@ function generate_anchors_fpn(cfg) {
         .sort((a,b) => b - a);
 
     // for k in RPN_FEAT_STRIDE:
-    const anchors = map(RPN_FEAT_STRIDE, k => {
+    return tf.tidy(() => map(RPN_FEAT_STRIDE, k => {
         // v = cfg[str(k)]
         const v = cfg[k];
         const bs = v['BASE_SIZE'];
         // __ratios = np.array(v['RATIOS'])
-        const __ratios = tf.tensor(v['RATIOS']);
+        const __ratios = v['RATIOS'];
         // __scales = np.array(v['SCALES'])
-        const __scales = tf.tensor(v['SCALES']);
+        const __scales = v['SCALES'];
         // stride = int(k)
         // #print('anchors_fpn', bs, __ratios, __scales, file=sys.stderr)
         const r = generate_anchors(bs, __ratios, __scales, k)
         // #print('anchors_fpn', r.shape, file=sys.stderr)
         
         return r;
-    });
-
-    return anchors;
+    }));
 }
 
 export function resize_image(img, scales) {
@@ -255,56 +259,51 @@ function bbox_pred(boxes, box_deltas) {
         return np.zeros([0, box_deltas.shape[1]]);
     }
 
-    const result = tf.tidy(() => {
-        const fboxes = boxes.asType('float32');
-        // widths = boxes[:, 2] - boxes[:, 0] + 1.0
-        const widths = fboxes.gather(2, 1).sub(fboxes.gather(0, 1)).add(1.0);
-        // heights = boxes[:, 3] - boxes[:, 1] + 1.0
-        const heights = fboxes.gather(3, 1).sub(fboxes.gather(1, 1)).add(1.0);
-        // ctr_x = boxes[:, 0] + 0.5 * (widths - 1.0)
-        const ctr_x = fboxes.gather(0, 1).add(widths.sub(1.0).mul(0.5));
-        // ctr_y = boxes[:, 1] + 0.5 * (heights - 1.0)
-        const ctr_y = fboxes.gather(1, 1).add(heights.sub(1.0).mul(0.5));
+    // widths = boxes[:, 2] - boxes[:, 0] + 1.0
+    const widths = boxes.gather(2, 1).sub(boxes.gather(0, 1)).add(1.0);
+    // heights = boxes[:, 3] - boxes[:, 1] + 1.0
+    const heights = boxes.gather(3, 1).sub(boxes.gather(1, 1)).add(1.0);
+    // ctr_x = boxes[:, 0] + 0.5 * (widths - 1.0)
+    const ctr_x = boxes.gather(0, 1).add(widths.sub(1.0).mul(0.5));
+    // ctr_y = boxes[:, 1] + 0.5 * (heights - 1.0)
+    const ctr_y = boxes.gather(1, 1).add(heights.sub(1.0).mul(0.5));
 
-        // dx = box_deltas[:, 0:1]
-        const dx = box_deltas.gather([0], 1);
-        // dy = box_deltas[:, 1:2]
-        const dy = box_deltas.gather([1], 1);
-        // dw = box_deltas[:, 2:3]
-        const dw = box_deltas.gather([2], 1);
-        // dh = box_deltas[:, 3:4]
-        const dh = box_deltas.gather([3], 1);
+    // dx = box_deltas[:, 0:1]
+    const dx = box_deltas.gather([0], 1);
+    // dy = box_deltas[:, 1:2]
+    const dy = box_deltas.gather([1], 1);
+    // dw = box_deltas[:, 2:3]
+    const dw = box_deltas.gather([2], 1);
+    // dh = box_deltas[:, 3:4]
+    const dh = box_deltas.gather([3], 1);
 
-        // pred_ctr_x = dx * widths[:, np.newaxis] + ctr_x[:, np.newaxis]
-        const pred_ctr_x = dx.mul(widths.expandDims(1)).add(ctr_x.expandDims(1));
-        // pred_ctr_y = dy * heights[:, np.newaxis] + ctr_y[:, np.newaxis]
-        const pred_ctr_y = dy.mul(heights.expandDims(1)).add(ctr_y.expandDims(1));
-        // pred_w = np.exp(dw) * widths[:, np.newaxis]
-        const pred_w = dw.exp().mul(widths.expandDims(1));
-        // pred_h = np.exp(dh) * heights[:, np.newaxis]
-        const pred_h = dh.exp().mul(heights.expandDims(1));
+    // pred_ctr_x = dx * widths[:, np.newaxis] + ctr_x[:, np.newaxis]
+    const pred_ctr_x = dx.mul(widths.expandDims(1)).add(ctr_x.expandDims(1));
+    // pred_ctr_y = dy * heights[:, np.newaxis] + ctr_y[:, np.newaxis]
+    const pred_ctr_y = dy.mul(heights.expandDims(1)).add(ctr_y.expandDims(1));
+    // pred_w = np.exp(dw) * widths[:, np.newaxis]
+    const pred_w = dw.exp().mul(widths.expandDims(1));
+    // pred_h = np.exp(dh) * heights[:, np.newaxis]
+    const pred_h = dh.exp().mul(heights.expandDims(1));
 
-        // pred_boxes = np.zeros(box_deltas.shape)
-        let pred_boxes = [];
-        // # x1
-        // pred_boxes[:, 0:1] = pred_ctr_x - 0.5 * (pred_w - 1.0)
-        pred_boxes.push(pred_ctr_x.sub(pred_w.sub(1.0).mul(0.5)));
-        // # y1
-        // pred_boxes[:, 1:2] = pred_ctr_y - 0.5 * (pred_h - 1.0)
-        pred_boxes.push(pred_ctr_y.sub(pred_h.sub(1.0).mul(0.5)));
-        // # x2
-        // pred_boxes[:, 2:3] = pred_ctr_x + 0.5 * (pred_w - 1.0)
-        pred_boxes.push(pred_ctr_x.add(pred_w.sub(1.0).mul(0.5)));
-        // # y2
-        // pred_boxes[:, 3:4] = pred_ctr_y + 0.5 * (pred_h - 1.0)
-        pred_boxes.push(pred_ctr_y.add(pred_h.sub(1.0).mul(0.5)));
+    // pred_boxes = np.zeros(box_deltas.shape)
+    let pred_boxes = [];
+    // # x1
+    // pred_boxes[:, 0:1] = pred_ctr_x - 0.5 * (pred_w - 1.0)
+    pred_boxes.push(pred_ctr_x.sub(pred_w.sub(1.0).mul(0.5)));
+    // # y1
+    // pred_boxes[:, 1:2] = pred_ctr_y - 0.5 * (pred_h - 1.0)
+    pred_boxes.push(pred_ctr_y.sub(pred_h.sub(1.0).mul(0.5)));
+    // # x2
+    // pred_boxes[:, 2:3] = pred_ctr_x + 0.5 * (pred_w - 1.0)
+    pred_boxes.push(pred_ctr_x.add(pred_w.sub(1.0).mul(0.5)));
+    // # y2
+    // pred_boxes[:, 3:4] = pred_ctr_y + 0.5 * (pred_h - 1.0)
+    pred_boxes.push(pred_ctr_y.add(pred_h.sub(1.0).mul(0.5)));
 
-        pred_boxes = tf.concat(pred_boxes, 1);
+    pred_boxes = tf.concat(pred_boxes, 1);
 
-        return pred_boxes;
-    });
-
-    return result;
+    return pred_boxes;
 }
 
 function landmark_pred(boxes, landmark_deltas) {
@@ -365,182 +364,184 @@ export default class RetinaFaceModel {
             this.model = await tf.loadGraphModel('/libs/retinaface/model.json');
         }
 
-        const proposals_list = [];
-        const scores_list = [];
-        const landmarks_list = [];
+        return tf.tidy(() => {
+            const proposals_list = [];
+            const scores_list = [];
+            const landmarks_list = [];
+    
+            // const [im_tensor, im_info, im_scale] = preprocess_image(frame);
+            // im_tensor = cv2.resize(im_tensor.squeeze(), (640, 640))
+    
+            // # im_tensor = np.expand_dims(np.transpose(im_tensor, (2, 0, 1)),axis=0).astype(np.float32)
+            // im_tensor = np.transpose(im_tensor, (2, 0, 1)).astype(np.float32)
+            // input_name = self.model.get_inputs()[0].name
+            const frameNormed = normalize_frame(frame, 640, 640);
+            // console.log('frameNormed.shape', frameNormed.shape);
+            // # out = self.model({tf.convert_to_tensor(im_tensor)})
+            // #
+            // # out_val=list(out.values())
+            // # net_out=[out.numpy() for out in out_val]
+            // # net_out=[]
+            // # for idx in [4, 1, 7, 3, 0, 6, 5, 2, 8]:
+            // #     net_out.append(out_val[idx].numpy())
+    
+            // net_out = []
+            // for output in self.model.get_outputs()[:]:
+            //     net_output = self.model.run([output.name], {"data": [im_tensor]})[0]
+            //     net_out.append(net_output)
+            let outputs = [];
+            let proposals = null;
+            let scores = null;
+            let scores_ravel = [];
+            let order = [];
+    
+            const cls = ['cls_prob_reshape', 'bbox_pred', 'landmark_pred']
+            for (let i = 0; i < this.model.outputs.length; i++) {
+                const idx = this._feat_stride_fpn[Math.floor(i / 3)];
+                outputs.push(`face_rpn_${cls[i % 3]}_stride${idx}`);
+            }
+            const net_out = this.model.execute(frameNormed, outputs);
+            // console.log('detect output:', net_out);
+    
+            this._feat_stride_fpn.forEach((stride, _idx) => {
+                const _key = `stride${stride}`;
+                let idx = this.use_landmarks ? _idx * 3 : _idx * 2;
+    
+                scores = net_out[idx];
+                const begin = this._num_anchors[_key];
+                scores = scores.slice(
+                    [0, begin, 0, 0],
+                    [scores.shape[0], scores.shape[1] - begin, scores.shape[2], scores.shape[3]]);
+                idx += 1;
+                let bbox_deltas = net_out[idx];
+    
+                const [height, width] = bbox_deltas.shape.slice(2,4);
+                // console.log('height=', height, ', width=', width);
+                const A = this._num_anchors[_key];
+                const K = height * width;
+                const key = [height, width, stride];
+                let anchors;
 
-        // const [im_tensor, im_info, im_scale] = preprocess_image(frame);
-        // im_tensor = cv2.resize(im_tensor.squeeze(), (640, 640))
-
-        // # im_tensor = np.expand_dims(np.transpose(im_tensor, (2, 0, 1)),axis=0).astype(np.float32)
-        // im_tensor = np.transpose(im_tensor, (2, 0, 1)).astype(np.float32)
-        // input_name = self.model.get_inputs()[0].name
-        const frameNormed = normalize_frame(frame, 640, 640);
-        // console.log('frameNormed.shape', frameNormed.shape);
-        // # out = self.model({tf.convert_to_tensor(im_tensor)})
-        // #
-        // # out_val=list(out.values())
-        // # net_out=[out.numpy() for out in out_val]
-        // # net_out=[]
-        // # for idx in [4, 1, 7, 3, 0, 6, 5, 2, 8]:
-        // #     net_out.append(out_val[idx].numpy())
-
-        // net_out = []
-        // for output in self.model.get_outputs()[:]:
-        //     net_output = self.model.run([output.name], {"data": [im_tensor]})[0]
-        //     net_out.append(net_output)
-        let outputs = [];
-        let proposals = null;
-        let scores = null;
-        let scores_ravel = [];
-        let order = [];
-
-        const cls = ['cls_prob_reshape', 'bbox_pred', 'landmark_pred']
-        for (let i = 0; i < this.model.outputs.length; i++) {
-            const idx = this._feat_stride_fpn[Math.floor(i / 3)];
-            outputs.push(`face_rpn_${cls[i % 3]}_stride${idx}`);
-        }
-        const net_out = this.model.execute(frameNormed, outputs);
-        // console.log('detect output:', net_out);
-
-        this._feat_stride_fpn.forEach((stride, _idx) => {
-            const _key = `stride${stride}`;
-            let idx = this.use_landmarks ? _idx * 3 : _idx * 2;
-
-            scores = net_out[idx];
-            const begin = this._num_anchors[_key];
-            scores = scores.slice(
-                [0, begin, 0, 0],
-                [scores.shape[0], scores.shape[1] - begin, scores.shape[2], scores.shape[3]]);
-            idx += 1;
-            let bbox_deltas = net_out[idx];
-
-            const [height, width] = bbox_deltas.shape.slice(2,4);
-            // console.log('height=', height, ', width=', width);
-            const A = this._num_anchors[_key];
-            const K = height * width;
-            const key = [height, width, stride];
-            let anchors;
-
-            if (key in this.anchor_plane_cache) {
-                anchors = this.anchor_plane_cache[key];
-            } else {
-                const anchors_fpn = this._anchors_fpn[`stride${stride}`];
-                anchors = anchors_plane(height, width, stride, anchors_fpn);
-                anchors = anchors.reshape([K * A, 4]);
-                if (size(this.anchor_plane_cache) < 100) {
-                    this.anchor_plane_cache[key] = anchors;
+                if (key in this.anchor_plane_cache) {
+                    anchors = this.anchor_plane_cache[key];
+                } else {
+                    const anchors_fpn = this._anchors_fpn[`stride${stride}`];
+                    anchors = anchors_plane(height, width, stride, anchors_fpn);
+                    anchors = tf.keep(anchors.reshape([K * A, 4]));
+                    if (size(this.anchor_plane_cache) < 100) {
+                        this.anchor_plane_cache[key] = anchors;
+                    }
                 }
+        
+                scores = clip_pad(scores, [height, width]);
+                scores = scores.transpose([0, 2, 3, 1]).reshape([-1, 1]);
+                // console.log('scores.shape=', scores.shape);
+        
+                bbox_deltas = clip_pad(bbox_deltas, [height, width]);
+                bbox_deltas = bbox_deltas.transpose([0, 2, 3, 1]);
+                // # bbox_deltas = tf.transpose(bbox_deltas,(0, 2, 3, 1))
+        
+                // bbox_pred_len = bbox_deltas.shape[3]//A
+                const bbox_pred_len = Math.floor(bbox_deltas.shape[3] / A);
+        
+                bbox_deltas = bbox_deltas.reshape([-1, bbox_pred_len]);
+                // # bbox_deltas = tf.reshape(bbox_deltas, (-1, bbox_pred_len))
+        
+                proposals = bbox_pred(anchors, bbox_deltas);
+    
+        
+                scores_ravel = flattenDeep(scores.arraySync());
+                // order = np.where(scores_ravel>=threshold)[0];
+                order = where(scores_ravel, v => v >= threshold);
+                // console.log('order:', order);
+    
+                // scores = scores[order]
+                scores = scores.gather(order)
+                // proposals = proposals[order, :]
+                proposals = proposals.gather(order, 0);
+        
+                // proposals[:,0:4] /= scale
+                proposals = proposals.unstack(1);
+                for (let i = 0; i < 4; i++) {
+                    proposals[i] = proposals[i].div(scale);
+                }
+                proposals = tf.stack(proposals, 1);
+        
+                proposals_list.push(proposals);
+                scores_list.push(scores);
+        
+                if (this.use_landmarks) {
+                    idx += 1;
+                    let landmark_deltas = net_out[idx];
+                    landmark_deltas = clip_pad(landmark_deltas, [height, width]);
+                    // landmark_pred_len = landmark_deltas.shape[1]//A
+                    const landmark_pred_len = Math.floor(landmark_deltas.shape[1]/A);
+                    landmark_deltas = landmark_deltas.transpose([0, 2, 3, 1]).reshape([-1, 5, Math.floor(landmark_pred_len/5)]);
+                    // # landmark_deltas = tf.reshape(tf.transpose(landmark_deltas,(0, 2, 3, 1)), (-1, 5, landmark_pred_len//5))
+        
+                    landmark_deltas = landmark_deltas.mul(this.landmark_std);
+                    let landmarks = landmark_pred(anchors, landmark_deltas);
+                    landmarks = landmarks.gather(order, 0);
+    
+                    // landmarks[:,:,0:2] /= scale
+                    landmarks = landmarks.unstack(2);
+                    for (let i = 0; i < 2; i += 1) {
+                        landmarks[i] = landmarks[i].div(scale);
+                    }
+                    landmarks = tf.stack(landmarks, 2);
+                    landmarks_list.push(landmarks);
+                }
+            });
+    
+            // proposals = np.vstack(proposals_list)
+            proposals = tf.concat(proposals_list, 0);
+            // proposals.print();
+    
+            let landmarks = null;
+    
+            if (proposals.shape[0] === 0) {
+                if (this.use_landmarks) {
+                    landmarks = tf.zeros([0,5,2]);
+                }
+    
+                return [tf.zeros([0,5]), landmarks];
             }
     
-            scores = clip_pad(scores, [height, width]);
-            scores = scores.transpose([0, 2, 3, 1]).reshape([-1, 1]);
-            // console.log('scores.shape=', scores.shape);
-    
-            bbox_deltas = clip_pad(bbox_deltas, [height, width]);
-            bbox_deltas = bbox_deltas.transpose([0, 2, 3, 1]);
-            // # bbox_deltas = tf.transpose(bbox_deltas,(0, 2, 3, 1))
-    
-            // bbox_pred_len = bbox_deltas.shape[3]//A
-            const bbox_pred_len = Math.floor(bbox_deltas.shape[3] / A);
-    
-            bbox_deltas = bbox_deltas.reshape([-1, bbox_pred_len]);
-            // # bbox_deltas = tf.reshape(bbox_deltas, (-1, bbox_pred_len))
-    
-            proposals = bbox_pred(anchors, bbox_deltas);
-
-    
+            // scores = np.vstack(scores_list)
+            scores = tf.concat(scores_list, 0);
             scores_ravel = flattenDeep(scores.arraySync());
-            // order = np.where(scores_ravel>=threshold)[0];
-            order = where(scores_ravel, v => v >= threshold);
-            // console.log('order:', order);
-
-            // scores = scores[order]
-            scores = scores.gather(order)
+            // order = scores_ravel.argsort()[::-1]
+            order = argsort(scores_ravel).reverse();
             // proposals = proposals[order, :]
             proposals = proposals.gather(order, 0);
-    
-            // proposals[:,0:4] /= scale
-            proposals = proposals.unstack(1);
-            for (let i = 0; i < 4; i++) {
-                proposals[i] = proposals[i].div(scale);
-            }
-            proposals = tf.stack(proposals, 1);
-    
-            proposals_list.push(proposals);
-            scores_list.push(scores);
-    
+            // scores = scores[order]
+            scores = scores.gather(order);
             if (this.use_landmarks) {
-                idx += 1;
-                let landmark_deltas = net_out[idx];
-                landmark_deltas = clip_pad(landmark_deltas, [height, width]);
-                // landmark_pred_len = landmark_deltas.shape[1]//A
-                const landmark_pred_len = Math.floor(landmark_deltas.shape[1]/A);
-                landmark_deltas = landmark_deltas.transpose([0, 2, 3, 1]).reshape([-1, 5, Math.floor(landmark_pred_len/5)]);
-                // # landmark_deltas = tf.reshape(tf.transpose(landmark_deltas,(0, 2, 3, 1)), (-1, 5, landmark_pred_len//5))
-    
-                landmark_deltas = landmark_deltas.mul(this.landmark_std);
-                let landmarks = landmark_pred(anchors, landmark_deltas);
-                landmarks = landmarks.gather(order, 0);
-
-                // landmarks[:,:,0:2] /= scale
-                landmarks = landmarks.unstack(2);
-                for (let i = 0; i < 2; i += 1) {
-                    landmarks[i] = landmarks[i].div(scale);
-                }
-                landmarks = tf.stack(landmarks, 2);
-                landmarks_list.push(landmarks);
+                // landmarks = np.vstack(landmarks_list)
+                // landmarks = landmarks[order].astype(np.float32, copy=False)
+                landmarks = tf.concat(landmarks_list, 0)
+                    .gather(order)
+                    .asType('float32');
             }
+    
+            // pre_det = np.hstack((proposals[:,0:4], scores)).astype(np.float32, copy=False)
+            const pre_det = tf.concat([
+                proposals.slice([0, 0], [proposals.shape[0], 4]),
+                scores
+            ], 1).asType('float32');
+            const keep = this.nms(pre_det);
+            // det = np.hstack( (pre_det, proposals[:,4:]) )
+            let det = tf.concat([
+                pre_det,
+                proposals.slice([0, 4], [proposals.shape[0], proposals.shape[1]-4])
+            ], 1);
+            det = det.gather(keep, 0);
+            if (this.use_landmarks) {
+                landmarks = landmarks.gather(keep);
+            }
+    
+            return [det, landmarks];
         });
-
-        // proposals = np.vstack(proposals_list)
-        proposals = tf.concat(proposals_list, 0);
-        // proposals.print();
-
-        let landmarks = null;
-
-        if (proposals.shape[0] === 0) {
-            if (this.use_landmarks) {
-                landmarks = tf.zeros([0,5,2]);
-            }
-
-            return [tf.zeros([0,5]), landmarks];
-        }
-
-        // scores = np.vstack(scores_list)
-        scores = tf.concat(scores_list, 0);
-        scores_ravel = flattenDeep(scores.arraySync());
-        // order = scores_ravel.argsort()[::-1]
-        order = argsort(scores_ravel).reverse();
-        // proposals = proposals[order, :]
-        proposals = proposals.gather(order, 0);
-        // scores = scores[order]
-        scores = scores.gather(order);
-        if (this.use_landmarks) {
-            // landmarks = np.vstack(landmarks_list)
-            // landmarks = landmarks[order].astype(np.float32, copy=False)
-            landmarks = tf.concat(landmarks_list, 0)
-                .gather(order)
-                .asType('float32');
-        }
-
-        // pre_det = np.hstack((proposals[:,0:4], scores)).astype(np.float32, copy=False)
-        const pre_det = tf.concat([
-            proposals.slice([0, 0], [proposals.shape[0], 4]),
-            scores
-        ], 1).asType('float32');
-        const keep = this.nms(pre_det);
-        // det = np.hstack( (pre_det, proposals[:,4:]) )
-        let det = tf.concat([
-            pre_det,
-            proposals.slice([0, 4], [proposals.shape[0], proposals.shape[1]-4])
-        ], 1);
-        det = det.gather(keep, 0);
-        if (this.use_landmarks) {
-            landmarks = landmarks.gather(keep);
-        }
-
-        return [det, landmarks];
     }
 
     nms(dets) {

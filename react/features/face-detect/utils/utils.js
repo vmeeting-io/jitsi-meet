@@ -287,6 +287,8 @@ export function cvt_Color_BGR2RGB(orig_image){
 // calc bounding box area
 // input: area tensor
 export function calc_BB_area(t) {
-    const bb = t.arraySync();
-    return (bb[2] - bb[0]) * (bb[3] - bb[1]);
+    return tf.tidy(() => {
+        const bb = t.arraySync();
+        return (bb[2] - bb[0]) * (bb[3] - bb[1]);
+    });
 }

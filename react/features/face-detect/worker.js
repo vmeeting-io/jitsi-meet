@@ -14,34 +14,41 @@ import {
 } from './utils/utils';
 
 async function getReferenceData(model, frame) {
-  let [faces, landmarks ] = await model.detect(frame, 0.5, 1.0);
+  let [faces, landmarks] = await model.detect(frame, 0.5, 1.0);
+  let result = [ null, 0, [0, 0, 0, 0] ];
+
   // console.log('getReferenceData: output=', output);
 
   if (faces.shape[0] > 0) {
-    faces = faces.unstack();
-    const areas = faces.map(face => calc_BB_area(face));
+    const bbox = faces.unstack();
+    const areas = bbox.map(face => calc_BB_area(face));
     const max = Math.max(...areas);
 
-    if (max <= frame.shape[0] * frame.shape[1] * 0.01) {
-      return [ null, 0, [0, 0, 0, 0] ];
-    } else {
+    if (max > frame.shape[0] * frame.shape[1] * 0.01) {
       const maxIndex = areas.indexOf(max);
 
       // console.log('getReferenceData:', areas, maxIndex);
       // faces[maxIndex].print();
-      const box = faces[maxIndex]
-        .round()
-        .asType('int32')
-        .clipByValue(0, Number.MAX_VALUE).arraySync();
+      const { box, landmark5, thetas } = tf.tidy(() => {
+        const box = bbox[maxIndex]
+          .round()
+          .asType('int32')
+          .clipByValue(0, Number.MAX_VALUE).arraySync();
+  
+        const landmark5 = landmarks.arraySync();
+        const thetas = get_thetas(landmark5[maxIndex], box.slice(0, 4));
 
-      const landmark5 = landmarks.arraySync();
-      const thetas = get_thetas(landmark5[maxIndex], box.slice(0, 4));
+        return { box, landmark5, thetas };
+      });
 
-      return [ { landmark5, thetas }, 1, box ];
+      result = [ { landmark5, thetas }, 1, box ];
     }
-  } else {
-    return [ null, 0, [0, 0, 0, 0] ];
+    bbox.forEach(t => t.dispose());
   }
+  faces.dispose();
+  landmarks.dispose();
+
+  return result;
 }
 
 function crop_eyes(frame, box, landmark5) {
@@ -67,14 +74,14 @@ function crop_eyes(frame, box, landmark5) {
     );
 
     const result = [
-      tf.image.resizeBilinear(left_eye, [96, 96], true),
-      tf.image.resizeBilinear(right_eye, [96, 96], true)
+      tf.image.resizeBilinear(left_eye, [96, 96], true).expandDims(0),
+      tf.image.resizeBilinear(right_eye, [96, 96], true).expandDims(0)
     ];
     // console.log('crop_eye:', result[0].print(), result[1].print());
     return result;
   } catch (e) {
-    left_eye = tf.zeros([96, 96, 3]);
-    right_eye = tf.zeros([96, 96, 3]);
+    left_eye = tf.zeros([1, 96, 96, 3]);
+    right_eye = tf.zeros([1, 96, 96, 3]);
     return [left_eye, right_eye];
   }
 }
@@ -90,58 +97,51 @@ async function inferenceFrame(model, blinkModel, frame, refData) {
   frame = tf.image.resizeBilinear(frame, [640, 640], true);
   // 얼굴이 검출되면
   if (faces.shape[0] > 0) {
-    faces = faces.unstack();
-    const areas = faces.map(face => calc_BB_area(face));
+    const bbox = faces.unstack();
+    const areas = bbox.map(face => calc_BB_area(face));
     const max = Math.max(...areas);
     
     // console.log('face max area:', max, maxIndex);
     if (max <= frame.shape[0] * frame.shape[1] * 0.01) {
       status = 2;
     } else {
-      const maxIndex = areas.indexOf(max);
-      box = faces[maxIndex]
-        .round()
-        .asType('int32')
-        .clipByValue(0, Number.MAX_VALUE).arraySync();
-
-      landmark5 = landmarks.gather(maxIndex).asType('int32').arraySync();
-      const avgThetas = tf.mean(map(refData, 'thetas'), 0).arraySync();
-      const refRatioLR = (avgThetas[0] + avgThetas[6]) / (avgThetas[1] + avgThetas[7]);
-      const refRatioUD = (avgThetas[2] + avgThetas[3]) / (avgThetas[4] + avgThetas[5]);
-
-      const ret = check_large_pose_from_ref(landmark5, box.slice(0, 4), refRatioLR, refRatioUD);
-      // console.log('check_large_pose_from_ref:', ret);
-
-      status = ret === 0 ? 0 : 1; // 집중(0), 비집중(1) 여부
-
-      const [LE, RE] = crop_eyes(frame, box, landmark5)
-      const probs = await blinkModel.predict(LE.expandDims(0),RE.expandDims(0));
-      eyeClose = probs.greaterEqual(blinkModel.threshold).arraySync();
-      eyeClose = eyeClose[0][0];
-      // console.log('eyeClose:', eyeClose, probs.toString());
-
-      // const concat = tf.concat([LE, RE], 1);
-      // cv2.imshow('probs', concat)
-      // text = str(eye_close)
-      // org = (box[2], int((box[1] + box[3]) / 2))
-      // font = cv2.FONT_HERSHEY_SIMPLEX
-      // cv2.putText(frame, text, org, font, 1, (255, 0, 0), 2)
-
-      // if (show_result) {
-        // box_color = (0, 0, 255)  // box 색깔
-        // cv2.rectangle(frame, (box[0], box[1]), (box[2], box[3]), box_color, 2)
-
-        // for l in range(landmark5.shape[0]):
-        //   color = (0, 0, 255)
-        //   cv2.circle(frame, (landmark5[l][0], landmark5[l][1]), 1, color, 2)
-
-        // font = cv2.FONT_HERSHEY_SIMPLEX
-        // cv2.putText(frame, "eye_close: " + str(eye_close), (20, 20), font, 0.5, (255, 0, 0), 2)
-      // }
+      const [LE, RE] = tf.tidy(() => {
+        const maxIndex = areas.indexOf(max);
+        box = bbox[maxIndex]
+          .round()
+          .asType('int32')
+          .clipByValue(0, Number.MAX_VALUE).arraySync();
+  
+        landmark5 = landmarks.gather(maxIndex).asType('int32').arraySync();
+        const avgThetas = tf.mean(map(refData, 'thetas'), 0).arraySync();
+        const refRatioLR = (avgThetas[0] + avgThetas[6]) / (avgThetas[1] + avgThetas[7]);
+        const refRatioUD = (avgThetas[2] + avgThetas[3]) / (avgThetas[4] + avgThetas[5]);
+  
+        const ret = check_large_pose_from_ref(landmark5, box.slice(0, 4), refRatioLR, refRatioUD);
+        // console.log('check_large_pose_from_ref:', ret);
+  
+        status = ret === 0 ? 0 : 1; // 집중(0), 비집중(1) 여부
+        return crop_eyes(frame, box, landmark5);
+      });
+      
+      const probs = await blinkModel.predict(LE, RE);
+      eyeClose = tf.tidy(() => {
+        const eyes = probs.greaterEqual(blinkModel.threshold).arraySync();
+        return eyes[0][0];
+      });
+      probs.dispose();
+      LE.dispose();
+      RE.dispose();
     }
+
+    bbox.forEach(t => t.dispose());
   } else {
     status = 2;
   }
+
+  frame.dispose();
+  faces.dispose();
+  landmarks.dispose();
 
   return [status, eyeClose, box, landmark5];
 }
@@ -178,6 +178,7 @@ addEventListener('message', async event => {
         if (ret && !isEqual(box, self.prevBox)) {
           self.refData.push(landmark5);
         }
+        frame.dispose();
         self.prevBox = box;
       }
       console.timeEnd('get references');
@@ -188,11 +189,12 @@ addEventListener('message', async event => {
     }
   } else {
     try {
+      console.log('  Tensors before:', tf.memory().numTensors);
       let frame = tf.browser.fromPixels(data);
       if (!frame || !frame.shape[0] || !frame.shape[1]) {
-          console.error('runInference is failed. frame is empty');
-          postMessage({ done: true });
-          return;
+        console.error('runInference is failed. frame is empty');
+        postMessage({ done: true });
+        return;
       }
       // console.log('frame.shape:', frame.shape);
     
@@ -202,10 +204,12 @@ addEventListener('message', async event => {
 
       let [status, eyeClose, box, landmarks] = await inferenceFrame(self.model, self.blinkModel, frame, self.refData);
       // console.log('inferenceFrame:', status, eyeClose, box, landmarks, frame.shape);
+      frame.dispose();
 
       if (status === 0 && eyeClose) {
         status = 1;
       }
+      console.log('  Tensors after:', tf.memory().numTensors);
 
       postMessage({ done: true, data: { status, eyeClose, box, landmarks }});
     } catch (err) {

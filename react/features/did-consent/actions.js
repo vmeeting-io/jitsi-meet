@@ -48,8 +48,9 @@ export function savePhoneNumber(phoneNumber) {
         };
         
         const _apiBase = getAuthUrl(state);
+        const { user } = state['features/base/jwt'];
         try {
-            const resp = await axios.patch(`${_apiBase}/users`, { phoneNumber }, config);
+            const resp = await axios.patch(`${_apiBase}/account`, { phoneNumber }, config);
             const token = resp.data;
             tokenLocalStorage.setItem(token, getState());
             dispatch(setJWT(resp.data));

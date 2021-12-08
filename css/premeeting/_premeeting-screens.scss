@@ -153,6 +153,26 @@
                 }
             }
         }
+
+        .prejoin-did {
+            .consent-message-title {
+                margin-bottom: 32px;
+            }
+
+            button {
+                border-radius: 6px;
+                box-sizing: border-box;
+                cursor: pointer;
+                display: inline-block;
+                font-size: 14px;
+                font-weight: 600;
+                line-height: 24px;
+                padding: 7px 16px;
+                position: relative;
+                text-align: center;
+                height: auto;
+            }
+        }
     }
 
     @media (max-width: 1000px) {

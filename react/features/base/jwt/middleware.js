@@ -240,7 +240,7 @@ function _undoOverwriteLocalParticipant(
  *     birthDate: ?string
  * }}
  */
-function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, background, birthDate }) { 
+function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, background, birthDate, phoneNumber }) { 
     // we added additional functional parameter birthDate which is received from context object in _setJWT function
     const participant = {};
 
@@ -274,6 +274,10 @@ function _user2participant({ avatar, avatarUrl, email, email_verified, id, name,
     // adding the birthDate property received from the JWT data exports
     if (typeof birthDate === 'string') {
         participant.birthDate = birthDate;
+    }
+
+    if (typeof phoneNumber === 'string') {
+        participant.phoneNumber = phoneNumber;
     }
 
     return Object.keys(participant).length ? participant : undefined;

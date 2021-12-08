@@ -220,7 +220,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
                     content = { children }
                     isOpen = { isOpen }
                     onClose = { this._onCloseDialog }
-                    placement = { 'top' }>
+                    placement = { 'top-end' }>
                     { super.render() }
                 </InlineDialog>
             </div>

@@ -1,12 +1,9 @@
 // @flow
 
-import axios from 'axios';
 import React, { PureComponent } from 'react';
 
 import { translate, translateToHTML } from '../../../base/i18n';
 import Dialog from '../../../base/dialog/components/web/Dialog';
-import { checkDIDConsent, sendConsentAgreeNotification,sendConsentDisagreeNotification, sendConsentVerifyOnProgressNotification} from './functions';
-import { PIC_CONSENT } from '../../../base/participants';
 
 
 

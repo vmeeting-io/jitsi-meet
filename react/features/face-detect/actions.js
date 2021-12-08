@@ -1,16 +1,32 @@
 import { filter } from 'lodash';
-import { START_FACE_DETECT, STOP_FACE_DETECT, ATTENTION_ANALYSIS_OPENED } from './actionTypes';
-import { grantFaceDetect } from './functions';
-import FaceDetect from './FaceDetect';
-import { getCurrentConference } from '../base/conference';
-import { getAttentionAnalysisWindow } from '.';
-import { getLocalParticipant, getRemoteParticipants, getRemoteParticipantsSorted } from '../base/participants';
 
-let faceDetector;
+import { getCurrentConference } from '../base/conference';
+import {
+    getLocalParticipant,
+    getRemoteParticipants,
+    getRemoteParticipantsSorted
+} from '../base/participants';
+
+import {
+    INIT_FACE_DETECT,
+    STOP_FACE_DETECT,
+    ATTENTION_ANALYSIS_OPENED,
+    START_FACE_DETECT,
+    SET_ATTENTION_ANALYSIS_READY,
+    SET_ATTENTION_ANALYSIS_COUNT,
+    SET_ATTENTION_ANALYSIS_TOTAL
+} from './actionTypes';
+import {
+    getAttentionAnalysisWindow,
+    getFaceDetector,
+    grantFaceDetect
+} from './functions';
+import FaceDetect from './FaceDetect';
+
 const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
 
-export function startFaceDetect() {
-    return async function(dispatch, getState) {
+export function initFaceDetect() {
+    return function(dispatch, getState) {
         if (!MediaStreamTrack.prototype.getSettings && !MediaStreamTrack.prototype.getConstraints) {
             throw new Error('FaceDetect not supported!');
         }
@@ -18,24 +34,45 @@ export function startFaceDetect() {
         const state = getState();
         // const granted = await grantFaceDetect(state);
         
-        faceDetector = new FaceDetect(dispatch, getState);
-        faceDetector.startEffect(true /* granted */);
+        console.log('==> initFaceDetect');
+        const instance = new FaceDetect(dispatch, getState);
+        instance.init();
+
         dispatch({
-            type: START_FACE_DETECT,
-            started: true
+            type: INIT_FACE_DETECT,
+            instance
         });
     };
 }
 
+export function startFaceDetect() {
+    return function(dispatch, getState) {
+        console.log('==> startFaceDetect');
+        const state = getState();
+
+        if (state['features/did-consent'].permit) {
+            const instance = getFaceDetector(state);
+            instance?.start();
+    
+            dispatch({
+                type: START_FACE_DETECT,
+                instance
+            });
+        }
+    };
+}
+
 export function stopFaceDetect() {
-    console.log('==> stopFaceDetect');
+    return function(dispatch, getState) {
+        console.log('==> stopFaceDetect');
+        const state = getState();
+        const instance = getFaceDetector(state);
+        instance?.stop();
 
-    faceDetector?.stopEffect()
-    faceDetector = null;
-
-    return {
-        type: STOP_FACE_DETECT,
-        started: false
+        dispatch({
+            type: STOP_FACE_DETECT,
+            instance: null
+        });
     };
 }
 
@@ -100,4 +137,25 @@ export function updateAttentionAnalysis() {
             });
         }
     }
+}
+
+export function setAttentionAnalysisReady(ready) {
+    return {
+        type: SET_ATTENTION_ANALYSIS_READY,
+        ready
+    };
+}
+
+export function setAttentionAnalysisCount(count) {
+    return {
+        type: SET_ATTENTION_ANALYSIS_COUNT,
+        count
+    };
+}
+
+export function setAttentionAnalysisTotal(total) {
+    return {
+        type: SET_ATTENTION_ANALYSIS_TOTAL,
+        total
+    };
 }

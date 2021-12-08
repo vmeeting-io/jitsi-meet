@@ -1,8 +1,8 @@
 // @flow
 
-import { closeAttentionAnalysis, updateAttentionAnalysis } from '.';
+import { batch } from 'react-redux';
+
 import { CONFERENCE_LEFT } from '../base/conference';
-import { CONNECTION_ESTABLISHED } from '../base/connection';
 import {
     getParticipantPresenceStatus,
     PARTICIPANT_JOINED,
@@ -10,19 +10,33 @@ import {
     PARTICIPANT_UPDATED
 } from '../base/participants';
 import { MiddlewareRegistry } from '../base/redux';
-import { startFaceDetect } from './actions';
+import { PERMIT_DATA_REQUEST } from '../did-consent';
+import { PREJOIN_INITIALIZED, PREJOIN_START_CONFERENCE } from '../prejoin';
+import {
+    closeAttentionAnalysis,
+    initFaceDetect,
+    startFaceDetect,
+    stopFaceDetect,
+    updateAttentionAnalysis
+} from './actions';
 
 import './subscriber';
 
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
-    case CONNECTION_ESTABLISHED: {
-        const result = next(action);
+    case PREJOIN_INITIALIZED: {
+        store.dispatch(initFaceDetect());
+        break;
+    }
+    case PREJOIN_START_CONFERENCE: {
         store.dispatch(startFaceDetect());
-        return result;
+        break;
     }
     case CONFERENCE_LEFT:
-        store.dispatch(closeAttentionAnalysis());
+        batch(() => {
+            store.dispatch(closeAttentionAnalysis());
+            store.dispatch(stopFaceDetect());
+        });
         break;
     case PARTICIPANT_UPDATED: {
         const { id, presence } = action.participant;
@@ -38,6 +52,12 @@ MiddlewareRegistry.register(store => next => action => {
         const result = next(action);
         store.dispatch(updateAttentionAnalysis());
         return result;
+    }
+    case PERMIT_DATA_REQUEST: {
+        if (!action.permit) {
+            store.dispatch(stopFaceDetect());
+        }
+        break;
     }
     }
 

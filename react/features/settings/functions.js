@@ -110,7 +110,6 @@ export function getMoreTabProps(stateful: Object | Function) {
         typeof state['features/base/config'].followMeEnabled !== 'undefined';
     const followMeEnabled = isFollowMeEnabled(state);
     const configuredTabs = interfaceConfig.SETTINGS_SECTIONS || [];
-    const _aiAttentionFlag = state['features/base/settings'].aiAttentionAnalysisEnabled;
 
     // The settings sections to display.
     const showModeratorSettings = Boolean(
@@ -126,7 +125,6 @@ export function getMoreTabProps(stateful: Object | Function) {
         followMeActive: Boolean(conference && followMeActive),
         followMeEnabled: Boolean(conference && followMeEnabled),
         languages: LANGUAGES,
-        aiAttentionFlag: _aiAttentionFlag,
         showLanguageSettings: configuredTabs.includes('language'),
         showModeratorSettings,
         showPrejoinSettings: state['features/base/config'].prejoinPageEnabled,

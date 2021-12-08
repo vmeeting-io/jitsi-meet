@@ -7,12 +7,16 @@ import { getRoomName } from '../../base/conference';
 import { translate } from '../../base/i18n';
 import { Icon, IconArrowDown, IconArrowUp, IconPhone, IconVolumeOff } from '../../base/icons';
 import { isVideoMutedByUser } from '../../base/media';
-import { getLocalParticipant, isDIDDenied, PIC_CONSENT } from '../../base/participants';
+import { PIC_CONSENT } from '../../base/participants';
 import { ActionButton, InputField, PreMeetingScreen } from '../../base/premeeting';
 import { connect } from '../../base/redux';
 import { getDisplayName, updateSettings } from '../../base/settings';
 import { getLocalJitsiVideoTrack } from '../../base/tracks';
-import { checkDIDConsent, checkPhoneNumber } from '../../DIDConsent/components/web/functions';
+import { getAttentionAnalysisReady, isAttentionAnalysisEnabled } from '../../face-detect/functions';
+import {
+    checkDIDConsent,
+    permitDataRequest as permitDataRequestAction
+} from '../../did-consent';
 import {
     joinConference as joinConferenceAction,
     joinConferenceWithoutAudio as joinConferenceWithoutAudioAction,
@@ -140,52 +144,38 @@ class Prejoin extends Component<Props, State> {
     }
     componentWillMount(){
         this._onCheckAlreadyVerified().then((resp) => {
-            this.setState({showDID: resp, completed: true});
+            this.setState({ showDID: resp, completed: true });
         })
     }
    
     /**
-     *Check if user is logged in or not.
-     *  
-     * @returns Returns true if not logged in, else false
-     */
-     _notLoggedIn(){
-        const state = APP.store.getState();
-        const participant = getLocalParticipant(state);
-         
-        return participant.email === undefined ? true : false;
-    } 
-    /**
      * Decide if DID popup should be shown or not.
      */
     _onCheckAlreadyVerified = async () => {
-        if (config.enableDIDConsent){
-            if(!this._notLoggedIn()){
-            const denied =  await isDIDDenied();
-                if(denied == false){
-                    checkPhoneNumber().then(cellPhoneNumber=>{
-                        if (cellPhoneNumber===false){
-                            return true
-                        }
-                    })
+        const { _attentionAnalysisEnabled, _user } = this.props;
 
-                    const resp = await checkDIDConsent()
-                    
-                    if(resp.data.consent !== PIC_CONSENT.APPROVED){ // If consent has not been approved, show popup
-                        return true
-                    }else{
-                        return false
-                    }
-                    
+        if (_attentionAnalysisEnabled) {
+            if (_user) {
+                if (!_user.phoneNumber) {
+                    return true
                 }
+
+                const resp = await checkDIDConsent()
                 
-            }else{
-                //Non Logged in case, show login pop message
-                return true
+                // If consent has not been approved, show popup
+                const permit = resp.data.consent === PIC_CONSENT.APPROVED;
+                if (permit) {
+                    this.props.permitDataRequest(true);
+                }
+
+                return !permit;
+            } else {
+                // Non Logged in case, show login pop message
+                return true;
             }
-        }else{
+        } else {
             // DID is disabled from config.js.
-            return false
+            return false;
         }
     }
 
@@ -342,7 +332,8 @@ class Prejoin extends Component<Props, State> {
             showCameraPreview,
             showDialog,
             t,
-            videoTrack
+            videoTrack,
+            canJoinMeeting,
         } = this.props;
 
         const { _closeDialog, _onDropdownClose, _onJoinButtonClick, _onJoinKeyPress, _showDialogKeyPress,
@@ -411,6 +402,7 @@ class Prejoin extends Component<Props, State> {
                                 ariaDropDownLabel = { t('prejoin.joinWithoutAudio') }
                                 ariaLabel = { t('prejoin.joinMeeting') }
                                 ariaPressed = { showJoinByPhoneButtons }
+                                disabled = { !canJoinMeeting }
                                 hasOptions = { true }
                                 onClick = { _onJoinButtonClick }
                                 onKeyPress = { _onJoinKeyPress }
@@ -444,8 +436,14 @@ class Prejoin extends Component<Props, State> {
 function mapStateToProps(state): Object {
     const name = getDisplayName(state);
     const showErrorOnJoin = isDisplayNameRequired(state) && !name;
+    const _attentionAnalysisEnabled = isAttentionAnalysisEnabled(state);
+    const canJoinMeeting = Boolean(!_attentionAnalysisEnabled
+        || (getAttentionAnalysisReady(state) || !state['features/did-consent'].permit));
+    const _user = state['features/base/jwt'].user;
 
     return {
+        _attentionAnalysisEnabled,
+        _user,
         name,
         deviceStatusVisible: isDeviceStatusVisible(state),
         roomName: getRoomName(state),
@@ -453,13 +451,15 @@ function mapStateToProps(state): Object {
         showErrorOnJoin,
         hasJoinByPhoneButton: isJoinByPhoneButtonVisible(state),
         showCameraPreview: !isVideoMutedByUser(state),
-        videoTrack: getLocalJitsiVideoTrack(state)
+        videoTrack: getLocalJitsiVideoTrack(state),
+        canJoinMeeting,
     };
 }
 
 const mapDispatchToProps = {
     joinConferenceWithoutAudio: joinConferenceWithoutAudioAction,
     joinConference: joinConferenceAction,
+    permitDataRequest: permitDataRequestAction,
     setJoinByPhoneDialogVisiblity: setJoinByPhoneDialogVisiblityAction,
     updateSettings
 };

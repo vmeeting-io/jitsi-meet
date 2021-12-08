@@ -25,3 +25,19 @@ export function getAttentionAnalysisWindow(state) {
     return (childWindow && !childWindow.closed)
         ? childWindow : null;
 }
+
+export function isAttentionAnalysisEnabled(state) {
+    const { face_detect } = state['features/base/conference'].roomInfo || {};
+
+    return Boolean(face_detect);
+}
+
+export function getAttentionAnalysisReady(state) {
+    const { ready } = state['features/face-detect'];
+    return ready;
+}
+
+export function getFaceDetector(state) {
+    const { instance } = state['features/face-detect'];
+    return instance;
+}

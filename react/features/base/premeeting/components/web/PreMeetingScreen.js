@@ -12,11 +12,16 @@ import Preview from './Preview';
 import { withTranslation } from 'react-i18next';
 import ButtonGroup from '@atlaskit/button/button-group';
 import Button from '@atlaskit/button/standard-button';
-import { getLocalParticipant, isDIDDenied, openOnNewTab, PIC_CONSENT } from '../../../participants';
+import { getLocalParticipant, openOnNewTab, PIC_CONSENT } from '../../../participants';
 import { translateToHTML } from '../../../i18n';
 import * as validators from '../../../../../utils/validator';
-import { savePhoneNumber, checkPhoneNumber, checkDIDConsent } from '../../../../DIDConsent/components/web/functions';
-import { openDIDProcessingDialog } from '../../../../DIDConsent/actions.any';
+import {
+    checkDIDConsent,
+    openDIDProcessingDialog ,
+    permitDataRequest,
+    savePhoneNumber,
+} from '../../../../did-consent';
+import { isAttentionAnalysisEnabled } from '../../../../face-detect/functions';
 
 const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
 
@@ -133,7 +138,7 @@ class PreMeetingScreen extends PureComponent<Props> {
             class: localStorage.language !== "ko" ? "":"-kr",
             showDID: this.props.showDID,
             page: 1,
-            phoneNumber:"",
+            phoneNumber: props._user?.phoneNumber || '',
             phoneNumberError:false,
         };
         this._didContentPageOne   = this._didContentPageOne.bind(this);
@@ -147,25 +152,26 @@ class PreMeetingScreen extends PureComponent<Props> {
         this._onPrev              = this._onPrev.bind(this);
         this._onNext              = this._onNext.bind(this);
         this._onPhoneNumberChange = this._onPhoneNumberChange.bind(this);
-        this._checkIfPhoneExists  = this._checkIfPhoneExists.bind(this); 
 
         this._onCancelLoginDialog = this._onCancelLoginDialog.bind(this);
         this._onLogin             = this._onLogin.bind(this);
-        this._notLoggedIn          = this._notLoggedIn.bind(this);
+        this._notLoggedIn         = this._notLoggedIn.bind(this);
         this._onComplete          = this._onComplete.bind(this);
         this._onPhoneNumberOutOfFocus = this._onPhoneNumberOutOfFocus.bind(this);
-
-        this._checkIfPhoneExists();
+        this._savePhoneNumber     = this._savePhoneNumber.bind(this);
     }
 
 
     _onComplete(){
-         // 1. Check consent at DID server and save current state. 
-         checkDIDConsent().then(resp=>{
-            if(resp.data.consent===PIC_CONSENT.APPROVED){
+        const { dispatch } = this.props;
+
+        // 1. Check consent at DID server and save current state. 
+        checkDIDConsent().then(resp=>{
+            if (resp.data.consent===PIC_CONSENT.APPROVED) {
+                dispatch(permitDataRequest(true));
                 this._onCancel();
-            }else{
-                APP.store.dispatch(openDIDProcessingDialog());
+            } else {
+                dispatch(openDIDProcessingDialog());
                 //TODO Handle 
             }
         });
@@ -206,11 +212,8 @@ class PreMeetingScreen extends PureComponent<Props> {
      */
     _onLogin() {
         const roomName = APP.store.getState()["features/base/conference"].room;
-
         window.location.href = `${AUTH_PAGE_BASE}/login?next=${encodeURIComponent(`/${roomName}`)}`;
-        
     }
-
 
     _onPrev: () => void;
 
@@ -235,32 +238,19 @@ class PreMeetingScreen extends PureComponent<Props> {
     }
 
     /**
-     * Checks if phone number is present in vmeeting database
-     * and sets it into the state variable of this component.
-     * 
-     */
-    async _checkIfPhoneExists(){
-        try{
-            const number = await checkPhoneNumber();
-            if (number!== undefined){
-                this.setState({phoneNumber: number})
-            }
-        }catch(err){
-            console.log("DIDPhoneNumberCheckError ", err);
-        }
-    }
-
-    /**
      * Save phone number entered in this component to vmeeting database.
      * 
      */
-    async _savePhoneNumber(){
-       const res = await savePhoneNumber(this.state.phoneNumber)
+    _savePhoneNumber() {
+        const phoneNumber = this.state.phoneNumber.trim();
+        if (this.props.user?.phoneNumber !== phoneNumber) {
+            this.props.dispatch(savePhoneNumber(phoneNumber));
+        }
     }
    
     async _onPhoneNumberOutOfFocus(e){
         if (!validators.phoneNumber(this.state.phoneNumber)){
-            await this._savePhoneNumber();
+            this._savePhoneNumber();
         }
     }
 
@@ -302,6 +292,7 @@ class PreMeetingScreen extends PureComponent<Props> {
     
     _onCancel(){
         this.setState({showDID: false});
+        this.props.dispatch(permitDataRequest(false));
     }
 
      /**
@@ -416,7 +407,7 @@ class PreMeetingScreen extends PureComponent<Props> {
                         {t('dialog.consent.dialogOneMessage')}
                     </span>
                     <div className={`view-more${this.state.class}`}>
-                        <a href className="did-v2-font" onClick={this._openOnNewTab} >{t('dialog.consent.notice.viewMore')}</a>
+                        <a className="did-v2-font" onClick={this._openOnNewTab} >{t('dialog.consent.notice.viewMore')}</a>
                     </div>
                 </div>
                 <div>
@@ -458,7 +449,7 @@ class PreMeetingScreen extends PureComponent<Props> {
                     
                         <div className={`consent-two-info${this.state.class}`}>
                             <span className="did-v2-font">
-                                {t('dialog.consent.dialogTwoMessage')}
+                                {translateToHTML(t, t('dialog.consent.dialogTwoMessage'))}
                             </span>
                         </div>
 
@@ -549,24 +540,25 @@ class PreMeetingScreen extends PureComponent<Props> {
                     </div>
                 </div> 
                 <div className="prev-next-button-wrapper">
-                        <ButtonGroup>
-                            <Button
-                                isDisabled={this.state.phoneNumber=="" || this.state.phoneNumberError}
-                                appearance = 'primary'
-                                key = 'submit'
-                                onClick = { this._onComplete }
-                                type = 'button'>
-                                { t('dialog.consent.complete') }
-                            </Button>
-                            <Button
-                                appearance = 'subtle'
-                                key = 'cancel'
-                                onClick = {this._onCancel }
-                                type = 'button'>
-                                { t('dialog.consent.cancel') }
-                            </Button> 
-                        </ButtonGroup>
-                    </div>
+                    <ButtonGroup>
+                        <Button
+                            isDisabled={this.state.phoneNumber=="" || this.state.phoneNumberError}
+                            appearance = 'primary'
+                            key = 'submit'
+                            onClick = { this._onComplete }
+                            className = 'primary'
+                            type = 'button'>
+                            { t('dialog.consent.complete') }
+                        </Button>
+                        <Button
+                            appearance = 'subtle'
+                            key = 'cancel'
+                            onClick = {this._onCancel }
+                            type = 'button'>
+                            { t('dialog.consent.cancel') }
+                        </Button> 
+                    </ButtonGroup>
+                </div>
             </div>
         );
     }
@@ -594,6 +586,7 @@ class PreMeetingScreen extends PureComponent<Props> {
     render() {
     
         const {
+            _attentionAnalysisEnabled,
             _buttons,
             _premeetingBackground,
             children,
@@ -618,7 +611,7 @@ class PreMeetingScreen extends PureComponent<Props> {
                     <div className = 'content'>
                         <ConnectionStatus />
                         
-                        { config.enableDIDConsent && this.state.showDID && this._renderDid() }      
+                        { _attentionAnalysisEnabled && this.state.showDID && this._renderDid() }      
                        
                         { !this.state.showDID && <div className = 'content-controls'>
                             <h1 className = 'title'>
@@ -653,10 +646,13 @@ function mapStateToProps(state, ownProps): Object {
         ? THIRD_PARTY_PREJOIN_BUTTONS
         : PREMEETING_BUTTONS;
     const { premeetingBackground } = state['features/dynamic-branding'];
+    const _attentionAnalysisEnabled = isAttentionAnalysisEnabled(state);
 
     return {
+        _attentionAnalysisEnabled,
         _buttons: premeetingButtons.filter(b => !hideButtons.includes(b)),
-        _premeetingBackground: premeetingBackground
+        _premeetingBackground: premeetingBackground,
+        _user: state['features/base/jwt'].user,
     };
 }
 

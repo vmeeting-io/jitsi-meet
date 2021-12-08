@@ -19,7 +19,6 @@ import { SS_DEFAULT_FRAME_RATE } from '../../constants';
 export type Props = {
     ...$Exact<AbstractDialogTabProps>,
 
-    aiAttentionFlag: boolean,
     /**
      * The currently selected desktop share frame rate in the frame rate select dropdown.
      */
@@ -113,11 +112,6 @@ type State = {
      * Whether or not the language select dropdown is open.
      */
     isLanguageSelectOpen: boolean,
-
-    /**
-     * Whether or not the attention analysis select dropdown is open.
-     */
-    isAIAttentionSelectOpen: boolean
 };
 
 /**
@@ -138,13 +132,9 @@ class MoreTab extends AbstractDialogTab<Props, State> {
         this.state = {
             isFramerateSelectOpen: false,
             isLanguageSelectOpen: false,
-            isAIAttentionSelectOpen: false,
-            aiAttentionEnabled: this.props.aiAttentionFlag, // default value is true
         };
 
         // Bind event handler so it is only bound once for every instance.
-        this._onAIAttentionDropdownOpenChange = this._onAIAttentionDropdownOpenChange.bind(this);
-        this._onAIAttentionItemSelect = this._onAIAttentionItemSelect.bind(this);
         this._onFramerateDropdownOpenChange = this._onFramerateDropdownOpenChange.bind(this);
         this._onFramerateItemSelect = this._onFramerateItemSelect.bind(this);
         this._onLanguageDropdownOpenChange = this._onLanguageDropdownOpenChange.bind(this);
@@ -169,29 +159,6 @@ class MoreTab extends AbstractDialogTab<Props, State> {
         content.push(this._renderSettingsRight());
 
         return <div className = 'more-tab box'>{ content }</div>;
-    }
-
-    _onAIAttentionDropdownOpenChange: (Object) => void;
-
-    /**
-     * Callback invoked to toggle display of the AI attention analysis selection dropdown.
-     *
-     * @param {Object} event - The event for opening or closing the dropdown.
-     * @private
-     * @returns {void}
-     */
-    _onAIAttentionDropdownOpenChange({ isOpen}) {
-        this.setState({ isAIAttentionSelectOpen: isOpen });
-    }
-
-    _onAIAttentionItemSelect: (Object) => void;
-
-    _onAIAttentionItemSelect(e) {
-        const dataAttentionAttr = e.currentTarget.getAttribute('data-attention');
-        const aiAttentionFlagVal = (dataAttentionAttr === "enabled") ? true : false;
-        this.setState({ aiAttentionEnabled: aiAttentionFlagVal });      
-        super._onChange({ aiAttentionFlag: aiAttentionFlagVal });
-
     }
 
     _onFramerateDropdownOpenChange: (Object) => void;
@@ -319,60 +286,6 @@ class MoreTab extends AbstractDialogTab<Props, State> {
     _onKeyboardShortcutEnableChanged({ target: { checked } }) {
         keyboardShortcut.enable(checked);
         super._onChange({ keyboardShortcutEnable: checked });
-    }
-
-    _renderAIAttentionFeatureSelect() {
-        const {
-            aiAttentionFlag,
-            t
-        } = this.props;
-        if (config.useAIAttentionAnalysis) {
-            return (
-                <div
-                    className = 'settings-sub-pane-element'
-                    key = 'ai-attention'>
-                    <h2 className = 'mock-atlaskit-label'>
-                        { t('settings.aiAttention') }
-                    </h2>
-                    <div className = 'dropdown-menu'>
-                        <TouchmoveHack isModal = { true }>
-                            <DropdownMenu
-                                isOpen = { this.state.isAIAttentionSelectOpen }
-                                onOpenChange = { this._onAIAttentionDropdownOpenChange }
-                                
-                                shouldFitContainer = { true }
-                                trigger = { this.state.aiAttentionEnabled
-                                    ? t('settings.turnOnAIAttentionAnalysis')
-                                    : t('settings.turnOffAIAttentionAnalysis') }
-                                triggerButtonProps = {{
-                                    shouldFitContainer: true
-                                }}
-                                triggerType = 'button'>
-                                <DropdownItemGroup>
-                                    <DropdownItem
-                                        isCompact
-                                        data-attention = { "enabled" }
-                                        key = { 'enable' }
-                                        onClick = { this._onAIAttentionItemSelect }>
-                                        { t('settings.turnOnAIAttentionAnalysis') }
-                                    </DropdownItem>
-                                    <DropdownItem
-                                        isCompact
-                                        data-attention = { "disabled" }
-                                        key = { 'disable' }
-                                        onClick = { this._onAIAttentionItemSelect }>
-                                        { t('settings.turnOffAIAttentionAnalysis') }
-                                    </DropdownItem>
-                                </DropdownItemGroup>
-                            </DropdownMenu>
-                        </TouchmoveHack>
-                    </div>
-                </div>
-            );
-        }
-        else {
-            return <></>;
-        }
     }
 
     /**
@@ -557,7 +470,6 @@ class MoreTab extends AbstractDialogTab<Props, State> {
                                 super._onChange({ userDeviceAccessDisabled : checked })
                         } />
                 )}
-                { this._renderAIAttentionFeatureSelect() }
             </div>
         );
     }

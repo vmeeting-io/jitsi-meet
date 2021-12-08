@@ -284,5 +284,6 @@ export default class FaceDetect {
             cancelAnimationFrame(this._timerId);
             this._timerId = null;
         }
+        this._frames = [];
     }
 };

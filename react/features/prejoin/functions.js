@@ -3,6 +3,7 @@
 import { getRoomName } from '../base/conference';
 import { getDialOutStatusUrl, getDialOutUrl } from '../base/config/functions';
 import { isAudioMuted, isVideoMutedByUser } from '../base/media';
+import { isAttentionAnalysisEnabled } from '../face-detect';
 
 import { PREJOIN_SCREEN_STATES } from './constants';
 
@@ -150,7 +151,8 @@ export function isJoinByPhoneDialogVisible(state: Object): boolean {
  */
 export function isPrejoinPageEnabled(state: Object): boolean {
     return navigator.product !== 'ReactNative'
-        && state['features/base/config'].prejoinPageEnabled
+        && (state['features/base/config'].prejoinPageEnabled
+            || isAttentionAnalysisEnabled(state))
         && !state['features/base/settings'].userSelectedSkipPrejoin
         && !(state['features/base/config'].enableForcedReload && state['features/prejoin'].skipPrejoinOnReload);
 }
@@ -162,7 +164,8 @@ export function isPrejoinPageEnabled(state: Object): boolean {
  * @returns {boolean}
  */
 export function isPrejoinPageVisible(state: Object): boolean {
-    return isPrejoinPageEnabled(state) && state['features/prejoin']?.showPrejoin === PREJOIN_SCREEN_STATES.VISIBLE;
+    return (isPrejoinPageEnabled(state) || isAttentionAnalysisEnabled(state))
+        && state['features/prejoin']?.showPrejoin === PREJOIN_SCREEN_STATES.VISIBLE;
 }
 
 /**

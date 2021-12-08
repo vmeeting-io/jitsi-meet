@@ -1,16 +1,17 @@
 // @flow
 
+import { batch } from 'react-redux';
+
 import { CONFERENCE_LEFT } from '../base/conference';
-import { CONNECTION_ESTABLISHED } from '../base/connection';
 import {
     getParticipantPresenceStatus,
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED
 } from '../base/participants';
-import { batch, MiddlewareRegistry } from '../base/redux';
+import { MiddlewareRegistry } from '../base/redux';
+import { PERMIT_DATA_REQUEST } from '../did-consent';
 import { PREJOIN_INITIALIZED, PREJOIN_START_CONFERENCE } from '../prejoin';
-
 import {
     closeAttentionAnalysis,
     initFaceDetect,
@@ -51,6 +52,12 @@ MiddlewareRegistry.register(store => next => action => {
         const result = next(action);
         store.dispatch(updateAttentionAnalysis());
         return result;
+    }
+    case PERMIT_DATA_REQUEST: {
+        if (!action.permit) {
+            store.dispatch(stopFaceDetect());
+        }
+        break;
     }
     }
 

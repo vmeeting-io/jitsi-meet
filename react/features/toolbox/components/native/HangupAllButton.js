@@ -33,7 +33,13 @@ class HangupAllButton extends AbstractButton<Props, *> {
 
     _hangup = once(() => {
         sendAnalytics(createToolbarEvent('hangup'));
-        this.props.dispatch(appNavigate(undefined));
+
+        // FIXME: these should be unified.
+        if (navigator.product === 'ReactNative') {
+            this.props.dispatch(appNavigate(undefined));
+        } else {
+            this.props.dispatch(disconnect(true));
+        }
     });
 
     /**

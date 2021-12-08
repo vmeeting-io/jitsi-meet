@@ -56,3 +56,4 @@ import '../video-layout/reducer';
 import '../videosipgw/reducer';
 import '../welcome/reducer';
 import '../face-detect/reducer';
+import '../did-consent/reducer';

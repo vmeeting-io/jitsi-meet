@@ -11,7 +11,7 @@ import AbstractDisplayNamePrompt, {
 } from '../AbstractDisplayNamePrompt';
 import { showToast } from '../../../notifications';
 import { getLocalParticipant } from '../../../base/participants';
-import { openLoginDialogDIDPopUp } from '../../../DIDConsent/actions.any';
+import { openLoginDialogDIDPopUp } from '../../../did-consent';
 
 /**
  * The type of the React {@code Component} props of {@link DisplayNamePrompt}.

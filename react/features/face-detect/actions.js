@@ -49,13 +49,16 @@ export function startFaceDetect() {
     return function(dispatch, getState) {
         console.log('==> startFaceDetect');
         const state = getState();
-        const instance = getFaceDetector(state);
-        instance?.start();
 
-        dispatch({
-            type: START_FACE_DETECT,
-            instance
-        });
+        if (state['features/did-consent'].permit) {
+            const instance = getFaceDetector(state);
+            instance?.start();
+    
+            dispatch({
+                type: START_FACE_DETECT,
+                instance
+            });
+        }
     };
 }
 

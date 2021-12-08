@@ -278,11 +278,11 @@ export function appNavigate(uri: ?string) {
                     name: room,
                     start_time: new Date(),
                 }, { headers });
-                roomInfo = resp.data;
-                roomInfo.isHost = true;
+                roomInfo = resp.data.conference;
+                roomInfo.isHost = roomInfo?.mail_owner === user?.email;
             } catch (err) {
                 console.log('Request is failed.', err.response);
-                const { error } = err.response?.data || {};
+                const { error, conference } = err.response?.data || {};
 
                 switch (error) {
                     case LICENSE_ERROR_INVALID_LICENSE:
@@ -298,6 +298,12 @@ export function appNavigate(uri: ?string) {
                         }));
                         dispatch(redirectWithStoredParams('/'));
                         return;
+                    }
+                    default: {
+                        roomInfo = conference;
+                        if (roomInfo) {
+                            roomInfo.isHost = roomInfo.mail_owner === user?.email;
+                        }
                     }
                 }
             }

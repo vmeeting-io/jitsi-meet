@@ -1,18 +1,29 @@
 // @flow
 
-import axios from 'axios';
 import React, { PureComponent } from 'react';
 
-import { translate, translateToHTML } from '../../../base/i18n';
 import Dialog from '../../../base/dialog/components/web/Dialog';
-import { closeConsentDialogOne, openConsentDialogTwo } from '../../actions.any';
-import { sendConsentDisagreeNotification, sendConsentAgreeNotification } from './functions';
-import { denyDID, openOnNewTab } from '../../../base/participants';
+import { translate, translateToHTML } from '../../../base/i18n';
+import { connect } from '../../../base/redux';
+import { sendConsentDisagreeNotification } from '../../functions';
+
+const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
 
 /**
  * The type of the React {@code Component} props of {@link WaitForOwnerDialog}.
  */
 type Props = {
+
+    /**
+     * The name of the conference room (without the domain part).
+     */
+    _room: string,
+
+    /**
+     * Redux store dispatch method.
+     */
+    dispatch: Dispatch<any>,
+
     /**
      * Invoked to obtain translated strings.
      */
@@ -24,7 +35,7 @@ type Props = {
  *
  * @returns {React$Element<any>}
  */
-class ConsentDialogOne extends PureComponent<Props> {
+class LoginDialogDID extends PureComponent<Props> {
     /**
      * Instantiates a new component.
      *
@@ -34,8 +45,7 @@ class ConsentDialogOne extends PureComponent<Props> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            show: true,
-            class: localStorage.language !== "ko" ? "":"-kr",
+            show: true
         };
         this._onCancelDialog = this._onCancelDialog.bind(this);
         this._onSubmit = this._onSubmit.bind(this);
@@ -51,7 +61,7 @@ class ConsentDialogOne extends PureComponent<Props> {
      */
     _onCancelDialog() {
         this.setState({show: false});
-        sendConsentDisagreeNotification(APP.store.dispatch);
+        sendConsentDisagreeNotification(this.props.dispatch);
         // alert("TODO: DID Disagreed.. Will be handled on integration.")
     }
 
@@ -64,18 +74,10 @@ class ConsentDialogOne extends PureComponent<Props> {
      * @returns {void}
      */
     _onSubmit() {
+        const { _roomName } = this.props;
         this.setState({show: false});
-        APP.store.dispatch(openConsentDialogTwo());
-    }
 
-    /**
-     * Open View More tab on URL. 
-     */
-    _openOnNewTab(){
-        const enLink = window.config.DID.enLink;
-        const krLink = window.config.DID.krLink;
-        const VIEW_MORE_URL = localStorage.language === 'ko' ? krLink:enLink;    
-        openOnNewTab(VIEW_MORE_URL);
+        window.location.href = `${AUTH_PAGE_BASE}/login?next=${encodeURIComponent(`/${_roomName}`)}`;
     }
 
     /**
@@ -91,29 +93,41 @@ class ConsentDialogOne extends PureComponent<Props> {
 
         return (
             this.state.show && <Dialog
-                okKey = { 'dialog.consent.agree' }
-                cancelKey = { 'dialog.consent.disagree' }
+                okKey = { 'dialog.login' }
+                cancelKey = { 'dialog.Cancel' }
                 onX={ this._onCancelDialog }
                 consentDialog={true}
                 disableBlanketClickDismiss = { true }
+                hideCloseIconButton = { false }
                 onCancel = { this._onCancelDialog }
                 onSubmit = { this._onSubmit }
-                titleKey = { 'dialog.consent.titleDialogOne' }
+                titleKey = { 'dialog.login' }
                 width = { 'small' }
                 >
-                <div className={`consent-message${this.state.class}`}>
+                <div className="consent-message-login">
                     <span>
-                        {translateToHTML(t,t('dialog.consent.dialogOneMessage'))}
+                        {translateToHTML(t, t('dialog.consent.dialogLoginMessage'))}
                     </span>
-                    <div className={`view-more${this.state.class}`}>
-                        <a href onClick={this._openOnNewTab} >{t('dialog.consent.notice.viewMore')}</a>
-                    </div>
                 </div>
             </Dialog>
         );
     }
 }
 
+/**
+ * Maps (parts of) the redux state to the React {@code Component} props.
+ *
+ * @param {Object} state - The redux state.
+ * @param {Object} ownProps - The props passed to the component.
+ * @returns {Object}
+ */
+function mapStateToProps(state, ownProps): Object {
+    const _roomName = state['features/base/conference'].room;
 
-export default translate(ConsentDialogOne);
+    return {
+        _roomName,
+    };
+}
+
+export default translate(connect(mapStateToProps)(LoginDialogDID));
 

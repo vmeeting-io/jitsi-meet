@@ -189,7 +189,7 @@ addEventListener('message', async event => {
     }
   } else {
     try {
-      console.log('  Tensors before:', tf.memory().numTensors);
+      // console.log('  Tensors before:', tf.memory().numTensors);
       let frame = tf.browser.fromPixels(data);
       if (!frame || !frame.shape[0] || !frame.shape[1]) {
         console.error('runInference is failed. frame is empty');
@@ -209,7 +209,7 @@ addEventListener('message', async event => {
       if (status === 0 && eyeClose) {
         status = 1;
       }
-      console.log('  Tensors after:', tf.memory().numTensors);
+      // console.log('  Tensors after:', tf.memory().numTensors);
 
       postMessage({ done: true, data: { status, eyeClose, box, landmarks }});
     } catch (err) {

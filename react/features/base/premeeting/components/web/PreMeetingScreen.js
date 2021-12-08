@@ -134,13 +134,7 @@ class PreMeetingScreen extends PureComponent<Props> {
     };
     constructor(props) {
         super(props);
-        this.state = {
-            class: localStorage.language !== "ko" ? "":"-kr",
-            showDID: this.props.showDID,
-            page: 1,
-            phoneNumber: props._user?.phoneNumber || '',
-            phoneNumberError:false,
-        };
+
         this._didContentPageOne   = this._didContentPageOne.bind(this);
         this._didContentPageTwo   = this._didContentPageTwo.bind(this);
         this._didContentPageThree = this._didContentPageThree.bind(this);
@@ -155,10 +149,17 @@ class PreMeetingScreen extends PureComponent<Props> {
 
         this._onCancelLoginDialog = this._onCancelLoginDialog.bind(this);
         this._onLogin             = this._onLogin.bind(this);
-        this._notLoggedIn         = this._notLoggedIn.bind(this);
         this._onComplete          = this._onComplete.bind(this);
         this._onPhoneNumberOutOfFocus = this._onPhoneNumberOutOfFocus.bind(this);
         this._savePhoneNumber     = this._savePhoneNumber.bind(this);
+
+        this.state = {
+            class: localStorage.language !== "ko" ? "":"-kr",
+            showDID: this.props.showDID,
+            page: this._didContentPageOne,
+            phoneNumber: props._user?.phoneNumber || '',
+            phoneNumberError:false,
+        };
     }
 
 
@@ -175,18 +176,6 @@ class PreMeetingScreen extends PureComponent<Props> {
                 //TODO Handle 
             }
         });
-    }
-
-    /**
-     *Check if user is logged in or not.
-     *  
-     * @returns Returns true if not logged in, else false
-     */
-    _notLoggedIn(){
-        const state = APP.store.getState();
-        const participant = getLocalParticipant(state);
-        
-        return participant.email === undefined ? true : false;
     }
 
     _onCancelLoginDialog: () => void;
@@ -221,7 +210,7 @@ class PreMeetingScreen extends PureComponent<Props> {
      * Moves to Previous Consent Dialog(Consent Form 1)
      */
     _onPrev(){
-        this.setState({page: 1});
+        this.setState({ page: this._didContentPageOne });
     }
 
     _onNext: () => void;
@@ -234,7 +223,7 @@ class PreMeetingScreen extends PureComponent<Props> {
      */
     _onNext() {
         this._savePhoneNumber();
-        this.setState({page: 3});
+        this.setState({ page: this._didContentPageThree });
     }
 
     /**
@@ -287,7 +276,7 @@ class PreMeetingScreen extends PureComponent<Props> {
     }
     
     _onAgreePageOne(){
-        this.setState({page: 2});
+        this.setState({page: this._didContentPageTwo});
     }
     
     _onCancel(){
@@ -563,17 +552,14 @@ class PreMeetingScreen extends PureComponent<Props> {
         );
     }
 
-    _renderDid(){
-        const notLoggedIn = this._notLoggedIn();
-        return(
+    _renderDid() {
+        const { _user } = this.props;
+
+        return (
             <div className = 'content-controls'>
-                { notLoggedIn && this._didContentLoginPage()}
-                { !notLoggedIn && this.state.page===1 
-                    && this._didContentPageOne()}
-                { !notLoggedIn && this.state.page===2
-                    && this._didContentPageTwo()}
-                { !notLoggedIn && this.state.page===3 
-                    && this._didContentPageThree()}
+                { _user
+                ? this.state.page()
+                : this._didContentLoginPage() }
             </div>
         )
     }

@@ -1062,7 +1062,7 @@ var config = {
      websocketKeepAliveUrl
      */
 
-    // thirdPartyAuth: {
+    thirdPartyAuth: {
     //     // vmeeting.kr
     //     postech: {
     //         url: 'https://login.postech.ac.kr/SSOService.do?targetAppId=postech-vmeetingKr-web',
@@ -1072,7 +1072,14 @@ var config = {
     //     postech: {
     //         url: 'https://login.postech.ac.kr/SSOService.do?targetAppId=postech-vmeeting-web',
     //     }
-    // },
+
+        sellerhub: {
+            oauthserver_url: 'https://gw.lately.co.kr:15001',
+            app_id: '886a5b29894c42786df7a9a0d2852c92',
+            redirect_uri: 'https://admin.sellerhub.co.kr/shop/admin_provider/login/login_sso.php',
+            userinfo_url: 'https://admin.sellerhub.co.kr/shop/admin_provider/login/login_sso_ok.php'
+        }
+    },
 
     presenter: {
         startEnabled: true, // default: true

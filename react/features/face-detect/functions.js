@@ -28,8 +28,9 @@ export function getAttentionAnalysisWindow(state) {
 
 export function isAttentionAnalysisEnabled(state) {
     const { face_detect } = state['features/base/conference'].roomInfo || {};
+    const { iAmRecorder } = state['features/base/config'];
 
-    return Boolean(face_detect);
+    return Boolean(!iAmRecorder && face_detect);
 }
 
 export function getAttentionAnalysisReady(state) {

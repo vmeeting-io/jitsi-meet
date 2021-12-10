@@ -882,6 +882,7 @@
             "videoTearing": "We expect your video to be pixelated or have visual artefacts."
         },
         "copyAndShare": "Copy & share meeting link",
+        "detectingFace": "Detecting face...",
         "dialInMeeting": "Dial into the meeting",
         "dialInPin": "Dial into the meeting and enter PIN code:",
         "dialing": "Dialing",

@@ -87,9 +87,8 @@ function devServerProxyBypass({ path }) {
         || path.startsWith('/lang/')
         || path.startsWith('/sounds/')
         || path.startsWith('/static/')
-        // || path.endsWith('.wasm')
+        || path.endsWith('.wasm')
     ) {
-
         return path;
     }
 
@@ -231,6 +230,10 @@ function getConfig(options = {}) {
                         expandProps: 'start'
                     }
                 } ]
+            }, {
+                test: /\.wasm$/i,
+                type: 'javascript/auto',
+                use: [{ loader: 'file-loader' }]
             } ]
         },
         node: {

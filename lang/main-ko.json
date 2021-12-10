@@ -866,6 +866,7 @@
           "videoTearing": "동영상이 픽셀화되거나 시각적 인공물이 있을 것으로 예상됩니다."
         },
         "copyAndShare": "회의 링크 복사 및 공유",
+        "detectingFace": "얼굴 감지중...",
         "dialInMeeting": "회의에 전화",
         "dialInPin": "회의에 전화를 걸어 PIN 코드를 입력하세요:",
         "dialing": "전화중",

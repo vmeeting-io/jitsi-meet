@@ -428,7 +428,7 @@ class Prejoin extends Component<Props, State> {
                                 tabIndex = { 0 }
                                 testId = 'prejoin.joinMeeting'
                                 type = 'primary'>
-                                { t('prejoin.joinMeeting') }
+                                { canJoinMeeting ? t('prejoin.joinMeeting') : t('prejoin.detectingFace') }
                             </ActionButton>
                         </InlineDialog>
                     </div>

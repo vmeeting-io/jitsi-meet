@@ -10,6 +10,17 @@ import { isAttentionAnalysisEnabled } from './functions';
 
 const threshold = 3;
 
+/* state diagram
+ *
+ * INITIALIZE -> REFERENCE -> RECORDING -> STARTED
+ */
+const STEP = {
+    INITIALIZE: 'INITIALIZE',
+    REFERENCE: 'REFERENCE',
+    RECORDING: 'RECORDING',
+    STARTED: 'STARTED',
+};
+
 /**
  * Represents a modified MediaStream that detect effects from video.
  * <tt>FaceDetectEffect</tt> does the processing of the original
@@ -33,8 +44,7 @@ export default class FaceDetect {
         this._dispatch = dispatch;
         this._getState = getState;
         this._frameInterval = referenceInterval;
-        this._initialized = false;
-        this._isWaiting = false;
+        this._isWaiting = true;
         this._showResult = showResult;
         this._enabled = false;
         this._prevStatus = -1;
@@ -53,7 +63,13 @@ export default class FaceDetect {
 
         this._onMessage = this._onMessage.bind(this);
         this._worker.onmessage = this._onMessage;
-        this._worker.postMessage({ command: 'initialize', nms: 0.4, patience });
+        this._step = STEP.INITIALIZE;
+        this._worker.postMessage({
+            command: 'initialize',
+            nms: 0.4,
+            patience,
+            next: STEP.REFERENCE
+        });
         this._loop = this._loop.bind(this);
     }
 
@@ -63,16 +79,17 @@ export default class FaceDetect {
      * @returns {void}
      */
     async runInference() {
-        if (!this._initialized) {
-            // console.log('face-detect worker is not initialized.');
-            return;
-        }
-
         if (this._isWaiting) {
             return;
         }
 
+        if (this._step === STEP.INITIALIZE) {
+            // console.log('face-detect worker is not initialized.');
+            return;
+        }
+
         this._inputVideo = document.getElementById('localVideo_container');
+
         const { videoWidth, videoHeight } = this._inputVideo;
         if (!this._videoCanvas && videoWidth > 0 && videoHeight > 0) {
             this._videoCanvas = document.createElement('canvas');
@@ -89,16 +106,26 @@ export default class FaceDetect {
 
             if (videoMuted) {
                 this._updateParticipantStatus(2);
-            } else if (this._videoCanvas && (!this._ready || this._started)) {
+            } else if (this._videoCanvas) {
                 try {
                     // Get face detect output
                     // console.time('inferenceImage');
                     this._videoContext.drawImage(this._inputVideo, 0, 0, videoWidth, videoHeight);
                     const frame = this._videoContext.getImageData(0, 0, videoWidth, videoHeight);
-                    if (this._started) {
-                        this._worker.postMessage({ command: 'frame', data: frame });
+                    if (this._step === STEP.STARTED) {
+                        this._worker.postMessage({
+                            command: 'frame',
+                            data: frame
+                        });
                         this._isWaiting = true;
-                    } else {
+                    } else if (this._step === STEP.REFERENCE) {
+                        this._worker.postMessage({
+                            command: 'reference',
+                            data: frame,
+                            next: STEP.RECORDING
+                        });
+                        this._isWaiting = true;
+                    } else if (this._step === STEP.RECORDING) {
                         this._frames.push(frame);
                         if (this._frames.length > this._patience) {
                             this._frames.shift();
@@ -115,40 +142,29 @@ export default class FaceDetect {
     }
 
     _onMessage(event) {
-        const result = event.data;
+        const { done, data, next } = event.data;
 
-        if (!result.done) {
+        if (!done) {
             console.error('onMessage is failed!', result);
             return;
         }
 
-        if (!this._initialized) {
-            if (result.data === 'initialized') {
-                this._initialized = true;
-                console.log('face-detect worker is initialized!');
-                return;
-            }
-            // console.error('face-detect worker is not initialized.');
-            return;
-        };
-
         this._isWaiting = false;
 
-        if (!result.data) {
+        if (next) {
+            this._step = next;
+        }
+
+        if (!data) {
             return;
         }
 
-        if (result.data === 'started') {
-            this._started = true;
-            return;
-        }
-
-        let { status, eyeClose, box, landmarks = [] } = result.data;
+        let { status, eyeClose, box, landmarks = [] } = data;
         // console.log(`status=${status}, eyeClose=${eyeClose}`);
 
         const largeVideo = document.getElementById('largeVideo');
         const rc = largeVideo.getClientRects()[0];
-        const { videoWidth, videoHeight } = this._inputVideo;
+        const { videoWidth, videoHeight } = this._inputVideo || {};
 
         if (rc && videoWidth > 0 && videoHeight > 0 && this._showResult) {
             // console.log('video: clientRect', rc);
@@ -199,7 +215,7 @@ export default class FaceDetect {
             }
         }
 
-        if (!this._started) {
+        if (this._step !== STEP.STARTED) {
             return;
         }
 
@@ -239,14 +255,17 @@ export default class FaceDetect {
      * @returns {void}
      */
     async _loop(timestamp) {
-        if ((timestamp - this._timestamp) > this._frameInterval) {
-            this._timestamp = timestamp;
-            await this.runInference();
-            
-            this._enabled = isAttentionAnalysisEnabled(this._getState());
+        try {
+            if ((timestamp - this._timestamp) > this._frameInterval) {
+                this._timestamp = timestamp;
+                await this.runInference();
+                
+                this._enabled = isAttentionAnalysisEnabled(this._getState());
+            }
+        } finally {
+            this._timerId = requestAnimationFrame(this._loop);
         }
         
-        this._timerId = requestAnimationFrame(this._loop);
     }
 
     /**
@@ -269,7 +288,11 @@ export default class FaceDetect {
         const { frameInterval = 1000 } = faceDetect;
 
         this._frameInterval = frameInterval;
-        this._worker.postMessage({ command: 'inference', data: this._frames });
+        this._worker.postMessage({
+            command: 'inference',
+            data: this._frames.slice(1),
+            next: STEP.STARTED,
+        });
         this._frames = [];
         this._isWaiting = true;
     }

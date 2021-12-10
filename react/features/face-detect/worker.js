@@ -5,7 +5,6 @@ import { isEqual, map } from 'lodash';
 
 import RetinaFaceModel from './RetinaFaceModel';
 import BlinkModel from './BlinkModel';
-import { normalize_frame } from './utils/utils';
 
 import {
   calc_BB_area,
@@ -106,21 +105,25 @@ async function inferenceFrame(model, blinkModel, frame, refData) {
       status = 2;
     } else {
       const [LE, RE] = tf.tidy(() => {
-        const maxIndex = areas.indexOf(max);
-        box = bbox[maxIndex]
-          .round()
-          .asType('int32')
-          .clipByValue(0, Number.MAX_VALUE).arraySync();
-  
-        landmark5 = landmarks.gather(maxIndex).asType('int32').arraySync();
-        const avgThetas = tf.mean(map(refData, 'thetas'), 0).arraySync();
-        const refRatioLR = (avgThetas[0] + avgThetas[6]) / (avgThetas[1] + avgThetas[7]);
-        const refRatioUD = (avgThetas[2] + avgThetas[3]) / (avgThetas[4] + avgThetas[5]);
-  
-        const ret = check_large_pose_from_ref(landmark5, box.slice(0, 4), refRatioLR, refRatioUD);
-        // console.log('check_large_pose_from_ref:', ret);
-  
-        status = ret === 0 ? 0 : 1; // 집중(0), 비집중(1) 여부
+        try {
+          const maxIndex = areas.indexOf(max);
+          box = bbox[maxIndex]
+            .round()
+            .asType('int32')
+            .clipByValue(0, Number.MAX_VALUE).arraySync();
+    
+          landmark5 = landmarks.gather(maxIndex).asType('int32').arraySync();
+          const avgThetas = tf.mean(map(refData, 'thetas'), 0).arraySync();
+          const refRatioLR = (avgThetas[0] + avgThetas[6]) / (avgThetas[1] + avgThetas[7]);
+          const refRatioUD = (avgThetas[2] + avgThetas[3]) / (avgThetas[4] + avgThetas[5]);
+    
+          const ret = check_large_pose_from_ref(landmark5, box.slice(0, 4), refRatioLR, refRatioUD);
+          // console.log('check_large_pose_from_ref:', ret);
+    
+          status = ret === 0 ? 0 : 1; // 집중(0), 비집중(1) 여부
+        } catch(e) {
+          console.error(e);
+        }
         return crop_eyes(frame, box, landmark5);
       });
       
@@ -147,11 +150,16 @@ async function inferenceFrame(model, blinkModel, frame, refData) {
 }
 
 addEventListener('message', async event => {
-  const { command, data } = event.data;
+  const { command, data, next } = event.data;
   // console.log('worker:', command, data);
 
   if (command === 'initialize') {
     console.time('initialize');
+
+    await tf.ready();
+    // await tf.setBackend('webgl');
+    console.log('TensorFlow backend:', tf.getBackend());
+        
     self.refData = [];
     self.prevBox = [0, 0, 0, 0];
     self.isSleep = [];
@@ -161,8 +169,18 @@ addEventListener('message', async event => {
     // self.landmarkModel = await tf.loadGraphModel('/libs/pfld.json');
     console.timeEnd('initialize');
 
-    postMessage({ done: true, data: 'initialized' });
+    postMessage({ done: true, next });
     return;
+  } else if (command === 'reference') {
+    const frame = tf.browser.fromPixels(data);
+    const [landmark5, ret, box] = await getReferenceData(self.model, frame);
+
+    if (ret) {
+      self.refData.push(landmark5);
+    }
+    frame.dispose();
+    self.prevBox = box;
+    postMessage({ done: true, next: ret ? next : null });
   } else if (command === 'inference') {
     try {
       console.time('get references');
@@ -185,7 +203,7 @@ addEventListener('message', async event => {
     } catch(err) {
       console.error('getReferenceData is failed.', err);
     } finally {
-      postMessage({ done: true, data: 'started' });
+      postMessage({ done: true, next });
     }
   } else {
     try {

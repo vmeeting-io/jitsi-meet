@@ -48,7 +48,7 @@ declare var APP: Object;
 /**
  * The type of the React {@code Component} state of {@link Chat}.
  */
- type State = {
+type State = {
     chatHeaderMenuDialogOpen: boolean,
     showChatInput: Boolean,
     searchQuery: String,
@@ -85,7 +85,7 @@ class Chat extends AbstractChat<Props> {
         searchResultCount: 0, //how many results found for a search query
         currentIdx: -1,
     };
-    
+
     /**
      * Initializes a new {@code Chat} instance.
      *
@@ -166,7 +166,7 @@ class Chat extends AbstractChat<Props> {
     render() {
         return (
             <>
-                { this._renderPanelContent() }
+                {this._renderPanelContent()}
             </>
         );
     }
@@ -223,10 +223,10 @@ class Chat extends AbstractChat<Props> {
      * @returns {ReactElement}
      */
     _renderChat() {
-        const { _showChatInput, _privateMessageRecipient } = this.props;
+        const { _showChatInput, _privateMessageRecipient, t } = this.props;
         let _showMessageRecipient = false;
 
-        if((_privateMessageRecipient !== undefined) && (_privateMessageRecipient !== 'Vmeeter') && (_privateMessageRecipient !== 'Fellow Jister')) {
+        if ((_privateMessageRecipient !== undefined) && (_privateMessageRecipient !== 'Vmeeter') && (_privateMessageRecipient !== 'Fellow Jister')) {
             _showMessageRecipient = true;
         } else {
             // when the _showMessageRecipient is false, i.e. there is no private message recipient, 
@@ -237,7 +237,7 @@ class Chat extends AbstractChat<Props> {
         if (this.props._isPollsTabFocused) {
             return (
                 <>
-                    { this.props._isPollsEnabled && this._renderTabs()}
+                    {this.props._isPollsEnabled && this._renderTabs()}
                     <PollsPane />
                     <KeyboardAvoider />
                 </>
@@ -247,22 +247,22 @@ class Chat extends AbstractChat<Props> {
         return (
             <>
                 {this.props._isPollsEnabled && this._renderTabs()}
-                <DragAndDrop handleDrop={this._fileDropHandler}>
-                    <TouchmoveHack isModal = { this.props._isModal }>
+                <DragAndDrop dropString={t('chat.dropFiles')} handleDrop={this._fileDropHandler}>
+                    <TouchmoveHack isModal={this.props._isModal}>
                         <MessageContainer
-                            fileUploadPercentage = { this.props._fileUploadPercentage }
-                            fileName = { this.props._fileName }
-                            fileSize = { this.props._fileSize }
-                            isUploading = { this.props._isUploading }
-                            messages = { this.props._messages }
-                            ref = { this._messageContainerRef } />
+                            fileUploadPercentage={this.props._fileUploadPercentage}
+                            fileName={this.props._fileName}
+                            fileSize={this.props._fileSize}
+                            isUploading={this.props._isUploading}
+                            messages={this.props._messages}
+                            ref={this._messageContainerRef} />
                     </TouchmoveHack>
-                    { _showMessageRecipient && <MessageRecipient /> }
-                    { _showChatInput && (
+                    {_showMessageRecipient && <MessageRecipient />}
+                    {_showChatInput && (
                         <>
                             <ChatInput
-                                onResize = { this._onChatInputResize }
-                                onSend = { this._onSendMessage } />
+                                onResize={this._onChatInputResize}
+                                onSend={this._onSendMessage} />
                             <KeyboardAvoider />
                         </>
                     )}
@@ -273,13 +273,13 @@ class Chat extends AbstractChat<Props> {
 
     _fileDropHandler(file) {
         const state = APP.store.getState();
-        
+
         // code block that identifies whether or not there is a file upload, currently in progress or not
         // if so upload is not processed.
         const existingFileName = state['features/chat'].fileName || undefined;
         const existingFileUploadP = state['features/chat'].fileUploadPercentage;
         let fileUploadInProgress = false;
-        if((existingFileName !== undefined) && (existingFileUploadP > 0 && existingFileUploadP < 100)) {
+        if ((existingFileName !== undefined) && (existingFileUploadP > 0 && existingFileUploadP < 100)) {
             fileUploadInProgress = true;
         }
 
@@ -294,23 +294,23 @@ class Chat extends AbstractChat<Props> {
         const { t } = this.props;
 
         return (
-            <div className = 'search-container'>
+            <div className='search-container'>
                 <TextField
-                    compact = { true }
-                    id = 'chatHeaderSearchBox'
+                    compact={true}
+                    id='chatHeaderSearchBox'
                     autoFocus
-                    placeholder =  { t('chat.search') }
-                    shouldFitContainer = { true }
-                    isLabelHidden = { true }
+                    placeholder={t('chat.search')}
+                    shouldFitContainer={true}
+                    isLabelHidden={true}
                     // eslint-disable-next-line react/jsx-no-bind
-                    onChange = { this._updateChatSearchInput }
-                    type = 'text' />
+                    onChange={this._updateChatSearchInput}
+                    type='text' />
                 <div
-                    className = 'close-icon'
-                    onClick = { this._onToggleSearch }>
-                    <CrossCircleIcon size = 'small' />
+                    className='close-icon'
+                    onClick={this._onToggleSearch}>
+                    <CrossCircleIcon size='small' />
                 </div>
-            </div>                        
+            </div>
         );
     }
 
@@ -323,36 +323,34 @@ class Chat extends AbstractChat<Props> {
     _renderTabs() {
 
         return (
-            <div className = { 'chat-tabs-container' }>
+            <div className={'chat-tabs-container'}>
                 <div
-                    className = { `chat-tab ${
-                        this.props._isPollsTabFocused ? '' : 'chat-tab-focus'
-                    }` }
-                    onClick = { this._onToggleChatTab }>
-                    <span className = { 'chat-tab-title' }>
+                    className={`chat-tab ${this.props._isPollsTabFocused ? '' : 'chat-tab-focus'
+                        }`}
+                    onClick={this._onToggleChatTab}>
+                    <span className={'chat-tab-title'}>
                         {this.props.t('chat.tabs.chat')}
                     </span>
                     {this.props._isPollsTabFocused
                         && this.props._nbUnreadMessages > 0 && (
-                        <span className = { 'chat-tab-badge' }>
-                            {this.props._nbUnreadMessages}
-                        </span>
-                    )}
+                            <span className={'chat-tab-badge'}>
+                                {this.props._nbUnreadMessages}
+                            </span>
+                        )}
                 </div>
                 <div
-                    className = { `chat-tab ${
-                        this.props._isPollsTabFocused ? 'chat-tab-focus' : ''
-                    }` }
-                    onClick = { this._onTogglePollsTab }>
-                    <span className = { 'chat-tab-title' }>
+                    className={`chat-tab ${this.props._isPollsTabFocused ? 'chat-tab-focus' : ''
+                        }`}
+                    onClick={this._onTogglePollsTab}>
+                    <span className={'chat-tab-title'}>
                         {this.props.t('chat.tabs.polls')}
                     </span>
                     {!this.props._isPollsTabFocused
                         && this.props._nbUnreadPolls > 0 && (
-                        <span className = { 'chat-tab-badge' }>
-                            {this.props._nbUnreadPolls}
-                        </span>
-                    )}
+                            <span className={'chat-tab-badge'}>
+                                {this.props._nbUnreadPolls}
+                            </span>
+                        )}
                 </div>
             </div>
         );
@@ -374,46 +372,46 @@ class Chat extends AbstractChat<Props> {
             localParticipant.role === 'moderator';
 
         return (
-            <div className = 'chat-header'>
-                { !showSearch ? t('chat.title') : this._renderSearch() }
+            <div className='chat-header'>
+                {!showSearch ? t('chat.title') : this._renderSearch()}
                 {/* Portion for rendering the chat close icon */}
-                <div className = 'tool-container'>
-                    { !showSearch && (
+                <div className='tool-container'>
+                    {!showSearch && (
                         <div
-                            className = 'button'
-                            onClick = { this._onToggleSearch }>
+                            className='button'
+                            onClick={this._onToggleSearch}>
                             <Tooltip
-                                content = { t('chat.search') }
-                                position = 'bottom'>
-                                <Icon src = { IconSearch } />
+                                content={t('chat.search')}
+                                position='bottom'>
+                                <Icon src={IconSearch} />
                             </Tooltip>
                         </div>
                     )}
-                    { showMenu ? (
+                    {showMenu ? (
                         <DropdownMenu
-                            position = 'bottom right'
-                            triggerButtonProps = {{ iconBefore: <Icon src = { IconMenu } /> }}
-                            triggerType = 'button'>
+                            position='bottom right'
+                            triggerButtonProps={{ iconBefore: <Icon src={IconMenu} /> }}
+                            triggerType='button'>
                             <DropdownItemGroup>
-                                <DropdownItem onClick = { this._onDisableChatForAll }>
-                                    { t('dialog.disableChatForAll') }
+                                <DropdownItem onClick={this._onDisableChatForAll}>
+                                    {t('dialog.disableChatForAll')}
                                 </DropdownItem>
-                                <DropdownItem onClick = { this._onEnableChatForAll }>
-                                    { t('dialog.enableChatForAll') }
+                                <DropdownItem onClick={this._onEnableChatForAll}>
+                                    {t('dialog.enableChatForAll')}
                                 </DropdownItem>
-                                <DropdownItem onClick = { this._onToggleChat }>
-                                    { t('dialog.close') }
+                                <DropdownItem onClick={this._onToggleChat}>
+                                    {t('dialog.close')}
                                 </DropdownItem>
                             </DropdownItemGroup>
                         </DropdownMenu>
                     ) : (
                         <div
-                            className = 'button'
-                            onClick = { this._onToggleChat }>
+                            className='button'
+                            onClick={this._onToggleChat}>
                             <Tooltip
-                                content = { t('dialog.close') }
-                                position = 'bottom'>
-                                <Icon src = { IconClose } />
+                                content={t('dialog.close')}
+                                position='bottom'>
+                                <Icon src={IconClose} />
                             </Tooltip>
                         </div>
                     )}
@@ -425,29 +423,29 @@ class Chat extends AbstractChat<Props> {
     _renderChatControlIcon = () => {
         const popupcontent = (
             <ul className='overflow-menu'>
-                    <ChatDisableButtonForAll key = 'allchatcontroldisablebutton' visible = { true } showLabel = { true } /> 
+                <ChatDisableButtonForAll key='allchatcontroldisablebutton' visible={true} showLabel={true} />
             </ul>
         );
 
-        const localParticipant = getLocalParticipant(APP.store.getState());  
+        const localParticipant = getLocalParticipant(APP.store.getState());
         let isLocalParticipantAModerator = (localParticipant.role === "moderator");
 
         //we want to only allow moderators to get the chat control button alongside chat message
-        if(isLocalParticipantAModerator) {
-            return(
+        if (isLocalParticipantAModerator) {
+            return (
                 <div className='chat-header-control-button'>
-                    <InlineDialog 
-                        onClose={() => { 
-                            this.setState({chatHeaderMenuDialogOpen: false}); 
+                    <InlineDialog
+                        onClose={() => {
+                            this.setState({ chatHeaderMenuDialogOpen: false });
                         }}
-                        content = { popupcontent }
-                        placement = { 'auto' }
-                        isOpen = { this.state.chatHeaderMenuDialogOpen } >
-                            <div className='thumb-menu-icon' onClick = { this.toggleChatHeaderMenuDialog }>
-                                <Icon src = { IconMenuThumb } title = 'All Remote-Users Chat Control' />
-                            </div>
+                        content={popupcontent}
+                        placement={'auto'}
+                        isOpen={this.state.chatHeaderMenuDialogOpen} >
+                        <div className='thumb-menu-icon' onClick={this.toggleChatHeaderMenuDialog}>
+                            <Icon src={IconMenuThumb} title='All Remote-Users Chat Control' />
+                        </div>
                     </InlineDialog>
-                </div>  
+                </div>
             );
         } else {
             return null;
@@ -492,26 +490,26 @@ class Chat extends AbstractChat<Props> {
 
         // call the function for highlighting search text
         this.highlightTextinUserMessages(this.state.searchQuery);
-        
+
     }
 
     _clearHighlightText = () => {
         // logic to clear highlighted text
         var highlightedTexts = document.querySelectorAll("[class^='markjs-highlight']")
-        highlightedTexts.forEach((el) => { 
-            el.replaceWith(document.createTextNode(el.textContent)) 
+        highlightedTexts.forEach((el) => {
+            el.replaceWith(document.createTextNode(el.textContent))
         })
-        
+
         // reconstruct original chat messages
         // when we used cleared highlight texts above, the conent was replaced with broken strings
         // so we unified again with original text
         var usrmsgs = document.getElementsByClassName('usermessage');
-        if(usrmsgs.length > 0) {
-            for(let usrmsg of usrmsgs) {
+        if (usrmsgs.length > 0) {
+            for (let usrmsg of usrmsgs) {
                 usrmsg.textContent = usrmsg.innerText;
             }
         }
-        
+
     }
 
     // function that highlights a search term from the chat input box
@@ -524,7 +522,7 @@ class Chat extends AbstractChat<Props> {
         // create a Mark object instance for the selected context
         let instance = new Mark(context);
 
-        if(!term) {
+        if (!term) {
             console.log("Search term is empty");
         }
 
@@ -548,9 +546,9 @@ class Chat extends AbstractChat<Props> {
         const markTags = document.getElementsByClassName("markjs-highlight");
         let count = 0;
 
-        for(let i=0; i < markTags.length; i++) {
+        for (let i = 0; i < markTags.length; i++) {
             // convert the textContent as well as search query to lowerCase, so that we get case insensitive search results
-            if(markTags[i].textContent.toLowerCase() === this.state.searchQuery.toLowerCase()) {
+            if (markTags[i].textContent.toLowerCase() === this.state.searchQuery.toLowerCase()) {
                 count += 1;
             }
         }
@@ -559,12 +557,13 @@ class Chat extends AbstractChat<Props> {
         this.setState({ searchResultCount: count });
 
         // if there is no search results found (i.e. no highlighted text i.e. count = 0), then notify a toast message showing no results found
-        if(count === 0) {
+        if (count === 0) {
             await showToast({
                 title: t('notify.noSearchResultsFound'),
                 timeout: NOTIFICATION_TIMEOUT,
                 icon: 'info',
-                animation: false });
+                animation: false
+            });
         }
 
     }
@@ -593,8 +592,8 @@ class Chat extends AbstractChat<Props> {
 
             // to keep in the loop
             if (currentIdx >= searchResultCount) {
-                
-                currentIdx =  -1;
+
+                currentIdx = -1;
                 resultIndex = currentIdx;
 
                 // dispatch a notification pop-up when reaching end of search results
@@ -602,14 +601,15 @@ class Chat extends AbstractChat<Props> {
                     title: t('notify.endOfSearchResults'),
                     timeout: NOTIFICATION_TIMEOUT,
                     icon: 'info',
-                    animation: false });
+                    animation: false
+                });
             }
 
             // code to scroll into highlighted text area
             markTags[currentIdx] && markTags[currentIdx].scrollIntoView({ behavior: 'smooth' });
-            
+
             // add additional highlighting style to identify the current item
-            markTags[currentIdx] && markTags[currentIdx].style.setProperty('background','#ec9038','')
+            markTags[currentIdx] && markTags[currentIdx].style.setProperty('background', '#ec9038', '')
         }
 
         this.setState({ currentIdx, searchResultIndex: resultIndex });
@@ -630,19 +630,19 @@ class Chat extends AbstractChat<Props> {
         if (_isOpen) {
             if (_isModal) {
                 ComponentToRender = (
-                    <ChatDialog isPollsEnabled = { this.props._isPollsEnabled }>
-                        { _showNamePrompt
-                            ? <DisplayNameForm isPollsEnabled = { this.props._isPollsEnabled } />
-                            : this._renderChat() }
+                    <ChatDialog isPollsEnabled={this.props._isPollsEnabled}>
+                        {_showNamePrompt
+                            ? <DisplayNameForm isPollsEnabled={this.props._isPollsEnabled} />
+                            : this._renderChat()}
                     </ChatDialog>
                 );
             } else {
                 ComponentToRender = (
                     <>
-                        { this._renderChatHeader() }
-                        { _showNamePrompt
-                            ? <DisplayNameForm isPollsEnabled = { this.props._isPollsEnabled } />
-                            : this._renderChat() }
+                        {this._renderChatHeader()}
+                        {_showNamePrompt
+                            ? <DisplayNameForm isPollsEnabled={this.props._isPollsEnabled} />
+                            : this._renderChat()}
                     </>
                 );
             }
@@ -657,11 +657,11 @@ class Chat extends AbstractChat<Props> {
 
         return (
             <div
-                aria-haspopup = 'true'
-                className = { `sideToolbarContainer ${className}` }
-                id = 'sideToolbarContainer'
-                onKeyDown = { this._onEscClick } >
-                { ComponentToRender }
+                aria-haspopup='true'
+                className={`sideToolbarContainer ${className}`}
+                id='sideToolbarContainer'
+                onKeyDown={this._onEscClick} >
+                {ComponentToRender}
             </div>
         );
     }

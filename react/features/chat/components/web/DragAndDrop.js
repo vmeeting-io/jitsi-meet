@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
 class DragAndDrop extends Component {
   state = {
-    drag: false
+    drag: false,
+    dragCounter: 0,
   }
   dropRef = React.createRef()
   handleDrag = (e) => {
@@ -11,27 +12,27 @@ class DragAndDrop extends Component {
   handleDragIn = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    this.dragCounter++
+    this.setState({ dragCounter: this.state.dragCounter + 1 });
     if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      this.setState({drag: true})
+      this.setState({ drag: true })
     }
   }
   handleDragOut = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    this.dragCounter--
-    if (this.dragCounter === 0) {
-      this.setState({drag: false})
+    this.setState({ dragCounter: this.state.dragCounter - 1 });
+    if (this.state.dragCounter === 0) {
+      this.setState({ drag: false })
     }
   }
   handleDrop = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    this.setState({drag: false})
+    this.setState({ drag: false })
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       this.props.handleDrop(e.dataTransfer.files[0])//Only support for single file upload at this
       e.dataTransfer.clearData()
-      this.dragCounter = 0    
+      this.setState({ dragCounter: 0 });
     }
   }
   componentDidMount() {
@@ -55,19 +56,19 @@ class DragAndDrop extends Component {
         ref={this.dropRef}
       >
         {this.state.drag &&
-          <div 
+          <div
             style={{
               border: 'dashed grey 4px',
               backgroundColor: 'rgba(255,255,255,.8)',
               position: 'absolute',
               top: 0,
               bottom: 0,
-              left: 0, 
+              left: 0,
               right: 0,
               zIndex: 9999
             }}
           >
-            <div 
+            <div
               style={{
                 position: 'absolute',
                 top: '50%',
@@ -78,7 +79,7 @@ class DragAndDrop extends Component {
                 fontSize: 36
               }}
             >
-              <div>drop here :)</div>
+              <div>{this.props.dropString}</div>
             </div>
           </div>
         }

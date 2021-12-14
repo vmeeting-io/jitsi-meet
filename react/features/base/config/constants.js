@@ -13,7 +13,7 @@ export const _CONFIG_STORE_PREFIX = 'config.js';
  * @protected
  * @type Array<string>
  */
- export const TOOLBAR_BUTTONS = [
+export const TOOLBAR_BUTTONS = [
     'camera',
     'chat',
     'closedcaptions',
@@ -46,3 +46,13 @@ export const _CONFIG_STORE_PREFIX = 'config.js';
     'toggle-camera',
     'videoquality'
 ];
+
+/**
+ * The toolbar buttons to show on premeeting screens.
+ */
+export const PREMEETING_BUTTONS = [ 'microphone', 'camera', 'select-background', 'invite', 'settings' ];
+
+/**
+  * The toolbar buttons to show on 3rdParty prejoin screen.
+  */
+export const THIRD_PARTY_PREJOIN_BUTTONS = [ 'microphone', 'camera', 'select-background' ];

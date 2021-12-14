@@ -1,19 +1,21 @@
 // @flow
 
 import React from 'react';
+import type { Dispatch } from 'redux';
 
 import { translate } from '../../../base/i18n';
 import { Icon, IconConnectionActive, IconConnectionInactive } from '../../../base/icons';
 import { JitsiParticipantConnectionStatus } from '../../../base/lib-jitsi-meet';
+import { getLocalParticipant, getParticipantById } from '../../../base/participants';
 import { Popover } from '../../../base/popover';
-import { ConnectionStatsTable } from '../../../connection-stats';
+import { connect } from '../../../base/redux';
 import AbstractConnectionIndicator, {
     INDICATOR_DISPLAY_THRESHOLD,
     type Props as AbstractProps,
     type State as AbstractState
 } from '../AbstractConnectionIndicator';
 
-declare var interfaceConfig: Object;
+import ConnectionIndicatorContent from './ConnectionIndicatorContent';
 
 /**
  * An array of display configurations for the connection indicator and its bars.
@@ -57,16 +59,32 @@ const QUALITY_TO_WIDTH: Array<Object> = [
 type Props = AbstractProps & {
 
     /**
+     * The current condition of the user's connection, matching one of the
+     * enumerated values in the library.
+     */
+    _connectionStatus: string,
+
+    /**
+     * Disable/enable inactive indicator.
+     */
+    _connectionIndicatorInactiveDisabled: boolean,
+
+    /**
      * Whether or not the component should ignore setting a visibility class for
      * hiding the component when the connection quality is not strong.
      */
     alwaysVisible: boolean,
 
     /**
-     * The current condition of the user's connection, matching one of the
-     * enumerated values in the library.
+     * The audio SSRC of this client.
      */
-    connectionStatus: string,
+    audioSsrc: number,
+
+    /**
+     * The Redux dispatch function.
+     */
+    dispatch: Dispatch<any>,
+
 
     /**
      * Whether or not clicking the indicator should display a popover for more
@@ -80,11 +98,6 @@ type Props = AbstractProps & {
     iconSize: number,
 
     /**
-     * Whether or not the displays stats are for local video.
-     */
-    isLocalVideo: boolean,
-
-    /**
      * Relative to the icon from where the popover for more connection details
      * should display.
      */
@@ -93,18 +106,7 @@ type Props = AbstractProps & {
     /**
      * Invoked to obtain translated strings.
      */
-    t: Function
-};
-
-/**
- * The type of the React {@code Component} state of {@link ConnectionIndicator}.
- */
-type State = AbstractState & {
-
-    /**
-     * Whether or not the popover content should display additional statistics.
-     */
-    showMoreStats: boolean
+    t: Function,
 };
 
 /**
@@ -113,7 +115,7 @@ type State = AbstractState & {
  *
  * @extends {Component}
  */
-class ConnectionIndicator extends AbstractConnectionIndicator<Props, State> {
+class ConnectionIndicator extends AbstractConnectionIndicator<Props, AbstractState> {
     /**
      * Initializes a new {@code ConnectionIndicator} instance.
      *
@@ -126,12 +128,8 @@ class ConnectionIndicator extends AbstractConnectionIndicator<Props, State> {
         this.state = {
             autoHideTimeout: undefined,
             showIndicator: false,
-            showMoreStats: false,
             stats: {}
         };
-
-        // Bind event handlers so they are only bound once for every instance.
-        this._onToggleShowMore = this._onToggleShowMore.bind(this);
     }
 
     /**
@@ -151,7 +149,9 @@ class ConnectionIndicator extends AbstractConnectionIndicator<Props, State> {
         return (
             <Popover
                 className = { rootClassNames }
-                content = { this._renderStatisticsTable() }
+                content = { <ConnectionIndicatorContent
+                    inheritedStats = { this.state.stats }
+                    participantId = { this.props.participantId } /> }
                 disablePopover = { !this.props.enableStatsDisplay }
                 position = { this.props.statsPopoverPosition }>
                 <div className = 'popover-trigger'>
@@ -175,56 +175,19 @@ class ConnectionIndicator extends AbstractConnectionIndicator<Props, State> {
      * @returns {string}
      */
     _getConnectionColorClass() {
-        const { connectionStatus } = this.props;
+        const { _connectionStatus } = this.props;
         const { percent } = this.state.stats;
         const { INACTIVE, INTERRUPTED } = JitsiParticipantConnectionStatus;
 
-        if (connectionStatus === INACTIVE) {
+        if (_connectionStatus === INACTIVE) {
             return 'status-other';
-        } else if (connectionStatus === INTERRUPTED) {
+        } else if (_connectionStatus === INTERRUPTED) {
             return 'status-lost';
         } else if (typeof percent === 'undefined') {
             return 'status-high';
         }
 
         return this._getDisplayConfiguration(percent).colorClass;
-    }
-
-    /**
-     * Returns a string that describes the current connection status.
-     *
-     * @private
-     * @returns {string}
-     */
-    _getConnectionStatusTip() {
-        let tipKey;
-
-        switch (this.props.connectionStatus) {
-        case JitsiParticipantConnectionStatus.INTERRUPTED:
-            tipKey = 'connectionindicator.quality.lost';
-            break;
-
-        case JitsiParticipantConnectionStatus.INACTIVE:
-            tipKey = 'connectionindicator.quality.inactive';
-            break;
-
-        default: {
-            const { percent } = this.state.stats;
-
-            if (typeof percent === 'undefined') {
-                // If percentage is undefined then there are no stats available
-                // yet, likely because only a local connection has been
-                // established so far. Assume a strong connection to start.
-                tipKey = 'connectionindicator.quality.good';
-            } else {
-                const config = this._getDisplayConfiguration(percent);
-
-                tipKey = config.tip;
-            }
-        }
-        }
-
-        return this.props.t(tipKey);
     }
 
     /**
@@ -250,26 +213,13 @@ class ConnectionIndicator extends AbstractConnectionIndicator<Props, State> {
      * @returns {string}
      */
     _getVisibilityClass() {
-        const { connectionStatus } = this.props;
+        const { _connectionStatus } = this.props;
 
         return this.state.showIndicator
             || this.props.alwaysVisible
-            || connectionStatus === JitsiParticipantConnectionStatus.INTERRUPTED
-            || connectionStatus === JitsiParticipantConnectionStatus.INACTIVE
+            || _connectionStatus === JitsiParticipantConnectionStatus.INTERRUPTED
+            || _connectionStatus === JitsiParticipantConnectionStatus.INACTIVE
             ? 'show-connection-indicator' : 'hide-connection-indicator';
-    }
-
-    _onToggleShowMore: () => void;
-
-    /**
-     * Callback to invoke when the show more link in the popover content is
-     * clicked. Sets the state which will determine if the popover should show
-     * additional statistics about the connection.
-     *
-     * @returns {void}
-     */
-    _onToggleShowMore() {
-        this.setState({ showMoreStats: !this.state.showMoreStats });
     }
 
     /**
@@ -279,8 +229,11 @@ class ConnectionIndicator extends AbstractConnectionIndicator<Props, State> {
      * @returns {ReactElement}
      */
     _renderIcon() {
-        if (this.props.connectionStatus
-            === JitsiParticipantConnectionStatus.INACTIVE) {
+        if (this.props._connectionStatus === JitsiParticipantConnectionStatus.INACTIVE) {
+            if (this.props._connectionIndicatorInactiveDisabled) {
+                return null;
+            }
+
             return (
                 <span className = 'connection_ninja'>
                     <Icon
@@ -294,7 +247,7 @@ class ConnectionIndicator extends AbstractConnectionIndicator<Props, State> {
         let iconWidth;
         let emptyIconWrapperClassName = 'connection_empty';
 
-        if (this.props.connectionStatus
+        if (this.props._connectionStatus
             === JitsiParticipantConnectionStatus.INTERRUPTED) {
 
             // emptyIconWrapperClassName is used by the torture tests to
@@ -329,48 +282,24 @@ class ConnectionIndicator extends AbstractConnectionIndicator<Props, State> {
             </span>
         ];
     }
-
-    /**
-     * Creates a {@code ConnectionStatisticsTable} instance.
-     *
-     * @returns {ReactElement}
-     */
-    _renderStatisticsTable() {
-        const {
-            bandwidth,
-            bitrate,
-            bridgeCount,
-            codec,
-            e2eRtt,
-            framerate,
-            maxEnabledResolution,
-            packetLoss,
-            region,
-            resolution,
-            serverRegion,
-            transport
-        } = this.state.stats;
-
-        return (
-            <ConnectionStatsTable
-                bandwidth = { bandwidth }
-                bitrate = { bitrate }
-                bridgeCount = { bridgeCount }
-                codec = { codec }
-                connectionSummary = { this._getConnectionStatusTip() }
-                e2eRtt = { e2eRtt }
-                framerate = { framerate }
-                isLocalVideo = { this.props.isLocalVideo }
-                maxEnabledResolution = { maxEnabledResolution }
-                onShowMore = { this._onToggleShowMore }
-                packetLoss = { packetLoss }
-                region = { region }
-                resolution = { resolution }
-                serverRegion = { serverRegion }
-                shouldShowMore = { this.state.showMoreStats }
-                transport = { transport } />
-        );
-    }
 }
 
-export default translate(ConnectionIndicator);
+/**
+ * Maps part of the Redux state to the props of this component.
+ *
+ * @param {Object} state - The Redux state.
+ * @param {Props} ownProps - The own props of the component.
+ * @returns {Props}
+ */
+export function _mapStateToProps(state: Object, ownProps: Props) {
+    const { participantId } = ownProps;
+    const participant
+        = participantId ? getParticipantById(state, participantId) : getLocalParticipant(state);
+
+    return {
+        _connectionIndicatorInactiveDisabled:
+        Boolean(state['features/base/config'].connectionIndicators?.inactiveDisabled),
+        _connectionStatus: participant?.connectionStatus
+    };
+}
+export default translate(connect(_mapStateToProps)(ConnectionIndicator));

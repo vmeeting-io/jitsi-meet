@@ -3,6 +3,9 @@
 import { getRoomName, LEAVING_TIMESTAMP } from '../base/conference';
 import { getDialOutStatusUrl, getDialOutUrl } from '../base/config/functions';
 import { isAudioMuted, isVideoMutedByUser } from '../base/media';
+import { isAttentionAnalysisEnabled } from '../face-detect';
+
+import { PREJOIN_SCREEN_STATES } from './constants';
 
 /**
  * Selector for the visibility of the 'join by phone' button.
@@ -130,7 +133,7 @@ export function getRawError(state: Object): string {
 }
 
 /**
- * Selector for getting the visiblity state for the 'JoinByPhoneDialog'.
+ * Selector for getting the visibility state for the 'JoinByPhoneDialog'.
  *
  * @param {Object} state - The state of the app.
  * @returns {boolean}
@@ -151,10 +154,10 @@ export function isPrejoinPageEnabled(state: Object): boolean {
     const { prejoinPageEnabled, chatOnlyGuestEnabled } = state['features/base/config'];
 
     return navigator.product !== 'ReactNative'
-        && prejoinPageEnabled
+        && (state['features/base/config'].prejoinPageEnabled
+            || isAttentionAnalysisEnabled(state))
         && !state['features/base/settings'].userSelectedSkipPrejoin
-        && (isHost && chatOnlyGuestEnabled)
-        && !state['features/prejoin'].skipPrejoin;
+        && !(state['features/base/config'].enableForcedReload && state['features/prejoin'].skipPrejoinOnReload);
 }
 
 /**
@@ -164,9 +167,29 @@ export function isPrejoinPageEnabled(state: Object): boolean {
  * @returns {boolean}
  */
 export function isPrejoinPageVisible(state: Object): boolean {
-    const { isHost } = state['features/base/conference']?.roomInfo || {};
-    const { chatOnlyGuestEnabled } = state['features/base/config'];
-    return isPrejoinPageEnabled(state)
-        && state['features/prejoin']?.showPrejoin
-        && (isHost && chatOnlyGuestEnabled);
+    return (isPrejoinPageEnabled(state) || isAttentionAnalysisEnabled(state))
+        && state['features/prejoin']?.showPrejoin === PREJOIN_SCREEN_STATES.VISIBLE;
+}
+
+/**
+ * Returns true if the prejoin page is loading.
+ *
+ * @param {Object} state - The state of the app.
+ * @returns {boolean}
+ */
+export function isPrejoinPageLoading(state: Object): boolean {
+    return isPrejoinPageEnabled(state) && state['features/prejoin']?.showPrejoin === PREJOIN_SCREEN_STATES.LOADING;
+}
+
+/**
+ * Returns true if we should auto-knock in case lobby is enabled for the room.
+ *
+ * @param {Object} state - The state of the app.
+ * @returns {boolean}
+ */
+export function shouldAutoKnock(state: Object): boolean {
+    const { iAmRecorder, iAmSipGateway } = state['features/base/config'];
+
+    return (isPrejoinPageEnabled(state) || (iAmRecorder && iAmSipGateway))
+        && !state['features/lobby'].knocking;
 }

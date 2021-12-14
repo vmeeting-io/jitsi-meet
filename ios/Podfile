@@ -1,17 +1,17 @@
 platform :ios, '11.0'
 workspace 'jitsi-meet'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+install! 'cocoapods', :deterministic_uuids => false
 
 target 'vmeeting' do
   project 'app/app.xcodeproj'
 
-  pod 'Crashlytics', '~> 3.14.0'
-  pod 'Fabric', '~> 1.10.2'
-  pod 'Firebase/Core', '~> 6.16.0'
-  pod 'Firebase/DynamicLinks', '~> 6.16.0'
+  pod 'Firebase/Analytics', '~> 6.33.0'
+  pod 'Firebase/Crashlytics', '~> 6.33.0'
+  pod 'Firebase/DynamicLinks', '~> 6.33.0'
 end
 
-target 'JitsiMeet' do
+target 'JitsiMeetSDK' do
   project 'sdk/sdk.xcodeproj'
 
   # React Native and its dependencies
@@ -29,7 +29,7 @@ target 'JitsiMeet' do
     'CoreModulesHeaders',
     'DevSupport',
     'RCTWebSocket'
-  ]
+  ], :modular_headers => true
   pod 'React-CoreModules', :path => '../node_modules/react-native/React/CoreModules'
   pod 'React-RCTActionSheet', :path => '../node_modules/react-native/Libraries/ActionSheetIOS'
   pod 'React-RCTAnimation', :path => '../node_modules/react-native/Libraries/NativeAnimation'
@@ -54,11 +54,16 @@ target 'JitsiMeet' do
   # React Native plugins
   #
 
+  pod 'amplitude-react-native', :path => '../node_modules/@amplitude/react-native'
   pod 'react-native-background-timer', :path => '../node_modules/react-native-background-timer'
   pod 'react-native-calendar-events', :path => '../node_modules/react-native-calendar-events'
   pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
   pod 'react-native-keep-awake', :path => '../node_modules/react-native-keep-awake'
   pod 'react-native-netinfo', :path => '../node_modules/@react-native-community/netinfo'
+  pod 'react-native-performance', :path => '../node_modules/react-native-performance/ios'
+  pod 'react-native-slider', :path => '../node_modules/@react-native-community/slider'
+  pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
+  pod 'react-native-video', :path => '../node_modules/react-native-video/react-native-video.podspec'
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
   pod 'react-native-webrtc', :path => '../node_modules/react-native-webrtc'
   pod 'BVLinearGradient', :path => '../node_modules/react-native-linear-gradient'
@@ -74,7 +79,7 @@ target 'JitsiMeet' do
   #
 
   pod 'CocoaLumberjack', '~>3.5.3'
-  pod 'ObjectiveDropboxOfficial', '~> 3.9.4'
+  pod 'ObjectiveDropboxOfficial', '~>6.1.0'
 
   use_native_modules!
 end

@@ -19,11 +19,12 @@ import { connect } from '../../base/redux';
 import { ColorPalette } from '../../base/styles';
 import {
     createDesiredLocalTracks,
+    destroyLocalDesktopTrackIfExists,
     destroyLocalTracks
 } from '../../base/tracks';
 import { HelpView } from '../../help';
 import { DialInSummary } from '../../invite';
-import { SettingsView } from '../../settings';
+import { SettingsView } from '../../settings/components';
 import { setSideBarVisible } from '../actions';
 
 import {
@@ -76,11 +77,13 @@ class WelcomePage extends AbstractWelcomePage {
 
         this._updateRoomname();
 
-        const { dispatch } = this.props;
+        const { dispatch, tReady } = this.props;
 
         if (this.props._settings.startAudioOnly) {
             dispatch(destroyLocalTracks());
         } else {
+            dispatch(destroyLocalDesktopTrackIfExists());
+
             // Make sure we don't request the permission for the camera from
             // the start. We will, however, create a video track iff the user
             // already granted the permission.
@@ -88,6 +91,21 @@ class WelcomePage extends AbstractWelcomePage {
                 response === 'granted'
                     && dispatch(createDesiredLocalTracks(MEDIA_TYPE.VIDEO));
             });
+        }
+
+        const { savedNotification } = this.state;
+
+        if (savedNotification && tReady) {
+            this.setState({ savedNotification: null });
+            jitsiLocalStorage.removeItem('saved_notification');
+
+            try {
+                const notification = JSON.parse(savedNotification);
+                const { timeout, ...props } = notification.props;
+                dispatch(showNotification(props, timeout));
+            } catch (err) {
+                console.error(err);
+            }
         }
     }
 
@@ -164,10 +182,17 @@ class WelcomePage extends AbstractWelcomePage {
      * @returns {void}
      */
     _onFieldFocusChange(focused) {
-        focused
-            && this.setState({
-                _fieldFocused: true
+        if (focused) {
+            // Stop placeholder animation.
+            this._clearTimeouts();
+            this.setState({
+                _fieldFocused: true,
+                roomPlaceholder: ''
             });
+        } else {
+            // Restart room placeholder animation.
+            this._updateRoomname();
+        }
 
         Animated.timing(
             this.state.hintBoxAnimation,

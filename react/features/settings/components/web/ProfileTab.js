@@ -1,7 +1,9 @@
 // @flow
 
-import Button from '@atlaskit/button';
+import Button from '@atlaskit/button/standard-button';
+import { Label } from '@atlaskit/field-base';
 import { FieldTextStateless } from '@atlaskit/field-text';
+import moment from 'moment';
 import React from 'react';
 
 import UIEvents from '../../../../../service/UI/UIEvents';
@@ -12,9 +14,21 @@ import {
 import { AbstractDialogTab } from '../../../base/dialog';
 import type { Props as AbstractDialogTabProps } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
+import { openLogoutDialog } from '../../actions';
+import { getLocalParticipant} from '../../../base/participants';
+import tokenLocalStorage from '../../../../api/tokenLocalStorage';
+import DatePicker from '../../../../components/DatePicker';
+import ko from '../../../../components/DatePicker/locale/ko_KR';
+
+import { DEFAULT_BIRTHDATE } from '../../../base/participants/constants';
 
 declare var APP: Object;
 declare var config: Object;
+
+const DATE_FORMAT = "YYYY-MM-DD";
+const locales = {
+    ko,
+};
 
 /**
  * The type of the React {@code Component} props of {@link ProfileTab}.
@@ -43,6 +57,11 @@ export type Props = {
     email: string,
 
     /**
+     * The birthdate of the local participant;
+     */
+    birthDate: string,
+
+    /**
      * Invoked to obtain translated strings.
      */
     t: Function
@@ -56,7 +75,8 @@ export type Props = {
 class ProfileTab extends AbstractDialogTab<Props> {
     static defaultProps = {
         displayName: '',
-        email: ''
+        email: '',
+        birthDate: DEFAULT_BIRTHDATE
     };
 
     /**
@@ -67,9 +87,49 @@ class ProfileTab extends AbstractDialogTab<Props> {
      */
     constructor(props: Props) {
         super(props);
+        this.state = {
+            birthdate: moment(props.birthDate, DATE_FORMAT), //should get the birthdate from JWT token
+            locale: locales[props.currentLanguage] || undefined,
+        };
 
         // Bind event handlers so they are only bound once for every instance.
         this._onAuthToggle = this._onAuthToggle.bind(this);
+        this._onDisplayNameChange = this._onDisplayNameChange.bind(this);
+        this._onEmailChange = this._onEmailChange.bind(this);
+        this._onBirthDateChange = this._onBirthDateChange.bind(this);
+    }
+
+    _onDisplayNameChange: (Object) => void;
+
+    /**
+     * Changes display name of the user.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onDisplayNameChange({ target: { value } }) {
+        super._onChange({ displayName: value });
+    }
+
+    _onEmailChange: (Object) => void;
+
+    /**
+     * Changes email of the user.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onEmailChange({ target: { value } }) {
+        super._onChange({ email: value });
+    }
+
+    _onBirthDateChange: (Object) => void;
+
+    _onBirthDateChange(newBirthDate, newBirthString) {
+        this.setState({ birthdate: newBirthDate });
+        super._onChange({ birthdate: newBirthString });
     }
 
     /**
@@ -86,20 +146,23 @@ class ProfileTab extends AbstractDialogTab<Props> {
             t
         } = this.props;
 
+        let showFootNote = false;
+        let userLoggedIn = tokenLocalStorage.getItem(APP.store.getState());
+
+        if(this.state.birthdate === DEFAULT_BIRTHDATE) {
+            showFootNote = true;
+        }
+
         return (
             <div>
                 <div className = 'profile-edit'>
                     <div className = 'profile-edit-field'>
                         <FieldTextStateless
-                            autoFocus = { true }
+                            autoComplete = 'name'
                             compact = { true }
                             id = 'setDisplayName'
                             label = { t('profile.setDisplayNameLabel') }
-                            // eslint-disable-next-line react/jsx-no-bind
-                            onChange = {
-                                ({ target: { value } }) =>
-                                    super._onChange({ displayName: value })
-                            }
+                            onChange = { this._onDisplayNameChange }
                             placeholder = { t('settings.name') }
                             shouldFitContainer = { true }
                             type = 'text'
@@ -112,10 +175,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
                                 id = 'setEmail'
                                 label = { t('profile.setEmailLabel') }
                                 // eslint-disable-next-line react/jsx-no-bind
-                                onChange = {
-                                    ({ target: { value } }) =>
-                                        super._onChange({ email: value })
-                                }
+                                onChange = { this._onEmailChange }
                                 placeholder = { t('profile.setEmailInput') }
                                 shouldFitContainer = { true }
                                 type = 'text'
@@ -123,6 +183,21 @@ class ProfileTab extends AbstractDialogTab<Props> {
                         </div>
                     )}
                 </div>
+
+                {/* display the date picker field and corresponding footnote only if the user has logged in */}
+                { userLoggedIn && <div className = 'birthday-edit'>
+                    <div className = 'birthday-edit-field'>
+                        <Label label = "Birthday" />
+                        <DatePicker
+                            format = { DATE_FORMAT }
+                            defaultValue = { this.state.birthdate }
+                            id = 'birthdatepicker'
+                            locale = { this.state.locale }
+                            onChange = { this._onBirthDateChange }
+                        />
+                    </div>
+                </div> }
+                { userLoggedIn && showFootNote && this._renderFootNote() }
                 { authEnabled && this._renderAuth() }
             </div>
         );
@@ -141,23 +216,23 @@ class ProfileTab extends AbstractDialogTab<Props> {
         if (this.props.authLogin) {
             sendAnalytics(createProfilePanelButtonEvent('logout.button'));
 
-            APP.UI.messageHandler.openTwoButtonDialog({
-                leftButtonKey: 'dialog.Yes',
-                msgKey: 'dialog.logoutQuestion',
-                submitFunction(evt, yes) {
-                    if (yes) {
-                        APP.UI.emitEvent(UIEvents.LOGOUT);
-                    }
-                },
-                titleKey: 'dialog.logoutTitle'
-            });
+            APP.store.dispatch(openLogoutDialog(
+                () => APP.UI.emitEvent(UIEvents.LOGOUT)
+            ));
         } else {
             sendAnalytics(createProfilePanelButtonEvent('login.button'));
 
             APP.UI.emitEvent(UIEvents.AUTH_CLICKED);
         }
+    }
 
-        this.props.closeDialog();
+    _renderFootNote() {
+        const { t } = this.props;
+        return(
+            <span className='birthday-footnote'>
+                { t('profile.birthDayFootNote') } 
+            </span>
+        );
     }
 
     /**
@@ -172,22 +247,25 @@ class ProfileTab extends AbstractDialogTab<Props> {
             t
         } = this.props;
 
+        const loggedIn = tokenLocalStorage.getItem(APP.store.getState());
+        const localParticipant = getLocalParticipant(APP.store.getState());
+        const loggedInName = localParticipant.name;
         return (
             <div>
-                <div className = 'mock-atlaskit-label'>
+                <h2 className = 'mock-atlaskit-label'>
                     { t('toolbar.authenticate') }
-                </div>
-                { authLogin
+                </h2>
+                { loggedIn
                     && <div className = 'auth-name'>
-                        { t('settings.loggedIn', { name: authLogin }) }
+                        { t('settings.loggedIn', { name: loggedInName }) }
                     </div> }
-                <Button
+                { !loggedIn && <Button
                     appearance = 'primary'
                     id = 'login_button'
                     onClick = { this._onAuthToggle }
                     type = 'button'>
-                    { authLogin ? t('toolbar.logout') : t('toolbar.login') }
-                </Button>
+                    { t('toolbar.login') }
+                </Button>}
             </div>
         );
     }

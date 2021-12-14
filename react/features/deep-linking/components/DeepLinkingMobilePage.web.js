@@ -13,7 +13,7 @@ import { connect } from '../../base/redux';
 import { openWebApp } from '../actions';
 import { _TNS } from '../constants';
 import { generateDeepLinkingURL } from '../functions';
-import s from './DeepLinkingMobilePage.module.scss';
+import { renderPromotionalFooter } from '../renderPromotionalFooter';
 
 declare var interfaceConfig: Object;
 
@@ -85,7 +85,6 @@ class DeepLinkingMobilePage extends Component<Props> {
     render() {
         const { _downloadUrl, _room, t } = this.props;
         const { HIDE_DEEP_LINKING_LOGO, NATIVE_APP_NAME, SHOW_DEEP_LINKING_IMAGE } = interfaceConfig;
-        const downloadButtonClassName = `${s.button} ${s.primary}`;
 
 
         const onOpenLinkProperties = _downloadUrl
@@ -109,29 +108,29 @@ class DeepLinkingMobilePage extends Component<Props> {
             : '/images/appstore.png';
 
         return (
-            <Div100vh className = { s.wrapper }>
+            <Div100vh className = 'deep-linking-mobile-page'>
                 <Helmet>
                     <meta name='viewport' content='initial-scale=1, maximum-scale=1' />
                 </Helmet>
-                <div className = { s.deepLinkingMobile }>
-                    <div className = { s.header }>
+                <div className = 'deep-linking-mobile'>
+                    <div className = 'header'>
                         {
                             HIDE_DEEP_LINKING_LOGO
                                 ? null
                                 : <img
-                                    className = {s.logo}
+                                    className = 'logo'
                                     src = '/images/header-image.png' />
                         }
                     </div>
-                    <div className = { s.body }>
+                    <div className = 'body'>
                         {
                             SHOW_DEEP_LINKING_IMAGE
                                 ? <img
-                                    className = {s.image}
+                                    className = 'image'
                                     src = 'images/deep-linking-image.png' />
                                 : null
                         }
-                        <p className = {s.text}>
+                        <p className = 'text'>
                             { t(`${_TNS}.appNotInstalled`) }
                         </p>
                         <a
@@ -140,26 +139,26 @@ class DeepLinkingMobilePage extends Component<Props> {
                             onClick = { this._onDownloadApp }
                             target = '_top'>
                             <img
-                                className = { `${s.image} ${s.block}` }
+                                className = 'image block'
                                 src = {downloadImage} />
                         </a>
-                        <div className = { s.line }>
+                        <div className = 'line'>
                             <span>{ t('prejoin.or') }</span>
                         </div>
                         <a
                             { ...onOpenLinkProperties }
-                            className = { s.href }
+                            className = 'href'
                             href = { generateDeepLinkingURL() }
                             onClick = { this._onOpenApp }
                             target = '_top'>
-                            <button className = { `${s.button} ${s.primary} ${s.block} ${s.large}` }>
+                            <button className = 'button primary block large'>
                                 { t(`${_TNS}.joinInApp`, { app: NATIVE_APP_NAME }) }
                             </button>
                         </a>
                         {
                             isSupportedMobileBrowser()
                                 && <a
-                                    className = { s.link }
+                                    className = 'link'
                                     onClick = { this._onLaunchWeb }
                                     target = '_top'>
                                     { t(`${_TNS}.launchWebButton`) }
@@ -193,15 +192,15 @@ class DeepLinkingMobilePage extends Component<Props> {
         // interfaceConfig.MOBILE_DYNAMIC_LINK check:
         // https://firebase.google.com/docs/dynamic-links/create-manually
         const {
-            APN = 'org.jitsi.meet',
+            APN = 'org.postech.vmeeting',
             APP_CODE = 'w2atb',
             CUSTOM_DOMAIN = undefined,
             IBI = 'com.atlassian.JitsiMeet.ios',
             ISI = '1165103905'
         } = interfaceConfig.MOBILE_DYNAMIC_LINK || {};
 
-        const domain = CUSTOM_DOMAIN ?? `https://${APP_CODE}.app.goo.gl`;
-        const IUS = interfaceConfig.APP_SCHEME || 'org.jitsi.meet';
+        const domain = CUSTOM_DOMAIN ?? `https://${APP_CODE}.page.link`;
+        const IUS = interfaceConfig.APP_SCHEME || 'org.postech.vmeeting';
 
         return `${domain}/?link=${
             encodeURIComponent(window.location.href)}&apn=${

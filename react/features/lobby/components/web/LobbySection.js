@@ -89,14 +89,17 @@ class LobbySection extends PureComponent<Props, State> {
         return (
             <>
                 <div id = 'lobby-section'>
-                    <p className = 'description'>
+                    <p
+                        className = 'description'
+                        role = 'banner'>
                         { t('lobby.enableDialogText') }
                     </p>
                     <div className = 'control-row'>
-                        <label>
+                        <label htmlFor = 'lobby-section-switch'>
                             { t('lobby.toggleLabel') }
                         </label>
                         <Switch
+                            id = 'lobby-section-switch'
                             onValueChange = { this._onToggleLobby }
                             value = { this.state.lobbyEnabled } />
                     </div>
@@ -132,10 +135,12 @@ class LobbySection extends PureComponent<Props, State> {
  */
 function mapStateToProps(state: Object): $Shape<Props> {
     const { conference } = state['features/base/conference'];
+    const { hideLobbyButton } = state['features/base/config'];
 
     return {
         _lobbyEnabled: state['features/lobby'].lobbyEnabled,
         _visible: conference && conference.isLobbySupported() && isLocalParticipantModerator(state)
+            && !hideLobbyButton
     };
 }
 

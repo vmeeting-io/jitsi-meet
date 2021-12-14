@@ -207,12 +207,15 @@
     width: 35%;
 }
 
-/**
- * Resizes elements width to fill the whole screen width with some margin
- */
-@mixin adjust-for-max-width($width, $margin) {
-    @media (max-width: $width) {
-        margin: 0 $margin;
-        width: $width - 2 * $margin;
-    }
+@mixin reset-component {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    color: #B8C7E0;
+    font-size: $font-size-base;
+    font-variant: $font-variant-base;
+    line-height: $line-height-base;
+    list-style: none;
+    font-feature-settings: $font-feature-settings-base;
 }
+  

@@ -1,5 +1,7 @@
 // @flow
 
+import clipboardCopy from 'clipboard-copy';
+
 /**
  * A helper function that behaves similar to Object.assign, but only reassigns a
  * property in target if it's defined in source.
@@ -29,27 +31,16 @@ export function assignIfDefined(target: Object, source: Object) {
  * Returns true if the action succeeds.
  *
  * @param {string} textToCopy - Text to be copied.
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
-export function copyText(textToCopy: string) {
-    const fakeTextArea = document.createElement('textarea');
-    let result;
-
-    // $FlowFixMe
-    document.body.appendChild(fakeTextArea);
-    fakeTextArea.value = textToCopy;
-    fakeTextArea.select();
-
+export async function copyText(textToCopy: string) {
     try {
-        result = document.execCommand('copy');
-    } catch (err) {
-        result = false;
+        await clipboardCopy(textToCopy);
+
+        return true;
+    } catch (e) {
+        return false;
     }
-
-    // $FlowFixMe
-    document.body.removeChild(fakeTextArea);
-
-    return result;
 }
 
 /**
@@ -106,6 +97,54 @@ export function getBaseUrl(w: Object = window) {
 }
 
 /**
+ * Returns the size of the file contained within a URL
+ *
+ * @param {string} url - the url pointing the directory of the uploaded file;
+ * @returns {string}
+ * 
+ * This method may throw an error while fetching data from a cross-origin site; luckily all our files uploads are contained within the same site
+ */
+ export function getFileSize(url)
+ {
+    let fileSize = '';
+    let http = new XMLHttpRequest();
+    http.open('HEAD', url, false); // false = Synchronous
+
+    http.send(null); // it will stop here until this http request is complete
+ 
+    if (http.status === 200) {
+        fileSize = http.getResponseHeader("Content-Length");
+    }
+ 
+    return fileSize;
+}
+
+/**
+ * Given the size of a file (in units bytes) converts appropriately into KB or MB
+ * 
+ * @param {number} fsize 
+ * @returns {string}
+ */
+export function processFileSize(fsize) 
+{
+    const oneMB = 1024 * 1024; // units in bytes
+    const oneKB = 1024;
+    if(fsize < oneMB) {
+        const sizeinKB = parseFloat(fsize / oneKB).toFixed(2);
+        return `${sizeinKB} KB`;
+    } else {
+        const sizeinMB = parseFloat(fsize / oneMB).toFixed(2);
+        return `${sizeinMB} MB`;
+    }
+}
+
+export function truncateDateTimeStamp(filename) {
+    const x = filename.lastIndexOf('_')
+    const y = filename.lastIndexOf('.')
+    return filename.substring(0,x) + filename.substring(y,filename.length);
+}
+
+/**
  * Returns the namespace for all global variables, functions, etc that we need.
  *
  * @returns {Object} The namespace.
@@ -134,4 +173,79 @@ export function getJitsiMeetGlobalNS() {
 export function reportError(e: Object, msg: string = '') {
     console.error(msg, e);
     window.onerror && window.onerror(msg, null, null, null, e);
+}
+
+/**
+ * Adds alpha to a color css string.
+ *
+ * @param {string} color - The color string either in rgb... Or #... Format.
+ * @param {number} opacity -The opacity(alpha) to apply to the color. Can take a value between 0 and 1, including.
+ * @returns {string} - The color with applied alpha.
+ */
+export function setColorAlpha(color: string, opacity: number) {
+    if (!color) {
+        return `rgba(0, 0, 0, ${opacity})`;
+    }
+
+    let b, g, r;
+
+    try {
+        if (color.startsWith('rgb')) {
+            [ r, g, b ] = color.split('(')[1].split(')')[0].split(',').map(c => c.trim());
+        } else if (color.startsWith('#')) {
+            if (color.length === 4) {
+                [ r, g, b ] = parseShorthandColor(color);
+            } else {
+                r = parseInt(color.substring(1, 3), 16);
+                g = parseInt(color.substring(3, 5), 16);
+                b = parseInt(color.substring(5, 7), 16);
+            }
+        } else {
+            return color;
+        }
+
+        return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    } catch {
+        return color;
+    }
+}
+
+/**
+ * Gets the hexa rgb values for a shorthand css color.
+ *
+ * @param {string} color -
+ * @returns {Array<number>} - Array containing parsed r, g, b values of the color.
+ */
+function parseShorthandColor(color) {
+    let b, g, r;
+
+    r = color.substring(1, 2);
+    r += r;
+    r = parseInt(r, 16);
+
+    g = color.substring(2, 3);
+    g += g;
+    g = parseInt(g, 16);
+
+    b = color.substring(3, 4);
+    b += b;
+    b = parseInt(b, 16);
+
+    return [ r, g, b ];
+}
+
+/**
+ * Sorts an object by a sort function, same functionality as array.sort().
+ *
+ * @param {Object} object - The data object.
+ * @param {Function} callback - The sort function.
+ * @returns {void}
+ */
+export function objectSort(object: Object, callback: Function) {
+    return Object.entries(object)
+        .sort(([ , a ], [ , b ]) => callback(a, b))
+        .reduce((row, [ key, value ]) => {
+            return { ...row,
+                [key]: value };
+        }, {});
 }

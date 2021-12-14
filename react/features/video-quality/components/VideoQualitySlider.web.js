@@ -6,13 +6,14 @@ import type { Dispatch } from 'redux';
 import { createToolbarEvent, sendAnalytics } from '../../analytics';
 import { setAudioOnly } from '../../base/audio-only';
 import { translate } from '../../base/i18n';
-import JitsiMeetJS from '../../base/lib-jitsi-meet';
+import { setLastN, getLastNForQualityLevel } from '../../base/lastn';
 import { connect } from '../../base/redux';
-import { setPreferredVideoQuality } from '../../base/conference/actions';
-import { VIDEO_QUALITY_LEVELS } from '../constants';
+import { setPreferredVideoQuality } from '../actions';
+import { DEFAULT_LAST_N, VIDEO_QUALITY_LEVELS } from '../constants';
 import logger from '../logger';
 
 const {
+    ULTRA,
     HIGH,
     STANDARD,
     LOW
@@ -43,6 +44,11 @@ type Props = {
      * Whether or not the conference is in audio only mode.
      */
     _audioOnly: Boolean,
+
+    /**
+     * The channelLastN value configured for the conference.
+     */
+    _channelLastN: Number,
 
     /**
      * Whether or not the conference is in peer to peer mode.
@@ -90,6 +96,7 @@ class VideoQualitySlider extends Component<Props> {
         this._enableLowDefinition = this._enableLowDefinition.bind(this);
         this._enableStandardDefinition
             = this._enableStandardDefinition.bind(this);
+        this._enableUltraHighDefinition = this._enableUltraHighDefinition.bind(this);
         this._onSliderChange = this._onSliderChange.bind(this);
 
         /**
@@ -118,9 +125,9 @@ class VideoQualitySlider extends Component<Props> {
                 videoQuality: STANDARD
             },
             {
-                onSelect: this._enableHighDefinition,
+                onSelect: this._enableUltraHighDefinition,
                 textKey: 'videoStatus.highDefinition',
-                videoQuality: HIGH
+                videoQuality: ULTRA
             }
         ];
     }
@@ -147,6 +154,7 @@ class VideoQualitySlider extends Component<Props> {
                            * removed after upgrading to React 16.
                            */ }
                         <input
+                            aria-label = { t('videoStatus.callQuality') }
                             className = 'video-quality-dialog-slider'
                             max = { this._sliderOptions.length - 1 }
                             min = '0'
@@ -261,6 +269,21 @@ class VideoQualitySlider extends Component<Props> {
         this._setPreferredVideoQuality(STANDARD);
     }
 
+    _enableUltraHighDefinition: () => void;
+
+    /**
+     * Dispatches an action to receive ultra HD quality video from remote
+     * participants.
+     *
+     * @private
+     * @returns {void}
+     */
+    _enableUltraHighDefinition() {
+        sendAnalytics(createEvent('ultra high'));
+        logger.log('Video quality: ultra high enabled');
+        this._setPreferredVideoQuality(ULTRA);
+    }
+
     /**
      * Matches the current video quality state with corresponding index of the
      * component's slider options.
@@ -279,10 +302,13 @@ class VideoQualitySlider extends Component<Props> {
             return _sliderOptions.indexOf(audioOnlyOption);
         }
 
-        const matchingOption = _sliderOptions.find(
-            ({ videoQuality }) => videoQuality === _sendrecvVideoQuality);
+        for (let i = 0; i < _sliderOptions.length; i++) {
+            if (_sliderOptions[i].videoQuality >= _sendrecvVideoQuality) {
+                return i;
+            }
+        }
 
-        return _sliderOptions.indexOf(matchingOption);
+        return -1;
     }
 
     _onSliderChange: () => void;
@@ -323,10 +349,18 @@ class VideoQualitySlider extends Component<Props> {
      */
     _setPreferredVideoQuality(qualityLevel) {
         this.props.dispatch(setPreferredVideoQuality(qualityLevel));
-
         if (this.props._audioOnly) {
             this.props.dispatch(setAudioOnly(false));
         }
+
+        // Determine the lastN value based on the quality setting.
+        let { _channelLastN = DEFAULT_LAST_N } = this.props;
+
+        _channelLastN = _channelLastN === -1 ? DEFAULT_LAST_N : _channelLastN;
+        const lastN = getLastNForQualityLevel(qualityLevel, _channelLastN);
+
+        // Set the lastN for the conference.
+        this.props.dispatch(setLastN(lastN));
     }
 }
 
@@ -340,10 +374,13 @@ class VideoQualitySlider extends Component<Props> {
  */
 function _mapStateToProps(state) {
     const { enabled: audioOnly } = state['features/base/audio-only'];
-    const { p2p, preferredVideoQuality } = state['features/base/conference'];
+    const { p2p } = state['features/base/conference'];
+    const { preferredVideoQuality } = state['features/video-quality'];
+    const { channelLastN } = state['features/base/config'];
 
     return {
         _audioOnly: audioOnly,
+        _channelLastN: channelLastN,
         _p2p: p2p,
         _sendrecvVideoQuality: preferredVideoQuality
     };

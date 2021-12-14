@@ -20,8 +20,14 @@ class LobbyScreen extends AbstractLobbyScreen {
      * @inheritdoc
      */
     render() {
+        const { _deviceStatusVisible, showCopyUrlButton, t } = this.props;
+
         return (
-            <PreMeetingScreen title = { this.props.t(this._getScreenTitleKey()) }>
+            <PreMeetingScreen
+                className = 'lobby-screen'
+                showCopyUrlButton = { showCopyUrlButton }
+                showDeviceStatus = { _deviceStatusVisible }
+                title = { t(this._getScreenTitleKey()) }>
                 { this._renderContent() }
             </PreMeetingScreen>
         );
@@ -58,7 +64,7 @@ class LobbyScreen extends AbstractLobbyScreen {
      */
     _renderJoining() {
         return (
-            <div className = 'container'>
+            <div className = 'lobby-screen-content'>
                 <div className = 'spinner'>
                     <LoadingIndicator size = 'large' />
                 </div>
@@ -92,15 +98,11 @@ class LobbyScreen extends AbstractLobbyScreen {
         const { t } = this.props;
 
         return (
-            <div className = 'participant-info'>
-                <div className = 'form'>
-                    <InputField
-                        onChange = { this._onChangeDisplayName }
-                        placeHolder = { t('lobby.nameField') }
-                        testId = 'lobby.nameField'
-                        value = { displayName } />
-                </div>
-            </div>
+            <InputField
+                onChange = { this._onChangeDisplayName }
+                placeHolder = { t('lobby.nameField') }
+                testId = 'lobby.nameField'
+                value = { displayName } />
         );
     }
 
@@ -113,15 +115,19 @@ class LobbyScreen extends AbstractLobbyScreen {
         const { _passwordJoinFailed, t } = this.props;
 
         return (
-            <div className = 'form'>
+            <>
                 <InputField
                     className = { _passwordJoinFailed ? 'error' : '' }
                     onChange = { this._onChangePassword }
-                    placeHolder = { _passwordJoinFailed ? t('lobby.invalidPassword') : t('lobby.passwordField') }
+                    placeHolder = { t('lobby.passwordField') }
                     testId = 'lobby.password'
                     type = 'password'
                     value = { this.state.password } />
-            </div>
+
+                {_passwordJoinFailed && <div
+                    className = 'prejoin-error'
+                    data-testid = 'lobby.errorMessage'>{t('lobby.invalidPassword')}</div>}
+            </>
         );
     }
 
@@ -136,11 +142,10 @@ class LobbyScreen extends AbstractLobbyScreen {
         return (
             <>
                 <ActionButton
-                    disabled = { !this.state.password }
                     onClick = { this._onJoinWithPassword }
                     testId = 'lobby.passwordJoinButton'
                     type = 'primary'>
-                    { t('lobby.passwordJoinButton') }
+                    { t('prejoin.joinMeeting') }
                 </ActionButton>
                 <ActionButton
                     onClick = { this._onSwitchToKnockMode }
@@ -158,7 +163,7 @@ class LobbyScreen extends AbstractLobbyScreen {
      * @inheritdoc
      */
     _renderStandardButtons() {
-        const { _knocking, t } = this.props;
+        const { _knocking, _renderPassword, t } = this.props;
 
         return (
             <>
@@ -169,12 +174,12 @@ class LobbyScreen extends AbstractLobbyScreen {
                     type = 'primary'>
                     { t('lobby.knockButton') }
                 </ActionButton> }
-                <ActionButton
+                {_renderPassword && <ActionButton
                     onClick = { this._onSwitchToPasswordMode }
                     testId = 'lobby.enterPasswordButton'
                     type = 'secondary'>
                     { t('lobby.enterPasswordButton') }
-                </ActionButton>
+                </ActionButton> }
             </>
         );
     }

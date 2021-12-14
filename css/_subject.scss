@@ -1,62 +1,117 @@
 .subject {
+    box-sizing: border-box;
+    color: #fff;
+    margin-top: 20px;
+    position: absolute;
     top: -120px;
     transition: top .3s ease-in;
-    height: 95px;
     width: 100%;
+    z-index: $zindex3;
     pointer-events: none;
-    position: absolute;
-    padding: 25px 140px 0 140px;
-    text-align: center;
-    font-size: 17px;
-    color: #fff;
-    z-index: $zindex10;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    box-sizing: border-box;
-    white-space: nowrap;
-    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0));
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
 
     &.visible {
-        top: 0px;
+        top: 0;
     }
 
-    &-text {
-        display: flex;
-        vertical-align: middle;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        position: relative;
-        padding: 2px 16px;
+    &.recording {
+        top: 0;
 
-        &.editable {
-            pointer-events: auto;
-            cursor: pointer;
-    
-            &:hover {
-                padding-right: 34px;
-        
-                .button {
-                    visibility: visible;
-                }
+        .subject-details-container {
+            opacity: 0;
+            transition: opacity .3s ease-in;
+        }
+
+        .subject-info-container .show-always {
+            transition: margin-left .3s ease-in;
+        }
+
+        &.visible {
+            .subject-details-container {
+                opacity: 1;
             }
         }
+    }
+}
+
+.subject-details-container {
+    display: flex;
+}
+
+.subject-info-container {
+    display: flex;
+    justify-content: center;
+    max-width: calc(100% - 280px);
+    margin: 0 auto;
+
+    &--full-width {
+        max-width: 100%;
+    }
+}
+
+.subject-info {
+    align-items: center;
+    display: flex;
+    // max-width: 80%;
+    margin-bottom: 4px;
+    height: 28px;
+}
+
+.subject-text {
+    display: flex;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 3px 0px 0px 3px;
+    font-size: 14px;
+    line-height: 24px;
+    padding: 2px 16px;
+    height: 24px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    position: relative;
+
+    &.editable {
+        pointer-events: auto;
+        cursor: pointer;
+
+        &:hover {
+            padding-right: 34px;
     
-        .button {
-            padding: 4px;
-            border-radius: 5px;
-            position: absolute;
-            right: 4;
-            visibility: hidden;
+            .button {
+                visibility: visible;
+            }
         }
     }
 
-    &-conference-timer {
-        display: inline-block;
-        font-size: 15px;
-        opacity: 0.6;
+    @media (max-width: 500px) {
+        flex-wrap: wrap;
+        max-width: 100%;
     }
+    
+    .button {
+        padding: 4px;
+        border-radius: 5px;
+        position: absolute;
+        right: 4;
+        visibility: hidden;
+    }
+}
+
+.subject-timer {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 0px 3px 3px 0px;
+    display: inline-block;
+    font-size: 12px;
+    line-height: 16px;
+    min-width: 34px;
+    padding: 6px 8px;
+}
+
+.time-remained-container {
+    display: inline-block;
+    background: #1b5e20;
+    color: white;
+    padding: 6px 8px;
+    border-radius: 0 3px 3px 0;
+    font-size: 12px;
+    line-height: 16px;
 }

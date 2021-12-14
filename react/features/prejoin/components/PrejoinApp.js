@@ -2,31 +2,25 @@
 
 import { AtlasKitThemeProvider } from '@atlaskit/theme';
 import React from 'react';
+import { batch } from 'react-redux';
 
 import { BaseApp } from '../../../features/base/app';
+import { getConferenceOptions } from '../../base/conference/functions';
 import { setConfig } from '../../base/config';
+import { DialogContainer } from '../../base/dialog';
 import { createPrejoinTracks } from '../../base/tracks';
-import { initPrejoin } from '../actions';
+import JitsiThemeProvider from '../../base/ui/components/JitsiThemeProvider';
+import { initPrejoin, makePrecallTest } from '../actions';
 
-import Prejoin from './Prejoin';
+import PrejoinThirdParty from './PrejoinThirdParty';
 
 type Props = {
 
     /**
-     * Indicates whether the avatar should be shown when video is off
+     * Indicates the style type that needs to be applied.
      */
-    showAvatar: boolean,
-
-    /**
-     * Flag signaling the visibility of join label, input and buttons
-     */
-    showJoinActions: boolean,
-
-    /**
-     * Flag signaling the visibility of the skip prejoin toggle
-     */
-    showSkipPrejoin: boolean,
-};
+    styleType: string
+}
 
 /**
  * Wrapper application for prejoin.
@@ -47,14 +41,12 @@ export default class PrejoinApp extends BaseApp<Props> {
         this._init.then(async () => {
             const { store } = this.state;
             const { dispatch } = store;
-            const { showAvatar, showJoinActions, showSkipPrejoin } = this.props;
+            const { styleType } = this.props;
 
             super._navigate({
-                component: Prejoin,
+                component: PrejoinThirdParty,
                 props: {
-                    showAvatar,
-                    showJoinActions,
-                    showSkipPrejoin
+                    className: styleType
                 }
             });
 
@@ -70,7 +62,10 @@ export default class PrejoinApp extends BaseApp<Props> {
 
             const tracks = await tryCreateLocalTracks;
 
-            dispatch(initPrejoin(tracks, errors));
+            batch(() => {
+                dispatch(initPrejoin(tracks, errors));
+                dispatch(makePrecallTest(getConferenceOptions(store.getState())));
+            });
         });
     }
 
@@ -82,9 +77,11 @@ export default class PrejoinApp extends BaseApp<Props> {
      */
     _createMainElement(component, props) {
         return (
-            <AtlasKitThemeProvider mode = 'dark'>
-                { super._createMainElement(component, props) }
-            </AtlasKitThemeProvider>
+            <JitsiThemeProvider>
+                <AtlasKitThemeProvider mode = 'dark'>
+                    { super._createMainElement(component, props) }
+                </AtlasKitThemeProvider>
+            </JitsiThemeProvider>
         );
     }
 
@@ -94,6 +91,12 @@ export default class PrejoinApp extends BaseApp<Props> {
      * @returns {React$Element}
      */
     _renderDialogContainer() {
-        return null;
+        return (
+            <JitsiThemeProvider>
+                <AtlasKitThemeProvider mode = 'dark'>
+                    <DialogContainer />
+                </AtlasKitThemeProvider>
+            </JitsiThemeProvider>
+        );
     }
 }

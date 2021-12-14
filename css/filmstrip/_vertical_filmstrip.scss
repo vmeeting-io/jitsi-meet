@@ -1,9 +1,10 @@
 .vertical-filmstrip .filmstrip {
     &.hide-videos {
-        .remote-videos-container,
-        .hide {
-            opacity: 0;
-            pointer-events: none;
+        .remote-videos {
+            & > div {
+                opacity: 0;
+                pointer-events: none;
+            }
         }
     }
 
@@ -27,7 +28,7 @@
     flex-direction: column-reverse;
     height: 100%;
     width: 100%;
-    padding: ($desktopAppDragBarHeight - 5px) 5px 10px;
+    padding: ($desktopAppDragBarHeight - 5px) 5px calc(env(safe-area-inset-bottom, 0) + 10px);
     /**
      * fixed positioning is necessary for remote menus and tooltips to pop
      * out of the scrolling filmstrip. AtlasKit dialogs and tooltips use
@@ -40,10 +41,6 @@
     right: 0;
     z-index: $filmstripVideosZ;
 
-    &.reduce-height {
-        height: calc(100% - #{$newToolbarSizeWithPadding});
-    }
-
     /**
      * Hide videos by making them slight to the right.
      */
@@ -51,7 +48,7 @@
         @extend %align-right;
         bottom: 0;
         padding: 0;
-        position:relative;
+        position: relative;
         right: 0;
         width: auto;
 
@@ -61,37 +58,56 @@
         }
 
         /**
-         * An id selector is used to match id specificity with existing
-         * filmstrip styles.
-         */
+        * An id selector is used to match id specificity with existing
+        * filmstrip styles.
+        */
         &#remoteVideos {
             border: $thumbnailsBorder solid transparent;
             padding-left: 0;
             transition: right 2s;
             width: 100%;
+
+            .page-button {
+                position: relative;
+                top: initial;
+                left: initial;
+                right: initial;
+                bottom: initial;
+                box-sizing: border-box;
+                width: 120px;
+                padding: 0;
+
+                &.prev {
+                    margin: 2px;
+                }
+                &.next {
+                    margin: 2px;
+                }
+            }
         }
     }
 
     /**
-     * Re-styles the local Video to better fit vertical filmstrip layout.
-     */
+    * Re-styles the local Video to better fit vertical filmstrip layout.
+    */
     #filmstripLocalVideo {
         align-self: initial;
         bottom: 5px;
         display: flex;
-        flex-direction: column-reverse;
+        flex-direction: column;
         height: auto;
         justify-content: flex-start;
 
         #filmstripLocalVideoThumbnail {
             width: calc(100% - 15px);
+            margin: 0 2px;
 
             .videocontainer {
                 height: 0px;
                 width: 100%;
-    }
+                margin: 0;
+            }
         }
-
     }
 
     /**
@@ -99,31 +115,8 @@
      * filmstrip from overlapping the left edge of the screen.
      */
     #filmstripLocalVideo,
-    #filmstripRemoteVideos {
+    .remote-videos {
         padding: 0;
-    }
-
-    #filmstripRemoteVideos {
-        @include minHWAutoFix();
-
-        display: flex;
-        flex: 1;
-        flex-direction: column-reverse;
-        height: auto;
-        overflow-x: hidden;
-        overflow-y: scroll;
-
-        #filmstripRemoteVideosContainer {
-            @include minHWAutoFix();
-            flex-direction: column-reverse;
-            overflow: visible;
-            width: calc(100% - 8px); // 8px for margin + border of the thumbnails
-
-            .videocontainer {
-                height: 0px;
-                width: 100%;
-            }
-        }
     }
 
     #remoteVideos {
@@ -133,76 +126,21 @@
         flex-grow: 1;
     }
 
-    .remote-videos-container {
+    &.reduce-height {
+        height: calc(100% - calc(#{$newToolbarSizeWithPadding} + #{$scrollHeight}));
+    }
+
+    .remote-videos {
         display: flex;
-        transition: opacity 1s;
-    }
+        transition: height .3s ease-in;
 
-    .hide-scrollbar#filmstripRemoteVideos {
-        margin-right: 7px; // Scrollbar size
-        &::-webkit-scrollbar {
-            display: none;
+        & > div {
+            position: absolute;
+            transition: opacity 1s;
         }
-    }
-}
 
-/**
- * Override other styles to support vertical filmstrip mode.
- */
-.filmstrip-only .vertical-filmstrip {
-    .filmstrip {
-        flex-direction: row-reverse;
-    }
-    .filmstrip__videos-filmstripOnly {
-        margin-top: auto;
-        margin-bottom: auto;
-        height: 100%;
-    }
-
-    .filmstrip__videos {
-        &#filmstripLocalVideo {
+        &.is-not-overflowing > div {
             bottom: 0px;
         }
     }
-}
-
-/**
- * Workarounds for Edge and Firefox not handling scrolling properly with
- * flex-direction: column-reverse. The remove videos in filmstrip should
- * start scrolling from the bottom of the filmstrip, but in those browsers the
- * scrolling won't happen. Per W3C spec, scrolling should happen from the
- * bottom. As such, use css hacks to get around the css issue, with the intent
- * being to remove the hacks as the spec is supported.
- */
-@mixin undoColumnReverseVideos() {
-    .vertical-filmstrip {
-        #remoteVideos #filmstripRemoteVideos #filmstripRemoteVideosContainer {
-            flex-direction: column;
-        }
-    }
-}
-
-/**
- * FF does not include the scroll width when calculating the size of the content. That's why we need to include
- * ourselves the width of the scroll so that the remote videos are aligned with the local one.
- */
-@mixin filmstripSizeWithoutScroll {
-    .vertical-filmstrip {
-        #remoteVideos #filmstripRemoteVideos {
-            #filmstripRemoteVideosContainer {
-                width: calc(100% - 15px) // 8 px - margins + border of the thumbnails; 7px - for the scroll
-            }
-        }
-    }
-}
-
-/** Firefox detection hack **/
-@-moz-document url-prefix() {
-    @include undoColumnReverseVideos();
-    @include filmstripSizeWithoutScroll();
-}
-
-/** Edge detection hack **/
-@supports (-ms-ime-align:auto) {
-    @include undoColumnReverseVideos();
 }

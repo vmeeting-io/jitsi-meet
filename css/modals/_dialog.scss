@@ -110,8 +110,11 @@
   }
 }
 
+.modal-dialog-content {
+    height: 100%;
+}
 .modal-dialog-form {
-    margin-top: 5px !important;
+    height: 100%;
 
     .input-control {
         background: $modalMockAKInputBackground;

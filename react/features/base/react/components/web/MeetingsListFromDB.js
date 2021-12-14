@@ -14,7 +14,6 @@ import { Tooltip } from '../../../tooltip';
 
 import Container from './Container';
 import Text from './Text';
-import s from './MeetingListFromDB.module.scss';
 
 type Props = {
 
@@ -110,7 +109,7 @@ export default class MeetingsListFromDB extends Component<Props> {
         if (meetings) {
             return (
                 <Container
-                    className = {s.meetingsList}>
+                    className = 'meetings-list'>
                     {
                         meetings.length === 0
                             ? listEmptyComponent
@@ -187,29 +186,29 @@ export default class MeetingsListFromDB extends Component<Props> {
         const { hideURL = false, t, onItemDelete } = this.props;
         const onPress = this._onPress(url);
         const rootClassName
-            = `${s.item} ${onPress ? s.withClickHandler : s.withoutClickHandler}`;
+            = `item ${onPress ? 'with-click-handler' : 'without-click-handler'}`;
 
         return (
             <Container
                 className = { rootClassName }
                 key = { index }
                 onClick = { onPress }>
-                <Container className = {s.iconColumn}>
+                <Container className = 'icon-column'>
                     { schedule? <ScheduleIcon size="large"/> : null }
                 </Container>
-                <Container className = {s.iconColumn}>
+                <Container className = 'icon-column'>
                     { lock? <LockIcon size="large"/> : <UnlockIcon size="large"/> }
                 </Container>
-                <Container className = {s.leftColumn}>
-                    <Text className = {s.date}>
+                <Container className = 'left-column'>
+                    <Text className = 'date'>
                         { _toDateString(date) }
                     </Text>
                     <Text>
                         { _toTimeString(time) }
                     </Text>
                 </Container>
-                <Container className = {s.rightColumn}>
-                    <Text className = {s.title}>
+                <Container className = 'right-column'>
+                    <Text className = 'title'>
                         { title }
                     </Text>
                     {
@@ -225,7 +224,7 @@ export default class MeetingsListFromDB extends Component<Props> {
                             </Text>) : null
                     }
                 </Container>
-                <Container className = {s.actions}>
+                <Container className = 'actions'>
                     { elementAfter || null }
 
                     { !ongoing && owner === current_user && onItemDelete && <Tooltip content = {t('welcomepage.deleteReservation')}>

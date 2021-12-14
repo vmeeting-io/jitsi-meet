@@ -3,14 +3,13 @@ import { appNavigate } from '../app/actions';
 import {
     CONFERENCE_JOINED,
     KICKED_OUT,
-    LEFT_BY_HANGUP_ALL,
     PARTICIPANT_CHAT_DISABLED,
     PARTICIPANT_CHAT_ENABLED,
-    conferenceLeft,
     getCurrentConference
 } from '../base/conference';
 import { disconnect } from '../base/connection';
 import { hideDialog, isDialogOpen } from '../base/dialog';
+import { browser } from '../base/lib-jitsi-meet';
 import { setActiveModalId } from '../base/modal';
 import { getParticipantById, getParticipantDisplayName, participantUpdated, pinParticipant } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
@@ -54,26 +53,11 @@ MiddlewareRegistry.register(store => next => action => {
             titleKey: 'dialog.sessTerminated',
         }));
 
-        dispatch(disconnect(false));
-        break;
-    }
-
-    case LEFT_BY_HANGUP_ALL: {
-        const { dispatch, getState } = store;
-        const participant = getParticipantById(getState, action.args);
-        
-        if (participant && !participant.local) {
-            const descriptionArguments = {
-                participantDisplayName: participant.name
-            };
-            dispatch(saveErrorNotification({
-                descriptionKey: 'dialog.hangupAllTitle',
-                descriptionArguments,
-                titleKey: 'dialog.sessTerminated',
-            }));
+        if (browser.isReactNative()) {
+            dispatch(appNavigate(undefined));
+        } else {
+            dispatch(disconnect(false));
         }
-
-        dispatch(disconnect(false));
         break;
     }
 

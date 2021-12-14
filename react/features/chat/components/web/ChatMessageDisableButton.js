@@ -5,7 +5,7 @@ import { connect } from '../../../base/redux';
 import AbstractChatMessageDisableButton, {
     _mapStateToProps as _abstractMapStateToProps,
     type Props
-} from '../../../remote-video-menu/components/AbstractChatMessageDisableButton';
+} from '../../../video-menu/components/AbstractChatMessageDisableButton';
 
 declare var interfaceConfig: Object;
 

@@ -1,6 +1,4 @@
-import { jitsiLocalStorage } from '@jitsi/js-utils';
-import { LEAVING_TIMESTAMP } from '../base/conference';
-import { ReducerRegistry } from '../base/redux';
+import { PersistenceRegistry, ReducerRegistry } from '../base/redux';
 
 import {
     SET_DEVICE_STATUS,
@@ -12,7 +10,8 @@ import {
     SET_PREJOIN_DEVICE_ERRORS,
     SET_PREJOIN_DISPLAY_NAME_REQUIRED,
     SET_PREJOIN_PAGE_VISIBILITY,
-    SET_SKIP_PREJOIN
+    SET_SKIP_PREJOIN,
+    SET_SKIP_PREJOIN_RELOAD
 } from './actionTypes';
 
 const leavingTimestamp = jitsiLocalStorage.getItem(LEAVING_TIMESTAMP);
@@ -31,10 +30,24 @@ const DEFAULT_STATE = {
     name: '',
     rawError: '',
     showPrejoin: true,
+    skipPrejoinOnReload: false,
     showJoinByPhoneDialog: false,
     skipPrejoin: Boolean(leavingTimestamp) && (Number(leavingTimestamp) + 3000) > Date.now(),
     userSelectedSkipPrejoin: false
 };
+
+/**
+ * The name of the redux store/state property which is the root of the redux
+ * state of the feature {@code prejoin}.
+ */
+const STORE_NAME = 'features/prejoin';
+
+/**
+ * Sets up the persistence of the feature {@code prejoin}.
+ */
+PersistenceRegistry.register(STORE_NAME, {
+    skipPrejoinOnReload: true
+}, DEFAULT_STATE);
 
 /**
  * Listen for actions that mutate the prejoin state
@@ -47,6 +60,13 @@ ReducerRegistry.register(
             return {
                 ...state,
                 userSelectedSkipPrejoin: action.value
+            };
+        }
+
+        case SET_SKIP_PREJOIN_RELOAD: {
+            return {
+                ...state,
+                skipPrejoinOnReload: action.value
             };
         }
 

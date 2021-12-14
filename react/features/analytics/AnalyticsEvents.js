@@ -185,7 +185,7 @@ export function createRecentClickedEvent(eventName, attributes = {}) {
 }
 
 /**
- * Creates an event which indicate an action occured in the chrome extension banner.
+ * Creates an event which indicate an action occurred in the chrome extension banner.
  *
  * @param {boolean} installPressed - Whether the user pressed install or `x` - cancel.
  * @param {Object} attributes - Attributes to attach to the event.
@@ -460,7 +460,7 @@ export function createLocalTracksDurationEvent(duration) {
 
 /**
  * Creates an event which indicates that an action related to recording has
- * occured.
+ * occurred.
  *
  * @param {string} action - The action (e.g. 'start' or 'stop').
  * @param {string} type - The recording type (e.g. 'file' or 'live').
@@ -504,15 +504,17 @@ export function createRejoinedEvent({ url, lastConferenceDuration, timeSinceLeft
  *
  * @param {string} participantId - The ID of the participant that was remotely
  * muted.
+ * @param {string} mediaType - The media type of the channel to mute.
  * @returns {Object} The event in a format suitable for sending via
  * sendAnalytics.
  */
-export function createRemoteMuteConfirmedEvent(participantId) {
+export function createRemoteMuteConfirmedEvent(participantId, mediaType) {
     return {
         action: 'clicked',
         actionSubject: 'remote.mute.dialog.confirm.button',
         attributes: {
-            'participant_id': participantId
+            'participant_id': participantId,
+            'media_type': mediaType
         },
         source: 'remote.mute.dialog',
         type: TYPE_UI
@@ -716,6 +718,36 @@ export function createStartSilentEvent() {
 }
 
 /**
+ * Creates an event which indicates that HTMLAudioElement.play has failed.
+ *
+ * @param {sting} elementID - The ID of the HTMLAudioElement.
+ * @returns {Object} The event in a format suitable for sending via sendAnalytics.
+ */
+export function createAudioPlayErrorEvent(elementID) {
+    return {
+        action: 'audio.play.error',
+        attributes: {
+            elementID
+        }
+    };
+}
+
+/**
+ * Creates an event which indicates that HTMLAudioElement.play has succeded after a prior failure.
+ *
+ * @param {sting} elementID - The ID of the HTMLAudioElement.
+ * @returns {Object} The event in a format suitable for sending via sendAnalytics.
+ */
+export function createAudioPlaySuccessEvent(elementID) {
+    return {
+        action: 'audio.play.success',
+        attributes: {
+            elementID
+        }
+    };
+}
+
+/**
  * Creates an event which indicates the "start muted" configuration.
  *
  * @param {string} source - The source of the configuration, 'local' or
@@ -785,6 +817,23 @@ export function createToolbarEvent(buttonName, attributes = {}) {
 }
 
 /**
+ * Creates an event associated with a reaction button being clicked/pressed.
+ *
+ * @param {string} buttonName - The identifier of the reaction button which was
+ * clicked/pressed.
+ * @returns {Object} The event in a format suitable for sending via
+ * sendAnalytics.
+ */
+export function createReactionMenuEvent(buttonName) {
+    return {
+        action: 'clicked',
+        actionSubject: buttonName,
+        source: 'reaction.button',
+        type: TYPE_UI
+    };
+}
+
+/**
  * Creates an event which indicates that a local track was muted.
  *
  * @param {string} mediaType - The track's media type ('audio' or 'video').
@@ -839,3 +888,15 @@ export function createWelcomePageEvent(action, actionSubject, attributes = {}) {
         source: 'welcomePage'
     };
 }
+
+/**
+ * Indicates that we received a remote command to mute.
+ */
+ export const createRemotelyMutedEvent = function(mediaType) {
+    return {
+        action: 'remotely.muted',
+        attributes: {
+            'media_type': mediaType,
+        }
+    };
+};

@@ -2,6 +2,7 @@
 
 import React, { Component } from 'react';
 
+import { isMobileBrowser } from '../../../features/base/environment/utils';
 import { translate } from '../../base/i18n';
 
 /**
@@ -9,6 +10,11 @@ import { translate } from '../../base/i18n';
  * {@link ConnectionStatsTable}.
  */
 type Props = {
+
+    /**
+     * The audio SSRC of this client.
+     */
+    audioSsrc: number,
 
     /**
      * Statistics related to bandwidth.
@@ -50,6 +56,21 @@ type Props = {
     e2eRtt: number,
 
     /**
+     * Whether or not should display the "Save Logs" link.
+     */
+    enableSaveLogs: boolean,
+
+    /**
+     * Whether or not should display the "Show More" link.
+     */
+    disableShowMoreStats: boolean,
+
+    /**
+     * The endpoint id of this client.
+     */
+    participantId: string,
+
+    /**
      * Statistics related to frame rates for each ssrc.
      * {{
      *     [ ssrc ]: Number
@@ -67,6 +88,11 @@ type Props = {
      * suspended on the send-side).
      */
     maxEnabledResolution: number,
+
+    /**
+     * Callback to invoke when the user clicks on the download logs link.
+     */
+    onSaveLogs: Function,
 
     /**
      * Callback to invoke when the show additional stats link is clicked.
@@ -115,10 +141,27 @@ type Props = {
     t: Function,
 
     /**
+     * The video SSRC of this client.
+     */
+    videoSsrc: number,
+
+    /**
      * Statistics related to transports.
      */
     transport: Array<Object>
 };
+
+/**
+ * Click handler.
+ *
+ * @param {SyntheticEvent} event - The click event.
+ * @returns {void}
+ */
+function onClick(event) {
+    // If the event is propagated to the thumbnail container the participant will be pinned. That's why the propagation
+    // needs to be stopped.
+    event.stopPropagation();
+}
 
 /**
  * React {@code Component} for displaying connection statistics.
@@ -133,14 +176,19 @@ class ConnectionStatsTable extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { isLocalVideo } = this.props;
+        const { isLocalVideo, enableSaveLogs, disableShowMoreStats } = this.props;
+        const className = isMobileBrowser() ? 'connection-info connection-info__mobile' : 'connection-info';
 
         return (
-            <div className = 'connection-info'>
+            <div
+                className = { className }
+                onClick = { onClick }>
                 { this._renderStatistics() }
-                { isLocalVideo ? this._renderShowMoreLink() : null }
-                { isLocalVideo && this.props.shouldShowMore
-                    ? this._renderAdditionalStats() : null }
+                <div className = 'connection-actions'>
+                    { isLocalVideo && enableSaveLogs ? this._renderSaveLogs() : null}
+                    { !disableShowMoreStats && this._renderShowMoreLink() }
+                </div>
+                { this.props.shouldShowMore ? this._renderAdditionalStats() : null }
             </div>
         );
     }
@@ -153,12 +201,17 @@ class ConnectionStatsTable extends Component<Props> {
      * @returns {ReactElement}
      */
     _renderAdditionalStats() {
+        const { isLocalVideo } = this.props;
+
         return (
             <table className = 'connection-info__container'>
                 <tbody>
-                    { this._renderBandwidth() }
-                    { this._renderTransport() }
-                    { this._renderRegion() }
+                    { isLocalVideo ? this._renderBandwidth() : null }
+                    { isLocalVideo ? this._renderTransport() : null }
+                    { isLocalVideo ? this._renderRegion() : null }
+                    { this._renderAudioSsrc() }
+                    { this._renderVideoSsrc() }
+                    { this._renderParticipantId() }
                 </tbody>
             </table>
         );
@@ -225,8 +278,68 @@ class ConnectionStatsTable extends Component<Props> {
     }
 
     /**
+     * Creates a table row as a ReactElement for displaying the audio ssrc.
+     * This will typically be something like "Audio SSRC: 12345".
+     *
+     * @returns {JSX.Element}
+     * @private
+     */
+    _renderAudioSsrc() {
+        const { audioSsrc, t } = this.props;
+
+        return (
+            <tr>
+                <td>
+                    <span>{ t('connectionindicator.audio_ssrc') }</span>
+                </td>
+                <td>{ audioSsrc || 'N/A' }</td>
+            </tr>
+        );
+    }
+
+    /**
+     * Creates a table row as a ReactElement for displaying the video ssrc.
+     * This will typically be something like "Video SSRC: 12345".
+     *
+     * @returns {JSX.Element}
+     * @private
+     */
+    _renderVideoSsrc() {
+        const { videoSsrc, t } = this.props;
+
+        return (
+            <tr>
+                <td>
+                    <span>{ t('connectionindicator.video_ssrc') }</span>
+                </td>
+                <td>{ videoSsrc || 'N/A' }</td>
+            </tr>
+        );
+    }
+
+    /**
+     * Creates a table row as a ReactElement for displaying the endpoint id.
+     * This will typically be something like "Endpoint id: 1e8fbg".
+     *
+     * @returns {JSX.Element}
+     * @private
+     */
+    _renderParticipantId() {
+        const { participantId, t } = this.props;
+
+        return (
+            <tr>
+                <td>
+                    <span>{ t('connectionindicator.participant_id') }</span>
+                </td>
+                <td>{ participantId || 'N/A' }</td>
+            </tr>
+        );
+    }
+
+    /**
      * Creates a a table row as a ReactElement for displaying codec, if present.
-     * This will typically be something like "Codecs (A/V): opus, vp8".
+     * This will typically be something like "Codecs (A/V): Opus, vp8".
      *
      * @private
      * @returns {ReactElement}
@@ -456,6 +569,28 @@ class ConnectionStatsTable extends Component<Props> {
     }
 
     /**
+     * Creates a ReactElement for display a link to save the logs.
+     *
+     * @private
+     * @returns {ReactElement}
+     */
+    _renderSaveLogs() {
+        return (
+            <span>
+                <a
+                    className = 'savelogs link'
+                    onClick = { this.props.onSaveLogs }
+                    role = 'button'
+                    tabIndex = { 0 }>
+                    { this.props.t('connectionindicator.savelogs') }
+                </a>
+                <span> | </span>
+            </span>
+        );
+    }
+
+
+    /**
      * Creates a ReactElement for display a link to toggle showing additional
      * statistics.
      *
@@ -471,7 +606,9 @@ class ConnectionStatsTable extends Component<Props> {
         return (
             <a
                 className = 'showmore link'
-                onClick = { this.props.onShowMore } >
+                onClick = { this.props.onShowMore }
+                role = 'button'
+                tabIndex = { 0 }>
                 { this.props.t(translationKey) }
             </a>
         );

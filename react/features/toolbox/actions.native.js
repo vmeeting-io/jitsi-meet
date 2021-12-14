@@ -3,9 +3,6 @@
 import {
     CLEAR_TOOLBOX_TIMEOUT,
     SET_OVERFLOW_MENU_VISIBLE,
-    SET_HANGUP_MENU_VISIBLE,
-    SET_MODERATOR_SELECTION_VISIBLE,
-    SET_NEXT_MODERATOR,
     SET_TOOLBAR_HOVERED,
     SET_TOOLBOX_ALWAYS_VISIBLE,
     SET_TOOLBOX_ENABLED,
@@ -42,36 +39,6 @@ export function setOverflowMenuVisible(visible: boolean): Object {
     return {
         type: SET_OVERFLOW_MENU_VISIBLE,
         visible
-    };
-}
-
-/**
- * Shows/hides the hangup menu.
- *
- * @param {boolean} visible - True to show it or false to hide it.
- * @returns {{
- *     type: SET_HANGUP_MENU_VISIBLE,
- *     visible: boolean
- * }}
- */
-export function setHangupMenuVisible(visible: boolean): Object {
-    return {
-        type: SET_HANGUP_MENU_VISIBLE,
-        visible
-    };
-}
-
-export function setModeratorSelectionVisible(visible: boolean): Object {
-    return {
-        type: SET_MODERATOR_SELECTION_VISIBLE,
-        visible
-    };
-}
-
-export function setNextModerator(id: string): Object {
-    return{
-        type: SET_NEXT_MODERATOR,
-        id
     };
 }
 

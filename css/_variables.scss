@@ -32,6 +32,7 @@ $defaultSideBarFontColor: #44A5FF;
 $defaultSemiDarkColor: #ACACAC;
 $defaultDarkColor: #2b3d5c;
 $defaultWarningColor: rgb(215, 121, 118);
+$participantsPaneBgColor: #141414;
 $presence-available: rgb(110, 176, 5);
 $presence-away: rgb(250, 201, 20);
 $presence-busy: rgb(233, 0, 27);
@@ -55,7 +56,7 @@ $overflowMenuItemHoverBG: #313D52;
 $overflowMenuItemHoverColor: #B8C7E0;
 $overflowMenuItemColor: #fff;
 $overflowMenuItemBackground: #36383C;
-
+ 
 /**
  * Video layout
  */
@@ -94,12 +95,12 @@ $modalTextColor: #333;
  * Chat
  */
 $chatActionsSeparatorColor: rgb(173, 105, 112);
-$chatHeaderBackgroundColor: rgba(42, 58, 75, 0.9);
+$chatBackgroundColor: #131519;
 $chatInputSeparatorColor: #A4B8D1;
-$chatLocalMessageBackgroundColor: rgb(4, 98, 178);
+$chatLocalMessageBackgroundColor: #484A4F;
 $chatPrivateMessageBackgroundColor: rgb(153, 69, 77);
-$chatRemoteMessageBackgroundColor:  rgb(86, 101, 114);
-$sidebarWidth: 375px;
+$chatRemoteMessageBackgroundColor:  #242528;
+$sidebarWidth: 315px;
 
  /**
  * Misc.
@@ -118,19 +119,25 @@ $zindex1: 1;
 $zindex2: 2;
 $zindex3: 3;
 $toolbarBackgroundZ: 4;
-$filmstripVideosZ: 5;
+$labelsZ: 5;
+$filmstripVideosZ: 6;
+$subtitlesZ: 7;
+$popoverZ: 8;
 $zindex10: 10;
 $reloadZ: 20;
 $poweredByZ: 100;
 $ringingZ: 300;
-$sideToolbarContainerZ: 300;
-$toolbarZ: 350;
+$sideToolbarContainerZ: 200;
+$toolbarZ: 250;
+$drawerZ: 351;
 $tooltipsZ: 401;
 $dropdownMaskZ: 900;
 $dropdownZ: 901;
 $centeredVideoLabelZ: 1010;
-$popoverZ: 1015;
 $overlayZ: 1016;
+// Place filmstrip videos over toolbar in order
+// to make connection info visible.
+$filmstripVideosZ: $toolbarZ + 1;
 
 
 /**
@@ -153,7 +160,7 @@ $formPadding: 16px;
 /**
  * Unsupported browser
  */
-$primaryUnsupportedBrowserButtonBgColor: #3769b1;
+$primaryUnsupportedBrowserButtonBgColor: #0052CC;
 $unsupportedBrowserButtonBgColor: rgba(9, 30, 66, 0.04);
 $unsupportedBrowserTextColor: #4a4a4a;
 $unsupportedBrowserTextSmallFontSize: 17px;
@@ -179,16 +186,16 @@ $welcomePageFontFamily: inherit;
 $welcomePageBackground: white;
 $welcomePageTitleColor: black;
 
-$welcomePageHeaderBackground: none;
-$welcomePageHeaderBackgroundSmall: none;
-$welcomePageHeaderBackgroundPosition: none;
+$welcomePageHeaderBackground: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('../images/welcome-background.png');
+$welcomePageHeaderBackgroundPosition: center;
 $welcomePageHeaderBackgroundRepeat: none;
-$welcomePageHeaderBackgroundSize: none;
+$welcomePageHeaderBackgroundSize: cover;
 $welcomePageHeaderPaddingBottom: 0px;
 $welcomePageHeaderMinHeight: fit-content;
 $welcomePageHandlerHeight: 64px;
+$welcomePageHeaderTextAlign: center;
 
-$welcomePageHeaderTextMarginTop: 4rem;
+$welcomePageHeaderTextMarginTop: 1rem;
 $welcomePageHeaderTextMarginBottom: 1rem;
 $welcomePageHeaderTextDisplay: flex;
 $welcomePageHeaderTextWidth: 650px;
@@ -237,7 +244,7 @@ $welcomePageButtonTextColor: #5f6368;
  */
 $deepLinkingMobileLogoHeight: 40px;
 
-$deepLinkingMobileHeaderBackground: lightsteelblue;
+$deepLinkingMobileHeaderBackground: #f1f2f5;
 
 $deepLinkingMobileLinkColor: inherit;
 $deepLinkingMobileTextFontSize: inherit;
@@ -288,3 +295,9 @@ $chromeExtensionBannerRightInMeeeting: 10px;
 */
 $smallScreen: 700px;
 $verySmallScreen: 500px;
+
+/**
+* Prejoin / premeeting screen
+*/
+
+$prejoinDefaultContentWidth: 336px;

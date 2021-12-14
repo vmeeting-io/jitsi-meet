@@ -9,6 +9,8 @@ import { AppRegistry } from 'react-native';
 import { App } from './features/app/components';
 // It's crucial that the native loggers are created ASAP, not to lose any data.
 import { _initLogging } from './features/base/logging/functions';
+import JitsiThemePaperProvider
+    from './features/base/ui/components/JitsiThemeProvider';
 import { IncomingCallApp } from './features/mobile/incoming-call';
 
 declare var __DEV__;
@@ -40,7 +42,10 @@ class Root extends PureComponent<Props> {
      */
     render() {
         return (
-            <App { ...this.props } />
+            <JitsiThemePaperProvider>
+                <App
+                    { ...this.props } />
+            </JitsiThemePaperProvider>
         );
     }
 }

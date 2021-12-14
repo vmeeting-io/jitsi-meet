@@ -1,31 +1,30 @@
 // @flow
 
-import { getCurrentConference } from '../base/conference';
+import { setFollowMe } from '../base/conference';
 import { CONFERENCE_WILL_JOIN } from '../base/conference/actionTypes';
+import { JitsiConferenceEvents, JitsiRecordingConstants } from '../base/lib-jitsi-meet';
 import {
     getLocalParticipant,
     getParticipantById,
     getPinnedParticipant,
-    isLocalParticipantModerator,
-    PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
-    pinParticipant
+    pinParticipant,
 } from '../base/participants';
 import { MiddlewareRegistry } from '../base/redux';
 import { setFilmstripVisible } from '../filmstrip';
-import { isRecording, isStreaming } from '../recording';
-import { setTileView, setTileViewOrder } from '../video-layout';
+import { getResourceId, getSessionById } from '../recording';
+import { RECORDING_SESSION_UPDATED } from '../recording/actionTypes';
+import { setTileView } from '../video-layout';
 
 import {
     setFollowMeModerator,
     setFollowMeState
 } from './actions';
-import { FOLLOW_ME_COMMAND } from './constants';
+import { FOLLOW_ME_COMMAND, GRANT_FOLLOW_ME_MODERATOR } from './constants';
 import { isFollowMeActive, isFollowMeEnabled } from './functions';
 import logger from './logger';
 
 import './subscriber';
-import { getFollowMeState } from './subscriber';
 
 declare var APP: Object;
 
@@ -59,7 +58,7 @@ let nextOnStageTimer = 0;
 
 /**
  * Represents "Follow Me" feature which enables a moderator to (partially)
- * control the user experience/interface (e.g. filmstrip visibility) of (other)
+ * control the user experience/interface (e.g. Filmstrip visibility) of (other)
  * non-moderator participant.
  */
 MiddlewareRegistry.register(store => next => action => {
@@ -68,26 +67,20 @@ MiddlewareRegistry.register(store => next => action => {
         const { conference } = action;
 
         conference.addCommandListener(
-            FOLLOW_ME_COMMAND, ({ attributes, value }, id) => {
-                _onFollowMeCommand(attributes, value, id, store);
+            FOLLOW_ME_COMMAND, ({ attributes }, id) => {
+                _onFollowMeCommand(attributes, id, store);
             });
-        break;
-    }
-    case PARTICIPANT_JOINED: {
-        const state = store.getState();
-        const conference = getCurrentConference(state);
 
-        if (!action.participant.local &&
-            isLocalParticipantModerator(state) &&
-            isFollowMeEnabled(state))
-        {
-            setTimeout(() => {
-                conference.sendCommand(
-                    FOLLOW_ME_COMMAND,
-                    { attributes: getFollowMeState(state) }
-                );
-            }, 3000);
-        }
+        conference.on(
+            JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED,
+            (_, data) => {
+                const { type, id, enabled } = data;
+                if (type === GRANT_FOLLOW_ME_MODERATOR) {
+                    // console.log('grant-follow-me-moderator received:', id, enabled);
+                    store.dispatch(setFollowMe(enabled));
+                }
+            });
+
         break;
     }
     case PARTICIPANT_LEFT:
@@ -95,8 +88,40 @@ MiddlewareRegistry.register(store => next => action => {
             store.dispatch(setFollowMeModerator());
         }
         break;
-    }
+    case RECORDING_SESSION_UPDATED: {
+        const oldSessionData = getSessionById(store.getState(), action.sessionData.id);
 
+        const result = next(action);
+        const state = store.getState();
+        const { iAmRecorder, iAmSipGateway } = state['features/base/config'];
+        const localParticipant = getLocalParticipant(state);
+
+        if (iAmRecorder && !iAmSipGateway) {
+            return result;
+        }
+
+        const updatedSessionData = getSessionById(state, action.sessionData.id);
+        const initiatorId = getResourceId(updatedSessionData.initiator);
+        const { OFF, ON } = JitsiRecordingConstants.status;
+
+        if (initiatorId !== localParticipant.id) {
+            return result;
+        }
+
+        // if follow-me is not active, set followMe true
+        if (!isFollowMeActive(state)
+            && updatedSessionData.status === ON
+            && (!oldSessionData || oldSessionData.status !== ON)) {
+            store.dispatch(setFollowMe(true));
+        } else if (isFollowMeEnabled(state)
+            && updatedSessionData.status === OFF
+            && (!oldSessionData || oldSessionData.status !== OFF)) {
+            store.dispatch(setFollowMe(false));
+        }
+
+        return result;
+    }
+    }
     return next(action);
 });
 
@@ -113,9 +138,10 @@ MiddlewareRegistry.register(store => next => action => {
  * @private
  * @returns {void}
  */
-function _onFollowMeCommand(attributes = {}, value, id, store) {
+function _onFollowMeCommand(attributes = {}, id, store) {
     const state = store.getState();
 
+    // console.log('onFollowMeCommand:', id, attributes);
     // We require to know who issued the command because (1) only a
     // moderator is allowed to send commands and (2) a command MUST be
     // issued by a defined commander.
@@ -137,6 +163,10 @@ function _onFollowMeCommand(attributes = {}, value, id, store) {
         return;
     }
 
+    if (!isFollowMeActive(state) || state['features/follow-me'].moderator !== id) {
+        store.dispatch(setFollowMeModerator(id));
+    }
+
     // just a command that follow me was turned off
     if (attributes.off) {
         store.dispatch(setFollowMeModerator());
@@ -144,44 +174,26 @@ function _onFollowMeCommand(attributes = {}, value, id, store) {
         return;
     }
 
-    const { iAmRecorder } = state['features/base/config'];
-    if (attributes.sendToRecorder && !iAmRecorder) {
-        return;
-    }
+    const oldState = state['features/follow-me'].state || {};
 
-    if (!isFollowMeActive(state)) {
-        store.dispatch(setFollowMeModerator(id));
-    }
-
-    // For recording or streaming mode, jibri participant will follow state
-    // if ((isRecording(state) || isStreaming(state)) && !iAmRecorder) {
-    //     return;
-    // }
-
-    const documentManager = APP.UI.getSharedDocumentManager();
-    if (!documentManager) {
-        return;
-    }
-
-    const { state: oldState, value: oldValue } = state['features/follow-me'] || {};
-
-    store.dispatch(setFollowMeState(attributes, value));
+    store.dispatch(setFollowMeState(attributes));
 
     // XMPP will translate all booleans to strings, so explicitly check against
     // the string form of the boolean {@code true}.
-    if (oldState?.filmstripVisible !== attributes.filmstripVisible) {
+    if (oldState.filmstripVisible !== attributes.filmstripVisible) {
         store.dispatch(setFilmstripVisible(attributes.filmstripVisible === 'true'));
     }
 
-    if (oldState?.tileViewEnabled !== attributes.tileViewEnabled) {
+    if (oldState.tileViewEnabled !== attributes.tileViewEnabled) {
         store.dispatch(setTileView(attributes.tileViewEnabled === 'true'));
     }
 
     // For now gate etherpad checks behind a web-app check to be extra safe
     // against calling a web-app global.
     if (typeof APP !== 'undefined'
-        && oldState?.sharedDocumentVisible !== attributes.sharedDocumentVisible) {
+        && oldState.sharedDocumentVisible !== attributes.sharedDocumentVisible) {
         const isEtherpadVisible = attributes.sharedDocumentVisible === 'true';
+        const documentManager = APP.UI.getSharedDocumentManager();
 
         if (documentManager
                 && isEtherpadVisible !== state['features/etherpad'].editing) {
@@ -194,14 +206,10 @@ function _onFollowMeCommand(attributes = {}, value, id, store) {
 
     if (typeof idOfParticipantToPin !== 'undefined'
             && (!pinnedParticipant || idOfParticipantToPin !== pinnedParticipant.id)
-            && oldState?.nextOnStage !== attributes.nextOnStage) {
+            && oldState.nextOnStage !== attributes.nextOnStage) {
         _pinVideoThumbnailById(store, idOfParticipantToPin);
     } else if (typeof idOfParticipantToPin === 'undefined' && pinnedParticipant) {
         store.dispatch(pinParticipant(null));
-    }
-
-    if (oldValue !== value) {
-        store.dispatch(setTileViewOrder(JSON.parse(value)));
     }
 }
 

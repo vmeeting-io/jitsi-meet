@@ -1,0 +1,22 @@
+@startuml
+
+actor Participant1 as P1
+participant MeetingParticipantContextMenu.js as MenuItem
+participant action.any.js as action
+participant ljm.JitsiConference.js as JConference
+participant ljm.ChatRoom.js as ChatRoom
+queue XMPPMessageQueue as MessageQueue
+participant ljm.ChatRoom.js2 as ChatRoom2
+participant jm.EventEmitter as EventEmitter
+actor Participant2 as P2
+
+P1 -> MenuItem: Click on MenuItem.
+MenuItem -> action: _onBirthdayHatOn
+action -> JConference: JitsiConference.notifyBirthdayHatOn()
+JConference -> ChatRoom: room.sendPrivateMessage(id,message)
+ChatRoom -> MessageQueue: Propagate message to respective Participant.
+MessageQueue -> ChatRoom2: putHatOn
+ChatRoom2 -> EventEmitter: Announce message from message queue.
+EventEmitter -> P2: handle necessary UI changes
+
+@enduml

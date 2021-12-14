@@ -3,18 +3,19 @@
 import type { Dispatch } from 'redux';
 
 import {
+    createRemotelyMutedEvent,
     createStartMutedConfigurationEvent,
     sendAnalytics
 } from '../../analytics';
-import { getName } from '../../app/functions';
-import { speakerStatsLoaded } from '../../speaker-stats';
+import { showNotification } from '../../notifications';
 import { endpointMessageReceived } from '../../subtitles';
+import { getReplaceParticipant } from '../config/functions';
 import { JITSI_CONNECTION_CONFERENCE_KEY } from '../connection';
+import { openDialog } from '../dialog';
 import { JitsiConferenceEvents } from '../lib-jitsi-meet';
-import { setAudioMuted, setVideoMuted } from '../media';
+import { MEDIA_TYPE, setAudioMuted, setVideoMuted } from '../media';
 import {
     dominantSpeakerChanged,
-    getLocalParticipant,
     getNormalizedDisplayName,
     participantConnectionStatusChanged,
     participantKicked,
@@ -23,12 +24,8 @@ import {
     participantRoleChanged,
     participantUpdated
 } from '../participants';
-import { getLocalTracks, trackAdded, trackRemoved } from '../tracks';
-import {
-    getBackendSafePath,
-    getBackendSafeRoomName,
-    getJitsiMeetGlobalNS
-} from '../util';
+import { getLocalTracks, isLocalTrackMuted, replaceLocalTrack, trackAdded, trackRemoved } from '../tracks';
+import { getBackendSafeRoomName, } from '../util';
 
 import {
     AUTH_STATUS_CHANGED,
@@ -36,57 +33,58 @@ import {
     CONFERENCE_JOINED,
     CONFERENCE_LEFT,
     CONFERENCE_SUBJECT_CHANGED,
+    CONFERENCE_TIME_REMAINED,
     CONFERENCE_TIMESTAMP_CHANGED,
+    CONFERENCE_UNIQUE_ID_SET,
     CONFERENCE_WILL_JOIN,
     CONFERENCE_WILL_LEAVE,
     DATA_CHANNEL_OPENED,
+    DEVICE_ACCESS_DISABLED,
     KICKED_OUT,
-    LEFT_BY_HANGUP_ALL,
     LOCK_STATE_CHANGED,
+    NON_PARTICIPANT_MESSAGE_RECEIVED,
+    PARTICIPANT_CHAT_DISABLED,
+    PARTICIPANT_CHAT_ENABLED,
     P2P_STATUS_CHANGED,
     SEND_TONES,
-    SET_DESKTOP_SHARING_ENABLED,
     SET_FOLLOW_ME,
-    SET_MAX_RECEIVER_VIDEO_QUALITY,
+    SET_NOTICE_MESSAGE,
     SET_PASSWORD,
     SET_PASSWORD_FAILED,
-    SET_PREFERRED_VIDEO_QUALITY,
     SET_ROOM,
     SET_PENDING_SUBJECT_CHANGE,
     SET_START_MUTED_POLICY,
-    PARTICIPANT_CHAT_DISABLED,
-    PARTICIPANT_CHAT_ENABLED,
-    CONFERENCE_TIME_REMAINED,
-    SET_NOTICE_MESSAGE,
     SET_USER_DEVICE_ACCESS_DISABLED,
-    DEVICE_ACCESS_DISABLED
+    START_RANDOM_SELECTION_COUNTDOWN,
+    START_TIMER 
 } from './actionTypes';
 import {
-    AVATAR_ID_COMMAND,
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
+    BIRTHDATE_COMMAND,
+    HAT_COMMAND,
     JITSI_CONFERENCE_URL_KEY
 } from './constants';
 import {
     _addLocalTracksToConference,
     commonUserJoinedHandling,
     commonUserLeftHandling,
+    getConferenceOptions,
     getCurrentConference,
     sendLocalParticipant
 } from './functions';
 import logger from './logger';
-
-declare var APP: Object;
 
 /**
  * Adds conference (event) listeners.
  *
  * @param {JitsiConference} conference - The JitsiConference instance.
  * @param {Dispatch} dispatch - The Redux dispatch function.
+ * @param {Object} state - The Redux state.
  * @private
  * @returns {void}
  */
-function _addConferenceListeners(conference, dispatch) {
+function _addConferenceListeners(conference, dispatch, state) {
     const config = state['features/base/config'];
 
     // A simple logger for conference errors received through
@@ -141,13 +139,12 @@ function _addConferenceListeners(conference, dispatch) {
     conference.on(
         JitsiConferenceEvents.STARTED_MUTED,
         () => {
-            const audioMuted = Boolean(conference.startAudioMuted);
-            const videoMuted = Boolean(conference.startVideoMuted);
+            const audioMuted = Boolean(conference.isStartAudioMuted());
+            const videoMuted = Boolean(conference.isStartVideoMuted());
+            const localTracks = getLocalTracks(state['features/base/tracks']);
 
-            sendAnalytics(createStartMutedConfigurationEvent(
-                'remote', audioMuted, videoMuted));
-            logger.log(`Start muted: ${audioMuted ? 'audio, ' : ''}${
-                videoMuted ? 'video' : ''}`);
+            sendAnalytics(createStartMutedConfigurationEvent('remote', audioMuted, videoMuted));
+            logger.log(`Start muted: ${audioMuted ? 'audio, ' : ''}${videoMuted ? 'video' : ''}`);
 
             // XXX Jicofo tells lib-jitsi-meet to start with audio and/or video
             // muted i.e. Jicofo expresses an intent. Lib-jitsi-meet has turned
@@ -159,6 +156,14 @@ function _addConferenceListeners(conference, dispatch) {
             // acting on Jicofo's intent without the app's knowledge.
             dispatch(setAudioMuted(audioMuted));
             dispatch(setVideoMuted(videoMuted));
+
+            // Remove the tracks from peerconnection as well.
+            for (const track of localTracks) {
+                if ((audioMuted && track.jitsiTrack.getType() === MEDIA_TYPE.AUDIO)
+                    || (videoMuted && track.jitsiTrack.getType() === MEDIA_TYPE.VIDEO)) {
+                    dispatch(replaceLocalTrack(track.jitsiTrack, null, conference));
+                }
+            }
         });
 
     // Dispatches into features/base/tracks follow:
@@ -172,9 +177,9 @@ function _addConferenceListeners(conference, dispatch) {
 
     conference.on(
         JitsiConferenceEvents.TRACK_MUTE_CHANGED,
-        (_, participantThatMutedUs) => {
+        (track, participantThatMutedUs) => {
             if (participantThatMutedUs) {
-                dispatch(participantMutedUs(participantThatMutedUs));
+                dispatch(participantMutedUs(participantThatMutedUs, track));
             }
         });
 
@@ -189,11 +194,15 @@ function _addConferenceListeners(conference, dispatch) {
 
     conference.on(
         JitsiConferenceEvents.DOMINANT_SPEAKER_CHANGED,
-        id => dispatch(dominantSpeakerChanged(id, conference)));
+        (dominant, previous) => dispatch(dominantSpeakerChanged(dominant, previous, conference)));
 
     conference.on(
         JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED,
         (...args) => dispatch(endpointMessageReceived(...args)));
+
+    conference.on(
+        JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED,
+        (...args) => dispatch(nonParticipantMessageReceived(...args)));
 
     conference.on(
         JitsiConferenceEvents.PARTICIPANT_CONN_STATUS_CHANGED,
@@ -225,13 +234,6 @@ function _addConferenceListeners(conference, dispatch) {
         (...args) => dispatch(setNoticeMessage(...args)));
 
     conference.addCommandListener(
-        AVATAR_ID_COMMAND,
-        (data, id) => dispatch(participantUpdated({
-            conference,
-            id,
-            avatarID: data.value
-        })));
-    conference.addCommandListener(
         AVATAR_URL_COMMAND,
         (data, id) => dispatch(participantUpdated({
             conference,
@@ -245,6 +247,145 @@ function _addConferenceListeners(conference, dispatch) {
             id,
             email: data.value
         })));
+    
+    // send birthDate info to other participants as presence message using sendCommand
+    // when participant's birthdate info is updated
+    conference.addCommandListener(
+        BIRTHDATE_COMMAND,
+        (data, id) => dispatch(participantUpdated({
+            conference,
+            id,
+            birthDate: data.value
+        })));
+
+    conference.addCommandListener(
+        HAT_COMMAND,
+        (data, id) => dispatch(participantUpdated({
+            conference,
+            id,
+            hatOn: data.value
+        })));
+
+    conference.on(
+        JitsiConferenceEvents.AUDIO_MUTED_BY_FOCUS,
+        (actor, mute) => {
+        if (mute === isLocalTrackMuted(state['features/base/tracks'], MEDIA_TYPE.AUDIO)) {
+            return;
+        }
+
+        const doMute = (mute) => {
+            // TODO: Add a way to differentiate between commands which caused
+            // us to mute and those that did not change our state (i.e. we were
+            // already muted).
+            sendAnalytics(createRemotelyMutedEvent(MEDIA_TYPE.AUDIO));
+
+            conference.mutedByFocusActor = actor;
+
+            // set isMutedByFocus when setAudioMute Promise ends
+            conference.rtc.setAudioMute(mute).then(
+                () => {
+                    conference.isMutedByFocus = true;
+                    conference.mutedByFocusActor = null;
+                })
+                .catch(
+                    error => {
+                        conference.mutedByFocusActor = null;
+                        logger.warn(
+                            'Error while audio muting due to focus request', error);
+                    });
+        };
+
+        if (mute) {
+            doMute(mute);
+        } else {
+            // ask unmute for privacy
+            dispatch(openDialog(ConfirmUnmuteDialog, {
+                cancelKey: 'dialog.Cancel',
+                okKey: 'videothumbnail.dounmute',
+                contentKey: 'notify.unmuteByHost',
+                onSubmit: () => {
+                    doMute(mute);
+                    conference.ackMuteParticipant(actor, true);
+                },
+                onCancel: () => {
+                    conference.ackMuteParticipant(actor, false);
+                }
+            }));
+        }
+    });
+
+    conference.on(JitsiConferenceEvents.ACK_AUDIO_MUTED_BY_FOCUS, (id, ack) => {
+        if (!ack) {
+            const participant = conference.getParticipantById(id);
+
+            dispatch(showNotification({
+                titleArguments: {
+                    participantDisplayName: participant._displayName
+                },
+                titleKey: 'notify.refusedUnmute'
+            }));
+        }
+    });
+
+    conference.on(
+        JitsiConferenceEvents.VIDEO_MUTED_BY_FOCUS,
+        (actor, mute) => {
+        if (mute === isLocalTrackMuted(state['features/base/tracks'], MEDIA_TYPE.VIDEO)) {
+            return;
+        }
+        const doMute = mute => {
+            // TODO: Add a way to differentiate between commands which caused
+            // us to mute and those that did not change our state (i.e. we were
+            // already muted).
+            sendAnalytics(createRemotelyMutedEvent(MEDIA_TYPE.VIDEO));
+
+            conference.mutedVideoByFocusActor = actor;
+
+            // set isVideoMutedByFocus when setVideoMute Promise ends
+            conference.rtc.setVideoMute(mute).then(
+                () => {
+                    conference.isVideoMutedByFocus = true;
+                    conference.mutedVideoByFocusActor = null;
+                })
+                .catch(
+                    error => {
+                        conference.mutedVideoByFocusActor = null;
+                        logger.warn(
+                            'Error while video muting due to focus request', error);
+                    });
+        };
+
+        if (mute) {
+            doMute(mute);
+        } else {
+            // ask unmute for privacy
+            dispatch(openDialog(ConfirmUnmuteDialog, {
+                cancelKey: 'dialog.Cancel',
+                okKey: 'videothumbnail.dounmuteVideo',
+                contentKey: 'notify.unmuteVideoByHost',
+                onSubmit: () => {
+                    doMute(mute);
+                    conference.ackMuteParticipantVideo(actor, true);
+                },
+                onCancel: () => {
+                    conference.ackMuteParticipantVideo(actor, false);
+                }
+            }));
+        }
+    });
+
+    conference.on(JitsiConferenceEvents.ACK_VIDEO_MUTED_BY_FOCUS, (id, ack) => {
+        if (!ack) {
+            const participant = conference.getParticipantById(id);
+
+            dispatch(showNotification({
+                titleKey: 'notify.refusedUnmuteVideo',
+                titleArguments: {
+                    participantDisplayName: participant._displayName
+                }
+            }));
+        }
+    });
 }
 
 /**
@@ -370,6 +511,22 @@ export function conferenceTimestampChanged(conferenceTimestamp: number) {
 }
 
 /**
+* Signals that the unique identifier for conference has been set.
+*
+* @param {JitsiConference} conference - The JitsiConference instance, where the uuid has been set.
+* @returns {{
+*   type: CONFERENCE_UNIQUE_ID_SET,
+*   conference: JitsiConference,
+* }}
+*/
+export function conferenceUniqueIdSet(conference: Object) {
+    return {
+        type: CONFERENCE_UNIQUE_ID_SET,
+        conference
+    };
+}
+
+/**
  * Adds any existing local tracks to a specific conference before the conference
  * is joined. Then signals the intention of the application to have the local
  * participant join the specified conference.
@@ -378,7 +535,7 @@ export function conferenceTimestampChanged(conferenceTimestamp: number) {
  * the local participant will (try to) join.
  * @returns {Function}
  */
-function _conferenceWillJoin(conference: Object) {
+export function _conferenceWillJoin(conference: Object) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const localTracks
             = getLocalTracks(getState()['features/base/tracks'])
@@ -450,22 +607,7 @@ export function createConference() {
             throw new Error('Cannot join a conference without a room name!');
         }
 
-        const config = state['features/base/config'];
-        const { tenant } = state['features/base/jwt'];
-        const { email, name: nick } = getLocalParticipant(state);
-
-        const conference
-            = connection.initJitsiConference(
-
-                getBackendSafeRoomName(room), {
-                    ...config,
-                    applicationName: getName(),
-                    getWiFiStatsMethod: getJitsiMeetGlobalNS().getWiFiStats,
-                    confID: `${locationURL.host}${getBackendSafePath(locationURL.pathname)}`,
-                    siteID: tenant,
-                    statisticsDisplayName: config.enableDisplayNameInStats ? nick : undefined,
-                    statisticsId: config.enableEmailInStats ? email : undefined
-                });
+        const conference = connection.initJitsiConference(getBackendSafeRoomName(room), getConferenceOptions(state));
 
         connection[JITSI_CONNECTION_CONFERENCE_KEY] = conference;
 
@@ -473,13 +615,13 @@ export function createConference() {
 
         dispatch(_conferenceWillJoin(conference));
 
-        _addConferenceListeners(conference, dispatch);
+        _addConferenceListeners(conference, dispatch, state);
 
         sendLocalParticipant(state, conference);
 
-        conference.join(password);
+        const replaceParticipant = getReplaceParticipant(state);
 
-        dispatch(speakerStatsLoaded([]));
+        conference.join(password, replaceParticipant);
     };
 }
 
@@ -496,8 +638,10 @@ export function checkIfCanJoin() {
         const { authRequired, password }
             = getState()['features/base/conference'];
 
+        const replaceParticipant = getReplaceParticipant(getState());
+
         authRequired && dispatch(_conferenceWillJoin(authRequired));
-        authRequired && authRequired.join(password);
+        authRequired && authRequired.join(password, replaceParticipant);
     };
 }
 
@@ -532,14 +676,6 @@ export function kickedOut(conference: Object, participant: Object) {
         type: KICKED_OUT,
         conference,
         participant
-    };
-}
-
-export function leftByHangupAll(conference: Object, args: Object){
-    return {
-        type: LEFT_BY_HANGUP_ALL,
-        conference,
-        args
     };
 }
 
@@ -579,6 +715,25 @@ export function lockStateChanged(conference: Object, locked: boolean) {
         type: LOCK_STATE_CHANGED,
         conference,
         locked
+    };
+}
+
+/**
+ * Signals that a non participant endpoint message has been received.
+ *
+ * @param {string} id - The resource id of the sender.
+ * @param {Object} json - The json carried by the endpoint message.
+ * @returns {{
+ *      type: NON_PARTICIPANT_MESSAGE_RECEIVED,
+ *      id: Object,
+ *      json: Object
+ * }}
+ */
+export function nonParticipantMessageReceived(id: String, json: Object) {
+    return {
+        type: NON_PARTICIPANT_MESSAGE_RECEIVED,
+        id,
+        json
     };
 }
 
@@ -643,22 +798,6 @@ export function sendTones(tones: string, duration: number, pause: number) {
 }
 
 /**
- * Sets the flag for indicating if desktop sharing is enabled.
- *
- * @param {boolean} desktopSharingEnabled - True if desktop sharing is enabled.
- * @returns {{
- *     type: SET_DESKTOP_SHARING_ENABLED,
- *     desktopSharingEnabled: boolean
- * }}
- */
-export function setDesktopSharingEnabled(desktopSharingEnabled: boolean) {
-    return {
-        type: SET_DESKTOP_SHARING_ENABLED,
-        desktopSharingEnabled
-    };
-}
-
-/**
  * Enables or disables the Follow Me feature.
  *
  * @param {boolean} enabled - Whether or not Follow Me should be enabled.
@@ -671,23 +810,6 @@ export function setFollowMe(enabled: boolean) {
     return {
         type: SET_FOLLOW_ME,
         enabled
-    };
-}
-
-/**
- * Sets the max frame height that should be received from remote videos.
- *
- * @param {number} maxReceiverVideoQuality - The max video frame height to
- * receive.
- * @returns {{
- *     type: SET_MAX_RECEIVER_VIDEO_QUALITY,
- *     maxReceiverVideoQuality: number
- * }}
- */
-export function setMaxReceiverVideoQuality(maxReceiverVideoQuality: number) {
-    return {
-        type: SET_MAX_RECEIVER_VIDEO_QUALITY,
-        maxReceiverVideoQuality
     };
 }
 
@@ -758,24 +880,6 @@ export function setPassword(
 }
 
 /**
- * Sets the max frame height the user prefers to send and receive from the
- * remote participants.
- *
- * @param {number} preferredVideoQuality - The max video resolution to send and
- * receive.
- * @returns {{
- *     type: SET_PREFERRED_VIDEO_QUALITY,
- *     preferredVideoQuality: number
- * }}
- */
-export function setPreferredVideoQuality(preferredVideoQuality: number) {
-    return {
-        type: SET_PREFERRED_VIDEO_QUALITY,
-        preferredVideoQuality
-    };
-}
-
-/**
  * Sets (the name of) the room of the conference to be joined.
  *
  * @param {(string|undefined)} room - The name of the room of the conference to
@@ -808,6 +912,7 @@ export function setStartMutedPolicy(
         startAudioMuted: boolean, startVideoMuted: boolean) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const conference = getCurrentConference(getState());
+
         conference && conference.setStartMutedPolicy({
             audio: startAudioMuted,
             video: startVideoMuted
@@ -839,6 +944,38 @@ export function deviceAccessDisabled(userDeviceAccessDisabled: boolean) {
     }
 }
 // end of added portion
+
+/**
+ * Function that begins a countdown timer during a meeting.
+ * 
+ * @param {number} endTime - end time of timer in UNIX time.
+ * @param {boolean} timerStarted - will be true after the timer is started.
+ * 
+ * @returns
+ * 
+ **/
+ export function Timer(endTime: Number, timerStarted: boolean) {
+    return {
+        type: START_TIMER,
+        endTime,
+        timerStarted
+    }
+}
+
+
+/**
+ * Function that begins reverse count down of timer when random selection is initiated
+ * @param {number} countdownRemained - the number of seconds from which countdown starts
+ * @param {boolean} startCountdown - must be true to begin countdown
+ * @returns
+ */
+export function startRandomSelectionCountdown(countdownRemained: Number, startCountdown: boolean) {
+    return {
+        type: START_RANDOM_SELECTION_COUNTDOWN,
+        countdownRemained,
+        startCountdown
+    }
+}
 
 /**
  * Changing conference subject.

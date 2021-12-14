@@ -1,0 +1,21 @@
+.timer-label {
+    position: relative;
+
+    .custom-label {
+        font-size: 20px;
+        background-color: #1ec26a;
+        height: 35px;
+        width: 145px;
+        top: 50%;
+        bottom: 50%;
+    }
+    
+    .custom-label-red {
+        font-size: 20px;
+        background-color: #de3849;
+        height: 35px;
+        width: 145px;
+        top: 50%;
+        bottom: 50%;
+    }
+}

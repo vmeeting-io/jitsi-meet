@@ -1,30 +1,33 @@
 // @flow
 
 import React, { PureComponent } from 'react';
-import { TouchableOpacity, View } from 'react-native';
-import Collapsible from 'react-native-collapsible';
+import { Divider } from 'react-native-paper';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { BottomSheet, hideDialog, isDialogOpen } from '../../../base/dialog';
-import { IconDragHandle } from '../../../base/icons';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
+import { BreakoutRoomButton } from '../../../breakout-rooms/components/native';
 import { SharedDocumentButton } from '../../../etherpad';
-import { InviteButton } from '../../../invite';
-import { LobbyModeButton } from '../../../lobby/components/native';
 import { AudioRouteButton } from '../../../mobile/audio-mode';
-import { LiveStreamButton, RecordButton, isRecording, isStreaming } from '../../../recording';
-import { RoomLockButton } from '../../../room-lock';
+import { ParticipantsPaneButton } from '../../../participants-pane/components/native';
+import { ReactionMenu } from '../../../reactions/components';
+import { isReactionsEnabled } from '../../../reactions/functions.any';
+import { LiveStreamButton, RecordButton } from '../../../recording';
+import SecurityDialogButton from '../../../security/components/security-dialog/SecurityDialogButton';
+import { SharedVideoButton } from '../../../shared-video/components';
 import { ClosedCaptionButton } from '../../../subtitles';
 import { TileViewButton } from '../../../video-layout';
-import { VideoShareButton } from '../../../youtube-player/components';
+import styles from '../../../video-menu/components/native/styles';
+import { getMovableButtons } from '../../functions.native';
 import HelpButton from '../HelpButton';
+import MuteEveryoneButton from '../MuteEveryoneButton';
+import MuteEveryonesVideoButton from '../MuteEveryonesVideoButton';
 
 import AudioOnlyButton from './AudioOnlyButton';
-import MoreOptionsButton from './MoreOptionsButton';
 import RaiseHandButton from './RaiseHandButton';
+import ScreenSharingButton from './ScreenSharingButton.js';
 import ToggleCameraButton from './ToggleCameraButton';
-import styles from './styles';
 
 /**
  * The type of the React {@code Component} props of {@link OverflowMenu}.
@@ -47,6 +50,16 @@ type Props = {
     _recordingEnabled: boolean,
 
     /**
+     * The width of the screen.
+     */
+    _width: number,
+
+    /**
+     * Whether or not the reactions feature is enabled.
+     */
+    _reactionsEnabled: boolean,
+
+    /**
      * Used for hiding the dialog when the selection was completed.
      */
     dispatch: Function
@@ -57,12 +70,7 @@ type State = {
     /**
      * True if the bottom scheet is scrolled to the top.
      */
-    scrolledToTop: boolean,
-
-    /**
-     * True if the 'more' button set needas to be rendered.
-     */
-    showMore: boolean
+    scrolledToTop: boolean
 }
 
 /**
@@ -88,15 +96,12 @@ class OverflowMenu extends PureComponent<Props, State> {
         super(props);
 
         this.state = {
-            scrolledToTop: true,
-            showMore: false
+            scrolledToTop: true
         };
 
         // Bind event handlers so they are only bound once per instance.
         this._onCancel = this._onCancel.bind(this);
-        this._onSwipe = this._onSwipe.bind(this);
-        this._onToggleMenu = this._onToggleMenu.bind(this);
-        this._renderMenuExpandToggle = this._renderMenuExpandToggle.bind(this);
+        this._renderReactionMenu = this._renderReactionMenu.bind(this);
     }
 
     /**
@@ -106,69 +111,55 @@ class OverflowMenu extends PureComponent<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { _bottomSheetStyles, _isLiveStreaming, _isRecording } = this.props;
-        const { showMore } = this.state;
+        const { _bottomSheetStyles, _width, _reactionsEnabled } = this.props;
+        const toolbarButtons = getMovableButtons(_width);
+
         const buttonProps = {
             afterClick: this._onCancel,
             showLabel: true,
             styles: _bottomSheetStyles.buttons
         };
 
-        const moreOptionsButtonProps = {
-            ...buttonProps,
-            afterClick: this._onToggleMenu,
-            visible: !showMore
+        const topButtonProps = {
+            afterClick: this._onCancel,
+            showLabel: true,
+            styles: {
+                ..._bottomSheetStyles.buttons,
+                style: {
+                    ..._bottomSheetStyles.buttons.style,
+                    borderTopLeftRadius: 16,
+                    borderTopRightRadius: 16
+                }
+            }
         };
 
         return (
             <BottomSheet
                 onCancel = { this._onCancel }
-                onSwipe = { this._onSwipe }
-                renderHeader = { this._renderMenuExpandToggle }>
-                <AudioRouteButton { ...buttonProps } />
-                <InviteButton { ...buttonProps } />
+                renderFooter = { _reactionsEnabled && !toolbarButtons.has('raisehand')
+                    ? this._renderReactionMenu
+                    : null }>
+                <AudioRouteButton { ...topButtonProps } />
+                <ParticipantsPaneButton { ...buttonProps } />
                 <AudioOnlyButton { ...buttonProps } />
-                <RaiseHandButton { ...buttonProps } />
-                <LobbyModeButton { ...buttonProps } />
-                <MoreOptionsButton { ...moreOptionsButtonProps } />
-                <Collapsible collapsed = { !showMore }>
-                    <ToggleCameraButton { ...buttonProps } />
-                    <TileViewButton { ...buttonProps } />
-                    <RecordButton
-                        { ...buttonProps }
-                        visible = { !_isLiveStreaming } />
-                    <LiveStreamButton
-                        { ...buttonProps }
-                        visible = { !_isRecording } />
-                    <VideoShareButton { ...buttonProps } />
-                    <RoomLockButton { ...buttonProps } />
-                    <ClosedCaptionButton { ...buttonProps } />
-                    <SharedDocumentButton { ...buttonProps } />
-                    <HelpButton { ...buttonProps } />
-                </Collapsible>
+                {!_reactionsEnabled && !toolbarButtons.has('raisehand') && <RaiseHandButton { ...buttonProps } />}
+                <Divider style = { styles.divider } />
+                <BreakoutRoomButton { ...buttonProps } />
+                <SecurityDialogButton { ...buttonProps } />
+                <RecordButton { ...buttonProps } />
+                <LiveStreamButton { ...buttonProps } />
+                <MuteEveryoneButton { ...buttonProps } />
+                <MuteEveryonesVideoButton { ...buttonProps } />
+                <Divider style = { styles.divider } />
+                <SharedVideoButton { ...buttonProps } />
+                <ScreenSharingButton { ...buttonProps } />
+                {!toolbarButtons.has('togglecamera') && <ToggleCameraButton { ...buttonProps } />}
+                {!toolbarButtons.has('tileview') && <TileViewButton { ...buttonProps } />}
+                <Divider style = { styles.divider } />
+                <ClosedCaptionButton { ...buttonProps } />
+                <SharedDocumentButton { ...buttonProps } />
+                <HelpButton { ...buttonProps } />
             </BottomSheet>
-        );
-    }
-
-    _renderMenuExpandToggle: () => React$Element<any>;
-
-    /**
-     * Function to render the menu toggle in the bottom sheet header area.
-     *
-     * @returns {React$Element}
-     */
-    _renderMenuExpandToggle() {
-        return (
-            <View
-                style = { [
-                    this.props._bottomSheetStyles.sheet,
-                    styles.expandMenuContainer
-                ] }>
-                <TouchableOpacity onPress = { this._onToggleMenu }>
-                    { /* $FlowFixMeProps */ }
-                    <IconDragHandle style = { this.props._bottomSheetStyles.expandIcon } />
-                </TouchableOpacity>
-            </View>
         );
     }
 
@@ -183,6 +174,7 @@ class OverflowMenu extends PureComponent<Props, State> {
     _onCancel() {
         if (this.props._isOpen) {
             this.props.dispatch(hideDialog(OverflowMenu_));
+            this.props._timer.resume();
 
             return true;
         }
@@ -190,45 +182,17 @@ class OverflowMenu extends PureComponent<Props, State> {
         return false;
     }
 
-    _onSwipe: string => void;
+    _renderReactionMenu: () => React$Element<any>;
 
     /**
-     * Callback to be invoked when swipe gesture is detected on the menu. Returns true
-     * if the swipe gesture is handled by the menu, false otherwise.
+     * Functoin to render the reaction menu as the footer of the bottom sheet.
      *
-     * @param {string} direction - Direction of 'up' or 'down'.
-     * @returns {boolean}
+     * @returns {React$Element}
      */
-    _onSwipe(direction) {
-        const { showMore } = this.state;
-
-        switch (direction) {
-        case 'up':
-            !showMore && this.setState({
-                showMore: true
-            });
-
-            return !showMore;
-        case 'down':
-            showMore && this.setState({
-                showMore: false
-            });
-
-            return showMore;
-        }
-    }
-
-    _onToggleMenu: () => void;
-
-    /**
-     * Callback to be invoked when the expand menu button is pressed.
-     *
-     * @returns {void}
-     */
-    _onToggleMenu() {
-        this.setState({
-            showMore: !this.state.showMore
-        });
+    _renderReactionMenu() {
+        return (<ReactionMenu
+            onCancel = { this._onCancel }
+            overflowMenu = { true } />);
     }
 }
 
@@ -243,8 +207,9 @@ function _mapStateToProps(state) {
     return {
         _bottomSheetStyles: ColorSchemeRegistry.get(state, 'BottomSheet'),
         _isOpen: isDialogOpen(state, OverflowMenu_),
-        _isRecording: isRecording(state),
-        _isLiveStreaming: isStreaming(state)
+        _width: state['features/base/responsive-ui'].clientWidth,
+        _reactionsEnabled: isReactionsEnabled(state),
+        _timer: state['features/toolbox'].timer,
     };
 }
 

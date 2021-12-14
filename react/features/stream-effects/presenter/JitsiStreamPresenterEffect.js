@@ -51,6 +51,7 @@ export default class JitsiStreamPresenterEffect {
         const { height, width, frameRate } = firstVideoTrack.getSettings() ?? firstVideoTrack.getConstraints();
         const localParticipant = getLocalParticipant(APP.store.getState());
         const [name, ...title] = localParticipant.name.split('/').map(trim);
+        console.log('firstVideoTrack:', width, height, frameRate);
 
         this._name = name;
         this._title = title;
@@ -74,9 +75,9 @@ export default class JitsiStreamPresenterEffect {
         const maxHeight = h;
 
         // Set the video element properties
-        this._frameRate = parseInt(frameRate, 10);
-        this._videoElement.width = Math.min(parseInt(width, 10), maxWidth);
-        this._videoElement.height = Math.min(parseInt(height, 10), maxHeight);
+        this._frameRate = parseInt(config.frameRateVideoSharingWithCamera ? config.frameRateVideoSharingWithCamera : 5);
+        this._videoElement.width = pipMode ? parseInt(width, 10) : Math.min(parseInt(width, 10), maxWidth);
+        this._videoElement.height = pipMode ? parseInt(height, 10) : Math.min(parseInt(height, 10), maxHeight);
         this._videoElement.autoplay = true;
         this._videoElement.srcObject = videoStream;
 
@@ -148,7 +149,7 @@ export default class JitsiStreamPresenterEffect {
         if (!this._config.pipMode) {
             this._canvas.width = CANVAS_WIDTH;
             this._canvas.height = CANVAS_HEIGHT;
-    
+
             let rc = this._config.layout.desktop.rect;
             let { w, h } = rc;
 
@@ -211,17 +212,10 @@ export default class JitsiStreamPresenterEffect {
             this._canvas.height = parseInt(height, 10);
 
             this._ctx.drawImage(this._desktopElement, 0, 0, this._canvas.width, this._canvas.height);
-            // const { x, y, w, h } = this._getObjectFitSize(true, width, height);
-            // this._ctx.fillStyle = '#474747';
-            // this._ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
-            // this._ctx.drawImage(this._desktopElement,
-            //     0, 0, width, height,
-            //     x, y, w, h);
-
             this._ctx.drawImage(
                 this._videoElement,
                 this._canvas.width - this._videoElement.width,
-                this._canvas.height - this._videoElement.height,
+                0,
                 this._videoElement.width,
                 this._videoElement.height);
 
@@ -229,7 +223,7 @@ export default class JitsiStreamPresenterEffect {
             this._ctx.beginPath();
             this._ctx.lineWidth = 2;
             this._ctx.strokeStyle = '#A9A9A9'; // dark grey
-            this._ctx.rect(this._canvas.width - this._videoElement.width, this._canvas.height - this._videoElement.height,
+            this._ctx.rect(this._canvas.width - this._videoElement.width, 0,
                 this._videoElement.width, this._videoElement.height);
             this._ctx.stroke();
         }
@@ -244,7 +238,7 @@ export default class JitsiStreamPresenterEffect {
     _loadConfig() {
         const layout = merge({
             background: { w: 1280, h: 720 },
-            desktop: { 
+            desktop: {
                 rect: { x: 40, y: 142, w: 910, h: 512 },
             },
             presenter: {
@@ -254,11 +248,11 @@ export default class JitsiStreamPresenterEffect {
                 title: { color: 'white', fontSize: 14, fontWeight: 'lighter', fontFamily: '맑은 고딕', lineHeight: 1.5, x: 978, y: 395 },
             }
         }, config.presenter?.layout);
-        
+
         // map position from background to canvas
         const mapX = x => parseInt(CANVAS_WIDTH * x / layout.background.w, 10);
         const mapY = y => parseInt(CANVAS_HEIGHT * y / layout.background.h, 10);
-        
+
         const _config = {
             backgroundImageUrl: config.presenter?.backgroundImageUrl || '',
             pipMode: config.presenter?.pipMode ?? true,
@@ -325,6 +319,10 @@ export default class JitsiStreamPresenterEffect {
         this._desktopElement.height = parseInt(height, 10);
         this._desktopElement.autoplay = true;
         this._desktopElement.srcObject = desktopStream;
+
+        // autoplay is not enough to start the video on Safari, it's fine to call play() on other platforms as well
+        this._desktopElement.play();
+
         this._canvas.width = parseInt(width, 10);
         this._canvas.height = parseInt(height, 10);
         this._videoFrameTimerWorker = new Worker(timerWorkerScript, { name: 'Presenter effect worker' });
@@ -334,14 +332,7 @@ export default class JitsiStreamPresenterEffect {
             timeMs: 1000 / this._frameRate
         });
 
-        const capturedStream = this._canvas.captureStream(this._frameRate);
-
-        // Put emphasis on the text details for the presenter's stream;
-        // See https://www.w3.org/TR/mst-content-hint/
-        // $FlowExpectedError
-        capturedStream.getVideoTracks()[0].contentHint = 'text';
-
-        return capturedStream;
+        return this._canvas.captureStream(this._frameRate);
     }
 
     /**

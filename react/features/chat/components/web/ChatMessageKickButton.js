@@ -7,13 +7,13 @@ import { IconKick } from '../../../base/icons';
 import { connect } from '../../../base/redux';
 import AbstractKickButton,  {
     type Props
-} from '../../../remote-video-menu/components/AbstractKickButton';
+} from '../../../video-menu/components/AbstractKickButton';
 import { openDialog } from '../../../base/dialog';
 
-import RemoteVideoMenuButton from '../../../remote-video-menu/components/web/RemoteVideoMenuButton';
+import RemoteVideoMenuButton from '../../../video-menu/components/web/RemoteVideoMenuButton';
 import { 
     KickRemoteParticipantDialog
-} from '../../../remote-video-menu/components';
+} from '../../../video-menu/components';
 
 declare var interfaceConfig: Object;
 

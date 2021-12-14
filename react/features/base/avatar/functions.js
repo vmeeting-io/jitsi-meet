@@ -16,9 +16,13 @@ const AVATAR_OPACITY = 0.4;
  * Generates the background color of an initials based avatar.
  *
  * @param {string?} initials - The initials of the avatar.
+ * @param {Array<strig>} customAvatarBackgrounds - Custom avatar background values.
  * @returns {string}
  */
-export function getAvatarColor(initials: ?string, opacity) {
+export function getAvatarColor(initials: ?string, customAvatarBackgrounds: Array<string>) {
+    const hasCustomAvatarBackgronds = customAvatarBackgrounds && customAvatarBackgrounds.length;
+    const colorsBase = hasCustomAvatarBackgronds ? customAvatarBackgrounds : AVATAR_COLORS;
+
     let colorIndex = 0;
 
     if (initials) {
@@ -28,10 +32,10 @@ export function getAvatarColor(initials: ?string, opacity) {
             nameHash += s.codePointAt(0);
         }
 
-        colorIndex = nameHash % AVATAR_COLORS.length;
+        colorIndex = nameHash % colorsBase.length;
     }
 
-    return `rgba(${AVATAR_COLORS[colorIndex]}, ${opacity || AVATAR_OPACITY})`;
+    return hasCustomAvatarBackgronds ? colorsBase[colorIndex] : `rgba(${colorsBase[colorIndex]}, ${AVATAR_OPACITY})`;
 }
 
 /**

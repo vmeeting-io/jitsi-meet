@@ -7,6 +7,7 @@ import AbstractMessageContainer, { type Props }
     from '../AbstractMessageContainer';
 
 import ChatMessageGroup from './ChatMessageGroup';
+import FileUploadStatusBox from './FileUploadStatusBox';
 
 /**
  * Displays all received chat messages, grouped by sender.
@@ -56,6 +57,12 @@ export default class MessageContainer extends AbstractMessageContainer<Props> {
      * @inheritdoc
      */
     render() {
+        const { 
+            fileName,
+            fileSize,
+            fileUploadPercentage,
+            isUploading 
+        } = this.props;
         const groupedMessages = this._getMessagesGroupedBySender();
         const messages = groupedMessages.map((group, index) => {
             const messageType = group[0] && group[0].messageType;
@@ -68,11 +75,26 @@ export default class MessageContainer extends AbstractMessageContainer<Props> {
             );
         });
 
+        if (isUploading && fileUploadPercentage > 0 && fileUploadPercentage < 100) {
+            // render loading circle component here
+            messages.push(
+                <FileUploadStatusBox 
+                    key = 'file-upload-status-box'
+                    fileName = { fileName } 
+                    fileSize = { fileSize } 
+                    fileUploadPercentage = { fileUploadPercentage } 
+                />
+            );
+        }
+
         return (
             <div
+                aria-labelledby = 'chat-header'
                 id = 'chatconversation'
                 onScroll = { this._onChatScroll }
-                ref = { this._messageListRef }>
+                ref = { this._messageListRef }
+                role = 'log'
+                tabIndex = { 0 }>
                 { messages }
                 <div ref = { this._messagesListEndRef } />
             </div>

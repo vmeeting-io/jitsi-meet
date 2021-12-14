@@ -1,24 +1,26 @@
 /* @flow */
 
 import { getCurrentConference } from '../base/conference';
-import { i18next } from '../base/i18n';
 import {
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
     PARTICIPANT_ROLE,
     PARTICIPANT_UPDATED,
     getParticipantById,
-    getParticipantDisplayName
+    getParticipantDisplayName,
+    getLocalParticipant
 } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
+import { PARTICIPANTS_PANE_OPEN } from '../participants-pane/actionTypes';
 
 import {
     clearNotifications,
+    hideRaiseHandNotifications,
     showNotification,
     showParticipantJoinedNotification
 } from './actions';
 import { NOTIFICATION_TIMEOUT } from './constants';
-import { joinLeaveNotificationsDisabled, showToast } from './functions';
+import { joinLeaveNotificationsDisabled } from './functions.any';
 
 declare var interfaceConfig: Object;
 
@@ -34,23 +36,13 @@ MiddlewareRegistry.register(store => next => action => {
         const result = next(action);
         const { participant: p } = action;
         const { dispatch, getState } = store;
+        const state = getState();
+        const { conference } = state['features/base/conference'];
 
-        if (!p.local && !joinLeaveNotificationsDisabled()) {
+        if (conference && !p.local && !joinLeaveNotificationsDisabled() && !p.isReplacing) {
             dispatch(showParticipantJoinedNotification(
-                getParticipantDisplayName(getState, p.id)
+                getParticipantDisplayName(state, p.id)
             ));
-        }
-
-        if (typeof interfaceConfig === 'object'
-                && !interfaceConfig.DISABLE_FOCUS_INDICATOR && p.role === PARTICIPANT_ROLE.MODERATOR) {
-            // Do not show the notification for mobile and also when the focus indicator is disabled.
-            const displayName = getParticipantDisplayName(getState, p.id);
-
-            showToast({
-                title: i18next.t('notify.grantedTo', {
-                    to: displayName || i18next.t('notify.somebody')
-                }),
-                timeout: NOTIFICATION_TIMEOUT });
         }
 
         return result;
@@ -64,7 +56,8 @@ MiddlewareRegistry.register(store => next => action => {
 
             if (typeof interfaceConfig === 'object'
                 && participant
-                && !participant.local) {
+                && !participant.local
+                && !action.participant.isReplaced) {
                 store.dispatch(showNotification({
                     descriptionKey: 'notify.disconnected',
                     titleKey: 'notify.somebody',
@@ -76,27 +69,35 @@ MiddlewareRegistry.register(store => next => action => {
         return next(action);
     }
     case PARTICIPANT_UPDATED: {
-        if (typeof interfaceConfig === 'undefined' || interfaceConfig.DISABLE_FOCUS_INDICATOR) {
+        if (typeof interfaceConfig === 'undefined') {
             // Do not show the notification for mobile and also when the focus indicator is disabled.
             return next(action);
         }
 
         const { id, role } = action.participant;
         const state = store.getState();
+        const localParticipant = getLocalParticipant(state);
+
+        if (localParticipant.id !== id) {
+            return next(action);
+        }
+
         const oldParticipant = getParticipantById(state, id);
         const oldRole = oldParticipant?.role;
 
         if (oldRole && oldRole !== role && role === PARTICIPANT_ROLE.MODERATOR) {
-            const displayName = getParticipantDisplayName(state, id);
 
-            showToast({
-                title: i18next.t('notify.grantedTo', {
-                    to: displayName || i18next.t('notify.somebody')
-                }),
-                timeout: NOTIFICATION_TIMEOUT });
+            store.dispatch(showNotification({
+                titleKey: 'notify.moderator'
+            },
+            NOTIFICATION_TIMEOUT));
         }
 
         return next(action);
+    }
+    case PARTICIPANTS_PANE_OPEN: {
+        store.dispatch(hideRaiseHandNotifications());
+        break;
     }
     }
 

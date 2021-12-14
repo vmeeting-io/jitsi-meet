@@ -1,21 +1,9 @@
 /* @flow */
 
-import moment from 'moment';
 import React, { Component } from 'react';
 
 import { translate } from '../../base/i18n';
-import { BaseIndicator } from '../../base/react';
-import {
-    IconCamera,
-    IconCameraDisabled,
-    IconChat,
-    IconCrown,
-    IconMicDisabled,
-    IconMicrophone,
-    IconShareDesktop
-} from '../../base/icons'
 
-import s from './SpeakerStatsItem.module.scss';
 import { formatDuration, formatTime } from '../../base/util/formatDateTime';
 
 declare var interfaceConfig: Object;
@@ -49,26 +37,6 @@ type Props = {
      * The duration time.
      */
     duration: string,
-
-    /**
-     * True if video is muted.
-     */
-    videoMuted: boolean,
-
-    /**
-     * True if audio is muted.
-     */
-    audioMuted: boolean,
-
-    /**
-     * True if speaker is moderator.
-     */
-    isModerator: boolean,
-
-    /**
-     * True if speaker is presenter.
-     */
-    isPresenter: boolean
 };
 
 /**
@@ -88,14 +56,9 @@ class SpeakerStatsItem extends Component<Props> {
             joinTime,
             leaveTime,
             duration,
-            isModerator,
-            isPresenter,
-            videoMuted,
-            audioMuted,
             local,
             name,
             hasLeft,
-            chat,
             t
         } = this.props;
 
@@ -111,118 +74,20 @@ class SpeakerStatsItem extends Component<Props> {
         }
 
         return (
-            <div className = { `${rowDisplayClass} ${s.itemContainer}` }>
-                <div className = { `speaker-stats-item__name ${s.nameContainer}` }> 
-                    <span className = { s.name }>{ displayName }</span>
+            <div className = { rowDisplayClass }>
+                <div className = 'speaker-stats-item__name'> 
+                    <span className = 'name'>{ displayName }</span>
                 </div>
-                <div className = { s.statusContainer }>
-                    { this.displayModeratorStatus(isModerator) }
-                    { this.displayPresenterStatus(isPresenter) }
-                    { this.displayAudioStatus(audioMuted) }
-                    { this.displayVideoStatus(videoMuted) }
-                    { this.displayChatStatus(chat) }
-                </div>
-                <div className = { `speaker-stats-item__s_time ${s.joinTime}` }>
+                <div className = 'speaker-stats-item__s_time'>
                     { formatTime(joinTime) }
                 </div>
-                <div className = { `speaker-stats-item__l_time ${s.leaveTime}` }>
+                <div className = 'speaker-stats-item__l_time'>
                     { formatTime(leaveTime) } 
                 </div>
-                <div className = { s.duration }>
+                <div className = 'speaker-stats-item__duration'>
                     { formatDuration(duration) }
                 </div>
             </div>
-        );
-    }
-
-    displayAudioStatus(audioMuted) {
-        let icon;
-        let iconClass = this.props.hasLeft || audioMuted ? s.disabled : '';
-        let toolTipMessage;
-
-        if (audioMuted) {
-            icon = IconMicDisabled;
-            toolTipMessage = 'videothumbnail.muted';
-        } else {
-            icon = IconMicrophone;
-            toolTipMessage = 'videothumbnail.audioconnected';
-        }
-
-        return(
-            <BaseIndicator
-                className = { `audioMuted toolbar-icon ${iconClass}` }
-                icon = { icon }
-                iconId = 'mic-disabled'
-                iconSize = { 16 }
-                tooltipKey = { toolTipMessage }
-                tooltipPosition = { 'top' } />
-        );
-    }
-
-    displayVideoStatus(videoMuted) {
-        let icon;
-        let iconClass = this.props.hasLeft || videoMuted ? s.disabled : '';
-        let toolTipMessage;
-
-        if (videoMuted) {
-            icon = IconCameraDisabled;
-            toolTipMessage = 'videothumbnail.videomuted'
-        }
-        else {
-            icon = IconCamera;
-            toolTipMessage = 'videothumbnail.videoconnected'
-        }
-        return(
-            <BaseIndicator
-                className = { `videoMuted toolbar-icon ${iconClass}` }
-                icon = { icon }
-                iconId = 'camera-disabled'
-                iconSize = { 16 }
-                tooltipKey = { toolTipMessage }
-                tooltipPosition = { 'top' } />
-        );
-    }
-
-    displayModeratorStatus(isModerator) {
-        let toolTipMessage = isModerator ? 'videothumbnail.moderator' : '';
-
-        return (
-            <BaseIndicator
-                className = { isModerator ? '' : s.disabled }
-                icon = { IconCrown }
-                iconId = 'crown'
-                iconSize = { 16 }
-                tooltipKey = { toolTipMessage }
-                tooltipPosition = 'top' />
-        );
-    }
-
-    displayPresenterStatus(isPresenter) {
-        let iconClass = this.props.hasLeft || !isPresenter ? s.disabled : '';
-        let toolTipMessage = isPresenter ? 'videothumbnail.presenter' : '';
-
-        return(
-            <BaseIndicator
-                className = { `videoMuted toolbar-icon ${iconClass}` }
-                icon = { IconShareDesktop }
-                iconId = 'share-desktop'
-                iconSize = { 16 }
-                tooltipKey = { toolTipMessage }
-                tooltipPosition = { 'top' } />
-        );
-    }
-
-    displayChatStatus(chatEnabled) {
-        let toolTipMessage = chatEnabled ? 'dialog.chatEnabledTitle' : 'dialog.chatDisabledTitle';
-
-        return (
-            <BaseIndicator
-                className = { chatEnabled ? '' : s.disabled }
-                icon = { IconChat }
-                iconId = 'chat'
-                iconSize = { 16 }
-                tooltipKey = { toolTipMessage }
-                tooltipPosition = 'top' />
         );
     }
 }

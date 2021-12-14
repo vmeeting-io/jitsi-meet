@@ -1,6 +1,5 @@
 // @flow
 
-import Button from '@atlaskit/button';
 import Flag from '@atlaskit/flag';
 import EditorInfoIcon from '@atlaskit/icon/glyph/editor/info';
 import ErrorIcon from '@atlaskit/icon/glyph/error';
@@ -9,13 +8,10 @@ import { colors } from '@atlaskit/theme';
 import React from 'react';
 
 import { translate } from '../../../base/i18n';
-import { Icon, IconClose } from '../../../base/icons';
 import { NOTIFICATION_TYPE } from '../../constants';
 import AbstractNotification, {
     type Props
 } from '../AbstractNotification';
-
-import s from './Notification.module.scss';
 
 declare var interfaceConfig: Object;
 
@@ -48,55 +44,20 @@ class Notification extends AbstractNotification<Props> {
         const {
             appearance,
             hideErrorSupportLink,
-            isDismissAllowed,
-            isNewStyle,
-            onDismissed,
             t,
             title,
             titleArguments,
             titleKey,
-            uid,
+            uid
         } = this.props;
 
-        return isNewStyle ? (
-            <div className = { s.flagContainer }>
-                <div className = { s.titleContainer }>
-                    <div className = { s.iconContainer }>
-                        { this._mapAppearanceToIcon('large') }
-                    </div>
-                    <h2>{ title || t(titleKey, titleArguments) }</h2>
-                    <div
-                        className = { s.close }
-                        onClick = { this._onDismissed }>
-                        <Icon size = { 20 } src = { IconClose } />
-                    </div>
-                </div>
-                <div className = { s.contentContainer }>
-                    <div className = { s.description }>
-                        { this._renderDescription() }
-                    </div>
-                    <div className = { s.buttonContainer }>
-                        { this._mapAppearanceToButtons(hideErrorSupportLink).map(b => (
-                            <div className = { s.button } key = { b.content }>
-                                <Button
-                                    appearance = "subtle"
-                                    onClick = { b.onClick }>
-                                    { b.content }
-                                </Button>
-                            </div>
-                        )) }
-                    </div>
-                </div>
-            </div>
-        ) : (
+        return (
             <Flag
                 actions = { this._mapAppearanceToButtons(hideErrorSupportLink) }
                 appearance = { appearance }
                 description = { this._renderDescription() }
                 icon = { this._mapAppearanceToIcon() }
                 id = { uid }
-                isDismissAllowed = { isDismissAllowed }
-                onDismissed = { onDismissed }
                 testId = { titleKey }
                 title = { title || t(titleKey, titleArguments) } />
         );
@@ -120,9 +81,9 @@ class Notification extends AbstractNotification<Props> {
 
         // the id is used for testing the UI
         return (
-            <div data-testid = { this._getDescriptionKey() } >
+            <p data-testid = { this._getDescriptionKey() } >
                 { description }
-            </div>
+            </p>
         );
     }
 
@@ -155,7 +116,7 @@ class Notification extends AbstractNotification<Props> {
                 }
             ];
 
-            if (!hideErrorSupportLink) {
+            if (!hideErrorSupportLink && interfaceConfig.SUPPORT_URL) {
                 buttons.push({
                     content: this.props.t('dialog.contactSupport'),
                     onClick: this._onOpenSupportLink
@@ -197,9 +158,10 @@ class Notification extends AbstractNotification<Props> {
      * @private
      * @returns {ReactElement}
      */
-    _mapAppearanceToIcon(iconSize = 'medium') {
+    _mapAppearanceToIcon() {
         const appearance = this.props.appearance;
         const secIconColor = ICON_COLOR[this.props.appearance];
+        const iconSize = 'medium';
 
         switch (appearance) {
         case NOTIFICATION_TYPE.ERROR:

@@ -30,6 +30,11 @@ export const FULL_SCREEN_CHANGED = 'FULL_SCREEN_CHANGED';
 export const SET_FULL_SCREEN = 'SET_FULL_SCREEN';
 
 /**
+ * The type of the redux action that toggles whether the overflow menu(s) should be shown as drawers.
+ */
+export const SET_OVERFLOW_DRAWER = 'SET_OVERFLOW_DRAWER';
+
+/**
  * The type of the (redux) action which shows/hides the OverflowMenu.
  *
  * {
@@ -38,12 +43,6 @@ export const SET_FULL_SCREEN = 'SET_FULL_SCREEN';
  * }
  */
 export const SET_OVERFLOW_MENU_VISIBLE = 'SET_OVERFLOW_MENU_VISIBLE';
-
-export const SET_HANGUP_MENU_VISIBLE = 'SET_HANGUP_MENU_VISIBLE';
-
-export const SET_MODERATOR_SELECTION_VISIBLE = 'SET_MODERATOR_SELECTION_VISIBLE';
-
-export const SET_NEXT_MODERATOR = 'SET_NEXT_MODERATOR';
 
 /**
  * The type of the action which sets the indicator which determiens whether a

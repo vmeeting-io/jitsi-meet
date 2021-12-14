@@ -5,7 +5,7 @@
 
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import axios from 'axios';
-import { has, isEmpty, omit, size } from 'lodash';
+import { has, omit, size } from 'lodash';
 import qs from 'query-string';
 import type { Dispatch } from 'redux';
 
@@ -23,12 +23,11 @@ import {
     storeConfig
 } from '../base/config';
 import { connect, disconnect, setLocationURL } from '../base/connection';
-import { i18next } from '../base/i18n';
 import { setJWT } from '../base/jwt';
-import { loadConfig } from '../base/lib-jitsi-meet';
+import { browser, loadConfig } from '../base/lib-jitsi-meet';
 import { MEDIA_TYPE } from '../base/media';
 import { toState } from '../base/redux';
-import { createDesiredLocalTracks, isLocalVideoTrackMuted, isLocalTrackMuted } from '../base/tracks';
+import { createDesiredLocalTracks, isLocalCameraTrackMuted, isLocalTrackMuted } from '../base/tracks';
 import {
     addHashParamsToURL,
     getBackendSafeRoomName,
@@ -36,10 +35,8 @@ import {
     parseURIString,
     toURLString
 } from '../base/util';
-import { setLicenseError } from '../billing-counter/actions';
-import { LICENSE_ERROR_INVALID_LICENSE, LICENSE_ERROR_MAXED_LICENSE } from '../billing-counter/constants';
-import { isVpaasMeeting } from '../billing-counter/functions';
-import { clearNotifications, showToast } from '../notifications';
+import { isVpaasMeeting } from '../jaas/functions';
+import { clearNotifications, saveErrorNotification, showNotification } from '../notifications';
 import { setFatalError } from '../overlay';
 
 import {
@@ -47,6 +44,11 @@ import {
     getName
 } from './functions';
 import logger from './logger';
+
+const LICENSE_ERROR_MAXED_LICENSE = 'maxed_license';
+const LICENSE_ERROR_INVALID_LICENSE = 'invalid_license';
+const LICENSE_ERROR_NOT_MODERATOR = 'not_moderator';
+const LICENSE_ERROR_FORBIDDEN = 'forbidden';
 
 // eslint-disable-next-line require-jsdoc
 function getParams(uri: string) {
@@ -104,7 +106,7 @@ export function appNavigate(uri: ?string) {
 
         // Disconnect from any current conference.
         // FIXME: unify with web.
-        if (navigator.product === 'ReactNative') {
+        if (browser.isReactNative()) {
             dispatch(disconnect());
         }
 
@@ -244,7 +246,8 @@ export function appNavigate(uri: ?string) {
         // 방 접속 전에 한번 더 불리는 것을 방지하기 위해서 pathname 체크.
         if (room &&
             pathname !== '/' &&
-            window.location.pathname === pathname
+            (browser.isReactNative() || window.location.pathname === pathname) &&
+            (!has(params, 'host') || params.host === 'true')
         ) {
             let apiUrl;
             let resp;
@@ -274,36 +277,34 @@ export function appNavigate(uri: ?string) {
                     name: room,
                     start_time: new Date(),
                 }, { headers });
-                roomInfo = resp.data;
-                roomInfo.isHost = true;
+                roomInfo = resp.data.conference;
+                roomInfo.isHost = roomInfo?.mail_owner === user?.email;
             } catch (err) {
                 console.log('Request is failed.', err.response);
-                const { error } = err.response?.data || {};
+                const { error, conference } = err.response?.data || {};
 
-                if (error === LICENSE_ERROR_INVALID_LICENSE ||
-                    error === LICENSE_ERROR_MAXED_LICENSE) {
-                    // 라이센스가 유효하지 않습니다.
-                    dispatch(setLicenseError(error));
-                    // 개설 권한이 없는 경우, 게스트로 참석한다.
-                    // 게스트는 회의 조인만 허용한다.
-                } else {
-                    // (error === 'not_moderator')
-                    // (error === 'forbidden')
-                    // Unknown error.
-                    dispatch(setLicenseError(''));
+                switch (error) {
+                    case LICENSE_ERROR_INVALID_LICENSE:
+                    case LICENSE_ERROR_MAXED_LICENSE: {
+                        const messages = {
+                            [LICENSE_ERROR_INVALID_LICENSE]: 'dialog.InvalidLicense',
+                            [LICENSE_ERROR_MAXED_LICENSE]: 'dialog.MaxedLicense',
+                        };
+                        
+                        dispatch(saveErrorNotification({
+                            titleKey: 'dialog.LicenseError',
+                            descriptionKey: messages[error],
+                        }));
+                        dispatch(redirectWithStoredParams('/'));
+                        return;
+                    }
+                    default: {
+                        roomInfo = conference;
+                        if (roomInfo) {
+                            roomInfo.isHost = roomInfo.mail_owner === user?.email;
+                        }
+                    }
                 }
-                // try {
-                //     resp = await axios.post(`${apiBase}/conferences`, {
-                //         name: room,
-                //         start_time: new Date(),
-                //         mail_owner: getState()['features/base/jwt'].user.email
-                //     });
-                //     roomInfo = resp.data;
-                //     roomInfo.isHost = true;
-                // } catch (err2) {
-                //     console.log("Error! Not navigate to target, ", err2);
-                //     disconnect();
-                // }
             }
         }
 
@@ -404,7 +405,7 @@ export function reloadNow() {
 function addTrackStateToURL(url, stateful) {
     const state = toState(stateful);
     const tracks = state['features/base/tracks'];
-    const isVideoMuted = isLocalVideoTrackMuted(tracks);
+    const isVideoMuted = isLocalCameraTrackMuted(tracks);
     const isAudioMuted = isLocalTrackMuted(tracks, MEDIA_TYPE.AUDIO);
 
     return addHashParamsToURL(new URL(url), { // use new URL object in order to not pollute the passed parameter.
@@ -495,13 +496,10 @@ export function maybeRedirectToWelcomePage(options: Object = {}) {
 
         // else: show thankYou dialog only if there is no feedback
         if (options.showThankYou) {
-            showToast({
-                title: i18next.t('dialog.thankYou', { appName: getName() })
-            });
-            // dispatch(showNotification({
-            //     titleArguments: { appName: getName() },
-            //     titleKey: 'dialog.thankYou'
-            // }));
+            dispatch(showNotification({
+                titleArguments: { appName: getName() },
+                titleKey: 'dialog.thankYou'
+            }));
         }
 
         // if Welcome page is enabled redirect to welcome page after 3 sec, if

@@ -73,7 +73,7 @@ function AudioSettingsPopup({
                     setAudioOutputDevice = { setAudioOutputDevice } /> }
                 isOpen = { isOpen }
                 onClose = { onClose }
-                position = { popupPlacement }>
+                placement = { popupPlacement }>
                 {children}
             </InlineDialog>
         </div>
@@ -90,7 +90,7 @@ function mapStateToProps(state) {
     const { clientWidth } = state['features/base/responsive-ui'];
 
     return {
-        popupPlacement: clientWidth <= SMALL_MOBILE_WIDTH ? 'auto' : 'top left',
+        popupPlacement: clientWidth <= SMALL_MOBILE_WIDTH ? 'auto' : 'top-start',
         currentMicDeviceId: getCurrentMicDeviceId(state),
         currentOutputDeviceId: getCurrentOutputDeviceId(state),
         isOpen: getAudioSettingsVisibility(state),

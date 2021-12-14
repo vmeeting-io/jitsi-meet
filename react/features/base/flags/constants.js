@@ -155,6 +155,12 @@ export const PIP_ENABLED = 'pip.enabled';
 export const RAISE_HAND_ENABLED = 'raise-hand.enabled';
 
 /**
+ * Flag indicating if the reactions feature should be enabled.
+ * Default: enabled (true).
+ */
+export const REACTIONS_ENABLED = 'reactions.enabled';
+
+/**
  * Flag indicating if recording should be enabled.
  * Default: auto-detected.
  */

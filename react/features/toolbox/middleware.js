@@ -9,6 +9,7 @@ import {
     SET_FULL_SCREEN
 } from './actionTypes';
 
+
 declare var APP: Object;
 
 /**
@@ -19,6 +20,7 @@ declare var APP: Object;
  * @returns {Function}
  */
 MiddlewareRegistry.register(store => next => action => {
+
     switch (action.type) {
     case CLEAR_TOOLBOX_TIMEOUT: {
         const { timer } = store.getState()['features/toolbox'];

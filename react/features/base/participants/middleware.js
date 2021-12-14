@@ -1,8 +1,16 @@
 // @flow
 
+import { omit } from 'lodash';
+import { batch } from 'react-redux';
+
 import UIEvents from '../../../../service/UI/UIEvents';
+import { approveParticipant } from '../../av-moderation/actions';
+import { toggleE2EE } from '../../e2ee/actions';
 import { NOTIFICATION_TIMEOUT, showNotification } from '../../notifications';
+import { isForceMuted, isTodayParticipantBirthday } from '../../participants-pane/functions';
 import { CALLING, INVITED } from '../../presence-status';
+import { RAISE_HAND_SOUND_ID } from '../../reactions/constants';
+import { isRecording } from '../../recording';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../app';
 import {
     CONFERENCE_JOINED,
@@ -10,17 +18,21 @@ import {
     forEachConference,
     getCurrentConference
 } from '../conference';
+import { getDisableRemoveRaisedHandOnFocus } from '../config/functions.any';
 import {
     JitsiConferenceEvents,
     JitsiRecordingConstants
 } from '../lib-jitsi-meet';
+import { MEDIA_TYPE } from '../media';
 import { MiddlewareRegistry, StateListenerRegistry } from '../redux';
 import { playSound, registerSound, unregisterSound } from '../sounds';
+import { getTrackByJitsiTrack, TRACK_ADDED, TRACK_REMOVED, TRACK_UPDATED } from '../tracks';
 
 import {
     DOMINANT_SPEAKER_CHANGED,
     GRANT_MODERATOR,
     KICK_PARTICIPANT,
+    LOCAL_PARTICIPANT_RAISE_HAND,
     DISABLE_CHAT_PARTICIPANT,
     DISABLE_CHAT_FOR_ALL,
     ENABLE_CHAT_PARTICIPANT,
@@ -30,7 +42,8 @@ import {
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED,
-    MUTE_REMOTE_PARTICIPANT_VIDEO
+    RAISE_HAND_UPDATED,
+    PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED
 } from './actionTypes';
 import {
     localParticipantIdChanged,
@@ -39,6 +52,7 @@ import {
     participantLeft,
     participantUpdated,
     pinParticipant,
+    raiseHandUpdateQueue,
     setLoadableAvatarUrl
 } from './actions';
 import {
@@ -51,13 +65,14 @@ import {
     getLocalParticipant,
     getParticipantById,
     getParticipantCount,
-    getParticipantDisplayName
+    getParticipantDisplayName,
+    getRaiseHandsQueue,
+    getRemoteParticipants,
+    isLocalParticipantModerator
 } from './functions';
 import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
-import { isRecording } from '../../recording';
 
 declare var APP: Object;
-declare var interfaceConfig: Object;
 
 /**
  * Middleware that captures CONFERENCE_JOINED and CONFERENCE_LEFT actions and
@@ -89,7 +104,7 @@ MiddlewareRegistry.register(store => next => action => {
             const { id, pinned } = participant;
             const { isHost } = state['features/base/conference'].roomInfo || {};
             const { autoPinEnabled, autoRecord } = state['features/base/config'];
-
+            
             // 내가 방장이면 자동 PIN이 되도록...
             if (isHost && !pinned && autoPinEnabled) {
                 store.dispatch(pinParticipant(id));
@@ -97,12 +112,33 @@ MiddlewareRegistry.register(store => next => action => {
 
             // 내가 방장이면 자동으로 레코딩이 시작되도록...
             const conference = getCurrentConference(state);
+
+            // code portion to show notification about own birthday when joining conference.
+            const bDate = participant.birthDate;
+            if(bDate) {
+                const hasBirthday = isTodayParticipantBirthday(participant);
+                if(hasBirthday && config.enableBirthdayARHat) {
+                    // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
+                    store.dispatch(showNotification({
+                        descriptionArguments: { bParticipant: participant.name},
+                        descriptionKey: 'notify.birthDayAlertMessage',
+                        titleKey: 'notify.birthDayAlert'
+                    },
+                    5000))
+                }
+            }
+
             if (conference && isHost && !isRecording(state) && autoRecord) {
+                recorder_user = state['features/base/jwt'].user;
                 conference.startRecording({
                     mode: JitsiRecordingConstants.mode.FILE,
                     appData: JSON.stringify({
                         'file_recording_metadata': {
-                            'share': true
+                            'share': true,
+                            'recorder_identity': {
+                                'email': recorder_user.email,
+                                'name': recorder_user.name,
+                            }
                         }
                     })
                 });
@@ -111,18 +147,28 @@ MiddlewareRegistry.register(store => next => action => {
         break;
 
     case DOMINANT_SPEAKER_CHANGED: {
-        // Ensure the raised hand state is cleared for the dominant speaker.
+        // Ensure the raised hand state is cleared for the dominant speaker
+        // and only if it was set when this is the local participant
 
         const { conference, id } = action.participant;
-        const participant = getLocalParticipant(store.getState());
+        const state = store.getState();
+        const participant = getLocalParticipant(state);
+        const isLocal = participant && participant.id === id;
 
-        participant
-            && store.dispatch(participantUpdated({
+        if (isLocal && participant.raisedHand === undefined) {
+            // if local was undefined, let's leave it like that
+            // avoids sending unnecessary presence updates
+            break;
+        }
+
+        if (!getDisableRemoveRaisedHandOnFocus(state)) {
+            participant && store.dispatch(participantUpdated({
                 conference,
                 id,
-                local: participant.id === id,
+                local: isLocal,
                 raisedHand: false
             }));
+        }
 
         break;
     }
@@ -157,21 +203,50 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
 
+    case PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED: {
+        const { id, hatOn } = action;
+        const { conference } = store.getState()['features/base/conference'];
+        conference.updateParticipantBirthdayHatFlag(id, hatOn);
+        break;
+    }
+
     case ENABLE_CHAT_FOR_ALL: {
         const { conference } = store.getState()['features/base/conference'];
         conference.enableChatForAll();
         break;
     }
 
-    case MUTE_REMOTE_PARTICIPANT: {
-        const { conference } = store.getState()['features/base/conference'];
-        conference.muteParticipant(action.id, action.mute);
+    case LOCAL_PARTICIPANT_RAISE_HAND: {
+        const { enabled } = action;
+        const localId = getLocalParticipant(store.getState())?.id;
+
+        store.dispatch(raiseHandUpdateQueue({
+            id: localId,
+            raisedHand: enabled
+        }));
+
+        store.dispatch(participantUpdated({
+            // XXX Only the local participant is allowed to update without
+            // stating the JitsiConference instance (i.e. participant property
+            // `conference` for a remote participant) because the local
+            // participant is uniquely identified by the very fact that there is
+            // only one local participant.
+
+            id: localId,
+            local: true,
+            raisedHand: enabled
+        }));
+
+        if (typeof APP !== 'undefined') {
+            APP.API.notifyRaiseHandUpdated(localId, enabled);
+        }
+
         break;
     }
 
-    case MUTE_REMOTE_PARTICIPANT_VIDEO: {
+    case MUTE_REMOTE_PARTICIPANT: {
         const { conference } = store.getState()['features/base/conference'];
-        conference.muteParticipantVideo(action.id, action.mute);
+        conference.muteParticipant(action.id, action.mediaType);
         break;
     }
 
@@ -184,20 +259,62 @@ MiddlewareRegistry.register(store => next => action => {
                 APP.UI.emitEvent(UIEvents.NICKNAME_CHANGED, action.name);
             }
         }
+        const result = next(action);
+        return result;
+    }
+
+    case RAISE_HAND_UPDATED: {
+        const { participant } = action;
+        const queue = getRaiseHandsQueue(store.getState());
+
+        if (participant.raisedHand) {
+            queue.push(participant.id);
+            action.queue = queue;
+        } else {
+            const filteredQueue = queue.filter(id => id !== participant.id);
+
+            action.queue = filteredQueue;
+        }
         break;
     }
 
     case PARTICIPANT_JOINED: {
+        const participant = action.participant;
+        const bDate = participant.birthDate;
+
+        if(bDate) {
+            const hasBirthday = isTodayParticipantBirthday(participant);
+            if(hasBirthday && config.enableBirthdayARHat) {
+                // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
+                store.dispatch(showNotification({
+                    descriptionArguments: { bParticipant: participant.name},
+                    descriptionKey: 'notify.birthDayAlertMessage',
+                    titleKey: 'notify.birthDayAlert'
+                },
+                5000))
+            }
+        }
+
         _maybePlaySounds(store, action);
-        return _participantJoinedOrUpdated(store, next, action);
+        const result = _participantJoinedOrUpdated(store, next, action);
+        return result;
     }
 
-    case PARTICIPANT_LEFT:
+    case PARTICIPANT_LEFT: {
         _maybePlaySounds(store, action);
-        break;
+        const result = next(action);
+        return result;
+    }
 
-    case PARTICIPANT_UPDATED:
-        return _participantJoinedOrUpdated(store, next, action);
+    case PARTICIPANT_UPDATED: {
+        const result = _participantJoinedOrUpdated(store, next, action);
+        return result;
+    }
+
+    case TRACK_ADDED:
+    case TRACK_REMOVED:
+    case TRACK_UPDATED:
+        return _trackUpdated(store, next, action);
     }
 
     return next(action);
@@ -212,11 +329,12 @@ MiddlewareRegistry.register(store => next => action => {
 StateListenerRegistry.register(
     /* selector */ state => getCurrentConference(state),
     /* listener */ (conference, { dispatch, getState }) => {
-        for (const p of getState()['features/base/participants']) {
-            !p.local
-                && (!conference || p.conference !== conference)
-                && dispatch(participantLeft(p.id, p.conference));
-        }
+        batch(() => {
+            for (const [ id, p ] of getRemoteParticipants(getState())) {
+                (!conference || p.conference !== conference)
+                    && dispatch(participantLeft(id, p.conference, p.isReplaced));
+            }
+        });
     });
 
 /**
@@ -261,44 +379,53 @@ StateListenerRegistry.register(
     state => state['features/base/conference'].conference,
     (conference, store) => {
         if (conference) {
+            const propertyHandlers = {
+                'e2ee.enabled': (participant, value) => _e2eeUpdated(store, conference, participant.getId(), value),
+                'features_e2ee': (participant, value) =>
+                    store.dispatch(participantUpdated({
+                        conference,
+                        id: participant.getId(),
+                        e2eeSupported: value
+                    })),
+                'features_jigasi': (participant, value) =>
+                    store.dispatch(participantUpdated({
+                        conference,
+                        id: participant.getId(),
+                        isJigasi: value
+                    })),
+                'features_screen-sharing': (participant, value) => // eslint-disable-line no-unused-vars
+                    store.dispatch(participantUpdated({
+                        conference,
+                        id: participant.getId(),
+                        features: { 'screen-sharing': true }
+                    })),
+                'raisedHand': (participant, value) => _raiseHandUpdated(store, conference, participant.getId(), value),
+                'remoteControlSessionStatus': (participant, value) =>
+                    store.dispatch(participantUpdated({
+                        conference,
+                        id: participant.getId(),
+                        remoteControlSessionStatus: value
+                    }))
+            };
+
+            // update properties for the participants that are already in the conference
+            conference.getParticipants().forEach(participant => {
+                Object.keys(propertyHandlers).forEach(propertyName => {
+                    const value = participant.getProperty(propertyName);
+
+                    if (value !== undefined) {
+                        propertyHandlers[propertyName](participant, value);
+                    }
+                });
+            });
+
             // We joined a conference
             conference.on(
                 JitsiConferenceEvents.PARTICIPANT_PROPERTY_CHANGED,
                 (participant, propertyName, oldValue, newValue) => {
-                    switch (propertyName) {
-                    case 'e2eeEnabled':
-                        _e2eeUpdated(store, conference, participant.getId(), newValue);
-                        break;
-                    case 'features_e2ee':
-                        store.dispatch(participantUpdated({
-                            conference,
-                            id: participant.getId(),
-                            e2eeSupported: newValue
-                        }));
-                        break;
-                    case 'features_jigasi':
-                        store.dispatch(participantUpdated({
-                            conference,
-                            id: participant.getId(),
-                            isJigasi: newValue
-                        }));
-                        break;
-                    case 'features_screen-sharing':
-                        store.dispatch(participantUpdated({
-                            conference,
-                            id: participant.getId(),
-                            features: { 'screen-sharing': true }
-                        }));
-                        break;
-                    case 'raisedHand': {
-                        _raiseHandUpdated(store, conference, participant.getId(), newValue);
-                        break;
+                    if (propertyHandlers.hasOwnProperty(propertyName)) {
+                        propertyHandlers[propertyName](participant, newValue);
                     }
-                    default:
-
-                        // Ignore for now.
-                    }
-
                 });
         } else {
             const localParticipantId = getLocalParticipant(store.getState).id;
@@ -316,11 +443,13 @@ StateListenerRegistry.register(
  * @param {Function} dispatch - The Redux dispatch function.
  * @param {Object} conference - The conference for which we got an update.
  * @param {string} participantId - The ID of the participant from which we got an update.
- * @param {boolean} newValue - The new value of the E2EE enabled     status.
+ * @param {boolean} newValue - The new value of the E2EE enabled status.
  * @returns {void}
  */
 function _e2eeUpdated({ dispatch }, conference, participantId, newValue) {
     const e2eeEnabled = newValue === 'true';
+
+    dispatch(toggleE2EE(e2eeEnabled));
 
     dispatch(participantUpdated({
         conference,
@@ -347,10 +476,10 @@ function _localParticipantJoined({ getState, dispatch }, next, action) {
     const settings = getState()['features/base/settings'];
 
     dispatch(localParticipantJoined({
-        avatarID: settings.avatarID,
         avatarURL: settings.avatarURL,
         email: settings.email,
-        name: settings.displayName
+        name: settings.displayName,
+        birthDate: settings.birthDate // added birthDate field to local participant retrieved from settings
     }));
 
     return result;
@@ -387,23 +516,28 @@ function _localParticipantLeft({ dispatch }, next, action) {
 function _maybePlaySounds({ getState, dispatch }, action) {
     const state = getState();
     const { startAudioMuted } = state['features/base/config'];
+    const { soundsParticipantJoined: joinSound, soundsParticipantLeft: leftSound } = state['features/base/settings'];
 
     // We're not playing sounds for local participant
     // nor when the user is joining past the "startAudioMuted" limit.
     // The intention there was to not play user joined notification in big
     // conferences where 100th person is joining.
     if (!action.participant.local
-            && !interfaceConfig.DISABLE_JOIN_LEAVE_NOTIFICATION_SOUND
             && (!startAudioMuted
                 || getParticipantCount(state) < startAudioMuted)) {
+        const { isReplacing, isReplaced } = action.participant;
+
         if (action.type === PARTICIPANT_JOINED) {
+            if (!joinSound) {
+                return;
+            }
             const { presence } = action.participant;
 
             // The sounds for the poltergeist are handled by features/invite.
-            if (presence !== INVITED && presence !== CALLING) {
+            if (presence !== INVITED && presence !== CALLING && !isReplacing) {
                 dispatch(playSound(PARTICIPANT_JOINED_SOUND_ID));
             }
-        } else if (action.type === PARTICIPANT_LEFT) {
+        } else if (action.type === PARTICIPANT_LEFT && !isReplaced && leftSound) {
             dispatch(playSound(PARTICIPANT_LEFT_SOUND_ID));
         }
     }
@@ -424,29 +558,21 @@ function _maybePlaySounds({ getState, dispatch }, action) {
  * @private
  * @returns {Object} The value returned by {@code next(action)}.
  */
-function _participantJoinedOrUpdated({ dispatch, getState }, next, action) {
-    const { participant: { avatarURL, e2eeEnabled, email, id, local, name, raisedHand } } = action;
+function _participantJoinedOrUpdated(store, next, action) {
+    const { dispatch, getState } = store;
+    const { participant: { avatarURL, email, id, local, name, raisedHand } } = action;
 
     // Send an external update of the local participant's raised hand state
     // if a new raised hand state is defined in the action.
     if (typeof raisedHand !== 'undefined') {
+
         if (local) {
             const { conference } = getState()['features/base/conference'];
 
-            conference
-                && conference.setLocalParticipantProperty(
-                    'raisedHand',
-                    raisedHand);
-        }
-    }
-
-    // Send an external update of the local participant's E2EE enabled state
-    // if a new state is defined in the action.
-    if (typeof e2eeEnabled !== 'undefined') {
-        if (local) {
-            const { conference } = getState()['features/base/conference'];
-
-            conference && conference.setLocalParticipantProperty('e2eeEnabled', e2eeEnabled);
+            // Send raisedHand signalling only if there is a change
+            if (conference && raisedHand !== getLocalParticipant(getState()).raisedHand) {
+                conference.setLocalParticipantProperty('raisedHand', raisedHand);
+            }
         }
     }
 
@@ -454,16 +580,20 @@ function _participantJoinedOrUpdated({ dispatch, getState }, next, action) {
     // to the new avatar and emit out change events if necessary.
     const result = next(action);
 
-    const { disableThirdPartyRequests } = getState()['features/base/config'];
+    // Only run this if the config is populated, otherwise we preload external resources
+    // even if disableThirdPartyRequests is set to true in config
+    if (Object.keys(getState()['features/base/config']).length) {
+        const { disableThirdPartyRequests } = getState()['features/base/config'];
 
-    if (!disableThirdPartyRequests && (avatarURL || email || id || name)) {
-        const participantId = !id && local ? getLocalParticipant(getState()).id : id;
-        const updatedParticipant = getParticipantById(getState(), participantId);
+        if (!disableThirdPartyRequests && (avatarURL || email || id || name)) {
+            const participantId = !id && local ? getLocalParticipant(getState()).id : id;
+            const updatedParticipant = getParticipantById(getState(), participantId);
 
-        getFirstLoadableAvatarUrl(updatedParticipant)
-            .then(url => {
-                dispatch(setLoadableAvatarUrl(participantId, url));
-            });
+            getFirstLoadableAvatarUrl(updatedParticipant, store)
+                .then(url => {
+                    dispatch(setLoadableAvatarUrl(participantId, url));
+                });
+        }
     }
 
     // Notify external listeners of potential avatarURL changes.
@@ -488,6 +618,7 @@ function _participantJoinedOrUpdated({ dispatch, getState }, next, action) {
  */
 function _raiseHandUpdated({ dispatch, getState }, conference, participantId, newValue) {
     const raisedHand = newValue === 'true';
+    const state = getState();
 
     dispatch(participantUpdated({
         conference,
@@ -495,13 +626,38 @@ function _raiseHandUpdated({ dispatch, getState }, conference, participantId, ne
         raisedHand
     }));
 
+    dispatch(raiseHandUpdateQueue({
+        id: participantId,
+        raisedHand
+    }));
+
+    if (typeof APP !== 'undefined') {
+        APP.API.notifyRaiseHandUpdated(participantId, raisedHand);
+    }
+
+    const isModerator = isLocalParticipantModerator(state);
+    const participant = getParticipantById(state, participantId);
+    let shouldDisplayAllowAction = false;
+
+    if (isModerator) {
+        shouldDisplayAllowAction = isForceMuted(participant, MEDIA_TYPE.AUDIO, state)
+            || isForceMuted(participant, MEDIA_TYPE.VIDEO, state);
+    }
+
+    const action = shouldDisplayAllowAction ? {
+        customActionNameKey: 'notify.allowAction',
+        customActionHandler: () => dispatch(approveParticipant(participantId))
+    } : {};
+
     if (raisedHand) {
         dispatch(showNotification({
-            titleArguments: {
-                name: getParticipantDisplayName(getState, participantId)
-            },
-            titleKey: 'notify.raisedHand'
-        }, NOTIFICATION_TIMEOUT));
+            titleKey: 'notify.somebody',
+            title: getParticipantDisplayName(state, participantId),
+            descriptionKey: 'notify.raisedHand',
+            raiseHandNotification: true,
+            ...action
+        }, NOTIFICATION_TIMEOUT * (shouldDisplayAllowAction ? 2 : 1)));
+        dispatch(playSound(RAISE_HAND_SOUND_ID));
     }
 }
 
@@ -528,4 +684,31 @@ function _registerSounds({ dispatch }) {
 function _unregisterSounds({ dispatch }) {
     dispatch(unregisterSound(PARTICIPANT_JOINED_SOUND_ID));
     dispatch(unregisterSound(PARTICIPANT_LEFT_SOUND_ID));
+}
+
+function _trackUpdated({ dispatch, getState }, next, action) {
+    const result = next(action);
+
+    const state = getState();
+    const { jitsiTrack } = action.track;
+    const participantId = jitsiTrack.getParticipantId();
+
+    switch (action.type) {
+    case TRACK_REMOVED: {
+        const participant = getParticipantById(state, participantId);
+        dispatch(participantUpdated(omit(participant, jitsiTrack.type)));
+        break;
+    }
+    case TRACK_ADDED:
+    case TRACK_UPDATED: {
+        const track = getTrackByJitsiTrack(state['features/base/tracks'], jitsiTrack);
+        dispatch(participantUpdated({
+            id: participantId,
+            [jitsiTrack.type]: track,
+        }));
+        break;
+    }
+    }
+
+    return result;
 }

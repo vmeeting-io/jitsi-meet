@@ -146,7 +146,7 @@ function _navigate({ getState }) {
     const state = getState();
     const { app } = state['features/base/app'];
 
-    _getRouteToRender(state).then(route => app._navigate(route));
+    _getRouteToRender(state).then(route => app?._navigate(route));
 }
 
 /**

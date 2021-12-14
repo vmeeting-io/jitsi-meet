@@ -1,17 +1,20 @@
 // @flow
 import _ from 'lodash';
 
+import { PREJOIN_INITIALIZED } from '../../prejoin/actionTypes';
 import { APP_WILL_MOUNT } from '../app';
 import { setAudioOnly } from '../audio-only';
 import { SET_LOCATION_URL } from '../connection/actionTypes'; // minimize imports to avoid circular imports
-import { SET_JWT } from '../jwt/actionTypes';
+import { getJwtName } from '../jwt/functions';
 import { getLocalParticipant, participantUpdated } from '../participants';
 import { MiddlewareRegistry } from '../redux';
 import { parseURLParams } from '../util';
 import { updateSettings } from './actions';
 
 import { SETTINGS_UPDATED } from './actionTypes';
+import { updateSettings } from './actions';
 import { handleCallIntegrationChange, handleCrashReportingChange } from './functions';
+
 
 /**
  * The middleware of the feature base/settings. Distributes changes to the state
@@ -28,6 +31,10 @@ MiddlewareRegistry.register(store => next => action => {
     case APP_WILL_MOUNT:
         _initializeCallIntegration(store);
         break;
+    case PREJOIN_INITIALIZED: {
+        _maybeUpdateDisplayName(store);
+        break;
+    }
     case SETTINGS_UPDATED:
         _maybeHandleCallIntegrationChange(action);
         _maybeSetAudioOnly(store, action);
@@ -122,6 +129,28 @@ function _maybeSetAudioOnly(
 }
 
 /**
+ * Updates the display name to the one in JWT if there is one.
+ *
+ * @param {Store} store - The redux store.
+ * @private
+ * @returns {void}
+ */
+function _maybeUpdateDisplayName({ dispatch, getState }) {
+    const state = getState();
+    const hasJwt = Boolean(state['features/base/jwt'].jwt);
+
+    if (hasJwt) {
+        const displayName = getJwtName(state);
+
+        if (displayName) {
+            dispatch(updateSettings({
+                displayName
+            }));
+        }
+    }
+}
+
+/**
  * Updates the local participant according to settings changes.
  *
  * @param {Store} store - The redux store.
@@ -167,10 +196,18 @@ function _updateLocalParticipantFromUrl({ dispatch, getState }) {
     const localParticipant = getLocalParticipant(getState());
 
     if (localParticipant) {
+        const displayName = _.escape(urlDisplayName);
+        const email = _.escape(urlEmail);
+
         dispatch(participantUpdated({
             ...localParticipant,
-            email: _.escape(urlEmail),
-            name: _.escape(urlDisplayName)
+            email,
+            name: displayName
+        }));
+
+        dispatch(updateSettings({
+            displayName,
+            email
         }));
     }
 }

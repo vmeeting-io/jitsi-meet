@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 
 import { translate } from '../../base/i18n';
+import { Icon, IconAdd } from '../../base/icons';
 import { Tooltip } from '../../base/tooltip';
 
 /**
@@ -44,6 +45,7 @@ class JoinButton extends Component<Props> {
 
         // Bind event handler so it is only bound once for every instance.
         this._onClick = this._onClick.bind(this);
+        this._onKeyPress = this._onKeyPress.bind(this);
     }
 
     /**
@@ -59,8 +61,12 @@ class JoinButton extends Component<Props> {
                 content = { t('calendarSync.joinTooltip') }>
                 <div
                     className = 'button join-button'
-                    onClick = { this._onClick }>
-                    { t('calendarSync.join') }
+                    onClick = { this._onClick }
+                    onKeyPress = { this._onKeyPress }
+                    role = 'button'>
+                    <Icon
+                        size = '14'
+                        src = { IconAdd } />
                 </div>
             </Tooltip>
         );
@@ -77,6 +83,22 @@ class JoinButton extends Component<Props> {
      */
     _onClick(event) {
         this.props.onPress(event, this.props.url);
+    }
+
+    _onKeyPress: (Object) => void;
+
+    /**
+     * KeyPress handler for accessibility.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onKeyPress(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            this._onClick();
+        }
     }
 }
 

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 
+import { isIosMobileBrowser } from '../../../../base/environment/utils';
 import { translate } from '../../../../base/i18n';
 import { connect } from '../../../../base/redux';
 import {
@@ -14,7 +15,7 @@ import {
     IconYahoo
 } from '../../../../base/icons';
 import { Tooltip } from '../../../../base/tooltip';
-import { copyText, openURLInBrowser } from '../../../../base/util';
+import { copyText } from '../../../../base/util';
 import { NOTIFICATION_TIMEOUT, showNotification } from '../../../../notifications';
 
 type Props = {
@@ -30,6 +31,11 @@ type Props = {
     inviteText: string,
 
     /**
+     * The encoded no new-lines iOS invitation text to be sent on default mail.
+     */
+    inviteTextiOS: string,
+
+    /**
      * Invoked to obtain translated strings.
      */
     t: Function,
@@ -40,10 +46,13 @@ type Props = {
  *
  * @returns {React$Element<any>}
  */
-function InviteByEmailSection({ dispatch, inviteSubject, inviteText, t }: Props) {
+function InviteByEmailSection({ inviteSubject, inviteText, inviteTextiOS, t }: Props) {
     const [ isActive, setIsActive ] = useState(false);
     const encodedInviteSubject = encodeURIComponent(inviteSubject);
     const encodedInviteText = encodeURIComponent(inviteText);
+    const encodedInviteTextiOS = encodeURIComponent(inviteTextiOS);
+
+    const encodedDefaultEmailText = isIosMobileBrowser() ? encodedInviteTextiOS : encodedInviteText;
 
     /**
      * Copies the conference invitation to the clipboard.
@@ -59,15 +68,17 @@ function InviteByEmailSection({ dispatch, inviteSubject, inviteText, t }: Props)
     }
 
     /**
-     * Opens an email provider containing the conference invite.
+     * Copies the conference invitation to the clipboard.
      *
-     * @param {string} url - The url to be opened.
-     * @returns {Function}
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
      */
-    function _onSelectProvider(url) {
-        return function() {
-            openURLInBrowser(url, true);
-        };
+    function _onCopyTextKeyPress(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            copyText(inviteText);
+        }
     }
 
     /**
@@ -77,6 +88,20 @@ function InviteByEmailSection({ dispatch, inviteSubject, inviteText, t }: Props)
      */
     function _onToggleActiveState() {
         setIsActive(!isActive);
+    }
+
+    /**
+     * Toggles the email invite drawer.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    function _onToggleActiveStateKeyPress(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            setIsActive(!isActive);
+        }
     }
 
     /**
@@ -90,7 +115,7 @@ function InviteByEmailSection({ dispatch, inviteSubject, inviteText, t }: Props)
             {
                 icon: IconEmail,
                 tooltipKey: 'addPeople.defaultEmail',
-                url: `mailto:?subject=${encodedInviteSubject}&body=${encodedInviteText}`
+                url: `mailto:?subject=${encodedInviteSubject}&body=${encodedDefaultEmailText}`
             },
             {
                 icon: IconGoogle,
@@ -118,10 +143,14 @@ function InviteByEmailSection({ dispatch, inviteSubject, inviteText, t }: Props)
                             content = { t(tooltipKey) }
                             key = { idx }
                             position = 'top'>
-                            <div
-                                onClick = { _onSelectProvider(url) }>
+                            <a
+                                aria-label = { t(tooltipKey) }
+                                className = 'provider-icon'
+                                href = { url }
+                                rel = 'noopener noreferrer'
+                                target = '_blank'>
                                 <Icon src = { icon } />
-                            </div>
+                            </a>
                         </Tooltip>
                     ))
                 }
@@ -134,8 +163,13 @@ function InviteByEmailSection({ dispatch, inviteSubject, inviteText, t }: Props)
         <>
             <div>
                 <div
+                    aria-expanded = { isActive }
+                    aria-label = { t('addPeople.shareInvite') }
                     className = { `invite-more-dialog email-container${isActive ? ' active' : ''}` }
-                    onClick = { _onToggleActiveState }>
+                    onClick = { _onToggleActiveState }
+                    onKeyPress = { _onToggleActiveStateKeyPress }
+                    role = 'button'
+                    tabIndex = { 0 }>
                     <span>{t('addPeople.shareInvite')}</span>
                     <Icon src = { IconArrowDownSmall } />
                 </div>
@@ -144,8 +178,12 @@ function InviteByEmailSection({ dispatch, inviteSubject, inviteText, t }: Props)
                         content = { t('addPeople.copyInvite') }
                         position = 'top'>
                         <div
+                            aria-label = { t('addPeople.copyInvite') }
                             className = 'copy-invite-icon'
-                            onClick = { _onCopyText }>
+                            onClick = { _onCopyText }
+                            onKeyPress = { _onCopyTextKeyPress }
+                            role = 'button'
+                            tabIndex = { 0 }>
                             <Icon src = { IconCopy } />
                         </div>
                     </Tooltip>

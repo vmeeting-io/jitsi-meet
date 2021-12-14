@@ -1,8 +1,27 @@
 /**
- * The type of the action which signals the E2EE key has changed.
+ * The type of the action which signals that E2EE needs to be enabled / disabled.
  *
  * {
- *     type: SET_E2EE_KEY
+ *     type: TOGGLE_E2EE
  * }
  */
-export const SET_E2EE_KEY = 'SET_E2EE_KEY';
+export const TOGGLE_E2EE = 'TOGGLE_E2EE';
+
+/**
+ * The type of the action which signals to set new value whether everyone has E2EE enabled.
+ *
+ * {
+ *     type: SET_EVERYONE_ENABLED_E2EE,
+ *     everyoneEnabledE2EE: boolean
+ * }
+ */
+export const SET_EVERYONE_ENABLED_E2EE = 'SET_EVERYONE_ENABLED_E2EE';
+
+/**
+ * The type of the action which signals to set new value whether everyone supports E2EE.
+ *
+ * {
+ *     type: SET_EVERYONE_SUPPORT_E2EE
+ * }
+ */
+export const SET_EVERYONE_SUPPORT_E2EE = 'SET_EVERYONE_SUPPORT_E2EE';

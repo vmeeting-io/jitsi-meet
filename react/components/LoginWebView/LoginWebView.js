@@ -1,6 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable react/prop-types */
 /* eslint-disable react/jsx-no-bind */
+import { StyleSheet, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import DeviceInfo from 'react-native-device-info';
 import { WebView } from 'react-native-webview';
@@ -28,17 +29,26 @@ const LoginWebView = ({ onReceiveToken }) => {
         .catch(err => console.log(err));
     });
 
+    const style = {
+        ...StyleSheet.absoluteFillObject,
+        width: '100%',
+        flex: 0,
+        height: '100%',
+    };
+
     return (
-        <WebView
-            onMessage = { onMessage }
-            source = {{
-                uri: loginURL,
-                origin: loginURL
-            }}
-            startInLoadingState = { true }
-            style = {{ width: '100%' }}
-            useWebView = { userAgent && userAgent.match(/iP(ad|hone|od)/i) }
-            userAgent = { userAgent } />
+        <View
+            style = { style }>
+            <WebView
+                onMessage = { onMessage }
+                source = {{
+                    uri: loginURL,
+                    origin: loginURL
+                }}
+                startInLoadingState = { true }
+                useWebView = { userAgent && userAgent.match(/iP(ad|hone|od)/i) }
+                userAgent = { userAgent } />
+        </View>
     );
 };
 

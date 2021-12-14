@@ -63,7 +63,7 @@ function VideoSettingsPopup({
                     videoDeviceIds = { videoDeviceIds } /> }
                 isOpen = { isOpen }
                 onClose = { onClose }
-                position = { popupPlacement }>
+                placement = { popupPlacement }>
                 { children }
             </InlineDialog>
         </div>
@@ -83,7 +83,7 @@ function mapStateToProps(state) {
     return {
         currentCameraDeviceId: getCurrentCameraDeviceId(state),
         isOpen: getVideoSettingsVisibility(state),
-        popupPlacement: clientWidth <= SMALL_MOBILE_WIDTH ? 'auto' : 'top left',
+        popupPlacement: clientWidth <= SMALL_MOBILE_WIDTH ? 'auto' : 'top-start',
         videoDeviceIds: getVideoDeviceIds(state)
     };
 }

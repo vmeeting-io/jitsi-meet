@@ -15,8 +15,6 @@ import axios from 'axios';
 
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
-import s from './RecentList.module.scss';
-
 /**
  * The type of the React {@code Component} props of {@link RecentList}
  */
@@ -81,7 +79,7 @@ class RecentList extends AbstractRecentList<Props, State> {
         const AUTH_API_BASE = process.env.VMEETING_API_BASE;
         const apiBaseUrl = `${baseURL.origin}${AUTH_API_BASE}`;
         
-        try{
+        try {
             axios.post(`${apiBaseUrl}/conferences/delete-conference-by-name`, {
                 name: title,
                 mail_owner: email
@@ -94,8 +92,7 @@ class RecentList extends AbstractRecentList<Props, State> {
                 this._openDeleteFailModal();
                 this.setState({setting: false});
             });
-        }
-        catch(err){    
+        } catch(err) {
             console.log(err);
             //Pop-up with Delete Failed Message
             this._openDeleteFailModal();
@@ -121,12 +118,10 @@ class RecentList extends AbstractRecentList<Props, State> {
         this._getRenderListEmptyComponent
             = this._getRenderListEmptyComponent.bind(this);
         this._onPress = this._onPress.bind(this);
-        this._onDeleteFromDB = this._onDeleteFromDB.bind(this);
-        this._onDeleteFromRecent = this._onDeleteFromRecent.bind(this);
-        this._updateList = this._updateList.bind(this);
+        this._onItemDelete = this._onItemDelete.bind(this);
     }
 
-    _onDeleteFromDB: Object => void;
+    _onItemDelete: Object => void;
 
     /**
      * Deletes a recent entry.
@@ -134,31 +129,8 @@ class RecentList extends AbstractRecentList<Props, State> {
      * @param {Object} entry - The entry to be deleted.
      * @inheritdoc
      */
-    _onDeleteFromDB(entry) {
-        this.setState({ targetEntry: entry });
-        this._openModal();
-    }
-
-    _onDeleteFromRecent: Object => void;
-
-    /**
-     * Deletes a recent entry.
-     *
-     * @param {Object} entry - The entry to be deleted.
-     * @inheritdoc
-     */
-    _onDeleteFromRecent(entry) {
+    _onItemDelete(entry) {
         this.props.dispatch(deleteRecentListEntry(entry));
-        this.setState({ setting: false });
-    }
-
-    componentDidMount(){
-        this.state.setting = false;
-        this._updateInterval = setInterval(this._updateList, 1000);
-    }
-
-    componentWillUnmount() {
-        clearInterval(this._updateInterval);
     }
 
     /**
@@ -183,42 +155,39 @@ class RecentList extends AbstractRecentList<Props, State> {
 
         return set? (
             <>
-            <MeetingsList
-                disabled = { disabled }
-                hideURL = { true }
-                listEmptyComponent = { this._getRenderListEmptyComponent() }
-                meetings = { recentList }
-                t = { t }
-                onDeleteFromDB = { this._onDeleteFromDB }
-                // onDeleteFromRecent = { this._onDeleteFromRecent }
-                onPress = { this._onPress } />
-            <ModalTransition>
-                {modalOpen && (
-            <Modal
-                    actions={[{ text: t('welcomepage.deleteElement'), onClick: this._proceedDelete }, { text: t('welcomepage.cancelDelete'), onClick: this._closeModal }]}
-                    onClose={ this._closeModal }
-                    heading={t('welcomepage.deleteModalHeading')}
-                    appearance="warning"
-                    width="small"
-                    >
-                    {t('welcomepage.deleteRecentListElementMessage')}
-                </Modal>)}
-            </ModalTransition>
-            <ModalTransition>
-                {failedModalOpen && (
-                <Modal
-                    className={s.lightModal}
-                    actions={[{ text: t('welcomepage.cancelDelete'), onClick: this._closeDeleteFailModal }]}
-                    onClose={ this._closeDeleteFailModal }
-                    heading={t('welcomepage.deleteFailHeading')}
-                    appearance="danger"
-                    width="small" >
-                    {t('welcomepage.deleteFailMessage')}
-                </Modal>)}
-            </ModalTransition>    
+                <MeetingsList
+                    disabled = { disabled }
+                    hideURL = { true }
+                    listEmptyComponent = { this._getRenderListEmptyComponent() }
+                    meetings = { recentList }
+                    onItemDelete = { this._onItemDelete }
+                    onPress = { this._onPress } />
+                <ModalTransition>
+                    {modalOpen && (
+                        <Modal
+                            actions={[{ text: t('welcomepage.deleteElement'), onClick: this._proceedDelete }, { text: t('welcomepage.cancelDelete'), onClick: this._closeModal }]}
+                            onClose={ this._closeModal }
+                            heading={t('welcomepage.deleteModalHeading')}
+                            appearance="warning"
+                            width="small">
+                            {t('welcomepage.deleteRecentListElementMessage')}
+                        </Modal>)}
+                </ModalTransition>
+                <ModalTransition>
+                    {failedModalOpen && (
+                        <Modal
+                            className='light-modal'
+                            actions={[{ text: t('welcomepage.cancelDelete'), onClick: this._closeDeleteFailModal }]}
+                            onClose={ this._closeDeleteFailModal }
+                            heading={t('welcomepage.deleteFailHeading')}
+                            appearance="danger"
+                            width="small" >
+                            {t('welcomepage.deleteFailMessage')}
+                        </Modal>)}
+                </ModalTransition>    
             </>
-        ):
-        <MeetingsList
+        ) : (
+            <MeetingsList
                 disabled = { disabled }
                 hideURL = { true }
                 listEmptyComponent = { this._getRenderListLoadingComponent() }
@@ -226,75 +195,11 @@ class RecentList extends AbstractRecentList<Props, State> {
                 t = { t }
                 onDeleteFromDB = { this._onDeleteFromDB }
                 // onDeleteFromRecent = { this._onDeleteFromRecent }
-                onPress = { this._onPress } />;
+                onPress = { this._onPress } />
+        );
     }
 
-    _updateList: () => void;
-
-    _updateList() {
-        /*if(!this.state.setting){
-            this._loadFromDB();
-        }
-        else{
-            const loaded = true;
-            this.setState({ setting: loaded });
-        }*/
-        this.setState({ setting: true });
-    }
-
-    async _loadFromDB(){
-        if (!isRecentListEnabled()) {
-            return null;
-        }
-
-        const {
-            email,
-            baseURL,
-            _recentList
-        } = this.props;
-
-        const recentList = toDisplayableList(_recentList);
-
-        const AUTH_API_BASE = process.env.VMEETING_API_BASE;
-        const apiBaseUrl = `${baseURL.origin}${AUTH_API_BASE}`;
-        let tempList = [];
-
-        const asyncList = await recentList.reduce(async (accum, item) => {
-            try{
-                let resp = await axios.get(`${apiBaseUrl}/conferences?name=${item.title}`); 
-                const tempItem = {
-                    date: item.date,
-                    duration: item.duration,
-                    time: item.time,
-                    title: item.title,
-                    url: item.url,
-                    canDelete: email === resp.data.mail_owner
-                };
-                tempList.push(tempItem);
-                return accum;
-            }
-            catch(err){    
-                console.log(err);
-                const tempItem = {
-                    date: item.date,
-                    duration: item.duration,
-                    time: item.time,
-                    title: item.title,
-                    url: item.url,
-                    canDelete: false
-                };
-                tempList.push(tempItem);
-                return accum;
-            }
-        }, []);
-
-        Promise.all(asyncList).then(values => {
-            const dbList = tempList;
-            const nextSetting = true;
-            this.setState({ setting: nextSetting, displayableList: dbList });
-        });
-    }
-}
+};
 
 /**
  * Maps redux state to component props.

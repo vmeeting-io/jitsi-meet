@@ -1,14 +1,21 @@
 // @flow
 
+import DropdownMenu, { DropdownItem, DropdownItemGroup } from '@atlaskit/dropdown-menu';
 import React, { Component } from 'react';
-import Emoji from 'react-emoji-render';
 import TextareaAutosize from 'react-textarea-autosize';
 import type { Dispatch } from 'redux';
 
+import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
-import { getLocalParticipant } from '../../../base/participants';
+import { getLocalParticipant, getParticipants, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
+import { Icon, IconPlane, IconSmile, IconShareDoc } from '../../../base/icons';
 import { connect } from '../../../base/redux';
+import { Tooltip } from '../../../base/tooltip';
+import { areSmileysDisabled } from '../../functions';
 
+import { setPrivateMessageRecipient } from '../../actions';
+
+import FileUploadButton from './FileUploadButton';
 import SmileysPanel from './SmileysPanel';
 
 /**
@@ -35,7 +42,18 @@ type Props = {
     /**
      * Invoked to obtain translated strings.
      */
-    t: Function
+    t: Function,
+
+    /**
+     * Whether chat emoticons are disabled.
+     */
+    _areSmileysDisabled: boolean,
+
+    /**
+     * Whether or not file upload element is visible or not.
+     */
+    _fileUploadExists: Boolean,
+
 };
 
 /**
@@ -51,7 +69,12 @@ type State = {
     /**
      * Whether or not the smiley selector is visible.
      */
-    showSmileysPanel: boolean
+    showSmileysPanel: boolean,
+
+    /**
+     * Whether or not the dropdown showing the list of participants is visible or not
+     */
+    showParticipantsList: Boolean,
 };
 
 /**
@@ -64,7 +87,8 @@ class ChatInput extends Component<Props, State> {
 
     state = {
         message: '',
-        showSmileysPanel: false
+        showSmileysPanel: false,
+        showParticipantsList: false,
     };
 
     /**
@@ -82,8 +106,13 @@ class ChatInput extends Component<Props, State> {
         this._onDetectSubmit = this._onDetectSubmit.bind(this);
         this._onMessageChange = this._onMessageChange.bind(this);
         this._onSmileySelect = this._onSmileySelect.bind(this);
+        this._onSubmitMessage = this._onSubmitMessage.bind(this);
         this._onToggleSmileysPanel = this._onToggleSmileysPanel.bind(this);
+        this._onEscHandler = this._onEscHandler.bind(this);
+        this._onToggleSmileysPanelKeyPress = this._onToggleSmileysPanelKeyPress.bind(this);
+        this._onSubmitMessageKeyPress = this._onSubmitMessageKeyPress.bind(this);
         this._setTextAreaRef = this._setTextAreaRef.bind(this);
+        this._renderChatRoomParticipantsList = this._renderChatRoomParticipantsList.bind(this);
     }
 
     /**
@@ -92,11 +121,10 @@ class ChatInput extends Component<Props, State> {
      * @inheritdoc
      */
     componentDidMount() {
-        /**
-         * HTML Textareas do not support autofocus. Simulate autofocus by
-         * manually focusing.
-         */
-        this._focus();
+        if (isMobileBrowser()) {
+            // Ensure textarea is not focused when opening chat on mobile browser.
+            this._textArea && this._textArea.blur();
+        }
     }
 
     /**
@@ -106,36 +134,80 @@ class ChatInput extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
+        const { t, _areSmileysDisabled, _fileUploadExists } = this.props;
         const smileysPanelClassName = `${this.state.showSmileysPanel
             ? 'show-smileys' : 'hide-smileys'} smileys-panel`;
-        let localParticipant = getLocalParticipant(APP.store.getState());
-        let prole = localParticipant.role;
+        const smileysPanelMarginClassName = `${_fileUploadExists ? 'set-smileys-margin': '' }`;
+        const { _localParticipant } = this.props;
+        // let localParticipant = getLocalParticipant(APP.store.getState());
+        let prole = _localParticipant.role;
         const chatInputStyleName = `${(prole === "visitor") ? 'no-display' : '' } chat-input`;
         return (
-            <div key={prole} className= {chatInputStyleName}>
-                <div className = 'smiley-input'>
-                    <div id = 'smileysarea'>
-                        <div id = 'smileys'>
-                            <Emoji
-                                onClick = { this._onToggleSmileysPanel }
-                                text = ':)' />
+            <div className = { `chat-input-container${this.state.message.trim().length ? ' populated' : ''}` }>
+                <div id = 'chat-input' >
+                    <FileUploadButton t = { t } visible = { true } />
+                    { _areSmileysDisabled ? null : (
+                        <div className = 'smiley-input'>
+                            <div id = 'smileysarea'>
+                                <div id = 'smileys'>
+                                    <Tooltip
+                                        content = { t('chat.smileys') }
+                                        position = 'top'>
+                                        <div
+                                            aria-expanded = { this.state.showSmileysPanel }
+                                            aria-haspopup = 'smileysContainer'
+                                            aria-label = { t('chat.smileysPanel') }
+                                            className = 'smiley-button'
+                                            onClick = { this._onToggleSmileysPanel }
+                                            onKeyDown = { this._onEscHandler }
+                                            onKeyPress = { this._onToggleSmileysPanelKeyPress }
+                                            role = 'button'
+                                            tabIndex = { 0 }>
+                                            <Icon src = { IconSmile } />
+                                        </div>
+                                    </Tooltip>
+                                </div>
+                            </div>
+                            <div
+                                className = { `${smileysPanelClassName} ${smileysPanelMarginClassName}` } >
+                                <SmileysPanel
+                                    onSmileySelect = { this._onSmileySelect } />
+                            </div>
                         </div>
+                    )}
+
+                    {/* this code will render a list containing chatroom participants */}
+                    { this._renderChatRoomParticipantsList() }
+
+                    <div className = 'usrmsg-form'>
+                        <TextareaAutosize
+                            autoComplete = 'off'
+                            autoFocus = { true }
+                            id = 'usermsg'
+                            maxRows = { 5 }
+                            onChange = { this._onMessageChange }
+                            onHeightChange = { this.props.onResize }
+                            onKeyDown = { this._onDetectSubmit }
+                            placeholder = { t('chat.messagebox') }
+                            ref = { this._setTextAreaRef }
+                            tabIndex = { 0 }
+                            value = { this.state.message } />
                     </div>
-                    <div className = { smileysPanelClassName }>
-                        <SmileysPanel
-                            onSmileySelect = { this._onSmileySelect } />
+                    <div className = 'send-button-container'>
+                        <Tooltip
+                            content = { t('chat.send') }
+                            position = 'top'>
+                            <div
+                                aria-label = { t('chat.sendButton') }
+                                className = 'send-button'
+                                onClick = { this._onSubmitMessage }
+                                onKeyPress = { this._onSubmitMessageKeyPress }
+                                role = 'button'
+                                tabIndex = { this.state.message.trim() ? 0 : -1 } >
+                                <Icon src = { IconPlane } />
+                            </div>
+                        </Tooltip>
                     </div>
-                </div>
-                <div className = 'usrmsg-form'>
-                    <TextareaAutosize
-                        id = 'usermsg'
-                        inputRef = { this._setTextAreaRef }
-                        maxRows = { 5 }
-                        onChange = { this._onMessageChange }
-                        onHeightChange = { this.props.onResize }
-                        onKeyDown = { this._onDetectSubmit }
-                        placeholder = { this.props.t('chat.messagebox') }
-                        value = { this.state.message } />
                 </div>
             </div>
         );
@@ -151,6 +223,27 @@ class ChatInput extends Component<Props, State> {
         this._textArea && this._textArea.focus();
     }
 
+
+    _onSubmitMessage: () => void;
+
+    /**
+     * Submits the message to the chat window.
+     *
+     * @returns {void}
+     */
+    _onSubmitMessage() {
+        const trimmed = this.state.message.trim();
+
+        if (trimmed) {
+            this.props.onSend(trimmed);
+
+            this.setState({ message: '' });
+
+            // Keep the textarea in focus when sending messages via submit button.
+            this._focus();
+        }
+
+    }
     _onDetectSubmit: (Object) => void;
 
     /**
@@ -163,16 +256,28 @@ class ChatInput extends Component<Props, State> {
      */
     _onDetectSubmit(event) {
         if (event.keyCode === 13
-            && event.shiftKey === false) {
+            && event.shiftKey === false
+            && event.ctrlKey === false) {
             event.preventDefault();
+            event.stopPropagation();
 
-            const trimmed = this.state.message.trim();
+            this._onSubmitMessage();
+        }
+    }
 
-            if (trimmed) {
-                this.props.onSend(trimmed);
+    _onSubmitMessageKeyPress: (Object) => void;
 
-                this.setState({ message: '' });
-            }
+    /**
+     * KeyPress handler for accessibility.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onSubmitMessageKeyPress(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            this._onSubmitMessage();
         }
     }
 
@@ -186,9 +291,91 @@ class ChatInput extends Component<Props, State> {
      * @returns {void}
      */
     _onMessageChange(event) {
+        // console.error('_onMessageChange:', event.target.value);
+        event.preventDefault();
+        event.persist();
         this.setState({ message: event.target.value });
+        
+        // perform a check to see that input message starts with or contains @, if so display a list containing participants in chatroom
+        // we also check to ensure that there is only one @ character when we want to show the participant list
+        if((event.target.value.includes('@')) && (event.target.value.split('@').length == 2)) {
+            this.setState({ showParticipantsList: true });
+        } else {
+            this.setState({ showParticipantsList: false });
+        }
     }
 
+    // function to render the list of participants in a chatroom in a dropdown menu
+    _renderChatRoomParticipantsList = () => {
+        
+        // from the input message, once @ is encountered, we select all the character after @, and use it to filter the list of participants
+        let filterText = '';
+
+        if(this.state.message.includes('@')) {
+            filterText = this.state.message.split('@')[1];
+        }
+
+        // use last character from message input to ensure private messaging is selected only on pressing space character
+        const lastChar = this.state.message.slice(-1);
+
+        // get participant count, localParticipant and allParticipants from props
+        const { _participantCount, _remoteParticipants } = this.props;
+
+        // filter participants dynamically with typed filter text (input message) from otherParticipants
+        // we use trimEnd here, so that it still shows the list even when pressing space char
+        const filteredParticipants = [..._remoteParticipants.values()].filter(participant => participant.name?.startsWith(filterText.trimEnd()));
+
+        // in case filtered text matches that of a participant's name, it will replace the current message to private message type
+        if(filterText !== '') {                
+            filteredParticipants.forEach((participant) => {
+                // once input text (filterText) matches with name of participant and the space character is pressed, invoke private messaging function
+                if((filterText.trimEnd() === participant.name) && (lastChar === ' ')) {
+                    // send private message to the corresponding participant
+                    this._sendPrivateMessage(participant);
+
+                    // reset message state and hide participant popup list since we defined private message recipient
+                    this.setState({ message : '', showParticipantsList: false });                    
+                }
+            });
+        }
+        
+        // we want to display that list only when there are at least 3 participants
+        if((this.state.showParticipantsList) && (_participantCount >= 2)) { 
+            return(
+                <div className="chat-participant-list">
+                    <DropdownMenu
+                        boundariesElement = 'scrollParent'
+                        defaultOpen >
+                            <DropdownItemGroup>
+                                { filteredParticipants.map((participant) => {
+                                    return (
+                                        <DropdownItem 
+                                            key = { participant.id } 
+                                            className = 'participant-item'
+                                            onClick = { 
+                                                () =>  { 
+                                                    this._sendPrivateMessage(participant);
+                                                    this.setState({ message: '', showParticipantsList: false });
+                                                }
+                                            }>
+                                            { participant.name }
+                                        </DropdownItem>
+                                    )
+                                }) }
+                            </DropdownItemGroup>
+                    </DropdownMenu>
+                </div>
+            );
+        } else {
+            return;
+        }
+    }
+
+    // function to call private messaging function
+    _sendPrivateMessage = (participant) => {
+        this.props.dispatch(setPrivateMessageRecipient(participant));
+    }
+    
     _onSmileySelect: (string) => void;
 
     /**
@@ -200,15 +387,23 @@ class ChatInput extends Component<Props, State> {
      * @returns {void}
      */
     _onSmileySelect(smileyText) {
-        this.setState({
-            message: `${this.state.message} ${smileyText}`,
-            showSmileysPanel: false
-        });
+        if (smileyText) {
+            this.setState({
+                message: `${this.state.message} ${smileyText}`,
+                showSmileysPanel: false
+            });
+        } else {
+            this.setState({
+                showSmileysPanel: false
+            });
+        }
 
         this._focus();
     }
 
     _onToggleSmileysPanel: () => void;
+
+    _renderChatRoomParticipantsList: () => void;
 
     /**
      * Callback invoked to hide or show the smileys selector.
@@ -217,9 +412,44 @@ class ChatInput extends Component<Props, State> {
      * @returns {void}
      */
     _onToggleSmileysPanel() {
+        if (this.state.showSmileysPanel) {
+            this._focus();
+        }
         this.setState({ showSmileysPanel: !this.state.showSmileysPanel });
+    }
 
-        this._focus();
+    _onEscHandler: (Object) => void;
+
+    /**
+     * KeyPress handler for accessibility.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onEscHandler(e) {
+        // Escape handling does not work in onKeyPress
+        if (this.state.showSmileysPanel && e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            this._onToggleSmileysPanel();
+        }
+    }
+
+    _onToggleSmileysPanelKeyPress: (Object) => void;
+
+    /**
+     * KeyPress handler for accessibility.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onToggleSmileysPanelKeyPress(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            this._onToggleSmileysPanel();
+        }
     }
 
     _setTextAreaRef: (?HTMLTextAreaElement) => void;
@@ -236,4 +466,26 @@ class ChatInput extends Component<Props, State> {
     }
 }
 
-export default translate(connect()(ChatInput));
+/**
+ * Maps part of the redux state to the props of this component.
+ *
+ * @param {Object} state - The Redux state.
+ * @returns {Props}
+ */
+export function _mapStateToProps(state) {
+
+    const fileUploadElExists = document.getElementById('fileuploadarea');
+    let fileUploadExists = false;
+    if(fileUploadElExists !== null) {
+        fileUploadExists = true;
+    }
+    return {
+        _areSmileysDisabled: areSmileysDisabled(state),
+        _fileUploadExists: Boolean(fileUploadExists),
+        _participantCount: getParticipantCount(state),
+        _remoteParticipants: getRemoteParticipants(state),
+        _localParticipant: getLocalParticipant(state)
+    };
+}
+
+export default translate(connect(_mapStateToProps)(ChatInput));

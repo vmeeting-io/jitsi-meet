@@ -1,6 +1,5 @@
 // @flow
 
-import { jitsiLocalStorage } from '@jitsi/js-utils';
 import React, { Component } from 'react';
 
 import { getAvailableDevices } from '../../../base/devices';
@@ -12,14 +11,14 @@ import {
     getDeviceSelectionDialogProps,
     submitDeviceSelectionTab
 } from '../../../device-selection';
-import { submitMoreTab, submitProfileTab } from '../../actions';
+import { submitMoreTab, submitProfileTab, submitSoundsTab } from '../../actions';
 import { SETTINGS_TABS } from '../../constants';
-import { getMoreTabProps, getProfileTabProps } from '../../functions';
+import { getMoreTabProps, getProfileTabProps, getSoundsTabProps } from '../../functions';
 
 import CalendarTab from './CalendarTab';
 import MoreTab from './MoreTab';
 import ProfileTab from './ProfileTab';
-import { isMobileBrowser } from '../../../base/environment/utils';
+import SoundsTab from './SoundsTab';
 
 declare var APP: Object;
 declare var interfaceConfig: Object;
@@ -76,7 +75,6 @@ class SettingsDialog extends Component<Props> {
      */
     render() {
         const { _tabs, defaultTab, dispatch } = this.props;
-        const onSubmit = this._closeDialog;
         const defaultTabIdx
             = _tabs.findIndex(({ name }) => name === defaultTab);
         const tabs = _tabs.map(tab => {
@@ -97,13 +95,25 @@ class SettingsDialog extends Component<Props> {
                 defaultTab = {
                     defaultTabIdx === -1 ? undefined : defaultTabIdx
                 }
-                onSubmit = { onSubmit }
+                /** 
+                 * onSubmit prop was previously calling _closeDialog
+                 * which always dispatched hideDialog
+                 * so now we call a dummy function _submitDialog
+                 * submission of values is handled individually in each tab of Settings dialogs
+                 */
+                onSubmit = { this._submitDialog }
                 tabs = { tabs }
                 titleKey = 'settings.title' />
         );
     }
 
     _closeDialog: () => void;
+
+    _submitDialog: () => void;
+
+    _submitDialog() {
+        console.log("Submit dialog function called");
+    }
 
     /**
      * Callback invoked to close the dialog without saving changes.
@@ -112,6 +122,7 @@ class SettingsDialog extends Component<Props> {
      * @returns {void}
      */
     _closeDialog() {
+        console.log("Close dialog function called");
         this.props.dispatch(hideDialog());
     }
 }
@@ -137,10 +148,7 @@ function _mapStateToProps(state) {
         = configuredTabs.includes('profile') && !state['features/base/config'].disableProfile;
     const showCalendarSettings
         = configuredTabs.includes('calendar') && isCalendarEnabled(state);
-    const _user = state['features/base/jwt'].user;
-    const _jwt = state['features/base/jwt'].jwt;
-    const showBackgroundSettings
-        = configuredTabs.includes('background') && !isMobileBrowser();
+    const showSoundsSettings = configuredTabs.includes('sounds');
     const tabs = [];
 
     if (showDeviceSettings) {
@@ -189,6 +197,17 @@ function _mapStateToProps(state) {
         });
     }
 
+    if (showSoundsSettings) {
+        tabs.push({
+            name: SETTINGS_TABS.SOUNDS,
+            component: SoundsTab,
+            label: 'settings.sounds',
+            props: getSoundsTabProps(state),
+            styles: 'settings-pane profile-pane',
+            submit: submitSoundsTab
+        });
+    }
+
     if (showModeratorSettings || showLanguageSettings || showPrejoinSettings) {
         tabs.push({
             name: SETTINGS_TABS.MORE,
@@ -200,6 +219,7 @@ function _mapStateToProps(state) {
 
                 return {
                     ...newProps,
+                    currentFramerate: tabState.currentFramerate,
                     currentLanguage: tabState.currentLanguage,
                     followMeEnabled: tabState.followMeEnabled,
                     showPrejoinPage: tabState.showPrejoinPage,

@@ -4,6 +4,10 @@ import { ColorPalette } from '../../../base/styles';
 
 const SECONDARY_COLOR = '#B8C7E0';
 
+export const ENABLED_THUMB_COLOR = ColorPalette.blueHighlight;
+export const ENABLED_TRACK_COLOR = ColorPalette.blue;
+export const DISABLED_THUMB_COLOR = ColorPalette.darkGrey;
+
 export default {
     button: {
         alignItems: 'center',
@@ -44,8 +48,7 @@ export default {
         borderRadius: 4,
         borderWidth: 1,
         marginVertical: 8,
-        padding: 8,
-        color: 'black'
+        padding: 8
     },
 
     fieldError: {
@@ -139,5 +142,14 @@ export default {
 
     knockingParticipantListText: {
         color: 'white'
+    },
+
+    lobbySwitchContainer: {
+        flexDirection: 'column',
+        marginTop: 16
+    },
+
+    lobbySwitchIcon: {
+        alignSelf: 'flex-end'
     }
 };

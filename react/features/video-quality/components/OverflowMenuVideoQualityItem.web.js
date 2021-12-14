@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 
-import { VIDEO_QUALITY_LEVELS } from '../../base/conference/constants';
+import { VIDEO_QUALITY_LEVELS } from '../constants';
 import { translate } from '../../base/i18n';
 import {
     Icon,

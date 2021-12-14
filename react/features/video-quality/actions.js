@@ -2,7 +2,7 @@
 
 import type { Dispatch } from 'redux';
 
-import { VIDEO_QUALITY_LEVELS } from '../base/conference';
+import { VIDEO_QUALITY_LEVELS } from './constants';
 
 import logger from './logger';
 

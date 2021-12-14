@@ -18,6 +18,7 @@ import {
 } from './actionTypes';
 import { LogoutDialog, SettingsDialog } from './components';
 import { getMoreTabProps, getProfileTabProps, getSoundsTabProps } from './functions';
+import { showNotification } from '../notifications';
 
 declare var APP: Object;
 

@@ -457,8 +457,6 @@
     "changeSignIn": "Changer de compte.",
     "choose": "Choisir un flux en direct",
     "chooseCTA": "Choisissez une option de diffusion. Vous êtes actuellement connecté comme {{email}}.",
-    "enterStreamKey": "Entrez votre clé de diffusion Youtube ici",
-    "error": "La diffusion a échouée. Veuillez réessayer ultérieurement.",
     "enterStreamKey": "Entrez votre clé de flux direct YouTube ici.",
     "error": "Le Streaming a échoué. Veuillez réessayer.",
     "errorAPI": "Une erreur s'est produite lors de l'accès à vos diffusions YouTube. Veuillez réessayer de vous connecter.",

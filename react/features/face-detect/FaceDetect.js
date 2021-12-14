@@ -4,7 +4,10 @@ import { getCurrentConference, STATUS_COMMAND } from '../base/conference';
 import { getLocalParticipant, participantPresenceChanged } from '../base/participants';
 import { isParticipantVideoMuted } from '../base/tracks';
 import { isPrejoinPageVisible } from '../prejoin/functions';
-import { setAttentionAnalysisReady } from './actions';
+import {
+    getAttentionAnalysisReady,
+    setAttentionAnalysisReady
+} from './actions';
 import { STATUS_TABLE } from './constants';
 import { isAttentionAnalysisEnabled } from './functions';
 
@@ -129,13 +132,16 @@ export default class FaceDetect {
                         this._frames.push(frame);
                         if (this._frames.length > this._patience) {
                             this._frames.shift();
+                        }
+                        if (this._frames.length === this._patience
+                            && !getAttentionAnalysisReady(state)) {
                             this._dispatch(setAttentionAnalysisReady(true));
                         }
                     }
                     // console.timeEnd('inferenceImage');
                 } catch (e) {
                     // ignore
-                    console.error(e);
+                    // console.error(e);
                 }
             }
         }

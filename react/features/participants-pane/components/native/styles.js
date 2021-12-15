@@ -153,7 +153,8 @@ export default {
     },
 
     participantIsModerator: {
-        color: BaseTheme.palette.text01,
+        color: '#858585',
+        opacity: 1
     },
 
     participantsPane: {

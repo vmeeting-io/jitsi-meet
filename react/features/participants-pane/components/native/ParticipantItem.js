@@ -28,6 +28,11 @@ type Props = {
      * The name of the participant. Used for showing lobby names.
      */
     displayName: string,
+    
+    /**
+     * Flag to identify it participant is a moderator.
+     */
+    isModerator: boolean,
 
     /**
      * Is the participant waiting?
@@ -68,6 +73,7 @@ type Props = {
 function ParticipantItem({
     children,
     displayName,
+    isModerator,
     isKnockingParticipant,
     local,
     onPress,
@@ -92,6 +98,11 @@ function ParticipantItem({
                     numberOfLines = { 2 }
                     style = { styles.participantName }>
                     { local ? `${displayName} (${t('me')})` : displayName }
+                </Text>
+                <Text
+                    numberOfLines = { 1 }
+                    style = { styles.participantIsModerator }>
+                    { isModerator ? "(Moderator)" : "" }
                 </Text>
                 {
                     !isKnockingParticipant

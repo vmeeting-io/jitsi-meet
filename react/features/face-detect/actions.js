@@ -45,6 +45,23 @@ export function initFaceDetect() {
     };
 }
 
+export function prepareFaceDetect() {
+    return function(dispatch, getState) {
+        console.log('==> prepareFaceDetect');
+        const state = getState();
+
+        if (state['features/did-consent'].permit) {
+            const instance = getFaceDetector(state);
+            instance?.prepare();
+    
+            dispatch({
+                type: START_FACE_DETECT,
+                instance
+            });
+        }
+    };
+}
+
 export function startFaceDetect() {
     return function(dispatch, getState) {
         console.log('==> startFaceDetect');
@@ -98,6 +115,9 @@ export function openAttentionAnalysis() {
 
             childWindow.onload = () => {
                 dispatch(updateAttentionAnalysis());
+                window.addEventListener('beforeunload', () => {
+                    dispatch(closeAttentionAnalysis());
+                });
             };
         } else {
             childWindow.focus();

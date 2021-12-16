@@ -19,6 +19,8 @@ var interfaceConfig = {
     BRAND_WATERMARK_LINK: '',
 
     CLOSE_PAGE_GUEST_HINT: false, // A html text to be shown to guests on the close page, false disables it
+    THANK_YOU_MESSAGE: 'Conference terminated by host',
+
     /**
      * Whether the connection indicator icon should hide itself based on
      * connection strength. If true, the connection indicator will remain

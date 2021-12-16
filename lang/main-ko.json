@@ -105,8 +105,8 @@
             "chat": "채팅",
             "polls": "투표"
         },
-        "title": "채팅 / 투표",
-        "titleWithPolls": "채팅",
+        "title": "채팅",
+        "titleWithPolls": "채팅 / 투표",
         "you": "나"
     },
     "chromeExtensionBanner": {

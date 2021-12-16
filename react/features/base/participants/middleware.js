@@ -129,7 +129,7 @@ MiddlewareRegistry.register(store => next => action => {
             }
 
             if (conference && isHost && !isRecording(state) && autoRecord) {
-                recorder_user = state['features/base/jwt'].user;
+                const recorder_user = state['features/base/jwt'].user;
                 conference.startRecording({
                     mode: JitsiRecordingConstants.mode.FILE,
                     appData: JSON.stringify({

@@ -34,6 +34,7 @@
 
     &.visible {
         opacity: 1;
+
         .toolbox-content-items {
             pointer-events: all;
         }
@@ -185,8 +186,6 @@
         &:hover {
             background: none;
         }
-    }
-}
 
         svg {
             fill: #929292;
@@ -276,14 +275,6 @@
             fill: #929292 !important;
         }
     }
-
-    svg {
-        fill: #fff;
-    }
-}
-
-.profile-button-avatar {
-    align-items: center;
 }
 
 .hangup-button {

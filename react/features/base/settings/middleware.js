@@ -12,7 +12,6 @@ import { parseURLParams } from '../util';
 import { updateSettings } from './actions';
 
 import { SETTINGS_UPDATED } from './actionTypes';
-import { updateSettings } from './actions';
 import { handleCallIntegrationChange, handleCrashReportingChange } from './functions';
 
 
@@ -43,11 +42,6 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     case SET_LOCATION_URL:
         _updateLocalParticipantFromUrl(store);
-        break;
-    case SET_JWT:
-        if (action.user?.name) {
-            store.dispatch(updateSettings({ displayName: action.user.name }));
-        }
         break;
     }
 

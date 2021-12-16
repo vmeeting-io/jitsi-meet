@@ -48,3 +48,5 @@ export const JITSI_CONFERENCE_URL_KEY = Symbol('url');
  * @type {string}
  */
 export const STATUS_COMMAND = 'status';
+
+export const LEAVING_TIMESTAMP = 'leaving-timestamp'; 

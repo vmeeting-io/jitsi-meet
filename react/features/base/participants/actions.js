@@ -255,10 +255,6 @@ export function localParticipantRoleChanged(role) {
         const participant = getLocalParticipant(getState);
 
         if (participant) {
-            if (role === "moderator"){
-                APP.UI.emitEvent(UIEvents.BECOME_MODERATOR);
-            }
-
             return dispatch(participantRoleChanged(participant.id, role));
         }
     };

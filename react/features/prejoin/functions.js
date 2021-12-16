@@ -1,6 +1,6 @@
 // @flow
 
-import { getRoomName, LEAVING_TIMESTAMP } from '../base/conference';
+import { getRoomName } from '../base/conference';
 import { getDialOutStatusUrl, getDialOutUrl } from '../base/config/functions';
 import { isAudioMuted, isVideoMutedByUser } from '../base/media';
 import { isAttentionAnalysisEnabled } from '../face-detect';
@@ -154,10 +154,14 @@ export function isPrejoinPageEnabled(state: Object): boolean {
     const { prejoinPageEnabled, chatOnlyGuestEnabled } = state['features/base/config'];
 
     return navigator.product !== 'ReactNative'
-        && (state['features/base/config'].prejoinPageEnabled
-            || isAttentionAnalysisEnabled(state))
+        && (
+            prejoinPageEnabled
+            || isAttentionAnalysisEnabled(state)
+            || (isHost && chatOnlyGuestEnabled)
+        )
         && !state['features/base/settings'].userSelectedSkipPrejoin
-        && !(state['features/base/config'].enableForcedReload && state['features/prejoin'].skipPrejoinOnReload);
+        && !(state['features/base/config'].enableForcedReload && state['features/prejoin'].skipPrejoinOnReload)
+        && !state['features/prejoin'].skipPrejoin;
 }
 
 /**
@@ -167,7 +171,14 @@ export function isPrejoinPageEnabled(state: Object): boolean {
  * @returns {boolean}
  */
 export function isPrejoinPageVisible(state: Object): boolean {
-    return (isPrejoinPageEnabled(state) || isAttentionAnalysisEnabled(state))
+    const { isHost } = state['features/base/conference']?.roomInfo || {};
+    const { chatOnlyGuestEnabled } = state['features/base/config'];
+    
+    return (
+            isPrejoinPageEnabled(state)
+            || isAttentionAnalysisEnabled(state)
+            || (isHost && chatOnlyGuestEnabled)
+        )
         && state['features/prejoin']?.showPrejoin === PREJOIN_SCREEN_STATES.VISIBLE;
 }
 

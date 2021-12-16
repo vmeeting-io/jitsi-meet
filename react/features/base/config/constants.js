@@ -31,7 +31,7 @@ export const TOOLBAR_BUTTONS = [
     'microphone',
     'mute-everyone',
     'mute-video-everyone',
-    'participants-pane',
+    'participants',
     'profile',
     'raisehand',
     'recording',

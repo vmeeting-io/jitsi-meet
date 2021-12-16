@@ -1,3 +1,5 @@
+import { jitsiLocalStorage } from '@jitsi/js-utils';
+import { LEAVING_TIMESTAMP } from '../base/conference';
 import { PersistenceRegistry, ReducerRegistry } from '../base/redux';
 
 import {

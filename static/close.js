@@ -50,11 +50,16 @@ function onLoad() {
     // Works only for close2.html because close.html doesn't have this element.
     insertTextMsg('thanksMessage', thankYouMessage);
 
+    const savedNotification = window.localStorage.getItem('saved_notification');
+    if (savedNotification) {
+        window.localStorage.removeItem('saved_notification');
+    }
+
     // If there is a setting show a special message only for the guests
     if (interfaceConfig.CLOSE_PAGE_GUEST_HINT) {
-        if (window.sessionStorage.getItem('guest') === 'true') {
-            const element = document.getElementById('hintQuestion');
+        const element = document.getElementById('hintQuestion');
 
+        if (window.sessionStorage.getItem('guest') === 'true' && element) {
             element.classList.add('hide');
             insertTextMsg('hintMessage', interfaceConfig.CLOSE_PAGE_GUEST_HINT);
 

@@ -218,8 +218,9 @@ export function updateAutoPinnedParticipant(
     // participant was pinned before screen share was auto-pinned, pin the previously pinned participant otherwise.
     if (!remoteScreenShares?.length) {
         let participantId = null;
+        const { autoPinEnabled } = state['features/base/config'];
 
-        if (pinned && !screenShares.find(share => share === pinned.id)) {
+        if (pinned && (autoPinEnabled || !screenShares.find(share => share === pinned.id))) {
             participantId = pinned.id;
         }
         dispatch(pinParticipant(participantId));

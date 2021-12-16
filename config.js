@@ -2,8 +2,6 @@
 /* eslint-disable no-unused-vars, no-var */
 
 var config = {
-    // Connection
-    //
 
     //Download Links
     features:{
@@ -34,16 +32,19 @@ var config = {
     },
 
     // enable DID Consent for flagship
-    enableDIDConsent: true,
+    // enableDIDConsent: true,
 
     // whether or not we want to use the birthday AR hat feature
-    enableBirthdayARHat: true,
+    // enableBirthdayARHat: true,
 
     // whether or not to allow moderator to disable other participant's device
-    enableUserDeviceAccessDisabledOption: false,
+    // enableUserDeviceAccessDisabledOption: false,
 
     // whether or not we want to use AI attention analysis
-    useAIAttentionAnalysis: true, // default value is true for flagship project
+    // useAIAttentionAnalysis: true, // default value is true for flagship project
+
+    // Connection
+    //
 
     hosts: {
         // XMPP domain.
@@ -128,10 +129,10 @@ var config = {
     },
 
     // Enables reactions feature.
-    enableReactions: true,
+    // enableReactions: true,
 
     // Disables polls feature.
-    // disablePolls: false,
+    disablePolls: true,
 
     // Disables ICE/UDP by filtering out local and remote UDP candidates in
     // signalling.
@@ -283,7 +284,7 @@ var config = {
     // Recording
 
     // Whether to enable file recording or not.
-    // fileRecordingsEnabled: false,
+    fileRecordingsEnabled: true,
     // Enable the dropbox integration.
     // dropbox: {
     //     appKey: '<APP_KEY>' // Specify your app key here.
@@ -304,7 +305,7 @@ var config = {
     // fileRecordingsServiceSharingEnabled: false,
 
     // Whether to enable live streaming or not.
-    // liveStreamingEnabled: false,
+    liveStreamingEnabled: true,
 
     // Transcription (in interface_config,
     // subtitles and buttons can be configured)
@@ -425,7 +426,7 @@ var config = {
            720: 'high'
        },
 
-       resizeDesktopForPresenter: true,
+       // resizeDesktopForPresenter: true,
     },
 
     // // Options for the recording limit notification.
@@ -487,14 +488,14 @@ var config = {
     // hideAddRoomButton: false,
 
     // Require users to always specify a display name.
-    // requireDisplayName: true,
+    requireDisplayName: true,
 
     // Whether to use a welcome page or not. In case it's false a random room
     // will be joined when no room is specified.
     enableWelcomePage: true,
 
     // Disable app shortcuts that are registered upon joining a conference
-    // disableShortcuts: false,
+    disableShortcuts: true,
 
     // Disable initial browser getUserMedia requests.
     // This is useful for scenarios where users might want to start a conference for screensharing only
@@ -514,6 +515,7 @@ var config = {
 
     // Disables profile and the edit of all fields from the profile settings (display name and email)
     // disableProfile: false,
+
     // Whether or not some features are checked based on token.
     // enableFeaturesBasedOnToken: true,
 
@@ -530,7 +532,7 @@ var config = {
     // enableCalendarIntegration: false,
 
     // When 'true', it shows an intermediate page before joining, where the user can configure their devices.
-    prejoinPageEnabled: true,
+    // prejoinPageEnabled: true,
 
     // If etherpad integration is enabled, setting this to true will
     // automatically open the etherpad when a participant joins.  This
@@ -574,7 +576,7 @@ var config = {
     // - 'desktop' controls the "Share your screen" button
     // - if `toolbarButtons` is undefined, we fallback to enabling all buttons on the UI
     toolbarButtons: [
-       'ar-effect',
+       // 'ar-effect',
        'camera',
        'chat',
        'closedcaptions',
@@ -592,7 +594,7 @@ var config = {
        'microphone',
        'mute-everyone',
        'mute-video-everyone',
-       'participants-pane',
+       'participants',
        'profile',
        'raisehand',
        'recording',
@@ -973,10 +975,10 @@ var config = {
     // moderatedRoomServiceUrl: 'https://moderated.jitsi-meet.example.com',
 
     // If true, tile view will not be enabled automatically when the participants count threshold is reached.
-    // disableTileView: true,
+    disableTileView: true,
 
     // Hides the conference subject
-    // hideConferenceSubject: true,
+    hideConferenceSubject: true,
 
     // Hides the recording label
     // hideRecordingLabel: false,
@@ -1106,13 +1108,11 @@ var config = {
     // autoRecord: true,
     // followMeEnabled: false,
     // disableGrantModerator: false,
-    // disableDesktopSharing: false,    // true, false, 'guest'
+    // disablePrivateMessage: true,
+    // disableDesktopSharing: 'guest',    // true, false, 'guest'
 
     // If true, tile view will not be enabled automatically when the participants count threshold is reached.
     // disableTileView: true,           // true, false, 'guest'
-
-    // Hides the conference subject
-    // hideConferenceSubject: true,
 
     // Hides the conference timer.
     // hideConferenceTimer: true,
@@ -1127,9 +1127,9 @@ var config = {
 
     // disableRemoteMute: true,
     // disableSortable: false,
-    // hideEmailSetting: false,
-    // disableUserRegistration: false,
-    // hideSelectBackground: false,     // true, false, 'guest'
+    hideEmailSetting: true,
+    disableUserRegistration: true,
+    hideSelectBackground: 'guest',     // true, false, 'guest'
 
     /**
      * Default interval (milliseconds) for triggering mouseMoved iframe API event
@@ -1220,3 +1220,24 @@ var config = {
 };
 
 /* eslint-enable no-unused-vars, no-var */
+
+// with selective on viewport forwarding, participant will stop sending video if its out of the viewport in all
+// other viewports. This delay and possibly cause unstable video transmission when the participant appear in one
+// of the viewports again. We set to always send minSendFrameHeight to fix that. minSendFrameHeight also needed
+// for Individual recording to work
+config.minSendFrameHeight = Math.max(180, config.constraints.video.height.min);
+
+// directly set focus full JID with resource
+// https://community.jitsi.org/t/add-back-the-option-to-set-jicofo-as-xmpp-server-component/101029
+config.hosts.focus = 'focus@auth.jitsi-meet.example.com/focus';
+
+// force VP9
+// config.videoQuality.preferredCodec = 'VP9';
+// config.videoQuality.enforcePreferredCodec = true;
+
+config.enableReactions = true;
+
+config.etherpad_base = 'https://jitsi-meet.example.com/boards/';
+
+config.disableJoinLeaveSounds = true;
+config.disableShortcuts = true;

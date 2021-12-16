@@ -539,7 +539,7 @@ class Filmstrip extends PureComponent <Props> {
  */
 function _mapStateToProps(state) {
     const toolbarButtons = getToolbarButtons(state);
-    const { testing = {}, iAmRecorder } = state['features/base/config'];
+    const { testing = {}, iAmRecorder, hideLocalVideo, hideRemoteVideos } = state['features/base/config'];
     const enableThumbnailReordering = testing.enableThumbnailReordering ?? true;
     const { visible, remoteParticipants } = state['features/filmstrip'];
     const reduceHeight = state['features/toolbox'].visible && toolbarButtons.length;
@@ -607,6 +607,7 @@ function _mapStateToProps(state) {
         _currentLayout,
         _filmstripHeight: remoteFilmstripHeight,
         _filmstripWidth: remoteFilmstripWidth,
+        _hideFilmstrip: Boolean(hideLocalVideo && hideRemoteVideos),
         _iAmRecorder: Boolean(iAmRecorder),
         _isFilmstripButtonEnabled: isButtonEnabled('filmstrip', state),
         _remoteParticipantsLength: remoteParticipants.length,
@@ -615,7 +616,7 @@ function _mapStateToProps(state) {
         _thumbnailWidth: _thumbnailSize?.width,
         _thumbnailHeight: _thumbnailSize?.height,
         _thumbnailsReordered: enableThumbnailReordering,
-        _videosClassName: videosClassName,
+        _videosClassName: videosClassName + (Boolean(hideLocalVideo) ? ' hide' : ''),
         _visible: visible,
         _isToolboxVisible: isToolboxVisible(state)
     };

@@ -23,7 +23,8 @@ const useStyles = makeStyles(theme => {
             transition: 'margin-bottom 0.3s'
         },
         containerElevated: {
-            marginBottom: theme.spacing(7)
+            marginBottom: theme.spacing(7),
+            width: '100vw'
         }
     };
 });

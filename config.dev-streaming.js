@@ -51,20 +51,20 @@ var config = {
         domain: 'jitsi-meet.example.com',
 
         // When using authentication, domain for guest users.
-        // anonymousdomain: 'guest.example.com',
+        anonymousdomain: 'guest.jitsi-meet.example.com',
 
         // Domain for authenticated users. Defaults to <domain>.
-        // authdomain: 'jitsi-meet.example.com',
+        authdomain: 'jitsi-meet.example.com',
 
         // Focus component domain. Defaults to focus.<domain>.
         // focus: 'focus.jitsi-meet.example.com',
 
         // XMPP MUC domain. FIXME: use XEP-0030 to discover it.
-        muc: 'muc.jitsi-meet.example.com'
+        muc: 'muc.<!--# echo var="subdomain" default="" -->jitsi-meet.example.com'
     },
 
     // BOSH URL. FIXME: use XEP-0156 to discover it.
-    bosh: '//jitsi-meet.example.com/http-bind',
+    bosh: 'https://jitsi-meet.example.com/http-bind',
 
     // Websocket URL
     websocket: 'wss://jitsi-meet.example.com/xmpp-websocket',
@@ -72,7 +72,7 @@ var config = {
     // The real JID of focus participant - can be overridden here
     // Do not change username - FIXME: Make focus username configurable
     // https://github.com/jitsi/jitsi-meet/issues/7376
-    // focusUserJid: 'focus@auth.jitsi-meet.example.com',
+    focusUserJid: 'focus@auth.jitsi-meet.example.com',
 
 
     // Testing / experimental features.
@@ -282,6 +282,7 @@ var config = {
     // startScreenSharing: false,
 
     // Recording
+hiddenDomain: 'recorder.jitsi-meet.example.com',
 
     // Whether to enable file recording or not.
     // fileRecordingsEnabled: false,

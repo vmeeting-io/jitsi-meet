@@ -133,6 +133,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         // or extra sounds are also not desired
         // but we want to indicate those in case of sip gateway
         const {
+            disableRecordAudioNotification,
             iAmRecorder,
             iAmSipGateway,
             recordingLimit
@@ -163,6 +164,10 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                 }
 
                 sendAnalytics(createRecordingEvent('start', mode));
+
+                if (disableRecordAudioNotification) {
+                    break;
+                }
 
                 let soundID;
 

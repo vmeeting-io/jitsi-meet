@@ -178,7 +178,7 @@ function ConferenceInfo(props: Props) {
                                         textStyle = { _timeRemained ? 'time-remained-container' : 'subject-timer' } /> )}
                             </div>
                     }
-                    { _showParticipantCount && <ParticipantsCount /> }
+                    <ParticipantsCount />
                     <E2EELabel />
                     {_hideRecordingLabel && (
                         <>
@@ -249,7 +249,7 @@ function _mapStateToProps(state) {
         _hideRecordingLabel: shouldHideRecordingLabel,
         _fullWidth: state['features/video-layout'].tileViewEnabled,
         // _isHost: isHost(state),
-        _showParticipantCount: participantCount > 2 && !hideParticipantsStats,
+        // _showParticipantCount: participantCount > 2 && !hideParticipantsStats,
         _showSubject: !hideConferenceSubject,
         _subject: hideConferenceSubject ? '' : getConferenceName(state),
         _visible: Boolean(timeRemained) || isToolboxVisible(state),

@@ -76,8 +76,8 @@ class ParticipantsCount extends PureComponent<Props> {
 
         return (
             <div
-                className = 'participants-count'
-                onClick = { this._onClick }>
+                className = { `participants-count ${className}` }
+                onClick = { _hideParticipantsStats ? undefined : this._onClick }>
                 <Label
                     className = 'label--white'
                     icon = { IconUserGroups }

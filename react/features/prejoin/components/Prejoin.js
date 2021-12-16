@@ -144,22 +144,22 @@ class Prejoin extends Component<Props, State> {
         this._showDialogKeyPress = this._showDialogKeyPress.bind(this);
         this._onJoinKeyPress = this._onJoinKeyPress.bind(this);
         this._onCheckAlreadyVerified = this._onCheckAlreadyVerified.bind(this);
-        this._unload = this._unload.bind(this);
+        this._beforeUnloadHandler = this._beforeUnloadHandler.bind(this);
     }
 
     componentWillMount(){
         this._onCheckAlreadyVerified().then((resp) => {
             this.setState({ showDID: resp, completed: true });
         });
-        window.addEventListener('beforeunload', this._unload);
+        window.addEventListener('beforeunload', this._beforeUnloadHandler);
     }
 
     componentWillUnmount() {
-        window.removeEventListener('beforeunload', this._unload);
+        window.removeEventListener('beforeunload', this._beforeUnloadHandler);
     }
 
     // should remove conference
-    _unload() {
+    _beforeUnloadHandler() {
         const { _apiBase, _user, roomInfo } = this.props;
         if (_user?.email === roomInfo?.mail_owner) {
             axios.delete(`${_apiBase}/conferences/${roomInfo._id}`);

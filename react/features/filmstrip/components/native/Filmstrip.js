@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
-import { FlatList, SafeAreaView } from 'react-native';
+import { View, Text,FlatList, SafeAreaView } from 'react-native';
 
 import { Platform } from '../../../base/react';
 import { connect } from '../../../base/redux';
@@ -130,6 +130,9 @@ class Filmstrip extends Component<Props> {
                     viewablilityConfig = { this._viewablilityConfig }
                     windowSize = { 1 } >
                 </FlatList>
+                <View style={styles.hideFilmstripView}>
+                    <Text style={styles.hideFilmstrip}>></Text>
+                </View>
             </SafeAreaView>
         );
     }

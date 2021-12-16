@@ -1,5 +1,6 @@
 // @flow
 
+import { end } from 'react-emoji-render/data/aliases';
 import { ColorSchemeRegistry, schemeColor } from '../../../base/color-scheme';
 import { ColorPalette } from '../../../base/styles';
 import { SMALL_THUMBNAIL_SIZE } from '../../constants';
@@ -50,6 +51,27 @@ export default {
         position: 'absolute',
         right: 0,
         top: 0
+    },
+
+    /**
+     * ">" text to hide filmStrip.
+     */
+    hideFilmstripView:{
+        borderColor: "#FF00FF",
+        borderWidth: 5,
+        display: "flex"
+
+    },
+    
+    /**
+     * ">" text to hide filmStrip.
+     */
+    hideFilmstrip:{
+        // direction: "rtl",
+        alignItems: "flex-end",
+        color: '#FF0000',
+        fontSize: 20,
+        fontWeight: "800"
     },
 
     /**

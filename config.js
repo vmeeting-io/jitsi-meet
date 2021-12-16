@@ -425,7 +425,7 @@ var config = {
            720: 'high'
        },
 
-       resizeDesktopForPresenter: true,
+    //    resizeDesktopForPresenter: true,
     },
 
     // // Options for the recording limit notification.

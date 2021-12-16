@@ -4,12 +4,9 @@ import { getCurrentConference, STATUS_COMMAND } from '../base/conference';
 import { getLocalParticipant, participantPresenceChanged } from '../base/participants';
 import { isParticipantVideoMuted } from '../base/tracks';
 import { isPrejoinPageVisible } from '../prejoin/functions';
-import {
-    getAttentionAnalysisReady,
-    setAttentionAnalysisReady
-} from './actions';
+import { setAttentionAnalysisReady } from './actions';
 import { STATUS_TABLE } from './constants';
-import { isAttentionAnalysisEnabled } from './functions';
+import { getAttentionAnalysisReady, isAttentionAnalysisEnabled } from './functions';
 
 const threshold = 3;
 

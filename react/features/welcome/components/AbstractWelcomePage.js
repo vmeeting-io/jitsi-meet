@@ -285,10 +285,17 @@ export class AbstractWelcomePage extends Component<Props, *> {
  * @returns {Props}
  */
 export function _mapStateToProps(state: Object) {
+    const {
+        enableInsecureRoomNameWarning,
+        logoUrl,
+        moderatedRoomServiceUrl,
+    } = state['features/base/config'];
+
     return {
         _calendarEnabled: isCalendarEnabled(state),
-        _enableInsecureRoomNameWarning: state['features/base/config'].enableInsecureRoomNameWarning || false,
-        _moderatedRoomServiceUrl: state['features/base/config'].moderatedRoomServiceUrl,
+        _defaultLogoUrl: logoUrl,
+        _enableInsecureRoomNameWarning: enableInsecureRoomNameWarning || false,
+        _moderatedRoomServiceUrl: moderatedRoomServiceUrl,
         _recentListEnabled: isRecentListEnabled(),
         _room: state['features/base/conference'].room,
         _settings: state['features/base/settings'],

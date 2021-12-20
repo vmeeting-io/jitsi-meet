@@ -7,6 +7,7 @@ import { translate } from '../../../i18n';
 import { connect } from '../../../redux';
 
 declare var interfaceConfig: Object;
+declare var config: Object;
 
 /**
  * The CSS style of the element with CSS class {@code rightwatermark}.
@@ -247,7 +248,7 @@ function _mapStateToProps(state, ownProps) {
         }
     } else {
         // When there is no custom branding data use defaults
-        _logoUrl = ownProps.defaultJitsiLogoURL || DEFAULT_LOGO_URL;
+        _logoUrl = ownProps.defaultJitsiLogoURL || config.logoUrl || DEFAULT_LOGO_URL;
         _logoLink = JITSI_WATERMARK_LINK;
     }
 

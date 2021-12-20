@@ -302,7 +302,7 @@ class WelcomePage extends AbstractWelcomePage {
      * @returns {ReactElement|null}
      */
     render() {
-        const { _moderatedRoomServiceUrl, _user, t } = this.props;
+        const { _defaultLogoUrl, _moderatedRoomServiceUrl, _user, t } = this.props;
         const { submitting, currentTenant, inputTenant, room } = this.state;
         const { APP_NAME, DEFAULT_WELCOME_PAGE_LOGO_URL } = interfaceConfig;
         const showAdditionalContent = this._shouldShowAdditionalContent();
@@ -454,7 +454,7 @@ class WelcomePage extends AbstractWelcomePage {
                     <div className = 'container'>
                         <Watermarks
                             className = 'watermark'
-                            defaultJitsiLogoURL = { DEFAULT_WELCOME_PAGE_LOGO_URL } />
+                            defaultJitsiLogoURL = { _defaultLogoUrl || DEFAULT_WELCOME_PAGE_LOGO_URL } />
                         <div className = 'toolbars'>
                             <div className = 'button desktop'>
                                 <DropdownMenu

@@ -6,7 +6,7 @@ import Button, { ButtonGroup } from '@atlaskit/button';
 import DropdownMenu, { DropdownItem, DropdownItemGroup } from '@atlaskit/dropdown-menu';
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import axios from 'axios';
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import tokenLocalStorage from '../../../api/tokenLocalStorage';
 import { translate, translateToHTML } from '../../base/i18n';
@@ -302,7 +302,7 @@ class WelcomePage extends AbstractWelcomePage {
      * @returns {ReactElement|null}
      */
     render() {
-        const { _defaultLogoUrl, _moderatedRoomServiceUrl, _user, t } = this.props;
+        const { _defaultLogoUrl, _moderatedRoomServiceUrl, _customBranding, _user, t } = this.props;
         const { submitting, currentTenant, inputTenant, room } = this.state;
         const { APP_NAME, DEFAULT_WELCOME_PAGE_LOGO_URL } = interfaceConfig;
         const showAdditionalContent = this._shouldShowAdditionalContent();
@@ -445,198 +445,200 @@ class WelcomePage extends AbstractWelcomePage {
         }
 
         return (
-            <div
-                className = { `welcome ${showAdditionalContent
-                    ? 'with-content' : 'without-content'}`
-                }
-                id = 'welcome_page'>
-                <div className = 'header'>
-                    <div className = 'container'>
-                        <Watermarks
-                            className = 'watermark'
-                            defaultJitsiLogoURL = { _defaultLogoUrl || DEFAULT_WELCOME_PAGE_LOGO_URL } />
-                        <div className = 'toolbars'>
-                            <div className = 'button desktop'>
-                                <DropdownMenu
-                                    onOpenChange = { this._onOpenChange }
-                                    position = "bottom left"
-                                    key = 'user-menu-desktop'
-                                    trigger = {
-                                        <div id="featureDropdown" className = 'feature'>
-                                            {t('toolbar.features.title')}
-                                        </div>
-                                    }
-                                    triggerType = 'button'>
-                                    <DropdownItemGroup className = 'menu-container'>
-                                        <DropdownItem 
-                                            className = 'menu-item'
-                                            onClick = { this._getSiteLink }>
-                                            { t('toolbar.features.learnMore') } 
-                                        </DropdownItem>
-                                        
-                                        <DropdownItem 
-                                            className = 'menu-item'
-                                            onClick = { this._getManualDownloadLink }>
-                                            { t('toolbar.features.downloadManual') }
-                                        </DropdownItem>
-                                    
-                                    
-                                        <DropdownItem
-                                            className = 'menu-item'
-                                            href = { "mailto:vmeeting-info@kedutech.kr"} >
-                                            {t('toolbar.features.support')} 
-                                        </DropdownItem>
-                                    </DropdownItemGroup>
-                                </DropdownMenu>
-                            </div>
-                            
-                            <ButtonGroup>
-                                {/* <Button
-                                    appearance = 'subtle'
-                                    className = {_user ? 'button desktop' : 'button'}
-                                    href = { `${AUTH_PAGE_BASE}/features` }>
-                                    {t('toolbar.features')}
-                                </Button> */}
-                                { buttons }
-                                <Button
-                                    appearance = 'subtle'
-                                    className = {_user ? 'button desktop' : 'button'}
-                                    onClick = { this._onOpenSettings }>
-                                    { t('toolbar.Settings') }
-                                </Button>
-                                { showAdditionalToolbarContent
-                                    ? <div
-                                        className = 'settings-toolbar-content'
-                                        ref = { this._setAdditionalToolbarContentRef } />
-                                    : null
-                                }
-                            </ButtonGroup>
-                        </div>
-                    </div>
-                </div>
-                <div className = 'welcome-content'>
-                    { config.noticeMessage && (
-                        <div className = 'banner'>
-                            <Banner appearance="announcement" isOpen>
-                                {config.noticeMessage}
-                            </Banner>
-                        </div>
-                    )}
-                    <div className = 'bg-wrapper'>
-                        <div className = 'content-wrapper'>
-                            <div className = 'intro-wrapper'>
-                                <div className = 'header-text'>
-                                    <h1 className = 'header-text-title'>
-                                        { t('welcomepage.title') }
-                                    </h1>
-                                    <p className = 'header-text-description'>
-                                        { t('welcomepage.appDescription',
-                                            { app: APP_NAME }) }
-                                    </p>
-                                </div>
-                                <div className = 'enter-room'>
-                                    <div className = 'enter-room-input-container'>   
-                                        <div // virtual input tag to calculate the width of tenant input tag
-                                            ref={this._setVirtualTenantRef}
-                                            id='virtual_tenant'
-                                            className='virtual-tenant'>
-                                            {inputTenant || currentTenant}
-                                        </div>                                    
-                                        
-                                        <form onSubmit={this._onFormSubmit}>
-                                            <input 
-                                                placeholder={currentTenant}
-                                                ref={this._setTenantInputRef}
-                                                defaultValue={currentTenant}
-                                                onChange={this._onTenantChange}
-                                                className='tenant-input'/>
-                                        </form>
-                                        <span>/</span>
-                                        <form 
-                                            className= 'room-form'
-                                            onSubmit = { this._onFormSubmit }>
-                                            <input
-                                                autoFocus = { true }
-                                                className = 'enter-room-input'
-                                                id = 'enter_room_field'
-                                                onChange = { this._onRoomChange }
-                                                onClick = { e => e.stopPropagation() }                                                
-                                                pattern = { ROOM_NAME_VALIDATE_PATTERN_STR }
-                                                placeholder = { this.state.roomPlaceholder }
-                                                ref = { this._setRoomInputRef }
-                                                title = { t('welcomepage.roomNameAllowedChars') }
-                                                type = 'text' />
-                                            { this._renderInsecureRoomNameWarning() }
-                                        </form>    
-                                    </div>
-                                    { tenant && tenant !== currentTenant ? (
-                                        <div
-                                            className = 'welcome-page-button'
-                                            id = 'enter_room_button'
-                                            onClick = { this._onFormSubmit }>
-                                            { t('welcomepage.join') }
-                                        </div>
-                                    ) : (
-                                        <div
-                                            className = 'welcome-page-button'
-                                            id = 'enter_room_button'
-                                            onClick = { this._onFormSubmit }>
-                                            { _user ? t('welcomepage.go') : t('welcomepage.join') }
-                                        </div>
-                                    )}
-                                    { _moderatedRoomServiceUrl && (
-                                        <div id = 'moderated-meetings'>
-                                            <p>
-                                                {
-                                                    translateToHTML(
-                                                        t, 'welcomepage.moderatedMessage',
-                                                        { url: _moderatedRoomServiceUrl })
-                                                }
-                                            </p>
-                                        </div>
-                                    ) }
-                                </div>
-                                <div className = 'help-message'>
-                                    {t('welcomepage.enterRoomTitle')}
-                                </div>
-                            </div>
-                            <div className = 'header-image'>
-                                <iframe
-                                    src="https://www.youtube.com/embed/3Z-bkgjYUTc"
-                                    title="YouTube video player"
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen>
-                                </iframe>
-                            </div>
-                        </div>
-                    </div>
-                    { this._renderTabs() }
-                    { showAdditionalContent
-                        ? <div
-                            className = 'welcome-page-content'
-                            ref = { this._setAdditionalContentRef } />
-                        : null }
-                    <NotificationsContainer />
-                    <div className = 'footer'>
+            <Fragment>
+                { _customBranding }
+                <div
+                    className = { `welcome ${showAdditionalContent
+                        ? 'with-content' : 'without-content'}`
+                    }
+                    id = 'welcome_page'>
+                    <div className = 'header'>
                         <div className = 'container'>
-                            <div className = 'copyright'>
-                                {t('footer.copyright', { provider: interfaceConfig.PROVIDER_NAME || '(주)케이에듀텍' })}
+                            <Watermarks
+                                className = 'watermark'
+                                defaultJitsiLogoURL = { _defaultLogoUrl || DEFAULT_WELCOME_PAGE_LOGO_URL } />
+                            <div className = 'toolbars'>
+                                <div className = 'button desktop'>
+                                    <DropdownMenu
+                                        onOpenChange = { this._onOpenChange }
+                                        position = "bottom left"
+                                        key = 'user-menu-desktop'
+                                        trigger = {
+                                            <div id="featureDropdown" className = 'feature'>
+                                                {t('toolbar.features.title')}
+                                            </div>
+                                        }
+                                        triggerType = 'button'>
+                                        <DropdownItemGroup className = 'menu-container'>
+                                            <DropdownItem 
+                                                className = 'menu-item'
+                                                onClick = { this._getSiteLink }>
+                                                { t('toolbar.features.learnMore') } 
+                                            </DropdownItem>
+                                            
+                                            <DropdownItem 
+                                                className = 'menu-item'
+                                                onClick = { this._getManualDownloadLink }>
+                                                { t('toolbar.features.downloadManual') }
+                                            </DropdownItem>
+                                        
+                                        
+                                            <DropdownItem
+                                                className = 'menu-item'
+                                                href = { "mailto:vmeeting-info@kedutech.kr"} >
+                                                {t('toolbar.features.support')} 
+                                            </DropdownItem>
+                                        </DropdownItemGroup>
+                                    </DropdownMenu>
+                                </div>
+                                
+                                <ButtonGroup>
+                                    {/* <Button
+                                        appearance = 'subtle'
+                                        className = {_user ? 'button desktop' : 'button'}
+                                        href = { `${AUTH_PAGE_BASE}/features` }>
+                                        {t('toolbar.features')}
+                                    </Button> */}
+                                    { buttons }
+                                    <Button
+                                        appearance = 'subtle'
+                                        className = {_user ? 'button desktop' : 'button'}
+                                        onClick = { this._onOpenSettings }>
+                                        { t('toolbar.Settings') }
+                                    </Button>
+                                    { showAdditionalToolbarContent
+                                        ? <div
+                                            className = 'settings-toolbar-content'
+                                            ref = { this._setAdditionalToolbarContentRef } />
+                                        : null
+                                    }
+                                </ButtonGroup>
                             </div>
-                            <div className = 'nav'>
-                                <a href = { `${AUTH_PAGE_BASE}/tos` }>{t('footer.tos')}</a>
-                                <a href = { `${AUTH_PAGE_BASE}/privacy` }>{t('footer.privacy')}</a>
-                                <a
-                                    alt = { t('footer.contactUs') }
-                                    href = { interfaceConfig.SUPPORT_URL }>
-                                    {t('footer.contactUs')}
-                                </a>
+                        </div>
+                    </div>
+                    <div className = 'welcome-content'>
+                        { config.noticeMessage && (
+                            <div className = 'banner'>
+                                <Banner appearance="announcement" isOpen>
+                                    {config.noticeMessage}
+                                </Banner>
+                            </div>
+                        )}
+                        <div className = 'bg-wrapper'>
+                            <div className = 'content-wrapper'>
+                                <div className = 'intro-wrapper'>
+                                    <div className = 'header-text'>
+                                        <h1 className = 'header-text-title'>
+                                            { t('welcomepage.title') }
+                                        </h1>
+                                        <p className = 'header-text-description'>
+                                            { t('welcomepage.appDescription',
+                                                { app: APP_NAME }) }
+                                        </p>
+                                    </div>
+                                    <div className = 'enter-room'>
+                                        <div className = 'enter-room-input-container'>   
+                                            <div // virtual input tag to calculate the width of tenant input tag
+                                                ref={this._setVirtualTenantRef}
+                                                id='virtual_tenant'
+                                                className='virtual-tenant'>
+                                                {inputTenant || currentTenant}
+                                            </div>                                    
+                                            
+                                            <form onSubmit={this._onFormSubmit}>
+                                                <input 
+                                                    placeholder={currentTenant}
+                                                    ref={this._setTenantInputRef}
+                                                    defaultValue={currentTenant}
+                                                    onChange={this._onTenantChange}
+                                                    className='tenant-input'/>
+                                            </form>
+                                            <span>/</span>
+                                            <form 
+                                                className= 'room-form'
+                                                onSubmit = { this._onFormSubmit }>
+                                                <input
+                                                    autoFocus = { true }
+                                                    className = 'enter-room-input'
+                                                    id = 'enter_room_field'
+                                                    onChange = { this._onRoomChange }
+                                                    onClick = { e => e.stopPropagation() }                                                
+                                                    pattern = { ROOM_NAME_VALIDATE_PATTERN_STR }
+                                                    placeholder = { this.state.roomPlaceholder }
+                                                    ref = { this._setRoomInputRef }
+                                                    title = { t('welcomepage.roomNameAllowedChars') }
+                                                    type = 'text' />
+                                                { this._renderInsecureRoomNameWarning() }
+                                            </form>    
+                                        </div>
+                                        { tenant && tenant !== currentTenant ? (
+                                            <div
+                                                className = 'welcome-page-button'
+                                                id = 'enter_room_button'
+                                                onClick = { this._onFormSubmit }>
+                                                { t('welcomepage.join') }
+                                            </div>
+                                        ) : (
+                                            <div
+                                                className = 'welcome-page-button'
+                                                id = 'enter_room_button'
+                                                onClick = { this._onFormSubmit }>
+                                                { _user ? t('welcomepage.go') : t('welcomepage.join') }
+                                            </div>
+                                        )}
+                                        { _moderatedRoomServiceUrl && (
+                                            <div id = 'moderated-meetings'>
+                                                <p>
+                                                    {
+                                                        translateToHTML(
+                                                            t, 'welcomepage.moderatedMessage',
+                                                            { url: _moderatedRoomServiceUrl })
+                                                    }
+                                                </p>
+                                            </div>
+                                        ) }
+                                    </div>
+                                    <div className = 'help-message'>
+                                        {t('welcomepage.enterRoomTitle')}
+                                    </div>
+                                </div>
+                                <div className = 'header-image'>
+                                    <iframe
+                                        src="https://www.youtube.com/embed/3Z-bkgjYUTc"
+                                        title="YouTube video player"
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen>
+                                    </iframe>
+                                </div>
+                            </div>
+                        </div>
+                        { this._renderTabs() }
+                        { showAdditionalContent
+                            ? <div
+                                className = 'welcome-page-content'
+                                ref = { this._setAdditionalContentRef } />
+                            : null }
+                        <NotificationsContainer />
+                        <div className = 'footer'>
+                            <div className = 'container'>
+                                <div className = 'copyright'>
+                                    {t('footer.copyright', { provider: interfaceConfig.PROVIDER_NAME || '(주)케이에듀텍' })}
+                                </div>
+                                <div className = 'nav'>
+                                    <a href = { `${AUTH_PAGE_BASE}/tos` }>{t('footer.tos')}</a>
+                                    <a href = { `${AUTH_PAGE_BASE}/privacy` }>{t('footer.privacy')}</a>
+                                    <a
+                                        alt = { t('footer.contactUs') }
+                                        href = { interfaceConfig.SUPPORT_URL }>
+                                        {t('footer.contactUs')}
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
+            </Fragment>
         );
     }
 

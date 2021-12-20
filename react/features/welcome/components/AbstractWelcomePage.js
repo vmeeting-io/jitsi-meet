@@ -7,6 +7,7 @@ import type { Dispatch } from 'redux';
 
 import { createWelcomePageEvent, sendAnalytics } from '../../analytics';
 import { appNavigate } from '../../app/actions';
+import { getCustomBranding } from '../../base/config';
 import isInsecureRoomName from '../../base/util/isInsecureRoomName';
 import { isCalendarEnabled } from '../../calendar-sync';
 import { showNotification } from '../../notifications';
@@ -293,6 +294,7 @@ export function _mapStateToProps(state: Object) {
 
     return {
         _calendarEnabled: isCalendarEnabled(state),
+        _customBranding: getCustomBranding(state),
         _defaultLogoUrl: logoUrl,
         _enableInsecureRoomNameWarning: enableInsecureRoomNameWarning || false,
         _moderatedRoomServiceUrl: moderatedRoomServiceUrl,

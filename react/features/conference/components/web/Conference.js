@@ -1,7 +1,7 @@
 // @flow
 
 import _ from 'lodash';
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import VideoLayout from '../../../../../modules/UI/videolayout/VideoLayout';
 import { getConferenceNameForTitle } from '../../../base/conference';
@@ -33,6 +33,7 @@ import type { AbstractProps } from '../AbstractConference';
 
 import ConferenceInfo from './ConferenceInfo';
 import { default as Notice } from './Notice';
+import { getCustomBranding } from '../../../base/config';
 
 declare var APP: Object;
 declare var interfaceConfig: Object;
@@ -220,52 +221,56 @@ class Conference extends AbstractConference<Props, *> {
             _isParticipantsPaneVisible,
             _layoutClassName,
             _reactionsQueue,
+            _customBranding,
             _showLobby,
             _showPrejoin
         } = this.props;
 
         return (
-            <div
-                id = 'layout_wrapper'
-                onMouseEnter = { this._onMouseEnter }
-                onMouseLeave = { this._onMouseLeave }
-                onMouseMove = { this._onMouseMove } >
+            <Fragment>
+                { _customBranding }
                 <div
-                    className = { _layoutClassName }
-                    id = 'videoconference_page'
-                    onMouseMove = { this._onShowToolbar }
-                    ref = { this._setBackground }>
-                    <ConferenceInfo />
+                    id = 'layout_wrapper'
+                    onMouseEnter = { this._onMouseEnter }
+                    onMouseLeave = { this._onMouseLeave }
+                    onMouseMove = { this._onMouseMove } >
+                    <div
+                        className = { _layoutClassName }
+                        id = 'videoconference_page'
+                        onMouseMove = { this._onShowToolbar }
+                        ref = { this._setBackground }>
+                        <ConferenceInfo />
 
-                    <Notice />
-                    <div id = 'videospace'>
-                        <LargeVideo />
-                        {!_isParticipantsPaneVisible
-                         && <div id = 'notification-participant-list'>
-                             <KnockingParticipantList />
-                         </div>}
-                        <Filmstrip />
-                        { this._renderRandomSelectionCountdown() }
+                        <Notice />
+                        <div id = 'videospace'>
+                            <LargeVideo />
+                            {!_isParticipantsPaneVisible
+                            && <div id = 'notification-participant-list'>
+                                <KnockingParticipantList />
+                            </div>}
+                            <Filmstrip />
+                            { this._renderRandomSelectionCountdown() }
+                        </div>
+
+                        { _showPrejoin || _showLobby || <Toolbox showDominantSpeakerName = { true } /> }
+                        <Chat />
+
+                        { this.renderNotificationsContainer() }
+
+                        <CalleeInfoContainer />
+
+                        { _showPrejoin && <Prejoin />}
+                        { _showLobby && <LobbyScreen />}
+                        { _reactionsQueue.map(({ reaction, uid }, index) => (<ReactionEmoji
+                            index = { index }
+                            key = { uid }
+                            reaction = { reaction }
+                            uid = { uid } />))}
+
                     </div>
-
-                    { _showPrejoin || _showLobby || <Toolbox showDominantSpeakerName = { true } /> }
-                    <Chat />
-
-                    { this.renderNotificationsContainer() }
-
-                    <CalleeInfoContainer />
-
-                    { _showPrejoin && <Prejoin />}
-                    { _showLobby && <LobbyScreen />}
-                    { _reactionsQueue.map(({ reaction, uid }, index) => (<ReactionEmoji
-                        index = { index }
-                        key = { uid }
-                        reaction = { reaction }
-                        uid = { uid } />))}
-
+                    <ParticipantsPane />
                 </div>
-                <ParticipantsPane />
-            </div>
+            </Fragment>
         );
     }
 
@@ -412,6 +417,7 @@ function _mapStateToProps(state) {
         _layoutClassName: LAYOUT_CLASSNAMES[getCurrentLayout(state)],
         _mouseMoveCallbackInterval: mouseMoveCallbackInterval,
         _reactionsQueue: getReactionsQueue(state),
+        _customBranding: getCustomBranding(state),
         _roomName: getConferenceNameForTitle(state),
         _showLobby: getIsLobbyVisible(state),
         _startCountdown: startCountdown,

@@ -404,6 +404,22 @@ class DeviceSelection extends AbstractDialogTab<Props, State> {
             }
         ];
 
+        if (!this.props.hideVideoOutputSelect) {
+            configurations.unshift({
+                devices: availableDevices.videoInput,
+                hasPermission: hasVideoPermission,
+                icon: 'icon-camera',
+                isDisabled: this.props.disableDeviceChange,
+                key: 'videoInput',
+                id: 'videoInput',
+                label: 'settings.selectCamera',
+                onSelect: selectedVideoInputId =>
+                    super._onChange({ selectedVideoInputId }),
+                selectedDeviceId: this.state.previewVideoTrack
+                    ? this.state.previewVideoTrack.getDeviceId() : null
+            });
+        }
+
         if (!this.props.hideAudioOutputSelect) {
             configurations.push({
                 devices: availableDevices.audioOutput,

@@ -18,7 +18,7 @@ type Props = {
     /**
      * External handler for click action.
      */
-     handleClick: Function,
+    handleClick: Function,
 
     /**
      * Indicates whether audio permissions have been granted or denied.

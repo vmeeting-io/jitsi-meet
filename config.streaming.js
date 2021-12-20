@@ -132,7 +132,7 @@ var config = {
     // enableReactions: true,
 
     // Disables polls feature.
-    // disablePolls: true,
+    disablePolls: true,
 
     // Disables ICE/UDP by filtering out local and remote UDP candidates in
     // signalling.
@@ -284,7 +284,7 @@ var config = {
     // Recording
 
     // Whether to enable file recording or not.
-    fileRecordingsEnabled: true,
+    // fileRecordingsEnabled: false,
     // Enable the dropbox integration.
     // dropbox: {
     //     appKey: '<APP_KEY>' // Specify your app key here.
@@ -305,7 +305,7 @@ var config = {
     // fileRecordingsServiceSharingEnabled: false,
 
     // Whether to enable live streaming or not.
-    liveStreamingEnabled: true,
+    // liveStreamingEnabled: false,
 
     // Transcription (in interface_config,
     // subtitles and buttons can be configured)
@@ -426,7 +426,7 @@ var config = {
            720: 'high'
        },
 
-       // resizeDesktopForPresenter: true,
+    //    resizeDesktopForPresenter: true,
     },
 
     // // Options for the recording limit notification.
@@ -503,7 +503,7 @@ var config = {
 
     // Enabling the close page will ignore the welcome page redirection when
     // a call is hangup.
-    // enableClosePage: true,
+    enableClosePage: true,
 
     // Disable hiding of remote thumbnails when in a 1-on-1 conference call.
     // Setting this to null, will also disable showing the remote videos
@@ -515,7 +515,7 @@ var config = {
 
     // Disables profile and the edit of all fields from the profile settings (display name and email)
     // disableProfile: false,
-
+    
     // Whether or not some features are checked based on token.
     // enableFeaturesBasedOnToken: true,
 
@@ -576,37 +576,37 @@ var config = {
     // - 'desktop' controls the "Share your screen" button
     // - if `toolbarButtons` is undefined, we fallback to enabling all buttons on the UI
     toolbarButtons: [
-       // 'ar-effect',
+    //    'ar-effect',
        'camera',
        'chat',
-       'closedcaptions',
+    //    'closedcaptions',
        'desktop',
        'download',
-       'embedmeeting',
+    //    'embedmeeting',
        'etherpad',
        'feedback',
        'filmstrip',
        'fullscreen',
-       'hangup',
+    //    'hangup',
        'help',
-       'invite',
-       'livestreaming',
+    //    'invite',
+    //    'livestreaming',
        'microphone',
-       'mute-everyone',
-       'mute-video-everyone',
-       'participants',
+    //    'mute-everyone',
+    //    'mute-video-everyone',
+    //    'participants',
        'profile',
-       'raisehand',
-       'recording',
-       'security',
+    //    'raisehand',
+    //    'recording',
+    //    'security',
        'select-background',
        'settings',
-       'shareaudio',
-       'sharedvideo',
-       'shortcuts',
-       'stats',
-       'tileview',
-       'toggle-camera',
+    //    'shareaudio',
+    //    'sharedvideo',
+    //    'shortcuts',
+    //    'stats',
+    //    'tileview',
+    //    'toggle-camera',
        'videoquality',
        '__end'
     ],
@@ -975,10 +975,10 @@ var config = {
     // moderatedRoomServiceUrl: 'https://moderated.jitsi-meet.example.com',
 
     // If true, tile view will not be enabled automatically when the participants count threshold is reached.
-    // disableTileView: true,
+    disableTileView: true,
 
     // Hides the conference subject
-    // hideConferenceSubject: true,
+    hideConferenceSubject: true,
 
     // Hides the recording label
     // hideRecordingLabel: false,
@@ -1099,28 +1099,37 @@ var config = {
         },
     },
 
-    // autoPinEnabled: true,
-    // autoTileViewDisabled: true,
-    // chatOnlyGuestEnabled: true,
-    // waitOnlyGuestEnabled: true,
-    // hideLocalVideo: true,
-    // hideRemoteVideos: true,
-    // autoRecord: true,
+    autoPinEnabled: true,
+    autoTileViewDisabled: true,
+    chatOnlyGuestEnabled: true,
+    waitOnlyGuestEnabled: true,
+    hideLocalVideo: true,
+    hideRemoteVideos: true,
+    autoRecord: true,
     // followMeEnabled: false,
-    // disableGrantModerator: false,
-    // disablePrivateMessage: true,
-    // disableDesktopSharing: 'guest',    // true, false, 'guest'
+    disableGrantModerator: false,
+    disablePrivateMessage: true,
+    disableDesktopSharing: 'guest',    // true, false, 'guest'
 
     // If true, tile view will not be enabled automatically when the participants count threshold is reached.
     // disableTileView: true,           // true, false, 'guest'
+
+    // Hides the conference timer.
+    // hideConferenceTimer: true,
+
+    // Hides the participants stats
+    hideParticipantsStats: true,     // true, false, 'guest'
+
+    // Sets the conference subject
+    // subject: 'Conference Subject',
 
     // enableChatControl: true,
 
     // disableRemoteMute: true,
     // disableSortable: false,
-    // hideEmailSetting: true,
-    // disableUserRegistration: true,
-    // hideSelectBackground: 'guest',     // true, false, 'guest'
+    hideEmailSetting: false,
+    disableUserRegistration: false,
+    hideSelectBackground: 'guest',     // true, false, 'guest'
 
     /**
      * Default interval (milliseconds) for triggering mouseMoved iframe API event

@@ -772,6 +772,7 @@ class Thumbnail extends Component<Props, State> {
             _defaultLocalDisplayName,
             _disableLocalVideoFlip,
             _height,
+            _hideLocalVideo,
             _isMobile,
             _isMobilePortrait,
             _isScreenSharing,
@@ -811,12 +812,14 @@ class Thumbnail extends Component<Props, State> {
                 ) }
                 style = { styles.thumbnail }>
                 <div className = 'videocontainer__background' />
-                <span id = 'localVideoWrapper'>
-                    <VideoTrack
-                        className = { videoTrackClassName }
-                        id = 'localVideo_container'
-                        videoTrack = { _videoTrack } />
-                </span>
+                { !_hideLocalVideo && (
+                    <span id = 'localVideoWrapper'>
+                        <VideoTrack
+                            className = { videoTrackClassName }
+                            id = 'localVideo_container'
+                            videoTrack = { _videoTrack } />
+                    </span>
+                )}
                 { isTileView  
                     ? <div className = 'videocontainer__toolbar'>
                         <StatusIndicators participantID = { id } />
@@ -1127,6 +1130,7 @@ function _mapStateToProps(state, ownProps): Object {
         _defaultLocalDisplayName: interfaceConfig.DEFAULT_LOCAL_DISPLAY_NAME,
         _disableLocalVideoFlip: Boolean(disableLocalVideoFlip),
         _disableProfile: disableProfile,
+        _hideLocalVideo: Boolean(state['features/base/config'].hideLocalVideo),
         _isHidden: isLocal && iAmRecorder && !iAmSipGateway,
         _isAudioOnly: Boolean(state['features/base/audio-only'].enabled),
         _isCurrentlyOnLargeVideo: state['features/large-video']?.participantId === id,

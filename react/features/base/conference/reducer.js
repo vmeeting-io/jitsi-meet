@@ -2,6 +2,7 @@
 
 import { LOCKED_LOCALLY, LOCKED_REMOTELY } from '../../room-lock';
 import { SET_PUBLIC_SCOPE_ENABLED } from '../../security';
+import { VIDEO_QUALITY_LEVELS } from '../../video-quality/constants';
 import { CONNECTION_WILL_CONNECT, SET_LOCATION_URL } from '../connection';
 import { JitsiConferenceErrors } from '../lib-jitsi-meet';
 import { assign, ReducerRegistry, set } from '../redux';

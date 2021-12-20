@@ -6,7 +6,7 @@ import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { IconArrowUp } from '../../../base/icons';
 import { connect } from '../../../base/redux';
-import { ToolboxButtonWithIcon } from '../../../base/toolbox/components';
+import { ToolboxButtonWithIcon } from '../../../base/toolbox/components/web';
 import { getLocalJitsiVideoTrack } from '../../../base/tracks';
 import { toggleVideoSettings, VideoSettingsPopup } from '../../../settings';
 import { getVideoSettingsVisibility } from '../../../settings/functions';
@@ -67,7 +67,7 @@ type Props = {
  */
 class VideoSettingsButton extends Component<Props> {
     /**
-     * Initializes a new {@code VideoSettingsButton} instance.
+     * Initializes a new {@code AudioSettingsButton} instance.
      *
      * @inheritdoc
      */

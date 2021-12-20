@@ -105,8 +105,8 @@
             "chat": "채팅",
             "polls": "투표"
         },
-        "title": "채팅 / 투표",
-        "titleWithPolls": "채팅",
+        "title": "채팅",
+        "titleWithPolls": "채팅 / 투표",
         "you": "나"
     },
     "chromeExtensionBanner": {
@@ -301,6 +301,7 @@
         "emailErrInUse": "이메일이 이미 사용 중입니다.",
         "emailErrInvalid": "잘못된 이메일 주소입니다.",
         "enterDisplayName": "이름",
+        "enterDisplayNameToJoin": "회의에 참가하려면 이름을 입력하세요",
         "enterOrganizationName": "소속",
         "error": "에러",
         "goHome": "홈으로",
@@ -1134,6 +1135,7 @@
             "selectBackground": "배경 선택"
         },
         "addPeople": "통화에 사용자 추가",
+        "audioSettings": "오디오 설정",
         "audioOnlyOff": "영상회의로 전환",
         "audioOnlyOn": "음성회의로 전환",
         "audioRoute": "음성 장비 선택하기",
@@ -1231,6 +1233,7 @@
         "videomute": "카메라 켜기/끄기",
         "whiteboardClose": "판서 닫기",
         "whiteboardOpen": "판서 열기",
+        "videoSettings": "비디오 설정",
         "selectBackground": "배경 선택"
     },
     "transcribing": {

@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => {
             background: 'rgba(0, 0, 0, 0.6)',
             borderRadius: '3px',
             color: theme.palette.text01,
-            maxWidth: '50%',
+            // maxWidth: '50%',
             overflow: 'hidden',
             padding: '2px 16px',
             textOverflow: 'ellipsis',

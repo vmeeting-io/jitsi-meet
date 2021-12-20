@@ -48,7 +48,9 @@ declare var interfaceConfig: Object;
  * @returns {boolean}
  */
 export function isFilmstripVisible(stateful: Object | Function) {
-    return toState(stateful)['features/filmstrip'].visible;
+    const { hideLocalVideo, hideRemoteVideos } = toState(stateful)['features/base/config'];
+    return toState(stateful)['features/filmstrip'].visible
+        && !(hideLocalVideo && hideRemoteVideos);
 }
 
 /**

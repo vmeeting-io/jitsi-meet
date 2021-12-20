@@ -334,7 +334,7 @@ class Toolbox extends Component<Props, State> {
                 exec: this._onShortcutToggleScreenshare,
                 helpDescription: 'keyboardShortcuts.toggleScreensharing'
             },
-            isToolbarButtonEnabled('participants-pane', _toolbarButtons) && {
+            isToolbarButtonEnabled('participants', _toolbarButtons) && {
                 character: 'P',
                 exec: this._onShortcutToggleParticipantsPane,
                 helpDescription: 'keyboardShortcuts.toggleParticipantsPane'
@@ -668,7 +668,7 @@ class Toolbox extends Component<Props, State> {
         };
 
         const participants = {
-            key: 'participants-pane',
+            key: 'participants',
             Content: ParticipantsPaneButton,
             handleClick: this._onToolbarToggleParticipantsPane,
             group: 2
@@ -882,6 +882,8 @@ class Toolbox extends Component<Props, State> {
     _getVisibleButtons() {
         const {
             _clientWidth,
+            _conference,
+            _isChatOnly,
             _toolbarButtons
         } = this.props;
 
@@ -890,21 +892,26 @@ class Toolbox extends Component<Props, State> {
 
         this._overwriteButtonsClickHandlers(buttons);
         const isHangupVisible = isToolbarButtonEnabled('hangup', _toolbarButtons);
-        const { order } = THRESHOLDS.find(({ width }) => _clientWidth > width)
+        let { order } = THRESHOLDS.find(({ width }) => _clientWidth > width)
             || THRESHOLDS[THRESHOLDS.length - 1];
         let sliceIndex = order.length + 2;
+
+        if (_conference) {
+            order = order.filter(key => _toolbarButtons.includes(key));
+            sliceIndex = order.length + 1;
+        }
 
         const keys = Object.keys(buttons);
 
         const filtered = [
             ...order.map(key => buttons[key]),
             ...Object.values(buttons).filter((button, index) => !order.includes(keys[index]))
-        ].filter(Boolean).filter(({ key, alias = NOT_APPLICABLE }) =>
-            isToolbarButtonEnabled(key, _toolbarButtons) || isToolbarButtonEnabled(alias, _toolbarButtons));
-
-        if (isHangupVisible) {
-            sliceIndex -= 1;
-        }
+        ].filter(Boolean).filter(({ key, alias = NOT_APPLICABLE }) => {
+            if (_conference && _isChatOnly) {
+                return key === 'chat';
+            }
+            return isToolbarButtonEnabled(key, _toolbarButtons) || isToolbarButtonEnabled(alias, _toolbarButtons);
+        });
 
         // This implies that the overflow button will be displayed, so save some space for it.
         if (sliceIndex < filtered.length) {
@@ -1369,6 +1376,8 @@ function _mapStateToProps(state, ownProps) {
     let desktopSharingEnabled = JitsiMeetJS.isDesktopSharingEnabled();
     const {
         callStatsID,
+        chatOnlyGuestEnabled,
+        disableDesktopSharing,
         disableProfile,
         disableShortcuts,
         enableFeaturesBasedOnToken,
@@ -1382,6 +1391,7 @@ function _mapStateToProps(state, ownProps) {
     const localVideo = getLocalVideoTrack(state['features/base/tracks']);
     const { clientWidth } = state['features/base/responsive-ui'];
     const participantCount = getParticipantCount(state);
+    const isGuest = !isHost(state);
 
     let desktopSharingDisabledTooltipKey;
 
@@ -1392,6 +1402,11 @@ function _mapStateToProps(state, ownProps) {
             desktopSharingEnabled = haveParticipantWithScreenSharingFeature(state);
             desktopSharingDisabledTooltipKey = 'dialog.shareYourScreenDisabled';
         }
+    } else if (desktopSharingEnabled && Boolean(disableDesktopSharing)) {
+        desktopSharingEnabled = !(
+            disableDesktopSharing === true ||
+            (disableDesktopSharing === 'guest' && isGuest)
+        );
     }
 
     let { toolbarButtons } = ownProps;
@@ -1417,6 +1432,7 @@ function _mapStateToProps(state, ownProps) {
         _disableShortcuts: Boolean(disableShortcuts),
         _feedbackConfigured: Boolean(callStatsID),
         _fullScreen: fullScreen,
+        _isChatOnly: isGuest && chatOnlyGuestEnabled,
         _isMobile: isMobileBrowser(),
         _isProfileDisabled: Boolean(disableProfile),
         _isVideoSettingsVisible: !_screenSharing || !browser.isSafari(),

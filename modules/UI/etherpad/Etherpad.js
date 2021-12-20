@@ -233,5 +233,36 @@ export default class EtherpadManager {
             ETHERPAD_CONTAINER_TYPE, !isVisible);
 
         APP.store.dispatch(setDocumentEditingState(!isVisible));
+
+        if(isVisible){
+            VideoLayout.removeLargeVideoContainer(ETHERPAD_CONTAINER_TYPE);
+            this.etherpad = null;
+        }
+    }
+
+    reloadForModerator(){
+        //not using getSharedDocumentUrl because redux state is not updated yet at the time this function is calling
+        const state = APP.store.getState();
+        const { documentUrl } = state['features/etherpad'];
+        const { displayName } = state['features/base/settings'];
+
+        if (!documentUrl) {
+            return undefined;
+        }
+
+        const ETHERPAD_OPTIONS = {
+            adminOnly: true,
+            isAdmin: true
+        };
+
+        const params = new URLSearchParams(ETHERPAD_OPTIONS);
+
+        if (displayName) {
+            params.append('userName', displayName);
+        }
+
+        const url = `${documentUrl}?${params.toString()}`;
+
+        this.etherpad.iframe.src = url;
     }
 }

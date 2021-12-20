@@ -9,9 +9,9 @@ import { getJwtName } from '../jwt/functions';
 import { getLocalParticipant, participantUpdated } from '../participants';
 import { MiddlewareRegistry } from '../redux';
 import { parseURLParams } from '../util';
+import { updateSettings } from './actions';
 
 import { SETTINGS_UPDATED } from './actionTypes';
-import { updateSettings } from './actions';
 import { handleCallIntegrationChange, handleCrashReportingChange } from './functions';
 
 

@@ -10,7 +10,6 @@ import { getParticipantCount } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { SpeakerStats } from '../../../speaker-stats';
 
-
 /**
  * The type of the React {@code Component} props of {@link ParticipantsCount}.
  */
@@ -72,10 +71,13 @@ class ParticipantsCount extends PureComponent<Props> {
      * @returns {ReactElement}
      */
     render() {
+        const { _hideParticipantsStats } = this.props;
+        const className = _hideParticipantsStats ? 'readonly' : '';
+
         return (
             <div
-                className = 'participants-count'
-                onClick = { this._onClick }>
+                className = { `participants-count ${className}` }
+                onClick = { _hideParticipantsStats ? undefined : this._onClick }>
                 <Label
                     className = 'label--white'
                     icon = { IconUserGroups }
@@ -96,6 +98,7 @@ class ParticipantsCount extends PureComponent<Props> {
  */
 function mapStateToProps(state) {
     return {
+        _hideParticipantsStats: state['features/base/config'].hideParticipantsStats,
         conference: state['features/base/conference'].conference,
         count: getParticipantCount(state)
     };

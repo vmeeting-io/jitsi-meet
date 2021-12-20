@@ -228,7 +228,6 @@ function _mapStateToProps(state) {
     const {
         hideConferenceTimer,
         hideConferenceSubject,
-        hideParticipantsStats,
         hideRecordingLabel,
         iAmRecorder
     } = state['features/base/config'];
@@ -249,7 +248,7 @@ function _mapStateToProps(state) {
         _hideRecordingLabel: shouldHideRecordingLabel,
         _fullWidth: state['features/video-layout'].tileViewEnabled,
         // _isHost: isHost(state),
-        _showParticipantCount: participantCount > 2 && !hideParticipantsStats,
+        _showParticipantCount: participantCount > 2,
         _showSubject: !hideConferenceSubject,
         _subject: hideConferenceSubject ? '' : getConferenceName(state),
         _visible: Boolean(timeRemained) || isToolboxVisible(state),

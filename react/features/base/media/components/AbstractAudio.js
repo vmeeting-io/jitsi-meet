@@ -71,7 +71,11 @@ export default class AbstractAudio extends Component<Props> {
      * @returns {void}
      */
     pause(): void {
-        this._audioElementImpl && this._audioElementImpl.pause();
+        try {
+            this._audioElementImpl && this._audioElementImpl.pause();
+        } catch(e) {
+            console.error('AbstractAudio.pause is failed.', e);
+        }
     }
 
     /**
@@ -81,7 +85,11 @@ export default class AbstractAudio extends Component<Props> {
      * @returns {void}
      */
     play(): void {
-        this._audioElementImpl && this._audioElementImpl.play();
+        try {
+            this._audioElementImpl && this._audioElementImpl.play();
+        } catch(e) {
+            console.error('AbstractAudio.play is failed.', e);
+        }
     }
 
     setAudioElementImpl: ?AudioElement => void;
@@ -126,6 +134,10 @@ export default class AbstractAudio extends Component<Props> {
      * @returns {void}
      */
     stop(): void {
-        this._audioElementImpl && this._audioElementImpl.stop();
+        try {
+            this._audioElementImpl && this._audioElementImpl.stop();
+        } catch(e) {
+            console.error('AbstractAudio.stop is failed.', e);
+        }
     }
 }

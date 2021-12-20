@@ -205,7 +205,11 @@ class HangupButton extends AbstractHangupButton<Props, *> {
      * @inheritdoc
      * @returns {ReactElement}
      */
-     render() {
+    render() {
+        if (!this.props.visible) {
+            return null;
+        }
+
         const { isOpen, showSelectModerator } = this.state;
         const children = (
             <ul

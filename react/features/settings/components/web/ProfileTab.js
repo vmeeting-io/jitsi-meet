@@ -23,6 +23,7 @@ import ko from '../../../../components/DatePicker/locale/ko_KR';
 import { DEFAULT_BIRTHDATE } from '../../../base/participants/constants';
 
 declare var APP: Object;
+declare var config: Object;
 
 const DATE_FORMAT = "YYYY-MM-DD";
 const locales = {
@@ -167,17 +168,20 @@ class ProfileTab extends AbstractDialogTab<Props> {
                             type = 'text'
                             value = { displayName } />
                     </div>
-                    <div className = 'profile-edit-field'>
-                        <FieldTextStateless
-                            compact = { true }
-                            id = 'setEmail'
-                            label = { t('profile.setEmailLabel') }
-                            onChange = { this._onEmailChange }
-                            placeholder = { t('profile.setEmailInput') }
-                            shouldFitContainer = { true }
-                            type = 'text'
-                            value = { email } />
-                    </div>
+                    { !config.hideEmailSetting && (
+                        <div className = 'profile-edit-field'>
+                            <FieldTextStateless
+                                compact = { true }
+                                id = 'setEmail'
+                                label = { t('profile.setEmailLabel') }
+                                // eslint-disable-next-line react/jsx-no-bind
+                                onChange = { this._onEmailChange }
+                                placeholder = { t('profile.setEmailInput') }
+                                shouldFitContainer = { true }
+                                type = 'text'
+                                value = { email } />
+                        </div>
+                    )}
                 </div>
 
                 {/* display the date picker field and corresponding footnote only if the user has logged in */}

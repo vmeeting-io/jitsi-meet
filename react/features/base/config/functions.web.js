@@ -1,8 +1,5 @@
 // @flow
 
-import React from 'react';
-import { Helmet } from 'react-helmet';
-
 import { TOOLBAR_BUTTONS } from './constants';
 
 export * from './functions.any';
@@ -70,31 +67,4 @@ export function isToolbarButtonEnabled(buttonName: string, state: Object | Array
     const buttons = Array.isArray(state) ? state : getToolbarButtons(state);
 
     return buttons.includes(buttonName);
-}
-
-export function getCustomBranding(state: Object) {
-    const { customBranding } = state['features/base/config'] || {};
-
-    if (customBranding) {
-        const { title, description, keywords, thumb, favicon } = customBranding;
-
-        return (
-            <Helmet>
-                {title && <title>{title}</title>}
-                {description && <meta name="description" content={description} />}
-                {keywords && <meta name="keywords" content={keywords} />}
-                {title && <meta name="og:title" content={title} />}
-                {thumb && <meta name="og:image" content={thumb} />}
-                {description && <meta name="og:description" content={description} />}
-                {description && <meta description={description} />}
-                {title && <meta itemprop="name" content={title} />}
-                {description && <meta itemprop="description" content={description} />}
-                {thumb && <meta itemprop="image" content={thumb} />}
-                {favicon && <link rel="apple-touch-icon" type="image/png" href={favicon} />}
-                {favicon && <link rel="icon" type="image/png" href={favicon} />}
-            </Helmet>
-        )
-    } else {
-        return null;
-    }
 }

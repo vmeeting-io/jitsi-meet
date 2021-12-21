@@ -33,7 +33,6 @@ import type { AbstractProps } from '../AbstractConference';
 
 import ConferenceInfo from './ConferenceInfo';
 import { default as Notice } from './Notice';
-import { getCustomBranding } from '../../../base/config';
 
 declare var APP: Object;
 declare var interfaceConfig: Object;
@@ -221,56 +220,52 @@ class Conference extends AbstractConference<Props, *> {
             _isParticipantsPaneVisible,
             _layoutClassName,
             _reactionsQueue,
-            _customBranding,
             _showLobby,
             _showPrejoin
         } = this.props;
 
         return (
-            <Fragment>
-                { _customBranding }
+            <div
+                id = 'layout_wrapper'
+                onMouseEnter = { this._onMouseEnter }
+                onMouseLeave = { this._onMouseLeave }
+                onMouseMove = { this._onMouseMove } >
                 <div
-                    id = 'layout_wrapper'
-                    onMouseEnter = { this._onMouseEnter }
-                    onMouseLeave = { this._onMouseLeave }
-                    onMouseMove = { this._onMouseMove } >
-                    <div
-                        className = { _layoutClassName }
-                        id = 'videoconference_page'
-                        onMouseMove = { this._onShowToolbar }
-                        ref = { this._setBackground }>
-                        <ConferenceInfo />
+                    className = { _layoutClassName }
+                    id = 'videoconference_page'
+                    onMouseMove = { this._onShowToolbar }
+                    ref = { this._setBackground }>
+                    <ConferenceInfo />
 
-                        <Notice />
-                        <div id = 'videospace'>
-                            <LargeVideo />
-                            {!_isParticipantsPaneVisible
-                            && <div id = 'notification-participant-list'>
-                                <KnockingParticipantList />
-                            </div>}
-                            <Filmstrip />
-                            { this._renderRandomSelectionCountdown() }
-                        </div>
-
-                        { _showPrejoin || _showLobby || <Toolbox showDominantSpeakerName = { true } /> }
-                        <Chat />
-
-                        { this.renderNotificationsContainer() }
-
-                        <CalleeInfoContainer />
-
-                        { _showPrejoin && <Prejoin />}
-                        { _showLobby && <LobbyScreen />}
-                        { _reactionsQueue.map(({ reaction, uid }, index) => (<ReactionEmoji
-                            index = { index }
-                            key = { uid }
-                            reaction = { reaction }
-                            uid = { uid } />))}
-
+                    <Notice />
+                    <div id = 'videospace'>
+                        <LargeVideo />
+                        {!_isParticipantsPaneVisible
+                        && <div id = 'notification-participant-list'>
+                            <KnockingParticipantList />
+                        </div>}
+                        <Filmstrip />
+                        { this._renderRandomSelectionCountdown() }
                     </div>
-                    <ParticipantsPane />
+
+                    { _showPrejoin || _showLobby || <Toolbox showDominantSpeakerName = { true } /> }
+                    <Chat />
+
+                    { this.renderNotificationsContainer() }
+
+                    <CalleeInfoContainer />
+
+                    { _showPrejoin && <Prejoin />}
+                    { _showLobby && <LobbyScreen />}
+                    { _reactionsQueue.map(({ reaction, uid }, index) => (<ReactionEmoji
+                        index = { index }
+                        key = { uid }
+                        reaction = { reaction }
+                        uid = { uid } />))}
+
                 </div>
-            </Fragment>
+                <ParticipantsPane />
+            </div>
         );
     }
 
@@ -417,7 +412,6 @@ function _mapStateToProps(state) {
         _layoutClassName: LAYOUT_CLASSNAMES[getCurrentLayout(state)],
         _mouseMoveCallbackInterval: mouseMoveCallbackInterval,
         _reactionsQueue: getReactionsQueue(state),
-        _customBranding: getCustomBranding(state),
         _roomName: getConferenceNameForTitle(state),
         _showLobby: getIsLobbyVisible(state),
         _startCountdown: startCountdown,

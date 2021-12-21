@@ -31,7 +31,3 @@ export function _cleanupConfig(config: Object) {
 export function getReplaceParticipant(state: Object): string {
     return getFeatureFlag(state, REPLACE_PARTICIPANT, false);
 }
-
-export function getCustomBranding(statefull: Function | Object) {
-    return null;
-}

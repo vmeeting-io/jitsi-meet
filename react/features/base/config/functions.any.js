@@ -4,10 +4,13 @@ import Bourne from '@hapi/bourne';
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import _ from 'lodash';
 
+import React from 'react';
+import { Helmet } from 'react-helmet';
+
 import { parseURLParams } from '../util';
 
 import CONFIG_WHITELIST from './configWhitelist';
-import { _CONFIG_STORE_PREFIX } from './constants';
+import { DEFAULT_METAS, _CONFIG_STORE_PREFIX } from './constants';
 import INTERFACE_CONFIG_WHITELIST from './interfaceConfigWhitelist';
 import logger from './logger';
 

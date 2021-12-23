@@ -18,6 +18,7 @@ import {
     startKnocking,
     setPasswordJoinFailed
 } from './actions';
+import { appNavigate } from '../app/actions';
 
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
@@ -119,6 +120,7 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
         }));
     }
 
+    dispatch(appNavigate(undefined));
     return next(action);
 }
 

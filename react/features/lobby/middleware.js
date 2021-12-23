@@ -111,6 +111,7 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
     }
 
     dispatch(hideLobbyScreen());
+    dispatch(appNavigate(undefined));
 
     if (error.name === JitsiConferenceErrors.CONFERENCE_ACCESS_DENIED) {
         dispatch(showNotification({
@@ -120,7 +121,6 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
         }));
     }
 
-    dispatch(appNavigate(undefined));
     return next(action);
 }
 

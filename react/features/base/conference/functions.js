@@ -475,11 +475,14 @@ export function getRoomInfo(store) {
         room: store.getState()['features/base/conference'].roomInfo,
 
         // update conference database information to set 
-        // 1. userDeviceAccessDisabled fieldroom: store.getState()['features/base/conference'].roomInfo,
-        // 2. timerEndTime: End time of timerclock.
+        // 1. timerEndTime: End time of timerclock.
         config:{
             headers: { Authorization: `Bearer ${process.env.VMEETING_API_TOKEN}`}
         },
         apiBaseUrl : `${store.getState()['features/base/connection'].locationURL.origin}${process.env.VMEETING_API_BASE}`,
     };
+}
+
+export function isStartCountDown(state) {
+    return state['features/base/conference'].startCountDown;
 }

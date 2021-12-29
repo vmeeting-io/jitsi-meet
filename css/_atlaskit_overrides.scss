@@ -1,7 +1,7 @@
 /**
  * Mixins that mimic the way Atlaskit fills the screen with modals at low screen widths.
  */
-@mixin full-size-modal-positioner() {
+ @mixin full-size-modal-positioner() {
     height: 100%;
     left: 0;
     position: fixed;

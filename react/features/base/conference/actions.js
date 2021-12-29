@@ -3,7 +3,6 @@
 import type { Dispatch } from 'redux';
 
 import {
-    createRemotelyMutedEvent,
     createStartMutedConfigurationEvent,
     sendAnalytics
 } from '../../analytics';
@@ -54,7 +53,6 @@ import {
     SET_ROOM,
     SET_PENDING_SUBJECT_CHANGE,
     SET_START_MUTED_POLICY,
-    SET_USER_DEVICE_ACCESS_DISABLED,
     START_RANDOM_SELECTION_COUNTDOWN,
     START_TIMER 
 } from './actionTypes';
@@ -274,11 +272,6 @@ function _addConferenceListeners(conference, dispatch, state) {
         }
 
         const doMute = (mute) => {
-            // TODO: Add a way to differentiate between commands which caused
-            // us to mute and those that did not change our state (i.e. we were
-            // already muted).
-            sendAnalytics(createRemotelyMutedEvent(MEDIA_TYPE.AUDIO));
-
             conference.mutedByFocusActor = actor;
 
             // set isMutedByFocus when setAudioMute Promise ends
@@ -334,11 +327,6 @@ function _addConferenceListeners(conference, dispatch, state) {
             return;
         }
         const doMute = mute => {
-            // TODO: Add a way to differentiate between commands which caused
-            // us to mute and those that did not change our state (i.e. we were
-            // already muted).
-            sendAnalytics(createRemotelyMutedEvent(MEDIA_TYPE.VIDEO));
-
             conference.mutedVideoByFocusActor = actor;
 
             // set isVideoMutedByFocus when setVideoMute Promise ends
@@ -922,28 +910,6 @@ export function setStartMutedPolicy(
             onStartMutedPolicyChanged(startAudioMuted, startVideoMuted));
     };
 }
-
-// start of added portion
-/**
- * Sets whether or not remote participants should be disabled to access their devices
- *
- * @param {boolean} userDeviceAccessDisabled - whether or not remote participants access to their device is disabled
- * @returns {Function}
- */
-export function setUserDeviceAccessDisabled(userDeviceAccessDisabled: boolean) {
-    return {
-        type: SET_USER_DEVICE_ACCESS_DISABLED,
-        userDeviceAccessDisabled
-    }
-}
-
-export function deviceAccessDisabled(userDeviceAccessDisabled: boolean) {
-    return {
-        type: DEVICE_ACCESS_DISABLED,
-        userDeviceAccessDisabled
-    }
-}
-// end of added portion
 
 /**
  * Function that begins a countdown timer during a meeting.

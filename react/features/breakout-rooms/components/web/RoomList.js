@@ -1,100 +1,43 @@
 // @flow
 
-import _ from 'lodash';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { ThemeProvider } from 'styled-components';
 
+import useContextMenu from '../../../base/components/context-menu/useContextMenu';
 import { getParticipantCount, isLocalParticipantModerator } from '../../../base/participants';
 import { equals } from '../../../base/redux';
-import ParticipantItem from '../../../participants-pane/components/web/ParticipantItem';
-import { findStyledAncestor } from '../../../participants-pane/functions';
-import { getRooms, isInBreakoutRoom, getCurrentRoomId } from '../../functions';
+import { showOverflowDrawer } from '../../../toolbox/functions.web';
+import { getBreakoutRooms, isInBreakoutRoom, getCurrentRoomId } from '../../functions';
 
 import { AutoAssignButton } from './AutoAssignButton';
+import { CollapsibleRoom } from './CollapsibleRoom';
+import JoinActionButton from './JoinQuickActionButton';
 import { LeaveButton } from './LeaveButton';
+import RoomActionEllipsis from './RoomActionEllipsis';
 import { RoomContextMenu } from './RoomContextMenu';
-import { RoomItem } from './RoomItem';
-import { RoomContainer } from './styled';
-import theme from './theme.json';
 
-type NullProto = {
-  [key: string]: any,
-  __proto__: null
-};
+type Props = {
 
-type RaiseContext = NullProto | {
+    /**
+     * Participants search string.
+     */
+    searchString: string
+}
 
-  /**
-   * Target elements against which positioning calculations are made
-   */
-  offsetTarget?: HTMLElement,
-
-  /**
-   * Room reference
-   */
-  room: Object,
-};
-
-const initialState = Object.freeze(Object.create(null));
-
-export const RoomList = () => {
-    const isMouseOverMenu = useRef(false);
+export const RoomList = ({ searchString }: Props) => {
     const currentRoomId = useSelector(getCurrentRoomId);
-    const rooms = Object.values(useSelector(getRooms, equals))
+    const rooms = Object.values(useSelector(getBreakoutRooms, equals))
                     .filter((room: Object) => room.id !== currentRoomId)
                     .sort((p1: Object, p2: Object) => (p1?.name || '').localeCompare(p2?.name || ''));
-    const [ raiseContext, setRaiseContext ] = useState<RaiseContext>(initialState);
     const inBreakoutRoom = useSelector(isInBreakoutRoom);
     const isLocalModerator = useSelector(isLocalParticipantModerator);
     const participantsCount = useSelector(getParticipantCount);
+    const _overflowDrawer = useSelector(showOverflowDrawer);
+    const [ lowerMenu, raiseMenu, toggleMenu, menuEnter, menuLeave, raiseContext ] = useContextMenu();
 
-    const lowerMenu = useCallback(() => {
-        /**
-         * We are tracking mouse movement over the active room item and
-         * the context menu. Due to the order of enter/leave events, we need to
-         * defer checking if the mouse is over the context menu with
-         * queueMicrotask
-         */
-        window.queueMicrotask(() => {
-            if (isMouseOverMenu.current) {
-                return;
-            }
-
-            if (raiseContext !== initialState) {
-                setRaiseContext(initialState);
-            }
-        });
-    }, [ raiseContext ]);
-
-    const raiseMenu = useCallback((room, target) => {
-        setRaiseContext({
-            room,
-            offsetTarget: findStyledAncestor(target, RoomContainer)
-        });
-    }, [ raiseContext ]);
-
-    const toggleMenu = useCallback(room => e => {
-        const { room: raisedRoom } = raiseContext;
-
-        if (raisedRoom && raisedRoom === room) {
-            lowerMenu();
-        } else {
-            raiseMenu(room, e.target);
-        }
-    }, [ raiseContext ]);
-
-    const menuEnter = useCallback(() => {
-        isMouseOverMenu.current = true;
-    }, []);
-
-    const menuLeave = useCallback(() => {
-        isMouseOverMenu.current = false;
-        lowerMenu();
-    }, [ lowerMenu ]);
+    const onRaiseMenu = useCallback(room => target => raiseMenu(room, target), [ raiseMenu ]);
 
     return (
-        <ThemeProvider theme = { theme }>
         <>
             {inBreakoutRoom && <LeaveButton />}
             {!inBreakoutRoom
@@ -102,22 +45,22 @@ export const RoomList = () => {
                 && participantsCount > 2
                 && rooms.length > 1
                 && <AutoAssignButton />}
-            <div>
+            <div id = 'breakout-rooms-list'>
                 {rooms.map((room: Object) => (
-                    <div key = { room.id }>
-                        <RoomItem
-                            isHighlighted = { raiseContext.room === room }
-                            onContextMenu = { toggleMenu(room) }
+                    <React.Fragment key = { room.id }>
+                        <CollapsibleRoom
+                            isHighlighted = { raiseContext.entity === room }
                             onLeave = { lowerMenu }
-                            room = { room } />
-                        {_.map(room.participants || {}, p => (
-                            <ParticipantItem
-                                displayName = { p.displayName }
-                                key = { p.jid }
-                                local = { false }
-                                participantID = { p.jid } />
-                        ))}
-                    </div>
+                            onRaiseMenu = { onRaiseMenu(room) }
+                            room = { room }
+                            searchString = { searchString }>
+                            {!_overflowDrawer && <>
+                                <JoinActionButton room = { room } />
+                                {isLocalModerator && !room.isMainRoom
+                                    && <RoomActionEllipsis onClick = { toggleMenu(room) } />}
+                            </>}
+                        </CollapsibleRoom>
+                    </React.Fragment>
                 ))}
             </div>
             <RoomContextMenu
@@ -126,6 +69,5 @@ export const RoomList = () => {
                 onSelect = { lowerMenu }
                 { ...raiseContext } />
         </>
-        </ThemeProvider>
     );
 };

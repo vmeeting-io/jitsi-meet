@@ -1,6 +1,6 @@
 // @flow
 
-import React, { Component } from 'react';
+import { Component } from 'react';
 
 import { renderConferenceTimer } from '../';
 import { getConferenceTimestamp, getConferenceTimeRemained } from '../../base/conference/functions';

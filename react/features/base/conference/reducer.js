@@ -107,15 +107,6 @@ ReducerRegistry.register(
                 startVideoMutedPolicy: action.startVideoMutedPolicy
             };
         
-        case DEVICE_ACCESS_DISABLED:
-            return  {
-                ...state, 
-                roomInfo : { 
-                    ...state.roomInfo, 
-                    userDeviceAccessDisabled: action.userDeviceAccessDisabled },
-                userDeviceAccessDisabled: action.userDeviceAccessDisabled
-            };
-
         case START_TIMER:
             return {
                 ...state,

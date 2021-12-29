@@ -258,3 +258,23 @@ export function shouldHideShareAudioHelper(state: Object): boolean {
 
     return state['features/base/settings'].hideShareAudioHelper;
 }
+
+/**
+ * Whether we should hide self view.
+ *
+ * @param {Object} state - Redux state.
+ * @returns {boolean}
+ */
+export function shouldHideSelfView(state: Object) {
+    return getParticipantCount(state) === 1 ? false : getHideSelfView(state);
+}
+
+/**
+ * Gets the disable self view setting.
+ *
+ * @param {Object} state - Redux state.
+ * @returns {boolean}
+ */
+export function getHideSelfView(state: Object) {
+    return state['features/base/config'].disableSelfView || state['features/base/settings'].disableSelfView;
+}

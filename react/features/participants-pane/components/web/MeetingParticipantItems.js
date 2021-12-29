@@ -34,7 +34,7 @@ type Props = {
     /**
      * The meeting participants.
      */
-     participantIds: Array<string>,
+    participantIds: Array<string>,
 
     /**
      * Callback used to open an actions drawer for a participant.
@@ -57,6 +57,11 @@ type Props = {
     participantActionEllipsisLabel: string,
 
     /**
+     * Current search string.
+     */
+    searchString?: string,
+
+     /**
      * The translated "you" text.
      */
     youText: string
@@ -78,6 +83,7 @@ function MeetingParticipantItems({
     overflowDrawer,
     raiseContextId,
     participantActionEllipsisLabel,
+    searchString,
     youText
 }) {
     const renderParticipant = id => (
@@ -93,6 +99,7 @@ function MeetingParticipantItems({
             overflowDrawer = { overflowDrawer }
             participantActionEllipsisLabel = { participantActionEllipsisLabel }
             participantID = { id }
+            searchString = { searchString }
             youText = { youText } />
     );
 

@@ -2,22 +2,14 @@
     background-color: $chatBackgroundColor;
     box-sizing: border-box;
     color: #FFF;
-    display: flex;
-    flex-direction: column;
     height: 100%;
-    left: -$sidebarWidth;
-    overflow: hidden;
     position: absolute;
     top: 0;
     width: $sidebarWidth;
     z-index: $sideToolbarContainerZ;
 
-    /**
-     * The sidebar (chat) is off-screen when hidden. Move it flush to the left
-     * side of the window when it should be visible.
-     */
-    &.slideInExt {
-        left: 0;
+    @media (max-width: 580px) {
+        width: 100%;
     }
 }
 

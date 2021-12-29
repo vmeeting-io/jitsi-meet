@@ -35,44 +35,6 @@ export const GRANT_MODERATOR = 'GRANT_MODERATOR';
 export const KICK_PARTICIPANT = 'KICK_PARTICIPANT';
 
 /**
- * Create an action for disabling chat for a participant from the conference.
- *
- * {
- *     type: DISABLE_CHAT_PARTICIPANT,
- *     id: string
- * }
- */
-export const DISABLE_CHAT_PARTICIPANT = 'DISABLE_CHAT_PARTICIPANT';
-
-/**
- * Create an action for disabling chat for all participants in the conference.
- *
- * {
- *     type: DISABLE_CHAT_FOR_ALL
- * }
- */
-export const DISABLE_CHAT_FOR_ALL = 'DISABLE_CHAT_FOR_ALL';
-
-/**
- * Create an action for enabling chat for a participant from the conference.
- *
- * {
- *     type: ENABLE_CHAT_PARTICIPANT,
- *     id: string
- * }
- */
-export const ENABLE_CHAT_PARTICIPANT = 'ENABLE_CHAT_PARTICIPANT';
-
-/**
- * Create an action for enabling chat for all participants in the conference.
- *
- * {
- *     type: ENABLE_CHAT_FOR_ALL
- * }
- */
-export const ENABLE_CHAT_FOR_ALL = 'ENABLE_CHAT_FOR_ALL';
-
-/**
  * Create an action for muting a remote participant.
  *
  * {

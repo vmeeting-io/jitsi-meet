@@ -157,12 +157,9 @@ function _mapStateToProps(state): Object {
     const _disabled = state['features/base/config'].startSilent;
     const enabledFlag = getFeatureFlag(state, AUDIO_MUTE_BUTTON_ENABLED, true);
 
-    let isUserDeviceAccessDisabled = state['features/base/conference'].userDeviceAccessDisabled;
-    isUserDeviceAccessDisabled = false ? undefined : isUserDeviceAccessDisabled;
-
     return {
         _audioMuted,
-        _disabled: !isLocalParticipantAModerator && (_disabled || isUserDeviceAccessDisabled),
+        _disabled: !isLocalParticipantAModerator && _disabled,
         visible: enabledFlag
     };
 }

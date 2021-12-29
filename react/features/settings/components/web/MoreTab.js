@@ -83,16 +83,6 @@ export type Props = {
     startVideoMuted: boolean,
 
     /**
-     * Whether or not the user's access to their device (camera and microphone) is disabled
-     */
-    userDeviceAccessDisabled: boolean,
-
-    /**
-     * Whether or not to enable the option for userDeviceAccessDisabled in moderator tab
-     */
-    enableUserDeviceAccessDisabledOption: Boolean,
-
-    /**
      * Invoked to obtain translated strings.
      */
     t: Function
@@ -428,8 +418,6 @@ class MoreTab extends AbstractDialogTab<Props, State> {
             followMeEnabled,
             startAudioMuted,
             startVideoMuted,
-            userDeviceAccessDisabled,
-            enableUserDeviceAccessDisabledOption,
             t
         } = this.props;
 
@@ -456,20 +444,6 @@ class MoreTab extends AbstractDialogTab<Props, State> {
                     label = { t('settings.followMe') }
                     name = 'follow-me'
                     onChange = { this._onFollowMeEnabledChanged } />
-                { enableUserDeviceAccessDisabledOption && (
-                    <Checkbox 
-                        // isChecked = { conferenceUserDeviceAccessDisabled }
-                        isChecked = { userDeviceAccessDisabled }
-                        // isDisabled = { !enableUserDeviceAccessDisabledOption }
-                        label = { t('settings.disableDeviceAccess') }
-                        name = 'disable-device-access'
-                        // eslint-disable-next-line react/jsx-no-bind
-                        onChange = {
-                            ({ target: { checked } }) => 
-                                // super._onChange({ conferenceUserDeviceAccessDisabled : checked })
-                                super._onChange({ userDeviceAccessDisabled : checked })
-                        } />
-                )}
             </div>
         );
     }

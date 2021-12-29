@@ -1,131 +1,102 @@
 // @flow
 
-import _ from 'lodash';
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
+import { createBreakoutRoomsEvent, sendAnalytics } from '../../../analytics';
+import { ContextMenu, ContextMenuItemGroup } from '../../../base/components';
 import {
     IconClose,
-    IconMeetingUnlocked
+    IconRingGroup
 } from '../../../base/icons';
 import { isLocalParticipantModerator } from '../../../base/participants';
-import { getComputedOuterHeight } from '../../../participants-pane/functions';
+import { showOverflowDrawer } from '../../../toolbox/functions.web';
 import { closeBreakoutRoom, moveToRoom, removeBreakoutRoom } from '../../actions';
-
-import {
-    ContextMenu,
-    ContextMenuIcon,
-    ContextMenuItem,
-    ContextMenuItemGroup,
-    ignoredChildClassName
-} from './styled';
-
 
 type Props = {
 
     /**
-     * Target elements against which positioning calculations are made
+         * Room reference.
+         */
+    entity: Object,
+
+    /**
+     * Target elements against which positioning calculations are made.
      */
     offsetTarget: HTMLElement,
 
     /**
-     * Callback for the mouse entering the component
+     * Callback for the mouse entering the component.
      */
     onEnter: Function,
 
     /**
-     * Callback for the mouse leaving the component
+     * Callback for the mouse leaving the component.
      */
     onLeave: Function,
 
     /**
-     * Callback for making a selection in the menu
+     * Callback for making a selection in the menu.
      */
-    onSelect: Function,
-
-    /**
-     * Room reference
-     */
-    room: Object
+    onSelect: Function
 };
 
 export const RoomContextMenu = ({
+    entity: room,
     offsetTarget,
     onEnter,
     onLeave,
-    onSelect,
-    room
+    onSelect
 }: Props) => {
-    const containerRef = useRef(null);
     const dispatch = useDispatch();
     const { t } = useTranslation();
     const isLocalModerator = useSelector(isLocalParticipantModerator);
-
-    const [ isHidden, setIsHidden ] = useState(true);
-
-    useLayoutEffect(() => {
-        if (room
-            && containerRef.current
-            && offsetTarget?.offsetParent
-            && offsetTarget.offsetParent instanceof HTMLElement
-        ) {
-            const { current: container } = containerRef;
-            const { offsetTop, offsetParent: { offsetHeight, scrollTop } } = offsetTarget;
-            const outerHeight = getComputedOuterHeight(container);
-
-            container.style.top = offsetTop + outerHeight > offsetHeight + scrollTop
-                ? offsetTop - outerHeight
-                : offsetTop;
-
-            setIsHidden(false);
-        } else {
-            setIsHidden(true);
-        }
-    }, [ room, offsetTarget ]);
+    const _overflowDrawer = useSelector(showOverflowDrawer);
 
     const onJoinRoom = useCallback(() => {
-        dispatch(moveToRoom(room.id));
-        setIsHidden(true);
+        sendAnalytics(createBreakoutRoomsEvent('join'));
+        dispatch(moveToRoom(room.jid));
     }, [ dispatch, room ]);
 
     const onRemoveBreakoutRoom = useCallback(() => {
         dispatch(removeBreakoutRoom(room.jid));
-        setIsHidden(true);
     }, [ dispatch, room ]);
 
     const onCloseBreakoutRoom = useCallback(() => {
         dispatch(closeBreakoutRoom(room.id));
-        setIsHidden(true);
     }, [ dispatch, room ]);
+
+    const isRoomEmpty = !(room?.participants && Object.keys(room.participants).length > 0);
+
+    const actions = [
+        _overflowDrawer ? {
+            accessibilityLabel: t('breakoutRooms.actions.join'),
+            icon: IconRingGroup,
+            onClick: onJoinRoom,
+            text: t('breakoutRooms.actions.join')
+        } : null,
+        !room?.isMainRoom && isLocalModerator ? {
+            accessibilityLabel: isRoomEmpty ? t('breakoutRooms.actions.remove') : t('breakoutRooms.actions.close'),
+            icon: IconClose,
+            id: isRoomEmpty ? `remove-room-${room?.id}` : `close-room-${room?.id}`,
+            onClick: isRoomEmpty ? onRemoveBreakoutRoom : onCloseBreakoutRoom,
+            text: isRoomEmpty ? t('breakoutRooms.actions.remove') : t('breakoutRooms.actions.close')
+        } : null
+    ].filter(Boolean);
+
+    const lowerMenu = useCallback(() => onSelect(true));
 
     return (
         <ContextMenu
-            className = { ignoredChildClassName }
-            innerRef = { containerRef }
-            isHidden = { isHidden }
-            onClick = { onSelect }
+            entity = { room }
+            isDrawerOpen = { room }
+            offsetTarget = { offsetTarget }
+            onClick = { lowerMenu }
+            onDrawerClose = { onSelect }
             onMouseEnter = { onEnter }
             onMouseLeave = { onLeave }>
-            <ContextMenuItemGroup>
-                <ContextMenuItem onClick = { onJoinRoom }>
-                    <ContextMenuIcon src = { IconMeetingUnlocked } />
-                    <span>{t('breakoutRooms.actions.join')}</span>
-                </ContextMenuItem>
-                {!room?.isMainRoom
-                    && (_.isEmpty(room?.participants)
-                        ? isLocalModerator
-                            && <ContextMenuItem onClick = { onRemoveBreakoutRoom }>
-                                <ContextMenuIcon src = { IconClose } />
-                                <span>{t('breakoutRooms.actions.remove')}</span>
-                            </ContextMenuItem>
-                        : isLocalModerator
-                            && <ContextMenuItem onClick = { onCloseBreakoutRoom }>
-                                <ContextMenuIcon src = { IconClose } />
-                                <span>{t('breakoutRooms.actions.close')}</span>
-                            </ContextMenuItem>)
-                }
-            </ContextMenuItemGroup>
+            <ContextMenuItemGroup actions = { actions } />
         </ContextMenu>
     );
 };

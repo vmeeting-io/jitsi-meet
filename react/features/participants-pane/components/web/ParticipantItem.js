@@ -1,12 +1,14 @@
 // @flow
 
+import { makeStyles } from '@material-ui/styles';
 import React, { type Node, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { Avatar } from '../../../base/avatar';
+import { ListItem } from '../../../base/components';
 import { Icon, IconPinned } from '../../../base/icons';
 import { translate } from '../../../base/i18n';
-import { isLocalParticipantModerator } from '../../../base/participants/functions';
+import { pinParticipant } from '../../../base/participants';
 import {
     ACTION_TRIGGER,
     AudioStateIcons,
@@ -15,32 +17,10 @@ import {
     type MediaState,
     VideoStateIcons
 } from '../../constants';
+import { STATUS_TABLE } from '../../../face-detect/constants';
 
 import { RaisedHandIndicator } from './RaisedHandIndicator';
 import { BirthdayIndicator } from './BirthdayIndicator';
-import {
-    LabelContainer,
-    ModeratorLabel,
-    ParticipantActionsHover,
-    ParticipantActionsPermanent,
-    ParticipantContainer,
-    ParticipantContent,
-    ParticipantDetailsContainer,
-    ParticipantName,
-    ParticipantNameContainer,
-    ParticipantStates
-} from './styled';
-import { pinParticipant } from '../../../base/participants';
-import { STATUS_TABLE } from '../../../face-detect/constants';
-
-
-/**
- * Participant actions component mapping depending on trigger type.
- */
-const Actions = {
-    [ACTION_TRIGGER.HOVER]: ParticipantActionsHover,
-    [ACTION_TRIGGER.PERMANENT]: ParticipantActionsPermanent
-};
 
 type Props = {
 
@@ -55,14 +35,14 @@ type Props = {
     audioMediaState?: MediaState,
 
     /**
-     * Whether or not today is meeting participant's birthday
-     */
-    isParticipantBirthday: Boolean,
-
-    /**
      * React children
      */
     children?: Node,
+
+    /**
+     * Whether or not to disable the moderator indicator.
+     */
+    disableModeratorIndicator: boolean,
 
     /**
      * The name of the participant. Used for showing lobby names.
@@ -78,6 +58,11 @@ type Props = {
      * Whether or not the participant is a moderator.
      */
     isModerator: boolean,
+
+    /**
+     * Whether or not today is meeting participant's birthday
+     */
+    isParticipantBirthday: Boolean,
 
     /**
      * True if the participant is local.
@@ -125,6 +110,43 @@ type Props = {
     youText?: string
 }
 
+const useStyles = makeStyles(theme => {
+    return {
+        labelContainer: {
+            display: 'flex',
+            flexDirection: 'row',
+            overflow: 'hidden'
+        },
+
+        detailsContainer: {
+            display: 'flex',
+            flex: 1,
+            marginRight: 8,
+            overflow: 'hidden',
+            flexDirection: 'column',
+            justifyContent: 'flex-start'
+        },
+
+        nameContainer: {
+            display: 'flex',
+            flex: 1,
+            overflow: 'hidden'
+        },
+
+        name: {
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+        },
+
+        moderatorLabel: {
+            ...theme.typography.labelRegular,
+            lineHeight: `${theme.typography.labelRegular.lineHeight}px`,
+            color: theme.palette.text03
+        }
+    };
+});
+
 /**
  * A component representing a participant entry in ParticipantPane and Lobby.
  *
@@ -133,88 +155,97 @@ type Props = {
  */
 function ParticipantItem({
     aiAttentionFlag,
-    isVideoMuted,
-    isParticipantBirthday,
-    isPinned,
+    actionsTrigger = ACTION_TRIGGER.HOVER,
+    audioMediaState = MEDIA_STATE.NONE,
     children,
+    disableModeratorIndicator,
+    displayName,
     followMeModerator,
     isHighlighted,
     isModerator,
-    onLeave,
-    actionsTrigger = ACTION_TRIGGER.HOVER,
-    audioMediaState = MEDIA_STATE.NONE,
-    videoMediaState = MEDIA_STATE.NONE,
-    displayName,
+    isParticipantBirthday,
+    isPinned,
+    isVideoMuted,
     participantID,
     participantStatus,
     local,
+    onLeave,
     openDrawerForParticipant,
     overflowDrawer,
     raisedHand,
     t,
+    videoMediaState = MEDIA_STATE.NONE,
     youText
 }: Props) {
     const dispatch = useDispatch();
-    const ParticipantActions = Actions[actionsTrigger];
     const onClick = useCallback(() => {
         dispatch(pinParticipant(isPinned ? null : participantID));
     }, [isPinned, participantID]);
-    
+
+    const styles = useStyles();
+
     // Dummy array that randomly assigns concentrated, lapsed or absent, must be replaced with the data from the model
     let attentionClass = 'participant-avatar-container ';
-
     if (aiAttentionFlag && participantStatus) {
         attentionClass += isVideoMuted ? STATUS_TABLE[2] : participantStatus;
     }
 
+    const icon = (
+        <div className={attentionClass} >
+            <Avatar
+                className = 'participant-avatar'
+                displayName = { displayName }
+                participantId = { participantID }
+                size = { 32 } />
+            { isPinned && (
+                <Icon
+                    className = 'pin-icon'
+                    size = { 12 }
+                    src = { IconPinned } />
+            )}
+        </div>
+    );
+
+    const text = (
+        <div className = { styles.detailsContainer }>
+            <div className = { styles.nameContainer }>
+                <div className = { styles.name }>
+                    {displayName}
+                </div>
+                {local ? <span>&nbsp;({youText})</span> : null}
+            </div>
+            <div className = { styles.labelContainer }>
+                {isModerator && !disableModeratorIndicator && <div className = { styles.moderatorLabel }>
+                    {t('videothumbnail.moderator')}
+                </div>}
+                { followMeModerator === participantID && <div className = { styles.moderatorLabel }>
+                    , {t('videothumbnail.following')}
+                </div>}
+            </div>
+        </div>
+    );
+
+    const indicators = (
+        <>
+            {isParticipantBirthday && <BirthdayIndicator />}
+            {raisedHand && <RaisedHandIndicator />}
+            {VideoStateIcons[videoMediaState]}
+            {AudioStateIcons[audioMediaState]}
+        </>
+    );
+
     return (
-        <ParticipantContainer
+        <ListItem
+            actions = { children }
+            icon = { icon }
             id = { `participant-item-${participantID}` }
+            indicators = { indicators }
             isHighlighted = { isHighlighted }
             $local = { local }
             onClick = { onClick }
             onMouseLeave = { onLeave }
-            trigger = { actionsTrigger }>
-            
-            {/* Participant avatar wrapper class, that is used to color the state of the participant's listening status */}
-            <div className={attentionClass} >
-                <Avatar
-                    className = 'participant-avatar'
-                    participantId = { participantID }
-                    size = { 32 } />
-                { isPinned && (
-                    <Icon
-                        className = 'pin-icon'
-                        size = { 12 }
-                        src = { IconPinned } />
-                )}
-            </div>
-            <ParticipantContent>
-                <ParticipantDetailsContainer>
-                    <ParticipantNameContainer>
-                        <ParticipantName>
-                            { displayName }
-                        </ParticipantName>
-                        { local ? <span>&nbsp;({ youText })</span> : null }
-                    </ParticipantNameContainer>
-                    { isModerator && <LabelContainer>
-                        <ModeratorLabel>
-                            {t('videothumbnail.moderator')}
-                        </ModeratorLabel>
-                        { followMeModerator === participantID && <ModeratorLabel>
-                            , {t('videothumbnail.following')}
-                        </ModeratorLabel> }
-                    </LabelContainer>}
-                </ParticipantDetailsContainer>
-                { <ParticipantActions children = { children } /> }
-                <ParticipantStates>
-                    { isParticipantBirthday && config.enableBirthdayARHat && <BirthdayIndicator /> }
-                    { raisedHand && <RaisedHandIndicator /> }
-                    { VideoStateIcons[videoMediaState] }
-                    { AudioStateIcons[audioMediaState] }
-                </ParticipantStates>
-            </ParticipantContent>
-        </ParticipantContainer>
+            textChildren = { text }
+            trigger = { actionsTrigger } />
     );
 }
 

@@ -2183,11 +2183,6 @@ export default {
             const { conference } = APP.store.getState()['features/base/conference'];
 
             const doMute = (mute) => {
-                // TODO: Add a way to differentiate between commands which caused
-                // us to mute and those that did not change our state (i.e. we were
-                // already muted).
-                // sendAnalytics(createRemotelyMutedEvent());
-
                 conference.mutedByFocusActor = actor;
 
                 // set isMutedByFocus when setAudioMute Promise ends
@@ -2292,26 +2287,6 @@ export default {
         room.on(JitsiConferenceEvents.FACE_DETECT_ENABLED,
             value => APP.store.dispatch(updateSettings({ aiAttentionAnalysisEnabled: value })));
 
-        // start of added portion
-        room.on(JitsiConferenceEvents.USER_DEVICE_ACCESS_DISABLED,
-            userDeviceAccessDisabled =>  {
-                APP.store.dispatch(deviceAccessDisabled(userDeviceAccessDisabled));
-
-                // show toast message to all participants when user device access is disabled
-                if(userDeviceAccessDisabled === true) {
-                    showToast({
-                        title: i18next.t('dialog.deviceAccessDisabled')
-                    });
-                }
-
-                // show toast message to all participants once user device is re-enabled
-                else if (userDeviceAccessDisabled === false) {
-                    showToast({
-                        title: i18next.t('dialog.deviceAccessReEnabled')
-                    });
-                }
-            });
-
         room.on(JitsiConferenceEvents.NOTIFY_BIRTHDAY_HAT_ON,
             (nick) => {
 
@@ -2359,18 +2334,6 @@ export default {
             randomSelectedID => {
                 APP.store.dispatch(pinParticipant(randomSelectedID));
             });
-
-        if(config.enableBirthdayARHat) {
-            room.on(JitsiConferenceEvents.SHOW_BIRTHDAY_ALERT,
-                bParticipant => {
-                    APP.store.dispatch(showNotification({
-                        descriptionArguments: { bParticipant: bParticipant},
-                        descriptionKey: 'notify.birthDayAlertMessage',
-                        titleKey: 'notify.birthDayAlert'
-                    },
-                    5000))
-                });
-        }
 
         room.on(JitsiConferenceEvents.PARTICIPANT_BIRTHDAY_FLAG_UPDATED,
             (pID, hatOn) => {

@@ -38,7 +38,6 @@ import {
     SET_PASSWORD,
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
-    SET_USER_DEVICE_ACCESS_DISABLED,
     START_TIMER
 } from './actionTypes';
 import {
@@ -121,20 +120,6 @@ MiddlewareRegistry.register(store => next => action => {
         break;
 
     
-    case SET_USER_DEVICE_ACCESS_DISABLED:
-        const info2 = getRoomInfo(store);        
-        try {
-            axios.patch(`${info2.apiBaseUrl}/conferences/${info2.room._id}`, { userDeviceAccessDisabled: String(action.userDeviceAccessDisabled) }, info2.config).then((resp) => {
-                console.log("Response data is: ", resp.data);
-            });
-        } catch(err) {
-            console.log(err);
-        }
-
-        // call a function from JitsiConference that sends userDeviceAccessConfiguration as a message
-        info2.conference.sendUserDeviceAccessConfiguration(action.userDeviceAccessDisabled);
-        break;
-
     case TRACK_ADDED:
     case TRACK_REMOVED:
         return _trackAddedOrRemoved(store, next, action);

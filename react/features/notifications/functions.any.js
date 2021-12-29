@@ -1,5 +1,4 @@
 // @flow
-/* global APP */
 
 import { MODERATION_NOTIFICATIONS } from '../av-moderation/constants';
 import { MEDIA_TYPE } from '../base/media';

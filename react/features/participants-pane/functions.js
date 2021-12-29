@@ -11,9 +11,14 @@ import { MEDIA_TYPE, type MediaType } from '../base/media/constants';
 import {
     getDominantSpeakerParticipant,
     isLocalParticipantModerator,
-    isParticipantModerator
+    isParticipantModerator,
+    getLocalParticipant,
+    getRemoteParticipantsSorted,
+    getRaiseHandsQueue
 } from '../base/participants/functions';
 import { toState } from '../base/redux';
+import { normalizeAccents } from '../base/util/strings';
+import { isInBreakoutRoom } from '../breakout-rooms/functions';
 
 import { QUICK_ACTION_BUTTON, REDUCER_KEY, MEDIA_STATE } from './constants';
 
@@ -30,15 +35,15 @@ export const classList = (...args: Array<string | boolean>) => args.filter(Boole
  * Find the first styled ancestor component of an element.
  *
  * @param {Element} target - Element to look up.
- * @param {StyledComponentClass} component - Styled component reference.
+ * @param {string} cssClass - Styled component reference.
  * @returns {Element|null} Ancestor.
  */
-export const findStyledAncestor = (target: Object, component: any) => {
-    if (!target || target.matches(`.${component.styledComponentId}`)) {
+export const findAncestorByClass = (target: Object, cssClass: string) => {
+    if (!target || target.classList.contains(cssClass)) {
         return target;
     }
 
-    return findStyledAncestor(target.parentElement, component);
+    return findAncestorByClass(target.parentElement, cssClass);
 };
 
 /**
@@ -109,10 +114,6 @@ export function getParticipantVideoMediaState(participant: Object, muted: Boolea
         }
 
         return MEDIA_STATE.MUTED;
-    }
-
-    if (participant === dominantSpeaker) {
-        return MEDIA_STATE.DOMINANT_SPEAKER;
     }
 
     return MEDIA_STATE.UNMUTED;
@@ -191,9 +192,76 @@ export function getQuickActionButtonType(participant: Object, isAudioMuted: Bool
 export const shouldRenderInviteButton = (state: Object) => {
     const { disableInviteFunctions } = toState(state)['features/base/config'];
     const flagEnabled = getFeatureFlag(state, INVITE_ENABLED, true);
+    const inBreakoutRoom = isInBreakoutRoom(state);
 
-    return flagEnabled && !disableInviteFunctions;
+    return flagEnabled && !disableInviteFunctions && !inBreakoutRoom;
 };
+
+/**
+ * Selector for retrieving ids of participants in the order that they are displayed in the filmstrip (with the
+ * exception of participants with raised hand). The participants are reordered as follows.
+ * 1. Local participant.
+ * 2. Participants with raised hand.
+ * 3. Participants with screenshare sorted alphabetically by their display name.
+ * 4. Shared video participants.
+ * 5. Recent speakers sorted alphabetically by their display name.
+ * 6. Rest of the participants sorted alphabetically by their display name.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state features/base/participants.
+ * @returns {Array<string>}
+ */
+export function getSortedParticipantIds(stateful: Object | Function): Array<string> {
+    const { id } = getLocalParticipant(stateful);
+    const remoteParticipants = getRemoteParticipantsSorted(stateful);
+    const reorderedParticipants = new Set(remoteParticipants);
+    const raisedHandParticipants = getRaiseHandsQueue(stateful);
+    const remoteRaisedHandParticipants = new Set(raisedHandParticipants || []);
+
+    for (const participant of remoteRaisedHandParticipants.keys()) {
+        // Avoid duplicates.
+        if (reorderedParticipants.has(participant)) {
+            reorderedParticipants.delete(participant);
+        } else {
+            remoteRaisedHandParticipants.delete(participant);
+        }
+    }
+
+    // Remove self.
+    remoteRaisedHandParticipants.has(id) && remoteRaisedHandParticipants.delete(id);
+    // Move self and participants with raised hand to the top of the list.
+    return [
+        id,
+        ...Array.from(remoteRaisedHandParticipants.keys()),
+        ...Array.from(reorderedParticipants.keys())
+    ];
+}
+
+/**
+ * Checks if a participant matches the search string.
+ *
+ * @param {Object} participant - The participant to be checked.
+ * @param {string} searchString - The participants search string.
+ * @returns {boolean}
+ */
+export function participantMatchesSearch(participant: Object, searchString: string) {
+    if (searchString === '') {
+        return true;
+    }
+
+    const names = normalizeAccents(participant?.name || participant?.displayName || '')
+        .toLowerCase()
+        .split(' ');
+    const lowerCaseSearchString = searchString.toLowerCase();
+
+    for (const name of names) {
+        if (name.startsWith(lowerCaseSearchString)) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 /** 
  * Helper function that retrieves today's date and returns a string in the format YYYY-MM-DD 
@@ -215,9 +283,10 @@ export const shouldRenderInviteButton = (state: Object) => {
  * @param {Object} participant - The participant object
  * @returns {boolean} true if participant's birthday is today, else returns false
  */
-export function isTodayParticipantBirthday(participant: Object) {
+export const isTodayParticipantBirthday = (participant: Object) => (state: Object) => {
+    const { enableBirthdayARHat } = state['features/base/config'];
     const { birthDate } = participant || {};
-    if (!birthDate) {
+    if (!enableBirthdayARHat || !birthDate) {
         return false;
     }
 

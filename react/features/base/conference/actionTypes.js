@@ -237,11 +237,6 @@ export const PARTICIPANT_CHAT_ENABLED = 'PARTICIPANT_CHAT_ENABLED';
 
 export const SET_NOTICE_MESSAGE = 'SET_NOTICE_MESSAGE';
 
-// const for setting disable on user's device access
-export const SET_USER_DEVICE_ACCESS_DISABLED = 'SET_USER_DEVICE_ACCESS_DISABLED';
-
-export const DEVICE_ACCESS_DISABLED = 'DEVICE_ACCESS_DISABLED';
-
 // Starts countdown timer.
 export const START_TIMER = 'START_TIMER';
 

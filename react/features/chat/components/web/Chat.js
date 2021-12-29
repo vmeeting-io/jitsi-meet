@@ -4,12 +4,9 @@ import React from 'react';
 
 import { FieldTextStateless as TextField } from '@atlaskit/field-text';
 import CrossCircleIcon from '@atlaskit/icon/glyph/cross-circle';
-import DropdownMenu, { DropdownItem, DropdownItemGroup } from '@atlaskit/dropdown-menu';
 import { uploadFile } from '../../functions';
 import { translate } from '../../../base/i18n';
-import { Icon, IconClose, IconMenu, IconMenuThumb, IconSearch } from '../../../base/icons';
 import { connect } from '../../../base/redux';
-import { Tooltip } from '../../../base/tooltip';
 import { PollsPane } from '../../../polls/components';
 import { toggleChat } from '../../actions.web';
 import AbstractChat, {
@@ -17,21 +14,14 @@ import AbstractChat, {
     type Props
 } from '../AbstractChat';
 
-import ChatDialog from './ChatDialog';
-import Header from './ChatDialogHeader';
+import ChatHeader from './ChatHeader';
 import ChatInput from './ChatInput';
 import DisplayNameForm from './DisplayNameForm';
 import KeyboardAvoider from './KeyboardAvoider';
 import MessageContainer from './MessageContainer';
 import MessageRecipient from './MessageRecipient';
-import InlineDialog from '@atlaskit/inline-dialog/dist/cjs/InlineDialog';
-import { getLocalParticipant } from '../../../base/participants';
-import ChatDisableButtonForAll from './ChatDisableButtonForAll';
 import TouchmoveHack from './TouchmoveHack';
 
-import { openDialog } from '../../../base/dialog';
-import EnableChatForAllParticipantsDialog from '../../../video-menu/components/web/EnableChatForAllParticipantsDialog';
-import DisableChatForAllParticipantsDialog from '../../../video-menu/components/web/DisableChatForAllParticipantsDialog';
 import { setPrivateMessageRecipient } from '../../actions';
 import { showToast } from '../../../notifications';
 
@@ -44,20 +34,6 @@ declare var APP: Object;
  * React Component for holding the chat feature in a side panel that slides in
  * and out of view.
  */
-
-/**
- * The type of the React {@code Component} state of {@link Chat}.
- */
-type State = {
-    chatHeaderMenuDialogOpen: boolean,
-    showChatInput: Boolean,
-    searchQuery: String,
-    showSearch: Boolean,
-    showChatMenu: Boolean,
-    searchResultIndex: Integer,
-    searchResultCount: Integer,
-    currentIdx: Integer,
-}
 
 const NOTIFICATION_TIMEOUT = 1000;
 
@@ -99,18 +75,16 @@ class Chat extends AbstractChat<Props> {
         this._messageContainerRef = React.createRef();
 
         // Bind event handlers so they are only bound once for every instance.
-        this._renderPanelContent = this._renderPanelContent.bind(this);
         this._onChatInputResize = this._onChatInputResize.bind(this);
         this._onEscClick = this._onEscClick.bind(this);
         this._onToggleChat = this._onToggleChat.bind(this);
 
         this._onToggleSearch = this._onToggleSearch.bind(this);
-        this._onDisableChatForAll = this._onDisableChatForAll.bind(this);
-        this._onEnableChatForAll = this._onEnableChatForAll.bind(this);
         this._handleKeyPress = this._handleKeyPress.bind(this);
         this._handleKeyDown = this._handleKeyDown.bind(this);
         this._nextResult = this._nextResult.bind(this);
         this._updateChatSearchInput = this._updateChatSearchInput.bind(this);
+        this._renderSearch = this._renderSearch.bind(this);
     }
 
     /**
@@ -164,10 +138,25 @@ class Chat extends AbstractChat<Props> {
      * @returns {ReactElement}
      */
     render() {
+        const { _isOpen, _isPollsEnabled, _showNamePrompt } = this.props;
+
         return (
-            <>
-                {this._renderPanelContent()}
-            </>
+            _isOpen ? <div
+                className = 'sideToolbarContainer'
+                id = 'sideToolbarContainer'
+                onKeyDown={this._onEscClick} >
+                <ChatHeader
+                    className = 'chat-header'
+                    id = 'chat-header'
+                    isPollsEnabled = { _isPollsEnabled }
+                    renderSearch = { this._renderSearch }
+                    onCancel = { this._onToggleChat }
+                    onToggleSearch = { this._onToggleSearch }
+                    showSearch = { this.state.showSearch } />
+                { _showNamePrompt
+                    ? <DisplayNameForm isPollsEnabled = { _isPollsEnabled } />
+                    : this._renderChat() }
+            </div> : null
         );
     }
 
@@ -182,18 +171,6 @@ class Chat extends AbstractChat<Props> {
      */
     _onChatInputResize() {
         this._messageContainerRef.current.maybeUpdateBottomScroll();
-    }
-
-    _onDisableChatForAll: () => void;
-
-    _onDisableChatForAll() {
-        APP.store.dispatch(openDialog(DisableChatForAllParticipantsDialog));
-    }
-
-    _onEnableChatForAll: () => void;
-
-    _onEnableChatForAll() {
-        APP.store.dispatch(openDialog(EnableChatForAllParticipantsDialog));
     }
 
     _onToggleSearch: () => void;
@@ -238,7 +215,12 @@ class Chat extends AbstractChat<Props> {
             return (
                 <>
                     {this.props._isPollsEnabled && this._renderTabs()}
-                    <PollsPane />
+                    <div
+                        area-labelledby = 'polls-tab'
+                        id = 'polls-panel'
+                        role = 'tabpanel'>
+                        <PollsPane />
+                    </div>
                     <KeyboardAvoider />
                 </>
             );
@@ -354,103 +336,6 @@ class Chat extends AbstractChat<Props> {
                 </div>
             </div>
         );
-    }
-
-    /**
-     * Instantiates a React Element to display at the top of {@code Chat} to
-     * close {@code Chat}.
-     *
-     * @private
-     * @returns {ReactElement}
-     */
-    _renderChatHeader() {
-        const { _enableChatControl, t } = this.props;
-        const { showSearch } = this.state;
-        const localParticipant = getLocalParticipant(APP.store.getState());
-        const showMenu =
-            _enableChatControl &&
-            localParticipant.role === 'moderator';
-
-        return (
-            <div className='chat-header'>
-                {!showSearch ? t('chat.title') : this._renderSearch()}
-                {/* Portion for rendering the chat close icon */}
-                <div className='tool-container'>
-                    {!showSearch && (
-                        <div
-                            className='button'
-                            onClick={this._onToggleSearch}>
-                            <Tooltip
-                                content={t('chat.search')}
-                                position='bottom'>
-                                <Icon src={IconSearch} />
-                            </Tooltip>
-                        </div>
-                    )}
-                    {showMenu ? (
-                        <DropdownMenu
-                            position='bottom right'
-                            triggerButtonProps={{ iconBefore: <Icon src={IconMenu} /> }}
-                            triggerType='button'>
-                            <DropdownItemGroup>
-                                <DropdownItem onClick={this._onDisableChatForAll}>
-                                    {t('dialog.disableChatForAll')}
-                                </DropdownItem>
-                                <DropdownItem onClick={this._onEnableChatForAll}>
-                                    {t('dialog.enableChatForAll')}
-                                </DropdownItem>
-                                <DropdownItem onClick={this._onToggleChat}>
-                                    {t('dialog.close')}
-                                </DropdownItem>
-                            </DropdownItemGroup>
-                        </DropdownMenu>
-                    ) : (
-                        <div
-                            className='button'
-                            onClick={this._onToggleChat}>
-                            <Tooltip
-                                content={t('dialog.close')}
-                                position='bottom'>
-                                <Icon src={IconClose} />
-                            </Tooltip>
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
-    }
-
-    _renderChatControlIcon = () => {
-        const popupcontent = (
-            <ul className='overflow-menu'>
-                <ChatDisableButtonForAll key='allchatcontroldisablebutton' visible={true} showLabel={true} />
-            </ul>
-        );
-
-        const localParticipant = getLocalParticipant(APP.store.getState());
-        let isLocalParticipantAModerator = (localParticipant.role === "moderator");
-
-        //we want to only allow moderators to get the chat control button alongside chat message
-        if (isLocalParticipantAModerator) {
-            return (
-                <div className='chat-header-control-button'>
-                    <InlineDialog
-                        onClose={() => {
-                            this.setState({ chatHeaderMenuDialogOpen: false });
-                        }}
-                        content={popupcontent}
-                        placement={'auto'}
-                        isOpen={this.state.chatHeaderMenuDialogOpen} >
-                        <div className='thumb-menu-icon' onClick={this.toggleChatHeaderMenuDialog}>
-                            <Icon src={IconMenuThumb} title='All Remote-Users Chat Control' />
-                        </div>
-                    </InlineDialog>
-                </div>
-            );
-        } else {
-            return null;
-        }
-
     }
 
     _updateChatSearchInput = event => {
@@ -613,57 +498,6 @@ class Chat extends AbstractChat<Props> {
         }
 
         this.setState({ currentIdx, searchResultIndex: resultIndex });
-    }
-
-    _renderPanelContent: () => React$Node | null;
-
-    /**
-     * Renders the contents of the chat panel.
-     *
-     * @private
-     * @returns {ReactElement | null}
-     */
-    _renderPanelContent() {
-        const { _isModal, _isOpen, _showNamePrompt } = this.props;
-        let ComponentToRender = null;
-
-        if (_isOpen) {
-            if (_isModal) {
-                ComponentToRender = (
-                    <ChatDialog isPollsEnabled={this.props._isPollsEnabled}>
-                        {_showNamePrompt
-                            ? <DisplayNameForm isPollsEnabled={this.props._isPollsEnabled} />
-                            : this._renderChat()}
-                    </ChatDialog>
-                );
-            } else {
-                ComponentToRender = (
-                    <>
-                        {this._renderChatHeader()}
-                        {_showNamePrompt
-                            ? <DisplayNameForm isPollsEnabled={this.props._isPollsEnabled} />
-                            : this._renderChat()}
-                    </>
-                );
-            }
-        }
-        let className = '';
-
-        if (_isOpen) {
-            className = 'slideInExt';
-        } else if (this._isExited) {
-            className = 'invisible';
-        }
-
-        return (
-            <div
-                aria-haspopup='true'
-                className={`sideToolbarContainer ${className}`}
-                id='sideToolbarContainer'
-                onKeyDown={this._onEscClick} >
-                {ComponentToRender}
-            </div>
-        );
     }
 
     /**

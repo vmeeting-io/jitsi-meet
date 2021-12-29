@@ -18,7 +18,6 @@ import {
 import { translate } from '../../../base/i18n';
 import { Linkify } from '../../../base/react';
 import { MESSAGE_TYPE_LOCAL } from '../../constants';
-// import BanRemoteParticipantDialog from '../../../video-menu/components/web/BanRemoteParticipantDialog';
 
 import AbstractChatMessage, {
     type Props

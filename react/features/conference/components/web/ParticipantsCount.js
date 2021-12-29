@@ -6,6 +6,7 @@ import type { Dispatch } from 'redux';
 import { openDialog } from '../../../base/dialog';
 import { IconUserGroups } from '../../../base/icons';
 import { Label } from '../../../base/label';
+import { COLORS } from '../../../base/label/constants';
 import { getParticipantCount } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { SpeakerStats } from '../../../speaker-stats';
@@ -71,7 +72,7 @@ class ParticipantsCount extends PureComponent<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { _hideParticipantsStats } = this.props;
+        const { _hideParticipantsStats, count } = this.props;
         const className = _hideParticipantsStats ? 'readonly' : '';
 
         return (
@@ -79,9 +80,9 @@ class ParticipantsCount extends PureComponent<Props> {
                 className = { `participants-count ${className}` }
                 onClick = { _hideParticipantsStats ? undefined : this._onClick }>
                 <Label
-                    className = 'label--white'
+                    color = { COLORS.white }
                     icon = { IconUserGroups }
-                    text = { this.props.count } />
+                    text = { count } />
             </div>
         );
     }

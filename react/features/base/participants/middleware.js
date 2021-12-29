@@ -33,10 +33,6 @@ import {
     GRANT_MODERATOR,
     KICK_PARTICIPANT,
     LOCAL_PARTICIPANT_RAISE_HAND,
-    DISABLE_CHAT_PARTICIPANT,
-    DISABLE_CHAT_FOR_ALL,
-    ENABLE_CHAT_PARTICIPANT,
-    ENABLE_CHAT_FOR_ALL,
     MUTE_REMOTE_PARTICIPANT,
     PARTICIPANT_DISPLAY_NAME_CHANGED,
     PARTICIPANT_JOINED,
@@ -114,18 +110,14 @@ MiddlewareRegistry.register(store => next => action => {
             const conference = getCurrentConference(state);
 
             // code portion to show notification about own birthday when joining conference.
-            const bDate = participant.birthDate;
-            if(bDate) {
-                const hasBirthday = isTodayParticipantBirthday(participant);
-                if(hasBirthday && config.enableBirthdayARHat) {
-                    // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
-                    store.dispatch(showNotification({
-                        descriptionArguments: { bParticipant: participant.name},
-                        descriptionKey: 'notify.birthDayAlertMessage',
-                        titleKey: 'notify.birthDayAlert'
-                    },
-                    5000))
-                }
+            const hasBirthday = isTodayParticipantBirthday(participant)(state);
+            if(hasBirthday) {
+                // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
+                store.dispatch(showNotification({
+                    descriptionArguments: { bParticipant: participant.name},
+                    descriptionKey: 'notify.birthDayAlertMessage',
+                    titleKey: 'notify.birthDayAlert'
+                }, 5000));
             }
 
             if (conference && isHost && !isRecording(state) && autoRecord) {
@@ -185,34 +177,10 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
 
-    case DISABLE_CHAT_PARTICIPANT: {
-        const { conference } = store.getState()['features/base/conference'];
-        conference.disableChatForParticipant(action.id);
-        break;
-    }
-
-    case DISABLE_CHAT_FOR_ALL: {
-        const { conference } = store.getState()['features/base/conference'];
-        conference.disableChatForAll();
-        break;
-    }
-
-    case ENABLE_CHAT_PARTICIPANT: {
-        const { conference } = store.getState()['features/base/conference'];
-        conference.enableChatForParticipant(action.id);
-        break;
-    }
-
     case PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED: {
         const { id, hatOn } = action;
         const { conference } = store.getState()['features/base/conference'];
         conference.updateParticipantBirthdayHatFlag(id, hatOn);
-        break;
-    }
-
-    case ENABLE_CHAT_FOR_ALL: {
-        const { conference } = store.getState()['features/base/conference'];
-        conference.enableChatForAll();
         break;
     }
 
@@ -279,20 +247,17 @@ MiddlewareRegistry.register(store => next => action => {
     }
 
     case PARTICIPANT_JOINED: {
+        const state = store.getState();
         const participant = action.participant;
-        const bDate = participant.birthDate;
+        const hasBirthday = isTodayParticipantBirthday(participant)(state);
 
-        if(bDate) {
-            const hasBirthday = isTodayParticipantBirthday(participant);
-            if(hasBirthday && config.enableBirthdayARHat) {
-                // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
-                store.dispatch(showNotification({
-                    descriptionArguments: { bParticipant: participant.name},
-                    descriptionKey: 'notify.birthDayAlertMessage',
-                    titleKey: 'notify.birthDayAlert'
-                },
-                5000))
-            }
+        if(hasBirthday) {
+            // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
+            store.dispatch(showNotification({
+                descriptionArguments: { bParticipant: participant.name},
+                descriptionKey: 'notify.birthDayAlertMessage',
+                titleKey: 'notify.birthDayAlert'
+            }, 5000));
         }
 
         _maybePlaySounds(store, action);

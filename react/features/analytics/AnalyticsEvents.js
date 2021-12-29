@@ -377,6 +377,28 @@ export function createPinnedEvent(action, participantId, attributes) {
 }
 
 /**
+ * Creates a poll event.
+ * The following events will be created:
+ * - poll.created
+ * - poll.vote.checked
+ * - poll.vote.sent
+ * - poll.vote.skipped
+ * - poll.vote.detailsViewed
+ * - poll.vote.changed
+ * - poll.option.added
+ * - poll.option.moved
+ * - poll.option.removed.
+ *
+ * @param {string} action - The action.
+ * @returns {Object}
+ */
+export function createPollEvent(action) {
+    return {
+        action: `poll.${action}`
+    };
+}
+
+/**
  * Creates an event which indicates that a button in the profile panel was
  * clicked.
  *
@@ -890,13 +912,28 @@ export function createWelcomePageEvent(action, actionSubject, attributes = {}) {
 }
 
 /**
- * Indicates that we received a remote command to mute.
+ * Creates an event which indicates a screenshot of the screensharing has been taken.
+ *
+ * @returns {Object} The event in a format suitable for sending via
+ * sendAnalytics.
  */
- export const createRemotelyMutedEvent = function(mediaType) {
+export function createScreensharingCaptureTakenEvent() {
     return {
-        action: 'remotely.muted',
-        attributes: {
-            'media_type': mediaType,
-        }
+        action: 'screen.sharing.capture.taken'
     };
-};
+}
+
+/**
+ * Creates an event for an action on breakout rooms.
+ *
+ * @param {string} actionSubject - The subject that was acted upon.
+ * @returns {Object} The event in a format suitable for sending via
+ * sendAnalytics.
+ */
+export function createBreakoutRoomsEvent(actionSubject) {
+    return {
+        action: 'clicked',
+        actionSubject: `${actionSubject}.button`,
+        source: 'breakout.rooms'
+    };
+}

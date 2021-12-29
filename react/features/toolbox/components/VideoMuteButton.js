@@ -194,12 +194,9 @@ function _mapStateToProps(state): Object {
     const localParticipant = getLocalParticipant(APP.store.getState());
     let isLocalParticipantAModerator = (localParticipant.role === "moderator");
 
-    let isUserDeviceAccessDisabled = state['features/base/conference'].userDeviceAccessDisabled;
-    isUserDeviceAccessDisabled = false ? undefined : isUserDeviceAccessDisabled;
-
     return {
         _audioOnly: Boolean(audioOnly),
-        _videoDisabled: !isLocalParticipantAModerator && (isVideoMuteButtonDisabled(state) || isUserDeviceAccessDisabled),
+        _videoDisabled: !isLocalParticipantAModerator && isVideoMuteButtonDisabled(state),
         _videoMediaType: getLocalVideoType(tracks),
         _videoMuted: isLocalCameraTrackMuted(tracks),
         visible: enabledFlag

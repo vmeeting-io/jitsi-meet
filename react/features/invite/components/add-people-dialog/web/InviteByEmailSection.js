@@ -18,7 +18,7 @@ import {
 } from '../../../../base/icons';
 import { Tooltip } from '../../../../base/tooltip';
 import { copyText } from '../../../../base/util';
-import { NOTIFICATION_TIMEOUT, showNotification } from '../../../../notifications';
+import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../../../../notifications';
 
 type Props = {
 
@@ -63,10 +63,9 @@ function InviteByEmailSection({ inviteSubject, inviteText, inviteTextiOS, t }: P
      */
     function _onCopyText() {
         copyText(inviteText);
-        dispatch(
-            showNotification({
-                titleKey: 'addPeople.linkCopied'
-            }, NOTIFICATION_TIMEOUT));
+        dispatch(showNotification({
+            titleKey: 'addPeople.linkCopied'
+        }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
     }
 
     /**

@@ -112,12 +112,6 @@ ReducerRegistry.register(
                 timeoutMS: action.timeoutMS
             };
 
-        case SET_TOOLBOX_TIMEOUT_MS:
-            return {
-                ...state,
-                timeoutMS: action.timeoutMS
-            };
-
         case SET_TOOLBOX_VISIBLE:
             return set(state, 'visible', action.visible);
 

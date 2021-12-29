@@ -67,16 +67,6 @@ export const LOCAL_PARTICIPANT_APPROVED = 'LOCAL_PARTICIPANT_APPROVED';
 export const LOCAL_PARTICIPANT_REJECTED = 'LOCAL_PARTICIPANT_REJECTED';
 
 /**
- * The type of (redux) action which signals that the local participant had been blocked.
- *
- * {
- *     type: LOCAL_PARTICIPANT_REJECTED,
- *     mediaType: MediaType
- * }
- */
-export const LOCAL_PARTICIPANT_REJECTED = 'LOCAL_PARTICIPANT_REJECTED';
-
-/**
  * The type of (redux) action which signals to show notification to the local participant.
  *
  * {
@@ -86,7 +76,7 @@ export const LOCAL_PARTICIPANT_REJECTED = 'LOCAL_PARTICIPANT_REJECTED';
 export const LOCAL_PARTICIPANT_MODERATION_NOTIFICATION = 'LOCAL_PARTICIPANT_MODERATION_NOTIFICATION';
 
 /**
- * The type of (redux) action which signals that a participant was approved for a media type.
+ * The type of (redux) action which signals that a participant was approved for a kind.
  *
  * {
  *     type: PARTICIPANT_APPROVED,
@@ -97,7 +87,7 @@ export const LOCAL_PARTICIPANT_MODERATION_NOTIFICATION = 'LOCAL_PARTICIPANT_MODE
 export const PARTICIPANT_APPROVED = 'PARTICIPANT_APPROVED';
 
 /**
- * The type of (redux) action which signals that a participant was blocked for a media type.
+ * The type of (redux) action which signals that a participant was blocked for a kind.
  *
  * {
  *     type: PARTICIPANT_REJECTED,

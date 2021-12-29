@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { toArray } from 'react-emoji-render';
+
 import { 
     Icon,
     IconShareExcel,
@@ -16,12 +17,11 @@ import {
     IconShareZip
 } from '../../../base/icons';
 import { translate } from '../../../base/i18n';
-import { MESSAGE_TYPE_LOCAL } from '../../constants';
-
-import AbstractChatMessage, { type Props } from '../AbstractChatMessage';
-import PrivateMessageButton from '../PrivateMessageButton';
-import PrivateNotice from './PrivateNotice';
 import { getBaseUrl, getFileSize, processFileSize, truncateDateTimeStamp } from '../../../base/util';
+import { MESSAGE_TYPE_LOCAL } from '../../constants';
+import AbstractChatMessage, { type Props } from '../AbstractChatMessage';
+
+import PrivateMessageButton from './PrivateMessageButton';
 
 /**
  * Renders a single chat message.
@@ -61,9 +61,9 @@ class ChatMessage extends AbstractChatMessage<Props> {
 
         content.forEach(msg => {
 
-            if(typeof msg === 'string' && msg.startsWith(serverURL)) {
+            if (typeof msg === 'string' && msg.startsWith(serverURL)) {
                 let filename = msg.split('/').pop(); // use pop to fetch the last element contained in the array after using split
-                if((filename !== undefined) && (filename !== '')) {
+                if ((filename !== undefined) && (filename !== '')) {
 
                     const fsize = getFileSize(msg);
                     const processedSize = processFileSize(fsize);
@@ -118,6 +118,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
                 processedMessage.push(msg);
             }
         });
+
         return (
             <div
                 className = {`chatmessage-wrapper ${message.messageType}`}
@@ -125,10 +126,11 @@ class ChatMessage extends AbstractChatMessage<Props> {
                 <div className = { `chatmessage ${message.privateMessage ? 'privatemessage' : ''}` }>
                     <div className = 'replywrapper'>
                         <div className = 'messagecontent'>
+                            { this.props.showDisplayName && this._renderDisplayName() }
                             <div className = 'usermessage'>
                                 { processedMessage }
                             </div>
-                            { message.privateMessage && <PrivateNotice message= { message } t = { t } /> }
+                            { message.privateMessage && this._renderPrivateNotice() }
                         </div>
                         { message.privateMessage && message.messageType !== MESSAGE_TYPE_LOCAL
                             && (
@@ -142,6 +144,53 @@ class ChatMessage extends AbstractChatMessage<Props> {
                     </div>
                 </div>
                 { this.props.showTimestamp && this._renderTimestamp() }
+            </div>
+        );
+    }
+
+    _getFormattedTimestamp: () => string;
+
+    _getMessageText: () => string;
+
+    _getPrivateNoticeMessage: () => string;
+
+    /**
+     * Renders the message privacy notice.
+     *
+     * @returns {React$Element<*>}
+     */
+    _renderPrivateNotice() {
+        return (
+            <div className = 'privatemessagenotice'>
+                { this._getPrivateNoticeMessage() }
+            </div>
+        );
+    }
+
+    /**
+     * Renders the time at which the message was sent.
+     *
+     * @returns {React$Element<*>}
+     */
+    _renderTimestamp() {
+        return (
+            <div className = 'timestamp'>
+                { this._getFormattedTimestamp() }
+            </div>
+        );
+    }
+
+    /**
+     * Renders the display name of the sender.
+     *
+     * @returns {React$Element<*>}
+     */
+    _renderDisplayName() {
+        return (
+            <div
+                aria-hidden = { true }
+                className = 'display-name'>
+                { this.props.message.displayName }
             </div>
         );
     }
@@ -164,20 +213,6 @@ class ChatMessage extends AbstractChatMessage<Props> {
                     </div>
                 </div>
             </a>
-        );
-    }
-
-    /**
-     * Renders the time at which the message was sent.
-     *
-     * @returns {React$Element<*>}
-     */
-    _renderTimestamp() {
-        const { timestamp } = this.props;
-        return (
-            <div className = 'timestamp'>
-                { timestamp }
-            </div>
         );
     }
 }

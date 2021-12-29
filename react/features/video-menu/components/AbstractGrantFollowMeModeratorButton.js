@@ -60,14 +60,9 @@ export default class AbstractGrantFollowMeModeratorButton extends AbstractButton
  * }}
  */
 export function _mapStateToProps(state: Object, ownProps: Props) {
-    const { participantID } = ownProps;
-    const _followMeModerator = state['features/follow-me'].moderator;
-
     const localParticipant = getLocalParticipant(state);
-    const _isFollowMeModerator = _followMeModerator === participantID;
 
     return {
         visible: Boolean(localParticipant?.role === PARTICIPANT_ROLE.MODERATOR)
-          && !_isFollowMeModerator
     };
 }

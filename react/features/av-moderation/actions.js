@@ -231,21 +231,6 @@ export const localParticipantRejected = (kind: string) => {
 };
 
 /**
- * Local participant was blocked to be able to unmute audio and video.
- *
- * @param {MediaType} mediaType - The media type to disable.
- * @returns {{
- *     type: LOCAL_PARTICIPANT_REJECTED
- * }}
- */
-export const localParticipantRejected = (mediaType: MediaType) => {
-    return {
-        type: LOCAL_PARTICIPANT_REJECTED,
-        mediaType
-    };
-};
-
-/**
  * Shows notification when A/V moderation is enabled and local participant is still not approved.
  *
  * @param {string} kind - moderation kind.

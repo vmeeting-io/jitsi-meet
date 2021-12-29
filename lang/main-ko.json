@@ -80,7 +80,7 @@
         "today": "오늘"
     },
     "chat": {
-        "dropFiles": "여기에 파일을 드롭 하세요",
+        "dropFiles": "여기에 파일을 놓으세요",
         "enter": "방 입장",
         "error": "메시지가 전송되지 않았습니다.\n수신인이 회의실에 없습니다.",
         "fieldPlaceHolder": "여기에 메시지를 입력하세요",
@@ -180,7 +180,8 @@
         "launchWebButton": "괜찮습니다. 모바일 웹으로 참가할께요.",
         "joinInApp": "{{app}} 앱으로 참가 >",
         "title": "{{app}}에서 회의 시작…",
-        "tryAgainButton": "데스크톱에서 다시 시도하십시오"
+        "tryAgainButton": "데스크톱에서 다시 시도하십시오",
+        "unsupportedBrowser": "지원하지 않는 브라우저를 사용하는 것 같습니다."
     },
     "defaultLink": "예) {{url}}",
     "defaultNickname": "예) 홍길동",
@@ -201,7 +202,7 @@
             "liveStreaming": "실시간 스트리밍:"
         },
         "add": "추가",
-        "allow": "허락",
+        "allow": "수락",
         "alreadySharedVideoMsg": "다른 참가자가 이미 비디오를 공유하고 있습니다. 이 회의는 한 번에 하나의 공유 비디오 만 허용합니다.",
         "alreadySharedVideoTitle": "한 번에 하나의 공유 비디오 만 허용됩니다",
         "applicationWindow": "응용 프로그램 창",
@@ -512,6 +513,7 @@
         "desktopShareAudioWarning": "오디오가 공유되지 않습니다!",
         "desktopShareAudioWarningDesc": "배경으로 화면을 공유하는 경우 오디오가 공유되지 않습니다.",
         "webAssemblyWarning": "WebAssembly가 지원되지 않습니다.",
+        "webAssemblyWarningDescription": "WebAssembly가 사용 불가하거나 브라우저에서 지원되지 않습니다.",
         "backgroundEffectError": "배경 적용에 실패했습니다."
     },
     "faceDetect": {
@@ -576,7 +578,7 @@
         "noPassword": "없음",
         "noRoom": "전화 접속이 가능한 방을 지정하지 않았습니다",
         "numbers": "전화 접속 번호",
-        "password": "$t(lockRoomPasswordUppercase):",
+        "password": "$t(lockRoomPasswordUppercase): ",
         "sip": "SIP 주소",
         "title": "공유",
         "tooltip": "링크 공유 및 회의에 대한 정보",
@@ -690,11 +692,17 @@
         "searchPlaceholder": "이름 검색"
     },
     "notify": {
+        "allowAction": "수락",
+        "allowedUnmute": "마이크 음소거를 해제하거나 카메라를 시작하거나 화면을 공유할 수 있습니다.",
+        "audioUnmuteBlockedTitle": "음소거 해제 차단됨!",
+        "audioUnmuteBlockedDescription": "시스템 제한으로 인해 마이크 음소거 해제 작업이 일시적으로 차단되었습니다.",
+        "chatMessages": "채팅 메시지",
         "connectedOneMember": "{{name}}님이 회의에 참가했습니다",
         "connectedThreePlusMembers": "{{name}}님과 그외 {{count}}명이 회의에 참가했습니다",
         "connectedTwoMembers": "{{first}}님과 {{second}}님이 회의에 참가했습니다",
         "disconnected": "연결이 끊김",
         "disconnectedByHost": "방장이 회의를 종료했습니다.",
+        "displayNotifications": "알림 표시",
         "endOfSearchResults": "더 이상 검색 결과가 없습니다.",
         "focus": "컨퍼런스 포커스",
         "focusFail": "{{component}}을 사용할 수 없음 - {{ms}} 초 후에 다시 시도하십시오",
@@ -721,6 +729,7 @@
         "refusedUnmuteVideo": "{{participantDisplayName}}님이 카메라 켜기를 거부했습니다.",
         "screenShareNoAudio": "창 선택 화면에서 오디오 공유 상자가 체크되지 않았습니다.",
         "screenShareNoAudioTitle": "시스템 오디오를 공유할 수 없습니다.",
+        "selfViewTitle": "언제든지 설정에서 내 화면 숨기기를 해제할 수 있습니다.",
         "somebody": "누군가",
         "startSilentTitle": "음소거 상태로 참가했습니다!",
         "startSilentDescription": "음소거를 해제하려면 회의에 다시 참가하세요",
@@ -752,6 +761,8 @@
         "moderationStoppedTitle": "방장 해제",
         "moderationToggleDescription": "{{participantDisplayName}}님에 의해",
         "raiseHandAction": "손들기",
+        "reactionSounds": "알림음 끄기",
+        "reactionSoundsForAll": "모두에게 알림음 끄기",
         "randomSelection": "랜덤 지목",
         "randomSelectionCompleted": "축하합니다. \n{{selectedParticipant}} 님이 지목되었습니다",
         "randomSelectionInitiatedBy": "{{initiator}}님에 의해 임의 참석자를 지목합니다.",
@@ -762,7 +773,9 @@
         "birthDayAlertMessage": "{{bParticipant}}님의 생일을 축하합니다",
         "birthdayHatOn": "{{initiator}}님이 {{participant}}님에게 생일모자을 적용했습니다.",
         "birthdayHatOnTitle": "생일 모자",
-        "groupTitle": "알림"
+        "groupTitle": "알림",
+        "videoUnmuteBlockedTitle": "카메라 켜기 및 화면 공유 차단!",
+        "videoUnmuteBlockedDescription": "시스템 제한으로 인해 카메라 켜기 및 화면 공유가 일시적으로 차단되었습니다."
     },
     "participantsPane": {
         "close": "닫기",
@@ -778,12 +791,12 @@
             "allow": "참가자 허용 권한:",
             "applyBirthdayARHat": "생일 모자 켜기",
             "removeBirthdayARHat": "생일 모자 끄기",
-            "audioModeration": "마이크 음소거 해제",
+            "audioModeration": "음소거 해제",
             "blockEveryoneMicCamera": "마이크와 카메라 모두 차단",
             "invite": "초대하기",
             "askUnmute": "음소거 해제 요청",
-            "moreModerationActions": "More moderation options",
-            "moreParticipantOptions": "More participant options",
+            "moreModerationActions": "방장 옵션 더보기",
+            "moreParticipantOptions": "참가자 옵션 더보기",
             "mute": "음소거",
             "muteAll": "모두 음소거",
             "muteEveryoneElse": "이외 모두 음소거",
@@ -797,7 +810,8 @@
             "stopTimer": "타이머 해제",
             "stopEveryonesVideo": "카메라 모두 끄기",
             "stopVideo": "카메라 끄기",
-            "unblockEveryoneMicCamera": "마이크와 카메라 모두 차단 해제"
+            "unblockEveryoneMicCamera": "마이크와 카메라 모두 차단 해제",
+            "moreModerationControls": "방장 설정 더보기"
         },
         "search": "참가자 검색"
     },
@@ -914,6 +928,7 @@
         "birthDayFootNote": "1980-01-01은 기본 생년월일이며 수동으로 변경하지 않는 한 경우에 AR 모자를 사용되지 않습니다."
     },
     "raisedHand": "말하기 요청",
+    "raisedHandsLabel": "말하기 요청 개수",
     "recording": {
         "limitNotificationDescriptionWeb": "수요가 많기 때문에 녹화가 {{limit}} 분으로 제한됩니다. 무제한 녹화의 경우 <a href={{url}} rel='noopener noreferrer' target='_blank'>{{app}}</a>을 사용해보세요.",
         "limitNotificationDescriptionNative": "수요가 많기 때문에 녹화가 {{limit}} 분으로 제한됩니다. 무제한 녹화를 원하시면 <3>{{app}}</3>을 사용해보세요.",
@@ -953,11 +968,8 @@
     "security": {
         "about": "회의에 $t(lockRoomPassword)를 추가합니다. 참가자가 회의에 참가하려면 $t(lockRoomPassword)를 입력해야 합니다.",
         "aboutReadOnly": "방장은 회의에 $t(lockRoomPassword)를 추가할 수 있습니다. 참가자가 회의에 참가하려면 $t(lockRoomPassword)를 입력해야 합니다.",
-        "dialogDescription": "공개/비공개 회의, 로비모드, E2EE 여부를 선택합니다. 일부 옵션은 호스트에게만 표시됩니다.",
-        "insecureRoomNameWarning": "회의실 이름은 안전하지 않습니다. 원하지 않는 참가자가 회의에 참가할 수 있습니다. 보안 버튼을 사용하여 회의 보안을 고려하십시오.",
-        "securityOptions": "보안 옵션",
-        "enableDialogText": "회의 공개/비공개 여부를 결정합니다.",
-        "toggleLabel": "회의 공개"
+        "header": "보안 옵션",
+        "insecureRoomNameWarning": "회의실 이름이 안전하지 않습니다. 원치 않는 참가자가 회의에 참가할 수 있습니다. 보안 버튼을 사용하여 회의 보안을 고려하십시오."
     },
     "settings": {
         "aiAttention": "집중도 사용여부",
@@ -992,9 +1004,11 @@
         "selectAudioOutput": "오디오 출력",
         "selectCamera": "카메라",
         "selectMic": "오디오",
+        "selfView": "내 화면",
         "sounds": "알림음",
         "speakers": "스피커",
         "startAudioMuted": "모두가 음소거로 시작합니다",
+        "startReactionsMuted": "모두에게 리액션 알림음 끄기",
         "startVideoMuted": "모두가 카메라 꺼짐 상태로 시작합니다",
         "disableDeviceAccess": "참가자 마이크와 카메라 제어를 제한",
         "talkWhileMuted": "음소거 상태로 대화 중",
@@ -1098,8 +1112,8 @@
             "mute": "음소거 토글",
             "muteEveryone": "모두 음소거",
             "muteEveryoneElse": "다른 사람 모두 음소거",
-            "muteEveryonesVideo": "카메라 모두 끄기",
-            "muteEveryoneElsesVideo": "다른 카메라 모두 끄기",
+            "muteEveryonesVideoStream": "카메라 모두 끄기",
+            "muteEveryoneElsesVideoStream": "다른 카메라 모두 끄기",
             "participants": "참가자 목록",
             "party": "축하",
             "pip": "PIP 모드 토글",
@@ -1143,6 +1157,7 @@
         "closeReactionsMenu": "리액션 메뉴 닫기",
         "disableChat": "채팅 차단",
         "disableChatForAll": "전원 채팅 차단",
+        "disableReactionSounds": "이 회의에서 리액션 알림음 끄기로 설정할 수 있습니다",
         "documentClose": "공유문서 닫기",
         "documentOpen": "공유문서 열기",
         "download": "앱 다운로드",
@@ -1269,7 +1284,7 @@
         "audioOnly": "AUD",
         "audioOnlyExpanded": "낮은 대역폭 모드에 있습니다. 이 모드에서는 오디오 및 화면 공유 만 수신합니다.",
         "bestPerformance": "오디오 전용",
-        "highestQuality": "고해상도",
+        "highestQuality": "최대 해상도",
         "callQuality": "비디오 품질",
         "hd": "HD",
         "hdTooltip": "고화질 비디오보기",
@@ -1297,6 +1312,7 @@
         "following": "팔로잉",
         "grantFollowMeModerator": "화면 팔로잉",
         "grantModerator": "방장 위임",
+        "hideSelfView": "숨기기",
         "kick": "내보내기",
         "moderator": "방장",
         "moveToFirst": "처음으로 이동",

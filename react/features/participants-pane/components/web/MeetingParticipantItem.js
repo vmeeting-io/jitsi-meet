@@ -336,10 +336,6 @@ function _mapStateToProps(state, ownProps): Object {
     const _displayName = getParticipantDisplayName(state, participant?.id);
     const _matchesSearch = participantMatchesSearch(participant, searchString);
 
-    const _displayName = getParticipantDisplayName(state, participant?.id);
-
-    const _matchesSearch = participantMatchesSearch(participant, searchString);
-
     const _isAudioMuted = isParticipantAudioMuted(participant, state);
     const _isVideoMuted = isParticipantVideoMuted(participant, state);
     const _audioMediaState = getParticipantAudioMediaState(participant, _isAudioMuted, state);

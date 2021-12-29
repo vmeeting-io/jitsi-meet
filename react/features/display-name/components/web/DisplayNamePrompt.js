@@ -9,7 +9,7 @@ import { connect } from '../../../base/redux';
 import AbstractDisplayNamePrompt, {
     type Props
 } from '../AbstractDisplayNamePrompt';
-import { showToast } from '../../../notifications';
+import { NOTIFICATION_TIMEOUT, showToast } from '../../../notifications';
 import { getLocalParticipant } from '../../../base/participants';
 import { openLoginDialogDIDPopUp } from '../../../did-consent';
 
@@ -23,8 +23,6 @@ type State = {
      */
     displayName: string
 };
-
-const NOTIFICATION_TIMEOUT = 3000;
 
 /**
  * Implements a React {@code Component} for displaying a dialog with an field
@@ -130,7 +128,7 @@ class DisplayNamePrompt extends AbstractDisplayNamePrompt<State> {
         if(this.state.displayName.trim() === "" || this.state.displayName === undefined || this.state.displayName === "") {
             showToast({
                 title: t('notify.noNameInserted'),
-                timeout: NOTIFICATION_TIMEOUT,
+                timeout: NOTIFICATION_TIMEOUT.MEDIUM,
                 icon: 'info',
                 animation: false });
         }

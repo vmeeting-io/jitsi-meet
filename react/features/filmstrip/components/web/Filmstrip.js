@@ -535,7 +535,7 @@ class Filmstrip extends PureComponent <Props> {
      */
     _renderToggleButton() {
         const icon = this.props._visible ? IconMenuDown : IconMenuUp;
-        const { t } = this.props;
+        const { _hideFilmstrip, t } = this.props;
         const actions = isMobileBrowser()
             ? { onTouchStart: this._onToggleButtonTouch }
             : { onClick: this._onToolbarToggleFilmstrip };

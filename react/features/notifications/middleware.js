@@ -86,8 +86,7 @@ MiddlewareRegistry.register(store => next => action => {
 
             store.dispatch(showNotification({
                 titleKey: 'notify.moderator'
-            },
-            NOTIFICATION_TIMEOUT_TYPE.SHORT));
+            }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
         }
 
         return next(action);

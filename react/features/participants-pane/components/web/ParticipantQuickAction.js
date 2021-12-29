@@ -67,7 +67,8 @@ const ParticipantQuickAction = ({
     const dispatch = useDispatch();
     const { t } = useTranslation();
 
-    const askToUnmute = useCallback(() => {
+    const askToUnmute = useCallback(e => {
+        e.stopPropagation();
         dispatch(approveParticipant(participantID));
     }, [ dispatch, participantID ]);
 

@@ -164,7 +164,7 @@ class Conference extends AbstractConference<Props, *> {
 
         // Bind event handler so it is only bound once for every instance.
         this._onFullScreenChange = this._onFullScreenChange.bind(this);
-        this._onVidespaceTouchStart = this._onVidespaceTouchStart.bind(this);
+        this._onVideospaceTouchStart = this._onVideospaceTouchStart.bind(this);
         this._setBackground = this._setBackground.bind(this);
         this._renderRandomSelectionCountdown = this._renderRandomSelectionCountdown.bind(this);
     }
@@ -246,7 +246,7 @@ class Conference extends AbstractConference<Props, *> {
                     <Notice />
                     <div
                         id = 'videospace'
-                        onTouchStart = { this._onVidespaceTouchStart }>
+                        onTouchStart = { this._onVideospaceTouchStart }>
                         <LargeVideo />
                         {!_isParticipantsPaneVisible
                         && <div id = 'notification-participant-list'>

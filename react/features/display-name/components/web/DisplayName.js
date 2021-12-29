@@ -210,13 +210,13 @@ class DisplayName extends Component<Props, State> {
 
         return (
             <Tooltip
-                content = { appendSuffix(_nameToDisplay, displayNameSuffix) }
+                content = { appendSuffix(_nameToDisplay, t(displayNameSuffix)) }
                 position = { getIndicatorsTooltipPosition(currentLayout) }>
                 <span
                     className = { `displayname ${classes.displayName}` }
                     id = { elementID }
                     onClick = { this._onStartEditing }>
-                    { appendSuffix(_nameToDisplay, displayNameSuffix) }
+                    { appendSuffix(_nameToDisplay, t(displayNameSuffix)) }
                 </span>
             </Tooltip>
         );

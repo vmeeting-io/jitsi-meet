@@ -23,7 +23,7 @@ import MessageContainer from './MessageContainer';
 import MessageRecipient from './MessageRecipient';
 
 import { setPrivateMessageRecipient } from '../../actions';
-import { showToast } from '../../../notifications';
+import { NOTIFICATION_TIMEOUT, showToast } from '../../../notifications';
 
 import Mark from 'mark.js';
 import DragAndDrop from './DragAndDrop';
@@ -34,8 +34,6 @@ declare var APP: Object;
  * React Component for holding the chat feature in a side panel that slides in
  * and out of view.
  */
-
-const NOTIFICATION_TIMEOUT = 1000;
 
 class Chat extends AbstractChat<Props> {
 
@@ -498,7 +496,7 @@ class Chat extends AbstractChat<Props> {
         if (count === 0) {
             await showToast({
                 title: t('notify.noSearchResultsFound'),
-                timeout: NOTIFICATION_TIMEOUT,
+                timeout: NOTIFICATION_TIMEOUT.SHORT,
                 icon: 'info',
                 animation: false
             });
@@ -537,7 +535,7 @@ class Chat extends AbstractChat<Props> {
                 // dispatch a notification pop-up when reaching end of search results
                 showToast({
                     title: t('notify.endOfSearchResults'),
-                    timeout: NOTIFICATION_TIMEOUT,
+                    timeout: NOTIFICATION_TIMEOUT.SHORT,
                     icon: 'info',
                     animation: false
                 });

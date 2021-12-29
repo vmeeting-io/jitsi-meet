@@ -54,7 +54,7 @@ export function notifyChatDisabled(participant: Object, _: ?Function) { // eslin
         dispatch(showNotification({
             titleKey: 'dialog.chatDisabledMessage',
             titleArguments: args,
-        }, NOTIFICATION_TIMEOUT * 10));
+        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
     };
 }
 
@@ -73,6 +73,6 @@ export function notifyChatEnabled(participant: Object, _: ?Function) { // eslint
         dispatch(showNotification({
             titleKey: 'dialog.chatEnabledMessage',
             titleArguments: args
-        }, NOTIFICATION_TIMEOUT * 10));
+        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
     };
 }

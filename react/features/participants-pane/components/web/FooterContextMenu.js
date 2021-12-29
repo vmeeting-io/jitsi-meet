@@ -19,6 +19,7 @@ import { openDialog } from '../../../base/dialog';
 import {
     IconAnnouncement,
     IconCheck,
+    IconHorizontalPoints,
     IconStopWatch,
     IconVideoOff,
 } from '../../../base/icons';
@@ -27,9 +28,10 @@ import {
     getParticipantCount,
     isEveryoneModerator
 } from '../../../base/participants';
+import { selectParticipantDisplayName } from '../../../base/participants/selectors';
+import { openSettingsDialog, SETTINGS_TABS } from '../../../settings';
 import { getTimerStarted } from '../../../timer/functions';
 import { MuteEveryonesVideoDialog } from '../../../video-menu/components';
-import { selectParticipantDisplayName } from '../../../base/participants/selectors';
 
 import {
     notifyRandomSelectionStarted,
@@ -125,6 +127,8 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
 
     const muteAllVideo = useCallback(
         () => dispatch(openDialog(MuteEveryonesVideoDialog)), [dispatch]);
+
+    const openModeratorSettings = () => dispatch(openSettingsDialog(SETTINGS_TABS.MODERATOR));
 
     const startRandomSelection = useCallback(
         () => {

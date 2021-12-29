@@ -13,9 +13,7 @@ import {
 } from '../base/conference';
 import { hideDialog, openDialog } from '../base/dialog';
 import { i18next } from '../base/i18n';
-import { setAIAttentionSettings, updateSettings } from '../base/settings';
-import { setPrejoinPageVisibility } from '../prejoin/actions';
-import { PREJOIN_SCREEN_STATES } from '../prejoin/constants';
+import { updateSettings } from '../base/settings';
 import { setScreenshareFramerate } from '../screen-share/actions';
 
 import {
@@ -29,11 +27,9 @@ import {
     getProfileTabProps,
     getSoundsTabProps
 } from './functions';
-import { showNotification } from '../notifications';
+import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../notifications';
 
 declare var APP: Object;
-
-const NOTIFICATION_TIMEOUT = 3000;
 
 /**
  * Opens {@code LogoutDialog}.
@@ -180,14 +176,12 @@ export function submitProfileTab(newState: Object): Function {
         const _apiBase = getAuthUrl(getState());
         // check if there is a value for displayName i.e. participant's name
         // if it is not set, show a toast message
-        if(newState.displayName === "" || newState.displayName === undefined || newState.displayName.trim() === "") {
+        if (newState.displayName === "" || newState.displayName === undefined || newState.displayName.trim() === "") {
             dispatch(showNotification({
                 titleKey: 'notify.noNameInsertedInProfileTab'
-            }));
-        }
-
-        // else, proceed to updating profile information
-        else {
+            }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+        } else {
+            // else, proceed to updating profile information
             if (newState.displayName !== currentState.displayName) {
                 APP.conference.changeLocalDisplayName(newState.displayName);
                 try {

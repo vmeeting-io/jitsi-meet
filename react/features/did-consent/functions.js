@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import tokenLocalStorage from "../../api/tokenLocalStorage";
 import { getAuthUrl } from "../../api/url";
-import { showNotification } from "../notifications"
+import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from "../notifications"
 
 /**
  * Send a Consent Disagree Notification.
@@ -13,8 +13,7 @@ export function sendConsentDisagreeNotification(dispatch){
     dispatch(showNotification({
         titleKey: 'dialog.consent.notice.disagreeTitle',
         descriptionKey: 'dialog.consent.notice.disagreeNotice',
-    },
-    5000))
+    }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM))
 }
 
 /**
@@ -26,8 +25,7 @@ export function sendConsentAgreeNotification(dispatch){
     dispatch(showNotification({
         titleKey: 'dialog.consent.notice.agreeTitle',
         descriptionKey: 'dialog.consent.notice.agreeNotice',
-    },
-    5000))
+    }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM))
 }
 
 /**
@@ -40,8 +38,7 @@ export function sendConsentVerifyOnProgressNotification(dispatch){
     dispatch(showNotification({
         titleKey: 'dialog.consent.notice.agreeTitle',
         descriptionKey: 'dialog.consent.notice.verificationOnProcess',
-    },
-    5000))
+    }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM))
 }
 
 /**

@@ -2302,8 +2302,7 @@ export default {
                     descriptionArguments: { initiator: nick , participant: this.getLocalDisplayName()},
                     descriptionKey: 'notify.birthdayHatOn',
                     titleKey: 'notify.birthdayHatOnTitle'
-                },
-                5000)); // hard-coded the duration of notification bubble to 5 seconds
+                }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM)); // hard-coded the duration of notification bubble to 5 seconds
 
                 APP.store.dispatch(arApprovalDialog(true));
                 enableARHat(APP.store.dispatch,true); 
@@ -2318,8 +2317,7 @@ export default {
                     descriptionArguments: { initiator: nick },
                     descriptionKey: 'notify.timerInitiatedBy',
                     titleKey: 'notify.timerTitle'
-                },
-                5000)); // hard-coded the duration of notification bubble to 5 seconds
+                }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM)); // hard-coded the duration of notification bubble to 5 seconds
             });
 
         room.on(JitsiConferenceEvents.NOTIFY_TIMER_FINISHED,
@@ -2329,8 +2327,7 @@ export default {
                     descriptionArguments: { initiator: nick },
                     descriptionKey: 'notify.timerFinishedBy',
                     titleKey: 'notify.timerTitle'
-                },
-                5000)); // hard-coded the duration of notification bubble to 5 seconds
+                }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM)); // hard-coded the duration of notification bubble to 5 seconds
             });
 
         room.on(JitsiConferenceEvents.RANDOM_SELECTION_COUNTDOWN,
@@ -2366,8 +2363,7 @@ export default {
                     descriptionArguments: { initiator: nick },
                     descriptionKey: 'notify.randomSelectionInitiatedBy',
                     titleKey: 'notify.randomSelection'
-                },
-                5000)); // hard-coded the duration of notification bubble to 5 seconds
+                }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM)); // hard-coded the duration of notification bubble to 5 seconds
             });
 
         room.on(JitsiConferenceEvents.NOTIFY_RANDOM_SELECTION_FINISHED,
@@ -2376,8 +2372,7 @@ export default {
                     descriptionArguments: { selectedParticipant: nick },
                     descriptionKey: 'notify.randomSelectionCompleted',
                     titleKey: 'notify.randomSelection'
-                },
-                5000)); // hard-coded the duration of notification bubble to 5 seconds
+                }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM)); // hard-coded the duration of notification bubble to 5 seconds
             });
         // end of added portion
 

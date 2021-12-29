@@ -146,6 +146,7 @@ export function getModeratorTabProps(stateful: Object | Function) {
     const state = toState(stateful);
     const {
         conference,
+        followMeEnabled,
         startAudioMutedPolicy,
         startVideoMutedPolicy,
         startReactionsMuted

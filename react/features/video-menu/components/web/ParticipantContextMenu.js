@@ -14,6 +14,7 @@ import { MEDIA_TYPE } from '../../../base/media';
 import { getLocalParticipant, PARTICIPANT_ROLE } from '../../../base/participants';
 import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms/functions';
 import { setVolume } from '../../../filmstrip/actions.web';
+import { isFollowMeModerator } from '../../../follow-me';
 import { isForceMuted, isTodayParticipantBirthday } from '../../../participants-pane/functions';
 import { requestRemoteControl, stopController } from '../../../remote-control';
 import { stopSharedVideo } from '../../../shared-video/actions.any';
@@ -146,7 +147,7 @@ const ParticipantContextMenu = ({
     const _rooms = Object.values(useSelector(getBreakoutRooms));
 
     const _isParticipantBirthday = useSelector(isTodayParticipantBirthday(participant));
-    
+
     const _onVolumeChange = useCallback(value => {
         dispatch(setVolume(participant.id, value));
     }, [ setVolume, dispatch ]);
@@ -165,6 +166,8 @@ const ParticipantContextMenu = ({
     }
     , [ thumbnailMenu, _overflowDrawer, drawerParticipant, participant ]);
 
+    const _isFollowMeModerator = useSelector(isFollowMeModerator(_getCurrentParticipantId()));
+
     const buttons = [];
     const buttons2 = [];
 
@@ -182,7 +185,7 @@ const ParticipantContextMenu = ({
     } ];
 
     if (_isModerator) {
-        if (!thumbnailMenu) {
+        if (!thumbnailMenu && !_isFollowMeModerator) {
             buttons.push(
                 <GrantFollowMeModeratorButton
                     key = 'grant-follow-me-moderator'

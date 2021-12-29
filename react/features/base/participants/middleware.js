@@ -125,7 +125,7 @@ MiddlewareRegistry.register(store => next => action => {
                     descriptionArguments: { bParticipant: participant.name},
                     descriptionKey: 'notify.birthDayAlertMessage',
                     titleKey: 'notify.birthDayAlert'
-                }, 5000));
+                }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
             }
 
             if (conference && isHost && !isRecording(state) && autoRecord) {
@@ -258,7 +258,7 @@ MiddlewareRegistry.register(store => next => action => {
                 descriptionArguments: { bParticipant: participant.name},
                 descriptionKey: 'notify.birthDayAlertMessage',
                 titleKey: 'notify.birthDayAlert'
-            }, 5000));
+            }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
         }
 
         _maybePlaySounds(store, action);

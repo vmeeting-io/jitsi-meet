@@ -13,10 +13,6 @@ const models = {
     model_landscape: 'libs/selfie_segmentation_landscape.tflite'
 };
 
-let tflite;
-let wasmCheck;
-let isWasmDisabled = false;
-
 const segmentationDimensions = {
     model_general: {
         height: 256,

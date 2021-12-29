@@ -76,7 +76,8 @@ function MeetingParticipants({
 
     const [ lowerMenu, , toggleMenu, menuEnter, menuLeave, raiseContext ] = useContextMenu();
 
-    const muteAudio = useCallback(id => () => {
+    const muteAudio = useCallback(id => e => {
+        e.stopPropagation();
         dispatch(muteRemote(id, MEDIA_TYPE.AUDIO));
         dispatch(rejectParticipantAudio(id));
     }, [ dispatch ]);

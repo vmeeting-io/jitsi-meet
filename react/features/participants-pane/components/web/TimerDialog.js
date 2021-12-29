@@ -8,7 +8,7 @@ import { connect } from '../../../base/redux';
 import AbstractTimerDialog from '../AbstractTimerDialog';
 import { FieldTextStateless } from '@atlaskit/field-text';
 import Button, { ButtonGroup } from '@atlaskit/button';
-import { showNotification } from '../../../notifications';
+import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../../../notifications';
 
 /**
  * A React Component for setting timer duration to be set to the user.
@@ -136,14 +136,14 @@ class TimerDialog extends AbstractTimerDialog {
      * @returns boolean
      */
     _onSubmitForm(e: Object) {
-        const { t } = this.props;
+        const { dispatch, t } = this.props;
         const time = {"min":  parseInt(this.state.min) ,
                       "seconds": parseInt(this.state.seconds) };
-        if((time.min === 0) && (time.seconds === 0)) {
-            APP.store.dispatch(showNotification({
+        if ((time.min === 0) && (time.seconds === 0)) {
+            dispatch(showNotification({
                 descriptionKey: t('notify.invalidTimerDescription'),
                 titleKey: t('notify.invalidTimer'),
-            }, 5000));
+            }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
         } else {
             this._onSubmit(time);
             return true;

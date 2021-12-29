@@ -3,7 +3,7 @@
 import aliases from 'react-emoji-render/data/aliases';
 import emojiAsciiAliases from 'react-emoji-render/data/asciiAliases';
 import { getAuthUrl } from '../../api/url';
-import { showToast } from '../../features/notifications';
+import { NOTIFICATION_TIMEOUT, showToast } from '../../features/notifications';
 import { i18next } from '../base/i18n';
 import { getConferenceName } from '../base/conference';
 import moment from 'moment';
@@ -152,7 +152,6 @@ export async function uploadFile(file, store, fileUploadInProgress) {
     }
 
     const MAX_FILE_SIZE_FOR_UPLOAD = 314572800; // 300 MB = 300 X 1024 X 1024 bytes
-    const NOTIFICATION_TIMEOUT = 3000;
 
     // use the option fileUploadInProgress if we wish to allow only one file upload at a time
     // and unless the file is completely uploaded, new files cannot be uploaded
@@ -225,7 +224,7 @@ export async function uploadFile(file, store, fileUploadInProgress) {
         console.log("Error is: ", err);
         showToast({
             title: i18next.t('fileupload.error'), // need to use translated strings here
-            timeout: NOTIFICATION_TIMEOUT,
+            timeout: NOTIFICATION_TIMEOUT.MEDIUM,
             icon: 'error',
             animation: false });
     }

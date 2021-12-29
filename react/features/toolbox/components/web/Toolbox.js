@@ -60,7 +60,7 @@ import {
 import SecurityDialogButton from '../../../security/components/security-dialog/web/SecurityDialogButton';
 import { SettingsButton } from '../../../settings';
 import { SharedVideoButton } from '../../../shared-video/components';
-import { SpeakerStatsButton } from '../../../speaker-stats/components/web';
+import { SpeakerStatsButton } from '../../../speaker-stats/components';
 import {
     ClosedCaptionButton
 } from '../../../subtitles';
@@ -1376,7 +1376,6 @@ function _mapStateToProps(state, ownProps) {
     const localParticipant = getLocalParticipant(state);
     const localVideo = getLocalVideoTrack(state['features/base/tracks']);
     const { clientWidth } = state['features/base/responsive-ui'];
-    const participantCount = getParticipantCount(state);
     const isGuest = !isHost(state);
 
     let desktopSharingDisabledTooltipKey;

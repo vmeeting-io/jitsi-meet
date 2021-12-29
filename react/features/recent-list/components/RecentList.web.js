@@ -16,7 +16,7 @@ import axios from 'axios';
 import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
 /**
- * The type of the React {@code Component} props of {@link RecentList}
+ * The type of the React {@code Component} props of {@link RecentList}.
  */
 type Props = {
 

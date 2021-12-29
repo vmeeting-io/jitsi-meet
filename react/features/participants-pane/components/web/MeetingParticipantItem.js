@@ -10,6 +10,7 @@ import {
     getParticipantByIdOrUndefined,
     getParticipantDisplayName,
     getPinnedParticipant,
+    hasRaisedHand,
     isParticipantModerator
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
@@ -73,7 +74,12 @@ type Props = {
     /**
      * True if the participant is the local participant.
      */
-    _local: Boolean,
+    _local: boolean,
+
+    /**
+     * Whether or not the local participant is moderator.
+     */
+    _localModerator: boolean,
 
     /**
      * Whether or not the local participant is moderator.
@@ -124,7 +130,7 @@ type Props = {
     askUnmuteText: string,
 
     /**
-     * Is this item highlighted
+     * Is this item highlighted.
      */
     isHighlighted: boolean,
 
@@ -139,12 +145,12 @@ type Props = {
     muteParticipantButtonText: string,
 
     /**
-     * Callback for the activation of this item's context menu
+     * Callback for the activation of this item's context menu.
      */
     onContextMenu: Function,
 
     /**
-     * Callback for the mouse leaving this item
+     * Callback for the mouse leaving this item.
      */
     onLeave: Function,
 
@@ -212,6 +218,7 @@ function MeetingParticipantItem({
     openDrawerForParticipant,
     overflowDrawer,
     participantActionEllipsisLabel,
+    t,
     youText
 }: Props) {
 
@@ -286,9 +293,10 @@ function MeetingParticipantItem({
                         buttonType = { _quickActionButtonType }
                         muteAudio = { muteAudio }
                         muteParticipantButtonText = { muteParticipantButtonText }
-                        participantID = { _participantID } />
+                        participantID = { _participantID }
+                        participantName = { _displayName } />
                     <ParticipantActionEllipsis
-                        aria-label = { participantActionEllipsisLabel }
+                        accessibilityLabel = { participantActionEllipsisLabel }
                         onClick = { onContextMenu } />
                 </>
             }
@@ -301,7 +309,7 @@ function MeetingParticipantItem({
 
             {!overflowDrawer && _localVideoOwner && _participant?.isFakeParticipant && (
                 <ParticipantActionEllipsis
-                    aria-label = { participantActionEllipsisLabel }
+                    accessibilityLabel = { participantActionEllipsisLabel }
                     onClick = { onContextMenu } />
             )}
         </ParticipantItem>
@@ -326,6 +334,10 @@ function _mapStateToProps(state, ownProps): Object {
     const pinnedParticipant = getPinnedParticipant(state);
 
     const _displayName = getParticipantDisplayName(state, participant?.id);
+    const _matchesSearch = participantMatchesSearch(participant, searchString);
+
+    const _displayName = getParticipantDisplayName(state, participant?.id);
+
     const _matchesSearch = participantMatchesSearch(participant, searchString);
 
     const _isAudioMuted = isParticipantAudioMuted(participant, state);
@@ -362,7 +374,7 @@ function _mapStateToProps(state, ownProps): Object {
         _participant: participant,
         _participantID: participant?.id,
         _quickActionButtonType,
-        _raisedHand: Boolean(participant?.raisedHand),
+        _raisedHand: hasRaisedHand(participant),
         _videoMediaState
     };
 }

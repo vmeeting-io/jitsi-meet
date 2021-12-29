@@ -25,17 +25,17 @@ import { BirthdayIndicator } from './BirthdayIndicator';
 type Props = {
 
     /**
-     * Type of trigger for the participant actions
+     * Type of trigger for the participant actions.
      */
     actionsTrigger?: ActionTrigger,
 
     /**
-     * Media state for audio
+     * Media state for audio.
      */
     audioMediaState?: MediaState,
 
     /**
-     * React children
+     * React children.
      */
     children?: Node,
 
@@ -50,7 +50,7 @@ type Props = {
     displayName: string,
 
     /**
-     * Is this item highlighted/raised
+     * Is this item highlighted/raised.
      */
     isHighlighted?: boolean,
 
@@ -67,15 +67,15 @@ type Props = {
     /**
      * True if the participant is local.
      */
-    local: Boolean,
+    local: boolean,
 
     /**
      * Opens a drawer with participant actions.
      */
-    openDrawerForParticipant: Function,
+    openDrawerForParticipant?: Function,
 
     /**
-     * Callback for when the mouse leaves this component
+     * Callback for when the mouse leaves this component.
      */
     onLeave?: Function,
 
@@ -95,9 +95,9 @@ type Props = {
     raisedHand?: boolean,
 
     /**
-     * Media state for video
+     * Media state for video.
      */
-    videoMediaState: MediaState,
+    videoMediaState?: MediaState,
 
     /**
      * Invoked to obtain translated strings.
@@ -172,6 +172,7 @@ function ParticipantItem({
     onLeave,
     openDrawerForParticipant,
     overflowDrawer,
+    participantID,
     raisedHand,
     t,
     videoMediaState = MEDIA_STATE.NONE,

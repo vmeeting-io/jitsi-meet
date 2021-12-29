@@ -34,7 +34,7 @@ class GrantModeratorButton extends AbstractGrantModeratorButton {
      * @returns {ReactElement}
      */
     render() {
-        const { participantID, t, visible } = this.props;
+        const { t, visible } = this.props;
 
         if (!visible) {
             return null;
@@ -45,14 +45,13 @@ class GrantModeratorButton extends AbstractGrantModeratorButton {
                 accessibilityLabel = { t('toolbar.accessibilityLabel.grantModerator') }
                 className = 'grantmoderatorlink'
                 icon = { IconCrown }
-                id = { `grantmoderatorlink_${participantID}` }
                 // eslint-disable-next-line react/jsx-handler-names
                 onClick = { this._handleClick }
                 text = { t('videothumbnail.grantModerator') } />
         );
     }
 
-    _handleClick: () => void
+    _handleClick: () => void;
 }
 
 export default translate(connect(_mapStateToProps)(GrantModeratorButton));

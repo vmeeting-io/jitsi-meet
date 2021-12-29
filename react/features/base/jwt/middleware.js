@@ -53,7 +53,7 @@ MiddlewareRegistry.register(store => next => action => {
  */
 function _overwriteLocalParticipant(
         { dispatch, getState },
-        { avatarURL, email, name, features, birthDate }) {
+        { avatarURL, email, id: jwtId, name, features, birthDate }) {
         // added additional variable birthDate in the second object
     let localParticipant;
 
@@ -70,6 +70,9 @@ function _overwriteLocalParticipant(
         }
         if (email) {
             newProperties.email = email;
+        }
+        if (jwtId) {
+            newProperties.jwtId = jwtId;
         }
         if (name) {
             newProperties.name = name;

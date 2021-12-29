@@ -264,5 +264,5 @@ export default class BaseApp extends Component<*, State> {
      *
      * @returns {React$Element}
      */
-    _renderDialogContainer: () => React$Element<*>
+    _renderDialogContainer: () => React$Element<*>;
 }

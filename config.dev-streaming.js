@@ -1125,7 +1125,6 @@ hiddenDomain: 'recorder.jitsi-meet.example.com',
 
     // disableRemoteMute: true,
     // disableSortable: false,
-    hideEmailSetting: false,
     disableUserRegistration: false,
     hideSelectBackground: 'guest',     // true, false, 'guest'
 

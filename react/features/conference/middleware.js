@@ -10,8 +10,7 @@ import {
 import { disconnect } from '../base/connection';
 import { hideDialog, isDialogOpen } from '../base/dialog';
 import { browser } from '../base/lib-jitsi-meet';
-import { setActiveModalId } from '../base/modal';
-import { getParticipantById, getParticipantDisplayName, participantUpdated, pinParticipant } from '../base/participants';
+import { getParticipantDisplayName, pinParticipant } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
 import { SET_REDUCED_UI } from '../base/responsive-ui';
 import { FeedbackDialog } from '../feedback';
@@ -61,37 +60,6 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
 
-    case PARTICIPANT_CHAT_DISABLED: {
-        const { dispatch, getState } = store;
-        const participant = getParticipantById(getState(), action.participant);
-        if (typeof participant.chat === 'undefined') {
-            dispatch(participantUpdated({
-                id: participant.id,
-                chat: false,
-            }));
-        } else {
-            dispatch(notifyChatDisabled(
-                action.participant
-            ));
-        }
-        break;
-    }
-
-    case PARTICIPANT_CHAT_ENABLED: {
-        const { dispatch, getState } = store;
-        const participant = getParticipantById(getState(), action.participant);
-        if (typeof participant.chat === 'undefined') {
-            dispatch(participantUpdated({
-                id: participant.id,
-                chat: true,
-            }));
-        } else {
-            dispatch(notifyChatEnabled(
-                action.participant
-            ));
-        }
-        break;
-    }
     }
 
     return result;
@@ -125,8 +93,5 @@ StateListenerRegistry.register(
                 // dialog we might have open.
                 dispatch(hideDialog());
             }
-
-            // We want to close all modals.
-            dispatch(setActiveModalId());
         }
     });

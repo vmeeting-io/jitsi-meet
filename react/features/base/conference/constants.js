@@ -6,7 +6,7 @@
 export const AVATAR_URL_COMMAND = 'avatar-url';
 
 /**
- * The command type for updating a participant's e-mail address.
+ * The command type for updating a participant's email address.
  *
  * @type {string}
  */
@@ -50,3 +50,7 @@ export const JITSI_CONFERENCE_URL_KEY = Symbol('url');
 export const STATUS_COMMAND = 'status';
 
 export const LEAVING_TIMESTAMP = 'leaving-timestamp'; 
+
+export const TRIGGER_READY_TO_CLOSE_REASONS = [
+    'The meeting has been terminated'
+];

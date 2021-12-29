@@ -9,7 +9,9 @@ import ContextMenuItemGroup from '../../../base/components/context-menu/ContextM
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { Icon, IconHorizontalPoints } from '../../../base/icons';
-import { getLocalParticipant } from '../../../base/participants';
+import {
+    getLocalParticipant
+} from '../../../base/participants';
 import { Popover } from '../../../base/popover';
 import { connect } from '../../../base/redux';
 import { setParticipantContextMenuOpen } from '../../../base/responsive-ui/actions';
@@ -124,7 +126,7 @@ const styles = theme => {
  * React {@code Component} for displaying an icon associated with opening the
  * the {@code RemoteVideoMenu}.
  *
- * @extends {Component}
+ * @augments {Component}
  */
 class LocalVideoMenuTriggerButton extends Component<Props> {
 

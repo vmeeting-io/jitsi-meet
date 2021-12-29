@@ -67,6 +67,16 @@ export const LOCAL_PARTICIPANT_APPROVED = 'LOCAL_PARTICIPANT_APPROVED';
 export const LOCAL_PARTICIPANT_REJECTED = 'LOCAL_PARTICIPANT_REJECTED';
 
 /**
+ * The type of (redux) action which signals that the local participant had been blocked.
+ *
+ * {
+ *     type: LOCAL_PARTICIPANT_REJECTED,
+ *     mediaType: MediaType
+ * }
+ */
+export const LOCAL_PARTICIPANT_REJECTED = 'LOCAL_PARTICIPANT_REJECTED';
+
+/**
  * The type of (redux) action which signals to show notification to the local participant.
  *
  * {

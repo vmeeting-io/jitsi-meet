@@ -34,13 +34,13 @@
     jitsiMeet.universalLinkDomains = @[@"vmeeting.io", @"devmeet.vmeeting.kr"];
 
     jitsiMeet.defaultConferenceOptions = [JitsiMeetConferenceOptions fromBuilder:^(JitsiMeetConferenceOptionsBuilder *builder) {
+        [builder setFeatureFlag:@"welcomepage.enabled" withBoolean:YES];
         [builder setFeatureFlag:@"resolution" withValue:@(360)];
         [builder setFeatureFlag:@"ios.screensharing.enabled" withBoolean:YES];
         builder.serverURL = [NSURL URLWithString:@"https://vmeeting.io"];
 #if DEBUG
         builder.serverURL = [NSURL URLWithString:@"https://devmeet.vmeeting.kr"];
 #endif
-        builder.welcomePageEnabled = YES;
 
         // Apple rejected our app because they claim requiring a
         // Dropbox account for recording is not acceptable.

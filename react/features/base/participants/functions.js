@@ -3,6 +3,7 @@
 // import { getGravatarURL } from '@jitsi/js-utils/avatar';
 import type { Store } from 'redux';
 
+import { GRAVATAR_BASE_URL, isCORSAvatarURL } from '../avatar';
 import { JitsiParticipantConnectionStatus } from '../lib-jitsi-meet';
 import { MEDIA_TYPE, shouldRenderVideoTrack } from '../media';
 import { toState } from '../redux';
@@ -20,7 +21,6 @@ import { preloadImage } from './preloadImage';
 import tokenLocalStorage from '../../../api/tokenLocalStorage';
 import { getAuthUrl } from '../../../api/url';
 
-declare var interfaceConfig: Object;
 
 /**
  * Temp structures for avatar urls to be checked/preloaded.
@@ -97,7 +97,7 @@ export function getFirstLoadableAvatarUrl(participant: Object, store: Store<any,
     const deferred = createDeferred();
     const fullPromise = deferred.promise
         .then(() => _getFirstLoadableAvatarUrl(participant, store))
-        .then(src => {
+        .then(result => {
 
             if (AVATAR_QUEUE.length) {
                 const next = AVATAR_QUEUE.shift();
@@ -105,7 +105,7 @@ export function getFirstLoadableAvatarUrl(participant: Object, store: Store<any,
                 next.resolve();
             }
 
-            return src;
+            return result;
         });
 
     if (AVATAR_QUEUE.length) {
@@ -239,9 +239,6 @@ export function getParticipantCountWithFake(stateful: Object | Function) {
 /**
  * Returns participant's display name.
  *
- * FIXME: Remove the hardcoded strings once interfaceConfig is stored in redux
- * and merge with a similarly named method in {@code conference.js}.
- *
  * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
  * {@code getState} function to be used to retrieve the state.
  * @param {string} id - The ID of the participant's display name to retrieve.
@@ -251,6 +248,10 @@ export function getParticipantDisplayName(
         stateful: Object | Function,
         id: string) {
     const participant = getParticipantById(stateful, id);
+    const {
+        defaultLocalDisplayName,
+        defaultRemoteDisplayName
+    } = toState(stateful)['features/base/config'];
 
     if (participant) {
         if (participant.name) {
@@ -258,15 +259,11 @@ export function getParticipantDisplayName(
         }
 
         if (participant.local) {
-            return typeof interfaceConfig === 'object'
-                ? interfaceConfig.DEFAULT_LOCAL_DISPLAY_NAME
-                : 'me';
+            return defaultLocalDisplayName;
         }
     }
 
-    return typeof interfaceConfig === 'object'
-        ? interfaceConfig.DEFAULT_REMOTE_DISPLAY_NAME
-        : 'Fellow Jitster';
+    return defaultRemoteDisplayName;
 }
 
 /**
@@ -476,18 +473,33 @@ async function _getFirstLoadableAvatarUrl(participant, store) {
 
         if (url !== null) {
             if (AVATAR_CHECKED_URLS.has(url)) {
-                if (AVATAR_CHECKED_URLS.get(url)) {
-                    return url;
+                const { isLoadable, isUsingCORS } = AVATAR_CHECKED_URLS.get(url) || {};
+
+                if (isLoadable) {
+                    return {
+                        isUsingCORS,
+                        src: url
+                    };
                 }
             } else {
                 try {
-                    const finalUrl = await preloadImage(url);
+                    const { corsAvatarURLs } = store.getState()['features/base/config'];
+                    const { isUsingCORS, src } = await preloadImage(url, isCORSAvatarURL(url, corsAvatarURLs));
 
-                    AVATAR_CHECKED_URLS.set(finalUrl, true);
+                    AVATAR_CHECKED_URLS.set(src, {
+                        isLoadable: true,
+                        isUsingCORS
+                    });
 
-                    return finalUrl;
+                    return {
+                        isUsingCORS,
+                        src
+                    };
                 } catch (e) {
-                    AVATAR_CHECKED_URLS.set(url, false);
+                    AVATAR_CHECKED_URLS.set(url, {
+                        isLoadable: false,
+                        isUsingCORS: false
+                    });
                 }
             }
         }
@@ -502,10 +514,20 @@ async function _getFirstLoadableAvatarUrl(participant, store) {
  * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
  * {@code getState} function to be used to retrieve the state
  * features/base/participants.
- * @returns {Array<string>}
+ * @returns {Array<Object>}
  */
-export function getRaiseHandsQueue(stateful: Object | Function): Array<string> {
+export function getRaiseHandsQueue(stateful: Object | Function): Array<Object> {
     const { raisedHandsQueue } = toState(stateful)['features/base/participants'];
 
     return raisedHandsQueue;
+}
+
+/**
+ * Returns whether the given participant has his hand raised or not.
+ *
+ * @param {Object} participant - The participant.
+ * @returns {boolean} - Whether participant has raise hand or not.
+ */
+export function hasRaisedHand(participant: Object): boolean {
+    return Boolean(participant && participant.raisedHandTimestamp);
 }

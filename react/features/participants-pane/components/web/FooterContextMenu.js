@@ -258,6 +258,15 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
                     </div>
                 </ContextMenuItemGroup>
             )}
+
+            <ContextMenuItemGroup
+                actions = { [ {
+                    accessibilityLabel: t('participantsPane.actions.moreModerationControls'),
+                    id: 'participants-pane-open-moderation-control-settings',
+                    icon: IconHorizontalPoints,
+                    onClick: openModeratorSettings,
+                    text: t('participantsPane.actions.moreModerationControls')
+                } ] } />
         </ContextMenu>
     );
 };

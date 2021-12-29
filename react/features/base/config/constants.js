@@ -64,3 +64,13 @@ export const DEFAULT_METAS = {
   thumb: '/images/thumb.png',
   favicon: '/images/favicon.png'
 };
+
+/**
+ * The set of feature flags.
+ *
+ * @enum {string}
+ */
+
+export const FEATURE_FLAGS = {
+    SOURCE_NAME_SIGNALING: 'sourceNameSignaling'
+};

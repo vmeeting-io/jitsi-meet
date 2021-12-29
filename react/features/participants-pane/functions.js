@@ -30,7 +30,6 @@ import { QUICK_ACTION_BUTTON, REDUCER_KEY, MEDIA_STATE } from './constants';
  */
 export const classList = (...args: Array<string | boolean>) => args.filter(Boolean).join(' ');
 
-
 /**
  * Find the first styled ancestor component of an element.
  *
@@ -77,7 +76,6 @@ export function isForceMuted(participant: Object, mediaType: MediaType, state: O
  * @param {Object} participant - The participant.
  * @param {boolean} muted - The mute state of the participant.
  * @param {Object} state - The redux state.
- * @param {boolean} ignoreDominantSpeaker - Whether to ignore the dominant speaker state.
  * @returns {MediaState}
  */
 export function getParticipantAudioMediaState(participant: Object, muted: Boolean, state: Object) {
@@ -104,7 +102,6 @@ export function getParticipantAudioMediaState(participant: Object, muted: Boolea
  * @param {Object} participant - The participant.
  * @param {boolean} muted - The mute state of the participant.
  * @param {Object} state - The redux state.
- * @param {boolean} ignoreDominantSpeaker - Whether to ignore the dominant speaker state.
  * @returns {MediaState}
  */
 export function getParticipantVideoMediaState(participant: Object, muted: Boolean, state: Object) {
@@ -267,14 +264,13 @@ export function participantMatchesSearch(participant: Object, searchString: stri
  * Helper function that retrieves today's date and returns a string in the format YYYY-MM-DD 
  * Not relevant to a particular participant
  */
- export function getTodaysDate(separator='-') {
+export function getTodaysDate(separator='-') {
     let newDate = new Date()
     let date = newDate.getDate();
     let month = newDate.getMonth() + 1;
     let year = newDate.getFullYear();
 
     return `${year}${separator}${month<10?`0${month}`:`${month}`}${separator}${date<10?`0${date}`:`${date}`}`
-
 }
 
 /**

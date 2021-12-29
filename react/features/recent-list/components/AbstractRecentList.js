@@ -18,7 +18,7 @@ import {
 import styles from './styles';
 
 /**
- * The type of the React {@code Component} props of {@link AbstractRecentList}
+ * The type of the React {@code Component} props of {@link AbstractRecentList}.
  */
 type Props = {
 
@@ -120,7 +120,7 @@ export default class AbstractRecentList<P: Props, S: State> extends AbstractPage
     _onPress(url) {
         const { dispatch } = this.props;
 
-        sendAnalytics(createRecentClickedEvent('recent.meeting.tile'));
+        sendAnalytics(createRecentClickedEvent('meeting.tile'));
 
         dispatch(appNavigate(url));
     }

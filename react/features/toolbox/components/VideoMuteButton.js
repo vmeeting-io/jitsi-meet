@@ -58,7 +58,7 @@ type Props = AbstractButtonProps & {
 /**
  * Component that renders a toolbar button for toggling video mute.
  *
- * @extends AbstractVideoMuteButton
+ * @augments AbstractVideoMuteButton
  */
 class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.videomute';
@@ -136,6 +136,11 @@ class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
      * @returns {void}
      */
     _onKeyboardShortcut() {
+        // Ignore keyboard shortcuts if the video button is disabled.
+        if (this._isDisabled()) {
+            return;
+        }
+
         sendAnalytics(
             createShortcutEvent(
                 VIDEO_MUTE,

@@ -1,5 +1,6 @@
 // @flow
 
+export { default as AskToUnmuteButton } from './AskToUnmuteButton';
 export { default as BirthdayHatButton } from './BirthdayHatButton';
 export { default as ConnectionStatusButton } from './ConnectionStatusButton';
 export { default as GrantFollowMeModeratorButton } from './GrantFollowMeModeratorButton';

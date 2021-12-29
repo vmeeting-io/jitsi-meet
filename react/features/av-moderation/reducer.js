@@ -126,6 +126,16 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
         };
     }
 
+    case LOCAL_PARTICIPANT_REJECTED: {
+        const newState = action.mediaType === MEDIA_TYPE.AUDIO
+            ? { audioUnmuteApproved: false } : { videoUnmuteApproved: false };
+
+        return {
+            ...state,
+            ...newState
+        };
+    }
+
     case PARTICIPANT_PENDING_AUDIO: {
         const { participant } = action;
 
@@ -240,6 +250,32 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
                 [kind]: newWhitelist
             }
         };
+    }
+
+    case PARTICIPANT_REJECTED: {
+        const { mediaType, id } = action;
+
+        if (mediaType === MEDIA_TYPE.AUDIO) {
+            return {
+                ...state,
+                audioWhitelist: {
+                    ...state.audioWhitelist,
+                    [id]: false
+                }
+            };
+        }
+
+        if (mediaType === MEDIA_TYPE.VIDEO) {
+            return {
+                ...state,
+                videoWhitelist: {
+                    ...state.videoWhitelist,
+                    [id]: false
+                }
+            };
+        }
+
+        return state;
     }
 
     }

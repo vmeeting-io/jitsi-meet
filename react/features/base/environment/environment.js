@@ -94,11 +94,7 @@ export function isSupportedBrowser() {
         return false;
     }
 
-    // We are intentionally allow mobile browsers because:
-    // - the WelcomePage is mobile ready;
-    // - if the URL points to a conference then deep-linking will take
-    //   care of it.
-    return isMobileBrowser() || JitsiMeetJS.isWebRtcSupported();
+    return isMobileBrowser() ? isSupportedMobileBrowser() : JitsiMeetJS.isWebRtcSupported();
 }
 
 /**
@@ -111,9 +107,8 @@ export function isSupportedMobileBrowser() {
     const isKakaoBrowser = Boolean(navigator.userAgent.indexOf("KAKAOTALK") > 0);
     if (isKakaoBrowser) return false;
 
-    return (Platform.OS === 'android' && browser.isChromiumBased())
-        || (Platform.OS === 'android' && browser.isFirefox())
-        || (Platform.OS === 'ios' && browser.isWebKitBased());
+    return (Platform.OS === 'android' && browser.isSupportedAndroidBrowser())
+        || (Platform.OS === 'ios' && browser.isSupportedIOSBrowser());
 }
 
 /**

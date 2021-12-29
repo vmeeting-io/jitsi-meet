@@ -22,6 +22,7 @@ import { VIRTUAL_BACKGROUND_TYPE } from '../constants';
 import { getRemoteImageUrl, toDataURL } from '../functions';
 import logger from '../logger';
 
+import UploadImageButton from './UploadImageButton';
 import VirtualBackgroundPreview from './VirtualBackgroundPreview';
 
 const COL_WIDTH = 105 + 9;
@@ -64,6 +65,11 @@ const images = [
     }
 ];
 type Props = {
+
+    /**
+     * The list of Images to choose from.
+     */
+    _images: Array<Image>,
 
     /**
      * The current local flip x status.
@@ -184,6 +190,10 @@ function VirtualBackground({
 
 
     const shareDesktop = useCallback(async () => {
+        if (disableScreensharingVirtualBackground) {
+            return;
+        }
+
         let isCancelled = false, url;
 
         try {
@@ -202,7 +212,7 @@ function VirtualBackground({
             if (!isCancelled) {
                 dispatch(showErrorNotification({
                     titleKey: 'virtualBackground.desktopShareError'
-                }));
+                }, NOTIFICATION_TIMEOUT_TYPE.LONG));
                 logger.error('Could not create desktop share as a virtual background!');
             }
 
@@ -293,18 +303,22 @@ function VirtualBackground({
 
     const setImageBackground = useCallback(async e => {
         const imageId = e.currentTarget.getAttribute('data-imageid');
-        const image = images.find(img => img.id === imageId);
+        const image = _images.find(img => img.id === imageId);
 
         if (image) {
-            const url = await toDataURL(image.src);
+            try {
+                const url = await toDataURL(image.src);
 
-            setOptions({
-                backgroundType: 'image',
-                enabled: true,
-                url,
-                selectedThumbnail: image.id
-            });
-            logger.info('Image setted for virtual background preview!');
+                setOptions({
+                    backgroundType: 'image',
+                    enabled: true,
+                    url,
+                    selectedThumbnail: image.id
+                });
+                logger.info('Image set for virtual background preview!');
+            } catch (err) {
+                logger.error('Could not fetch virtual background image:', err);
+            }
 
             setLoading(false);
         }
@@ -380,6 +394,7 @@ function VirtualBackground({
         dispatch(hideDialog());
         logger.info(`Virtual background type: '${typeof options.backgroundType === 'undefined'
             ? 'none' : options.backgroundType}' applied!`);
+        dispatch(virtualBackgroundTrackChanged());
     }, [ dispatch, options, _localFlipX ]);
 
     const cancelVirtualBackground = useCallback(async () => {

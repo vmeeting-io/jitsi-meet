@@ -1,7 +1,6 @@
 // @flow
 
 import { getAuthUrl } from '../../../api/url';
-import { createScreenshotCaptureEffect } from '../../stream-effects/screenshot-capture';
 import { createVirtualBackgroundEffect } from '../../stream-effects/virtual-background';
 import { createAREffect } from '../../stream-effects/ar-effect';
 
@@ -37,14 +36,5 @@ export default function loadEffects(store: Object): Promise<any> {
             })
         : Promise.resolve();
 
-    const screenshotCapturePromise = state['features/screenshot-capture']?.capturesEnabled
-        ? createScreenshotCaptureEffect(state)
-            .catch(error => {
-                logger.error('Failed to obtain the screenshot capture effect effect instance with error: ', error);
-
-                return Promise.resolve();
-            })
-        : Promise.resolve();
-
-    return Promise.all([ backgroundPromise, screenshotCapturePromise, arPromise ]);
+    return Promise.all([ backgroundPromise, arPromise ]);
 }

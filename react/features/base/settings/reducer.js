@@ -21,6 +21,7 @@ const DEFAULT_STATE = {
     disableCallIntegration: true,
     disableCrashReporting: undefined,
     disableP2P: undefined,
+    disableSelfView: false,
     displayName: undefined,
     email: undefined,
     birthDate: undefined,
@@ -42,6 +43,9 @@ const DEFAULT_STATE = {
     userSelectedMicDeviceId: undefined,
     userSelectedAudioOutputDeviceLabel: undefined,
     userSelectedCameraDeviceLabel: undefined,
+    userSelectedNotifications: {
+        'notify.chatMessages': true
+    },
     userSelectedMicDeviceLabel: undefined,
     userSelectedSkipPrejoin: undefined
 };

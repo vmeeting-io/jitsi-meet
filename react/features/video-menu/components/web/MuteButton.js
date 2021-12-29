@@ -44,7 +44,7 @@ class MuteButton extends AbstractMuteButton {
 
         if (_audioTrackMuted) {
             return null;
-        };
+        }
 
         return (
             <ContextMenuItem
@@ -57,7 +57,7 @@ class MuteButton extends AbstractMuteButton {
         );
     }
 
-    _handleClick: () => void
+    _handleClick: () => void;
 }
 
 export default translate(connect(_mapStateToProps)(MuteButton));

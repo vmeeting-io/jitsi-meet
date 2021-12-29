@@ -13,7 +13,7 @@ import AbstractMuteEveryoneElseButton, {
 /**
  * Implements a React {@link Component} which displays a button for audio muting
  * every participant in the conference except the one with the given
- * participantID
+ * participantID.
  */
 class MuteEveryoneElseButton extends AbstractMuteEveryoneElseButton {
     /**
@@ -38,10 +38,10 @@ class MuteEveryoneElseButton extends AbstractMuteEveryoneElseButton {
 
         return (
             <ContextMenuItem
-                accessibilityLabel = { t('videothumbnail.domuteOthers') }
+                accessibilityLabel = { t('toolbar.accessibilityLabel.muteEveryoneElse') }
                 icon = { IconMuteEveryoneElse }
                 // eslint-disable-next-line react/jsx-handler-names
-                onClick = { this._handleClick } 
+                onClick = { this._handleClick }
                 text = { t('videothumbnail.domuteOthers') } />
         );
     }

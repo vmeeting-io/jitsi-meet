@@ -19,7 +19,7 @@ type Props = {
     /**
      * Number of the conference participants.
      */
-    count: string,
+    count: number,
 
     /**
      * Conference data.

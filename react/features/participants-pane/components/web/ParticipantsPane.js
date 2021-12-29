@@ -52,6 +52,11 @@ type Props = {
     dispatch: Function,
 
     /**
+     * An object containing the CSS classes.
+     */
+    classes: Object,
+
+    /**
      * The i18n translate function.
      */
     t: Function
@@ -289,7 +294,7 @@ class ParticipantsPane extends Component<Props, State> {
         this.props.dispatch(close());
     }
 
-    _onDrawerClose: () => void
+    _onDrawerClose: () => void;
 
     /**
      * Callback for closing the drawer.

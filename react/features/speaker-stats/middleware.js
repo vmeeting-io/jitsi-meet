@@ -7,6 +7,7 @@ import { MiddlewareRegistry } from '../base/redux';
 import {
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
+    PARTICIPANT_KICKED,
     PARTICIPANT_UPDATED
 } from '../base/participants/actionTypes';
 import { speakerStatsAdded, speakerStatsUpdated } from './actions';
@@ -25,7 +26,8 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
 
-    case PARTICIPANT_LEFT: {
+    case PARTICIPANT_LEFT:
+    case PARTICIPANT_KICKED: {
         _participantLeft(store, action);
         break;
     }

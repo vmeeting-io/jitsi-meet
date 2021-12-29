@@ -2,9 +2,9 @@
 
 import '../analytics/reducer';
 import '../authentication/reducer';
+import '../av-moderation/reducer';
 import '../base/app/reducer';
 import '../base/audio-only/reducer';
-import '../base/color-scheme/reducer';
 import '../base/conference/reducer';
 import '../base/config/reducer';
 import '../base/connection/reducer';
@@ -16,7 +16,6 @@ import '../base/lastn/reducer';
 import '../base/lib-jitsi-meet/reducer';
 import '../base/logging/reducer';
 import '../base/media/reducer';
-import '../base/modal/reducer';
 import '../base/net-info/reducer';
 import '../base/participants/reducer';
 import '../base/responsive-ui/reducer';
@@ -54,6 +53,5 @@ import '../toolbox/reducer';
 import '../transcribing/reducer';
 import '../video-layout/reducer';
 import '../videosipgw/reducer';
-import '../welcome/reducer';
 import '../face-detect/reducer';
 import '../did-consent/reducer';

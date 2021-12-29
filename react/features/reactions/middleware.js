@@ -2,13 +2,24 @@
 
 import { batch } from 'react-redux';
 
+import { createReactionSoundsDisabledEvent, sendAnalytics } from '../analytics';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app';
-import { getParticipantCount } from '../base/participants';
+import {
+    CONFERENCE_WILL_JOIN,
+    SET_START_REACTIONS_MUTED,
+    setStartReactionsMuted
+} from '../base/conference';
+import {
+    getParticipantById,
+    getParticipantCount,
+    isLocalParticipantModerator
+} from '../base/participants';
 import { MiddlewareRegistry } from '../base/redux';
-import { updateSettings } from '../base/settings';
+import { SETTINGS_UPDATED } from '../base/settings/actionTypes';
+import { updateSettings } from '../base/settings/actions';
 import { playSound, registerSound, unregisterSound } from '../base/sounds';
-import { isVpaasMeeting } from '../jaas/functions';
-import { NOTIFICATION_TIMEOUT, showNotification } from '../notifications';
+import { getDisabledSounds } from '../base/sounds/functions.any';
+import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../notifications';
 
 import {
     ADD_REACTION_BUFFER,
@@ -25,17 +36,22 @@ import {
     sendReactions,
     setReactionQueue
 } from './actions.any';
-import { ENDPOINT_REACTION_NAME, RAISE_HAND_SOUND_ID, REACTIONS, SOUNDS_THRESHOLDS } from './constants';
+import {
+    ENDPOINT_REACTION_NAME,
+    RAISE_HAND_SOUND_ID,
+    REACTIONS,
+    REACTION_SOUND,
+    SOUNDS_THRESHOLDS,
+    MUTE_REACTIONS_COMMAND
+} from './constants';
 import {
     getReactionMessageFromBuffer,
     getReactionsSoundsThresholds,
     getReactionsWithId,
     sendReactionsWebhook
 } from './functions.any';
+import logger from './logger';
 import { RAISE_HAND_SOUND_FILE } from './sounds';
-
-
-declare var APP: Object;
 
 /**
  * Middleware which intercepts Reactions actions to handle changes to the
@@ -88,7 +104,15 @@ MiddlewareRegistry.register(store => next => action => {
 
         break;
     }
+    case CONFERENCE_WILL_JOIN: {
+        const { conference } = action;
 
+        conference.addCommandListener(
+            MUTE_REACTIONS_COMMAND, ({ attributes }, id) => {
+                _onMuteReactionsCommand(attributes, id, store);
+            });
+        break;
+    }
     case FLUSH_REACTION_BUFFER: {
         const state = getState();
         const { buffer } = state['features/reactions'];
@@ -102,10 +126,32 @@ MiddlewareRegistry.register(store => next => action => {
             dispatch(pushReactions(buffer));
         });
 
-        if (isVpaasMeeting(state)) {
-            sendReactionsWebhook(state, buffer);
-        }
+        sendReactionsWebhook(state, buffer);
 
+        break;
+    }
+
+    case PUSH_REACTIONS: {
+        const state = getState();
+        const { queue, notificationDisplayed } = state['features/reactions'];
+        const { soundsReactions } = state['features/base/settings'];
+        const disabledSounds = getDisabledSounds(state);
+        const reactions = action.reactions;
+
+        batch(() => {
+            if (!notificationDisplayed && soundsReactions && !disabledSounds.includes(REACTION_SOUND)
+                && displayReactionSoundsNotification) {
+                dispatch(displayReactionSoundsNotification());
+            }
+            if (soundsReactions) {
+                const reactionSoundsThresholds = getReactionsSoundsThresholds(reactions);
+
+                reactionSoundsThresholds.forEach(reaction =>
+                    dispatch(playSound(`${REACTIONS[reaction.reaction].soundId}${reaction.threshold}`))
+                );
+            }
+            dispatch(setReactionQueue([ ...queue, ...getReactionsWithId(reactions) ]));
+        });
         break;
     }
 
@@ -124,39 +170,101 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
 
-    case PUSH_REACTIONS: {
+    // Settings changed for mute reactions in the meeting
+    case SET_START_REACTIONS_MUTED: {
         const state = getState();
-        const { queue, notificationDisplayed } = state['features/reactions'];
-        const { soundsReactions } = state['features/base/settings'];
-        const reactions = action.reactions;
+        const { conference } = state['features/base/conference'];
+        const { muted, updateBackend } = action;
 
-        batch(() => {
-            if (!notificationDisplayed && soundsReactions && displayReactionSoundsNotification) {
-                dispatch(displayReactionSoundsNotification());
-            }
-            if (soundsReactions) {
-                const reactionSoundsThresholds = getReactionsSoundsThresholds(reactions);
+        if (conference && isLocalParticipantModerator(state) && updateBackend) {
+            conference.sendCommand(MUTE_REACTIONS_COMMAND, { attributes: { startReactionsMuted: Boolean(muted) } });
+        }
+        break;
+    }
 
-                reactionSoundsThresholds.forEach(reaction =>
-                    dispatch(playSound(`${REACTIONS[reaction.reaction].soundId}${reaction.threshold}`))
-                );
-            }
-            dispatch(setReactionQueue([ ...queue, ...getReactionsWithId(reactions) ]));
-        });
+    case SETTINGS_UPDATED: {
+        const { soundsReactions } = getState()['features/base/settings'];
+
+        if (action.settings.soundsReactions === false && soundsReactions === true) {
+            sendAnalytics(createReactionSoundsDisabledEvent());
+        }
         break;
     }
 
     case SHOW_SOUNDS_NOTIFICATION: {
+        const state = getState();
+        const isModerator = isLocalParticipantModerator(state);
+        const { disableReactionsModeration } = state['features/base/config'];
+
+        const customActions = [ 'notify.reactionSounds' ];
+        const customFunctions = [ () => dispatch(updateSettings({
+            soundsReactions: false
+        })) ];
+
+        if (isModerator && !disableReactionsModeration) {
+            customActions.push('notify.reactionSoundsForAll');
+            customFunctions.push(() => batch(() => {
+                dispatch(setStartReactionsMuted(true));
+                dispatch(updateSettings({ soundsReactions: false }));
+            }));
+        }
+
         dispatch(showNotification({
             titleKey: 'toolbar.disableReactionSounds',
-            customActionNameKey: 'notify.reactionSounds',
-            customActionHandler: () => dispatch(updateSettings({
-                soundsReactions: false
-            }))
-        }, NOTIFICATION_TIMEOUT));
+            customActionNameKey: customActions,
+            customActionHandler: customFunctions
+        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
         break;
     }
     }
 
     return next(action);
 });
+
+/**
+ * Notifies this instance about a "Mute Reaction Sounds" command received by the Jitsi
+ * conference.
+ *
+ * @param {Object} attributes - The attributes carried by the command.
+ * @param {string} id - The identifier of the participant who issuing the
+ * command. A notable idiosyncrasy to be mindful of here is that the command
+ * may be issued by the local participant.
+ * @param {Object} store - The redux store. Used to calculate and dispatch
+ * updates.
+ * @private
+ * @returns {void}
+ */
+function _onMuteReactionsCommand(attributes = {}, id, store) {
+    const state = store.getState();
+
+    // We require to know who issued the command because (1) only a
+    // moderator is allowed to send commands and (2) a command MUST be
+    // issued by a defined commander.
+    if (typeof id === 'undefined') {
+        return;
+    }
+
+    const participantSendingCommand = getParticipantById(state, id);
+
+    // The Command(s) API will send us our own commands and we don't want
+    // to act upon them.
+    if (participantSendingCommand.local) {
+        return;
+    }
+
+    if (participantSendingCommand.role !== 'moderator') {
+        logger.warn('Received mute-reactions command not from moderator');
+
+        return;
+    }
+
+    const oldState = Boolean(state['features/base/conference'].startReactionsMuted);
+    const newState = attributes.startReactionsMuted === 'true';
+
+    if (oldState !== newState) {
+        batch(() => {
+            store.dispatch(setStartReactionsMuted(newState));
+            store.dispatch(updateSettings({ soundsReactions: !newState }));
+        });
+    }
+}

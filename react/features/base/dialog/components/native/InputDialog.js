@@ -37,7 +37,7 @@ type Props = BaseProps & {
     initialValue?: ?string,
 
     /**
-     * A message key to be shown for the user (e.g. an error that is defined after submitting the form).
+     * A message key to be shown for the user (e.g. An error that is defined after submitting the form).
      */
     messageKey?: string,
 

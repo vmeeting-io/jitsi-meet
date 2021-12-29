@@ -54,7 +54,7 @@ class KickButton extends AbstractKickButton {
         );
     }
 
-    _handleClick: () => void
+    _handleClick: () => void;
 }
 
 /**

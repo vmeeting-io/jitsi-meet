@@ -18,6 +18,14 @@ import { renderPromotionalFooter } from '../renderPromotionalFooter';
 declare var interfaceConfig: Object;
 
 /**
+ * The namespace of the CSS styles of DeepLinkingMobilePage.
+ *
+ * @private
+ * @type {string}
+ */
+const _SNS = 'deep-linking-mobile';
+
+/**
  * The type of the React {@code Component} props of
  * {@link DeepLinkingMobilePage}.
  */
@@ -85,6 +93,8 @@ class DeepLinkingMobilePage extends Component<Props> {
     render() {
         const { _downloadUrl, _room, t } = this.props;
         const { HIDE_DEEP_LINKING_LOGO, NATIVE_APP_NAME, SHOW_DEEP_LINKING_IMAGE } = interfaceConfig;
+        const downloadButtonClassName
+            = `${_SNS}__button ${_SNS}__button_primary`;
 
 
         const onOpenLinkProperties = _downloadUrl

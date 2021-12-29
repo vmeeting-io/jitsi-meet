@@ -1124,7 +1124,6 @@ var config = {
 
     // disableRemoteMute: true,
     // disableSortable: false,
-    hideEmailSetting: false,
     disableUserRegistration: false,
     hideSelectBackground: 'guest',     // true, false, 'guest'
 

@@ -1,5 +1,6 @@
-/* @flow */
-/* global $ */
+// @flow
+
+/* eslint-disable react/no-multi-comp */
 
 import React, { Component } from 'react';
 
@@ -13,7 +14,7 @@ import { TranscribingLabel } from '../../../transcribing';
 import { VideoQualityLabel } from '../../../video-quality';
 import { TimerLabel } from '../../../timer';
 import ConferenceTimer from '../ConferenceTimer';
-import { getConferenceInfo } from '../functions.any';
+import { getConferenceInfo } from '../functions';
 
 import ConferenceInfoContainer from './ConferenceInfoContainer';
 import InsecureRoomNameLabel from './InsecureRoomNameLabel';
@@ -90,9 +91,10 @@ const COMPONENTS = [
 ];
 
 /**
- * ConferenceInfo react component.
+ * The upper band of the meeing containing the conference name, timer and labels.
  *
- * @class ConferenceInfo
+ * @param {Object} props - The props of the component.
+ * @returns {React$None}
  */
 class ConferenceInfo extends Component<Props> {
     /**
@@ -101,7 +103,7 @@ class ConferenceInfo extends Component<Props> {
      * @param {Props} props - The read-only React {@code Component} props with
      * which the new instance is to be initialized.
      */
-     constructor(props: Props) {
+    constructor(props: Props) {
         super(props);
 
         this._renderAutoHide = this._renderAutoHide.bind(this);

@@ -16,12 +16,9 @@ import {
     IconShareZip
 } from '../../../base/icons';
 import { translate } from '../../../base/i18n';
-import { Linkify } from '../../../base/react';
 import { MESSAGE_TYPE_LOCAL } from '../../constants';
 
-import AbstractChatMessage, {
-    type Props
-} from '../AbstractChatMessage';
+import AbstractChatMessage, { type Props } from '../AbstractChatMessage';
 import PrivateMessageButton from '../PrivateMessageButton';
 import PrivateNotice from './PrivateNotice';
 import { getBaseUrl, getFileSize, processFileSize, truncateDateTimeStamp } from '../../../base/util';

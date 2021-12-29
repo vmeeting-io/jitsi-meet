@@ -12,7 +12,7 @@ import FileUploadStatusBox from './FileUploadStatusBox';
 /**
  * Displays all received chat messages, grouped by sender.
  *
- * @extends AbstractMessageContainer
+ * @augments AbstractMessageContainer
  */
 export default class MessageContainer extends AbstractMessageContainer<Props> {
     /**

@@ -170,16 +170,6 @@ var interfaceConfig = {
 
     THIRD_PARTY_AUTH_ENABLED: false,
 
-    TOOLBAR_ALWAYS_VISIBLE: false,
-
-    /**
-     * DEPRECATED!
-     * This config was moved to config.js as `toolbarButtons`.
-     */
-    // TOOLBAR_BUTTONS: [],
-
-    TOOLBAR_TIMEOUT: 4000,
-
     // Browsers, in addition to those which do not fully support WebRTC, that
     // are not supported and should show the unsupported browser page.
     UNSUPPORTED_BROWSERS: [],
@@ -240,13 +230,6 @@ var interfaceConfig = {
      * Specify the Android app package name.
      */
     ANDROID_APP_PACKAGE: 'org.postech.vmeeting',
-
-    /**
-     * Override the behavior of some notifications to remain displayed until
-     * explicitly dismissed through a user action. The value is how long, in
-     * milliseconds, those notifications should remain displayed.
-     */
-    // ENFORCE_NOTIFICATION_AUTO_DISMISS_TIMEOUT: 15000,
 
     // List of undocumented settings
     /**

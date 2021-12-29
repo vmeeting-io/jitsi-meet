@@ -1,5 +1,6 @@
 // @flow
 
+import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications';
 import { showWarningNotification } from '../../notifications/actions';
 import { timeout } from '../../virtual-background/functions';
 import logger from '../../virtual-background/logger';
@@ -11,6 +12,10 @@ const models = {
     model_general: 'libs/selfie_segmentation.tflite',
     model_landscape: 'libs/selfie_segmentation_landscape.tflite'
 };
+
+let tflite;
+let wasmCheck;
+let isWasmDisabled = false;
 
 const segmentationDimensions = {
     model_general: {
@@ -49,7 +54,6 @@ export async function createVirtualBackgroundEffect(virtualBackground: Object, d
         try {
             wasmCheck = require('wasm-check');
             const tfliteTimeout = 10000;
-    
             if (wasmCheck?.feature?.simd) {
                 tflite = await timeout(tfliteTimeout, createTFLiteSIMDModule());
             } else {
@@ -62,18 +66,23 @@ export async function createVirtualBackgroundEffect(virtualBackground: Object, d
                 logger.error('Failed to download tflite model!');
                 dispatch(showWarningNotification({
                     titleKey: 'virtualBackground.backgroundEffectError'
-                }));
+                }, NOTIFICATION_TIMEOUT_TYPE.LONG));
             } else {
-                logger.error('Looks like WebAssembly is disabled or not supported on this browser');
+                logger.error('Looks like WebAssembly is disabled or not supported on this browser', err);
                 dispatch(showWarningNotification({
                     titleKey: 'virtualBackground.webAssemblyWarning',
-                    description: 'WebAssembly disabled or not supported by this browser'
-                }));
+                    descriptionKey: 'virtualBackground.webAssemblyWarningDescription'
+                }, NOTIFICATION_TIMEOUT_TYPE.LONG));
             }
-    
+
             return;
-    
         }
+    } else if (isWasmDisabled) {
+        dispatch(showWarningNotification({
+            titleKey: 'virtualBackground.backgroundEffectError'
+        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+
+        return;
     }
 
     const modelBufferOffset = tflite._getModelBufferMemoryOffset();

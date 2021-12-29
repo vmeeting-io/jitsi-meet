@@ -11,16 +11,26 @@ import {
     getDeviceSelectionDialogProps,
     submitDeviceSelectionTab
 } from '../../../device-selection';
-import { submitMoreTab, submitProfileTab, submitSoundsTab } from '../../actions';
+import {
+    submitModeratorTab,
+    submitMoreTab,
+    submitProfileTab,
+    submitSoundsTab
+} from '../../actions';
 import { SETTINGS_TABS } from '../../constants';
-import { getMoreTabProps, getProfileTabProps, getSoundsTabProps } from '../../functions';
+import {
+    getModeratorTabProps,
+    getMoreTabProps,
+    getProfileTabProps,
+    getSoundsTabProps
+} from '../../functions';
 
 import CalendarTab from './CalendarTab';
+import ModeratorTab from './ModeratorTab';
 import MoreTab from './MoreTab';
 import ProfileTab from './ProfileTab';
 import SoundsTab from './SoundsTab';
 
-declare var APP: Object;
 declare var interfaceConfig: Object;
 
 /**
@@ -51,7 +61,7 @@ type Props = {
  * and conference-wide (moderator) settings. This version is connected to
  * redux to get the current settings.
  *
- * @extends Component
+ * @augments Component
  */
 class SettingsDialog extends Component<Props> {
     /**
@@ -143,7 +153,10 @@ function _mapStateToProps(state) {
     // The settings sections to display.
     const showDeviceSettings = configuredTabs.includes('devices');
     const moreTabProps = getMoreTabProps(state);
-    const { showModeratorSettings, showLanguageSettings, showPrejoinSettings } = moreTabProps;
+    const moderatorTabProps = getModeratorTabProps(state);
+    const { showModeratorSettings } = moderatorTabProps;
+    const { showLanguageSettings, showNotificationsSettings, showPrejoinSettings } = moreTabProps;
+    const showMoreTab = showLanguageSettings || showNotificationsSettings || showPrejoinSettings;
     const showProfileSettings
         = configuredTabs.includes('profile') && !state['features/base/config'].disableProfile;
     const showCalendarSettings
@@ -188,6 +201,28 @@ function _mapStateToProps(state) {
         });
     }
 
+    if (showModeratorSettings) {
+        tabs.push({
+            name: SETTINGS_TABS.MODERATOR,
+            component: ModeratorTab,
+            label: 'settings.moderator',
+            props: moderatorTabProps,
+            propsUpdateFunction: (tabState, newProps) => {
+                // Updates tab props, keeping users selection
+
+                return {
+                    ...newProps,
+                    followMeEnabled: tabState.followMeEnabled,
+                    startAudioMuted: tabState.startAudioMuted,
+                    startVideoMuted: tabState.startVideoMuted,
+                    startReactionsMuted: tabState.startReactionsMuted
+                };
+            },
+            styles: 'settings-pane moderator-pane',
+            submit: submitModeratorTab
+        });
+    }
+
     if (showCalendarSettings) {
         tabs.push({
             name: SETTINGS_TABS.CALENDAR,
@@ -208,7 +243,7 @@ function _mapStateToProps(state) {
         });
     }
 
-    if (showModeratorSettings || showLanguageSettings || showPrejoinSettings) {
+    if (showMoreTab) {
         tabs.push({
             name: SETTINGS_TABS.MORE,
             component: MoreTab,
@@ -221,10 +256,9 @@ function _mapStateToProps(state) {
                     ...newProps,
                     currentFramerate: tabState.currentFramerate,
                     currentLanguage: tabState.currentLanguage,
-                    followMeEnabled: tabState.followMeEnabled,
+                    hideSelfView: tabState.hideSelfView,
                     showPrejoinPage: tabState.showPrejoinPage,
-                    startAudioMuted: tabState.startAudioMuted,
-                    startVideoMuted: tabState.startVideoMuted,
+                    enabledNotifications: tabState.enabledNotifications
                 };
             },
             styles: 'settings-pane more-pane',

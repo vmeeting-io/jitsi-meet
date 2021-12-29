@@ -5,8 +5,6 @@ import { getDialOutStatusUrl, getDialOutUrl } from '../base/config/functions';
 import { isAudioMuted, isVideoMutedByUser } from '../base/media';
 import { isAttentionAnalysisEnabled } from '../face-detect';
 
-import { PREJOIN_SCREEN_STATES } from './constants';
-
 /**
  * Selector for the visibility of the 'join by phone' button.
  *
@@ -37,16 +35,6 @@ export function isDeviceStatusVisible(state: Object): boolean {
 export function isDisplayNameRequired(state: Object): boolean {
     return state['features/prejoin'].isDisplayNameRequired
         || state['features/base/config'].requireDisplayName;
-}
-
-/**
- * Selector for determining if the user has chosen to skip prejoin page.
- *
- * @param {Object} state - The state of the app.
- * @returns {boolean}
- */
-export function isPrejoinSkipped(state: Object) {
-    return state['features/prejoin'].userSelectedSkipPrejoin;
 }
 
 /**
@@ -143,28 +131,6 @@ export function isJoinByPhoneDialogVisible(state: Object): boolean {
 }
 
 /**
- * Returns true if the prejoin page is enabled and no flag
- * to bypass showing the page is present.
- *
- * @param {Object} state - The state of the app.
- * @returns {boolean}
- */
-export function isPrejoinPageEnabled(state: Object): boolean {
-    const { isHost } = state['features/base/conference']?.roomInfo || {};
-    const { prejoinPageEnabled, chatOnlyGuestEnabled } = state['features/base/config'];
-
-    return navigator.product !== 'ReactNative'
-        && (
-            prejoinPageEnabled
-            || isAttentionAnalysisEnabled(state)
-            || (isHost && chatOnlyGuestEnabled)
-        )
-        && !state['features/base/settings'].userSelectedSkipPrejoin
-        && !(state['features/base/config'].enableForcedReload && state['features/prejoin'].skipPrejoinOnReload)
-        && !state['features/prejoin'].skipPrejoin;
-}
-
-/**
  * Returns true if the prejoin page is visible & active.
  *
  * @param {Object} state - The state of the app.
@@ -172,24 +138,20 @@ export function isPrejoinPageEnabled(state: Object): boolean {
  */
 export function isPrejoinPageVisible(state: Object): boolean {
     const { isHost } = state['features/base/conference']?.roomInfo || {};
-    const { chatOnlyGuestEnabled } = state['features/base/config'];
-    
-    return (
-            isPrejoinPageEnabled(state)
+    const {
+        chatOnlyGuestEnabled,
+        enableForcedReload,
+        prejoinConfig,
+    } = state['features/base/config'];
+    const { showPrejoin, skipPrejoinOnReload } = state['features/prejoin'];
+
+    return navigator.product !== 'ReactNative'
+        && (
+            (prejoinConfig?.enabled && showPrejoin)
             || isAttentionAnalysisEnabled(state)
             || (isHost && chatOnlyGuestEnabled)
         )
-        && state['features/prejoin']?.showPrejoin === PREJOIN_SCREEN_STATES.VISIBLE;
-}
-
-/**
- * Returns true if the prejoin page is loading.
- *
- * @param {Object} state - The state of the app.
- * @returns {boolean}
- */
-export function isPrejoinPageLoading(state: Object): boolean {
-    return isPrejoinPageEnabled(state) && state['features/prejoin']?.showPrejoin === PREJOIN_SCREEN_STATES.LOADING;
+        && !(enableForcedReload && skipPrejoinOnReload);
 }
 
 /**
@@ -199,8 +161,8 @@ export function isPrejoinPageLoading(state: Object): boolean {
  * @returns {boolean}
  */
 export function shouldAutoKnock(state: Object): boolean {
-    const { iAmRecorder, iAmSipGateway } = state['features/base/config'];
+    const { iAmRecorder, iAmSipGateway, autoKnockLobby } = state['features/base/config'];
 
-    return (isPrejoinPageEnabled(state) || (iAmRecorder && iAmSipGateway))
+    return (isPrejoinPageVisible(state) || autoKnockLobby || (iAmRecorder && iAmSipGateway))
         && !state['features/lobby'].knocking;
 }

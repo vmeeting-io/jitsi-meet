@@ -6,8 +6,9 @@ LIBFLAC_DIR = node_modules/libflacjs/dist/min/
 OLM_DIR = node_modules/@matrix-org/olm
 RNNOISE_WASM_DIR = node_modules/rnnoise-wasm/dist/
 TFLITE_WASM = react/features/stream-effects/virtual-background/vendor/tflite
-MEET_MODELS_DIR  = react/features/stream-effects/virtual-background/vendor/models
+MEET_MODELS_DIR  = react/features/stream-effects/virtual-background/vendor/models/
 FACE_DETECT_MODELS_DIR = react/features/face-detect/models
+FACIAL_MODELS_DIR = react/features/facial-recognition/resources
 NODE_SASS = ./node_modules/.bin/sass
 NPM = npm
 OUTPUT_DIR = .
@@ -32,7 +33,7 @@ clean:
 	rm -fr $(BUILD_DIR)
 
 .NOTPARALLEL:
-deploy: deploy-init deploy-appbundle deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-css deploy-local $(LANGUAGES)
+deploy: deploy-init deploy-appbundle deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-css deploy-local deploy-facial-expressions $(LANGUAGES)
 
 deploy-init:
 	rm -fr $(DEPLOY_DIR)
@@ -72,12 +73,17 @@ deploy-rnnoise-binary:
 deploy-tflite:
 	cp \
 		$(TFLITE_WASM)/*.wasm \
-		$(DEPLOY_DIR)		
+		$(DEPLOY_DIR)
 
 deploy-meet-models:
 	cp \
 		$(MEET_MODELS_DIR)/*.tflite \
-		$(DEPLOY_DIR)	
+		$(DEPLOY_DIR)
+
+deploy-facial-expressions:
+	cp \
+		$(FACIAL_MODELS_DIR)/* \
+		$(DEPLOY_DIR)
 
 deploy-face-detect-models:
 	cp -rf \
@@ -105,7 +111,7 @@ $(LANGUAGES):
 	fi;
 
 .NOTPARALLEL:
-dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-lib-jitsi-meet deploy-libflac deploy-olm $(LANGUAGES)
+dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-facial-expressions $(LANGUAGES)
 	if [ ! -d $(DEV_COUNTRIES_DIR) ] ; \
 	then \
 		mkdir $(DEV_COUNTRIES_DIR); \

@@ -5,6 +5,7 @@ import {
     CLEAR_MESSAGES,
     CLOSE_CHAT,
     FILE_UPLOADED_PERCENTAGE_STATUS,
+    EDIT_MESSAGE,
     SEND_MESSAGE,
     SET_PRIVATE_MESSAGE_RECIPIENT,
     SET_IS_POLL_TAB_FOCUSED
@@ -23,6 +24,8 @@ import {
  * "error" or "local" or "remote".
  * @param {string} messageDetails.timestamp - A timestamp to display for when
  * the message was received.
+ * @param {string} messageDetails.isReaction - Whether or not the
+ * message is a reaction message.
  * @returns {{
  *     type: ADD_MESSAGE,
  *     displayName: string,
@@ -30,12 +33,30 @@ import {
  *     message: string,
  *     messageType: string,
  *     timestamp: string,
+ *     isReaction: boolean
  * }}
  */
 export function addMessage(messageDetails: Object) {
     return {
         type: ADD_MESSAGE,
         ...messageDetails
+    };
+}
+
+/**
+ * Edits an existing chat message.
+ *
+ * @param {Object} message - The chat message to edit/override. The messages will be matched from the state
+ * comparing the messageId.
+ * @returns {{
+ *     type: EDIT_MESSAGE,
+ *     message: Object
+ * }}
+ */
+export function editMessage(message: Object) {
+    return {
+        type: EDIT_MESSAGE,
+        message
     };
 }
 

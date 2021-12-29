@@ -45,7 +45,7 @@ const DEFAULT_TENANT = process.env.DEFAULT_SITE_ID;
 /**
  * The Web container rendering the welcome page.
  *
- * @extends AbstractWelcomePage
+ * @augments AbstractWelcomePage
  */
 class WelcomePage extends AbstractWelcomePage {
     /**

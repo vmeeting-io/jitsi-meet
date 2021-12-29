@@ -1,21 +1,14 @@
 /**
  * CSS styles that are specific to the filmstrip that shows the thumbnail tiles.
  */
- .tile-view {
-    /**
-     * Add a border around the active speaker to make the thumbnail easier to
-     * see.
-     */
-    .active-speaker {
-        border: 2px solid $videoThumbnailSelected !important;
-        padding: 0 !important;
-    }
+.tile-view {
 
     .remote-videos {
         align-items: center;
         box-sizing: border-box;
         // display: flex;
         flex-direction: column;
+        overscroll-behavior: contain;
     }
 
     .filmstrip__videos .videocontainer {
@@ -107,19 +100,6 @@
                 padding: 2px;
                 // margin: 0;
             }
-
-            video {
-                object-fit: contain !important;
-            }
-
-            /**
-            * Max-width corresponding to the ASPECT_RATIO_BREAKPOINT from features/filmstrip/constants.
-            */
-            @media only screen and (max-width: 500px) {
-                video {
-                    object-fit: cover;
-                }
-            }
         }
     }
 }
@@ -134,8 +114,4 @@
             object-fit: cover;
         }
     }
-}
-
-.indicator-icon-container {
-    display: inline-block;
 }

@@ -3,8 +3,6 @@ import { appNavigate } from '../app/actions';
 import {
     CONFERENCE_JOINED,
     KICKED_OUT,
-    PARTICIPANT_CHAT_DISABLED,
-    PARTICIPANT_CHAT_ENABLED,
     getCurrentConference
 } from '../base/conference';
 import { disconnect } from '../base/connection';
@@ -17,11 +15,6 @@ import { FeedbackDialog } from '../feedback';
 import { setFilmstripEnabled } from '../filmstrip';
 import { saveErrorNotification } from '../notifications';
 import { setToolboxEnabled } from '../toolbox/actions';
-
-import { 
-    notifyChatDisabled,
-    notifyChatEnabled
-} from './actions';
 
 MiddlewareRegistry.register(store => next => action => {
     const result = next(action);

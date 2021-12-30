@@ -7,6 +7,7 @@ import {
     PARTICIPANT_ROLE
 } from '../../base/participants';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { getFollowMeModerator, grantFollowMeModerator } from '../../follow-me';
 
 import { GrantFollowMeModeratorDialog } from '../components';
 
@@ -32,21 +33,21 @@ export type Props = AbstractButtonProps & {
  * An abstract remote video menu button which kicks the remote participant.
  */
 export default class AbstractGrantFollowMeModeratorButton extends AbstractButton<Props, *> {
-  accessibilityLabel = 'videothumbnail.grantFollowMeModerator';
-  icon = IconUserFollow;
-  label = 'videothumbnail.grantFollowMeModerator';
+    accessibilityLabel = 'videothumbnail.grantFollowMeModerator';
+    icon = IconUserFollow;
+    label = 'videothumbnail.grantFollowMeModerator';
 
-  /**
-   * Handles clicking / pressing the button, and kicks the participant.
-   *
-   * @private
-   * @returns {void}
-   */
-  _handleClick() {
-      const { dispatch, participantID } = this.props;
+    /**
+     * Handles clicking / pressing the button, and kicks the participant.
+     *
+     * @private
+     * @returns {void}
+     */
+    _handleClick() {
+        const { _isFollowMeModerator, dispatch, participantID } = this.props;
 
-      dispatch(openDialog(GrantFollowMeModeratorDialog, { participantID }));
-  }
+        dispatch(openDialog(GrantFollowMeModeratorDialog, { _isFollowMeModerator, participantID }));
+    }
 }
 
 /**
@@ -63,6 +64,7 @@ export function _mapStateToProps(state: Object, ownProps: Props) {
     const localParticipant = getLocalParticipant(state);
 
     return {
+        _isFollowMeModerator: getFollowMeModerator(state) === ownProps.participantID,
         visible: Boolean(localParticipant?.role === PARTICIPANT_ROLE.MODERATOR)
     };
 }

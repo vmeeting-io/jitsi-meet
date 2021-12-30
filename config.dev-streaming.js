@@ -1121,8 +1121,6 @@ hiddenDomain: 'recorder.jitsi-meet.example.com',
     // Sets the conference subject
     // subject: 'Conference Subject',
 
-    // enableChatControl: true,
-
     // disableRemoteMute: true,
     // disableSortable: false,
     disableUserRegistration: false,

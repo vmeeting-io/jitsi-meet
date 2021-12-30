@@ -1240,8 +1240,6 @@ var config = {
     // If true, tile view will not be enabled automatically when the participants count threshold is reached.
     // disableTileView: true,           // true, false, 'guest'
 
-    // enableChatControl: true,
-
     // disableRemoteMute: true,
     // disableSortable: false,
     // disableUserRegistration: true,

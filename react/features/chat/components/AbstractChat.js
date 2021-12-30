@@ -2,8 +2,9 @@
 
 import { Component } from 'react';
 import type { Dispatch } from 'redux';
+import { isEnabledFromState } from '../../av-moderation/functions';
 
-import { getLocalParticipant, getParticipantDisplayName } from '../../base/participants';
+import { getLocalParticipant, getParticipantDisplayName, PARTICIPANT_ROLE } from '../../base/participants';
 import { sendMessage, setIsPollsTabFocused } from '../actions';
 import { SMALL_WIDTH_THRESHOLD } from '../constants';
 
@@ -173,9 +174,9 @@ export function _mapStateToProps(state: Object) {
         fileSize
     } = state['features/chat'];
     const { nbUnreadPolls } = state['features/polls'];
-    const { enableChatControl } = state['features/base/config'];
     const _localParticipant = getLocalParticipant(state);
     const { disablePolls } = state['features/base/config'];
+    const chatModerationEnabled = isEnabledFromState('chat', state);
 
     // whether or not there is file upload currently in progress
     const existingFileName = state['features/chat'].fileName || undefined;
@@ -186,7 +187,6 @@ export function _mapStateToProps(state: Object) {
     }
 
     return {
-        _enableChatControl: Boolean(enableChatControl),
         _fileName: fileName,
         _fileSize: fileSize,
         _fileUploadInProgress: Boolean(fileUploadInProgress),
@@ -197,7 +197,7 @@ export function _mapStateToProps(state: Object) {
         _isPollsEnabled: !disablePolls,
         _isPollsTabFocused: isPollsTabFocused,
         _messages: messages,
-        _showChatInput: _localParticipant?.role !== 'visitor',
+        _showChatInput: !chatModerationEnabled || _localParticipant?.role === PARTICIPANT_ROLE.MODERATOR,
         _nbUnreadMessages: nbUnreadMessages,
         _nbUnreadPolls: nbUnreadPolls,
         _showNamePrompt: !_localParticipant?.name,

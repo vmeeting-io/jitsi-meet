@@ -105,16 +105,6 @@ export const PARTICIPANT_JOINED = 'PARTICIPANT_JOINED';
 export const PARTICIPANT_KICKED = 'PARTICIPANT_KICKED';
 
 /**
- * Action to signal that a participant has been granted moderator role in a conference
- *
- * {
- *     type: MODERATOR_ROLE_GRANTED,
- *     participant: Object
- * }
- */
-export const MODERATOR_ROLE_GRANTED = 'MODERATOR_ROLE_GRANTED';
-
-/**
  * Action to handle case when participant lefts.
  *
  * {

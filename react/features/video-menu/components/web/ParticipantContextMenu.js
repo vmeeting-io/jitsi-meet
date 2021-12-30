@@ -11,7 +11,7 @@ import ContextMenuItemGroup from '../../../base/components/context-menu/ContextM
 import { isIosMobileBrowser, isMobileBrowser } from '../../../base/environment/utils';
 import { IconShareVideo } from '../../../base/icons';
 import { MEDIA_TYPE } from '../../../base/media';
-import { getLocalParticipant, PARTICIPANT_ROLE } from '../../../base/participants';
+import { getLocalParticipant, isParticipantModerator, PARTICIPANT_ROLE } from '../../../base/participants';
 import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms/functions';
 import { setVolume } from '../../../filmstrip/actions.web';
 import { isFollowMeModerator } from '../../../follow-me';
@@ -116,6 +116,7 @@ const ParticipantContextMenu = ({
     className,
     closeDrawer,
     drawerParticipant,
+    local,
     localVideoOwner,
     offsetTarget,
     onEnter,
@@ -147,6 +148,7 @@ const ParticipantContextMenu = ({
     const _rooms = Object.values(useSelector(getBreakoutRooms));
 
     const _isParticipantBirthday = useSelector(isTodayParticipantBirthday(participant));
+    const _isParticipantModerator = isParticipantModerator(participant);
 
     const _onVolumeChange = useCallback(value => {
         dispatch(setVolume(participant.id, value));
@@ -166,10 +168,9 @@ const ParticipantContextMenu = ({
     }
     , [ thumbnailMenu, _overflowDrawer, drawerParticipant, participant ]);
 
-    const _isFollowMeModerator = useSelector(isFollowMeModerator(_getCurrentParticipantId()));
-
     const buttons = [];
     const buttons2 = [];
+    const breakoutRoomsButtons = [];
 
     const showVolumeSlider = !startSilent
         && !isIosMobileBrowser()
@@ -184,8 +185,28 @@ const ParticipantContextMenu = ({
         text: t('toolbar.stopSharedVideo')
     } ];
 
-    if (_isModerator) {
-        if (!thumbnailMenu && !_isFollowMeModerator) {
+    // for local participant
+    if (local && _isModerator) {
+        if (!thumbnailMenu) {
+            buttons.push(
+                <GrantFollowMeModeratorButton
+                    key = 'grant-follow-me-moderator'
+                    participantID = { _getCurrentParticipantId() } />
+            );
+        }
+
+        if (_isParticipantBirthday) {
+            buttons.push(
+                <BirthdayHatButton
+                    key = 'birthday-hat'
+                    participantID = { _getCurrentParticipantId() } />
+            );
+        }
+    }
+
+    // for remote participant
+    if (!local && _isModerator) {
+        if (!thumbnailMenu && _isParticipantModerator) {
             buttons.push(
                 <GrantFollowMeModeratorButton
                     key = 'grant-follow-me-moderator'
@@ -250,52 +271,52 @@ const ParticipantContextMenu = ({
         }
     }    
 
-    buttons2.push(
-        <PrivateMessageMenuButton
-            key = 'privateMessage'
-            participantID = { _getCurrentParticipantId() } />
-    );
-
-    if (thumbnailMenu && isMobileBrowser()) {
+    if (!local) {
         buttons2.push(
-            <ConnectionStatusButton
-                key = 'conn-status'
-                participantId = { _getCurrentParticipantId() } />
+            <PrivateMessageMenuButton
+                key = 'privateMessage'
+                participantID = { _getCurrentParticipantId() } />
         );
-    }
-
-    if (thumbnailMenu && remoteControlState) {
-        let onRemoteControlToggle = null;
-
-        if (remoteControlState === REMOTE_CONTROL_MENU_STATES.STARTED) {
-            onRemoteControlToggle = () => dispatch(stopController(true));
-        } else if (remoteControlState === REMOTE_CONTROL_MENU_STATES.NOT_STARTED) {
-            onRemoteControlToggle = () => dispatch(requestRemoteControl(_getCurrentParticipantId()));
+    
+        if (thumbnailMenu && isMobileBrowser()) {
+            buttons2.push(
+                <ConnectionStatusButton
+                    key = 'conn-status'
+                    participantId = { _getCurrentParticipantId() } />
+            );
+        }
+    
+        if (thumbnailMenu && remoteControlState) {
+            let onRemoteControlToggle = null;
+    
+            if (remoteControlState === REMOTE_CONTROL_MENU_STATES.STARTED) {
+                onRemoteControlToggle = () => dispatch(stopController(true));
+            } else if (remoteControlState === REMOTE_CONTROL_MENU_STATES.NOT_STARTED) {
+                onRemoteControlToggle = () => dispatch(requestRemoteControl(_getCurrentParticipantId()));
+            }
+    
+            buttons2.push(
+                <RemoteControlButton
+                    key = 'remote-control'
+                    onClick = { onRemoteControlToggle }
+                    participantID = { _getCurrentParticipantId() }
+                    remoteControlState = { remoteControlState } />
+            );
         }
 
-        buttons2.push(
-            <RemoteControlButton
-                key = 'remote-control'
-                onClick = { onRemoteControlToggle }
-                participantID = { _getCurrentParticipantId() }
-                remoteControlState = { remoteControlState } />
-        );
-    }
-
-    const breakoutRoomsButtons = [];
-
-    if (!thumbnailMenu && _isModerator) {
-        _rooms.forEach((room: Object) => {
-            if (room.id !== _currentRoomId) {
-                breakoutRoomsButtons.push(
-                    <SendToRoomButton
-                        key = { room.id }
-                        onClick = { clickHandler }
-                        participantID = { _getCurrentParticipantId() }
-                        room = { room } />
-                );
-            }
-        });
+        if (!thumbnailMenu && _isModerator) {
+            _rooms.forEach((room: Object) => {
+                if (room.id !== _currentRoomId) {
+                    breakoutRoomsButtons.push(
+                        <SendToRoomButton
+                            key = { room.id }
+                            onClick = { clickHandler }
+                            participantID = { _getCurrentParticipantId() }
+                            room = { room } />
+                    );
+                }
+            });
+        }
     }
 
     return (

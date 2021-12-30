@@ -123,16 +123,6 @@ function _addConferenceListeners(conference, dispatch, state) {
         JitsiConferenceEvents.KICKED,
         (...args) => dispatch(kickedOut(conference, ...args)));
 
-    if (config.enableChatControl) {
-        conference.on(
-            JitsiConferenceEvents.PARTICIPANT_CHAT_DISABLED,
-            (...args) => dispatch(participantChatDisabled(conference, ...args)));
-    
-        conference.on(
-            JitsiConferenceEvents.PARTICIPANT_CHAT_ENABLED,
-            (...args) => dispatch(participantChatEnabled(conference, ...args)));
-    }
-
     conference.on(
         JitsiConferenceEvents.PARTICIPANT_KICKED,
         (kicker, kicked) => dispatch(participantKicked(kicker, kicked)));
@@ -595,24 +585,6 @@ export function kickedOut(conference: Object, participant: Object) {
         participant
     };
 }
-
-// start of added portion
-export function participantChatDisabled(conference: Object, participant: String) {
-    return {
-        type: PARTICIPANT_CHAT_DISABLED,
-        conference,
-        participant
-    };
-}
-
-export function participantChatEnabled(conference: Object, participant: String) {
-    return {
-        type: PARTICIPANT_CHAT_ENABLED,
-        conference,
-        participant
-    };
-}
-// end of added portion
 
 /**
  * Signals that the lock state of a specific JitsiConference changed.

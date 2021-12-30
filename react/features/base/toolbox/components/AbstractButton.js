@@ -23,7 +23,7 @@ export type Props = {
     /**
      * External handler for click action.
      */
-     handleClick?: Function,
+    handleClick?: Function,
 
     /**
      * Whether to show the label or not.

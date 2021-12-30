@@ -1,2 +1,5 @@
-export const isFollowMeModerator = participantId =>
-    state => state['features/follow-me'].moderator === participantId;
+import { getFollowMeModerator } from ".";
+
+export const isFollowMeModerator = participantId => state => {
+    return getFollowMeModerator(state) === participantId;
+}

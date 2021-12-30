@@ -1,5 +1,6 @@
 // @flow
 
+import { getLocalParticipant } from '../base/participants';
 import { toState } from '../base/redux';
 
 /**
@@ -27,4 +28,15 @@ export function isFollowMeEnabled(stateful: Object | Function) {
 
     return Boolean(state['features/base/conference'].followMeEnabled) ||
         Boolean(state['features/base/config'].followMeEnabled);
+}
+
+export function getFollowMeModerator(stateful: Object | Function) {
+    const state = toState(stateful);
+    let followMeModerator = state['features/follow-me'].moderator;
+
+    if (!followMeModerator && isFollowMeEnabled(state)) {
+        followMeModerator = getLocalParticipant(state).id;
+    }
+
+    return followMeModerator;
 }

@@ -111,7 +111,7 @@ $(LANGUAGES):
 	fi;
 
 .NOTPARALLEL:
-dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-facial-expressions $(LANGUAGES)
+dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-libflac deploy-olm deploy-facial-expressions $(LANGUAGES)
 	if [ ! -d $(DEV_COUNTRIES_DIR) ] ; \
 	then \
 		mkdir $(DEV_COUNTRIES_DIR); \

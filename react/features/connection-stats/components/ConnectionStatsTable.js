@@ -738,11 +738,10 @@ class ConnectionStatsTable extends Component<Props> {
         const additionalData = [];
 
         if (isP2P) {
-            additionalData.push(
-                <span> (p2p)</span>);
+            additionalData.push(<span key = 'p2p'> (p2p)</span>);
         }
         if (isTURN) {
-            additionalData.push(<span> (turn)</span>);
+            additionalData.push(<span key = 'turn'> (turn)</span>);
         }
 
         // First show remote statistics, then local, and then transport type.

@@ -2493,19 +2493,6 @@ export default {
             APP.store.dispatch(kickedOut(room, participant));
         });
 
-        if (config.enableChatControl) {
-            // start of added portion
-            room.on(JitsiConferenceEvents.PARTICIPANT_CHAT_DISABLED, participant => {
-                APP.store.dispatch(participantChatDisabled(room, participant));
-            });
-
-            room.on(JitsiConferenceEvents.PARTICIPANT_CHAT_ENABLED, participant => {
-                //dispatch actions here
-                APP.store.dispatch(participantChatEnabled(room, participant));
-            });
-        }
-        // end of added portion
-
         room.on(JitsiConferenceEvents.PARTICIPANT_KICKED, (kicker, kicked) => {
             APP.store.dispatch(participantKicked(kicker, kicked));
         });

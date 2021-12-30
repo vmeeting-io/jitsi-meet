@@ -7,7 +7,7 @@ import type { Dispatch } from 'redux';
 
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
-import { getLocalParticipant, getParticipants, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
+import { getLocalParticipant, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
 import { Icon, IconPlane, IconSmile, IconShareDoc } from '../../../base/icons';
 import { connect } from '../../../base/redux';
 import { Tooltip } from '../../../base/tooltip';
@@ -346,23 +346,23 @@ class ChatInput extends Component<Props, State> {
                     <DropdownMenu
                         boundariesElement = 'scrollParent'
                         defaultOpen >
-                            <DropdownItemGroup>
-                                { filteredParticipants.map((participant) => {
-                                    return (
-                                        <DropdownItem 
-                                            key = { participant.id } 
-                                            className = 'participant-item'
-                                            onClick = { 
-                                                () =>  { 
-                                                    this._sendPrivateMessage(participant);
-                                                    this.setState({ message: '', showParticipantsList: false });
-                                                }
-                                            }>
-                                            { participant.name }
-                                        </DropdownItem>
-                                    )
-                                }) }
-                            </DropdownItemGroup>
+                        <DropdownItemGroup>
+                            { filteredParticipants.map((participant) => {
+                                return (
+                                    <DropdownItem 
+                                        key = { participant.id } 
+                                        className = 'participant-item'
+                                        onClick = { 
+                                            () =>  { 
+                                                this._sendPrivateMessage(participant);
+                                                this.setState({ message: '', showParticipantsList: false });
+                                            }
+                                        }>
+                                        { participant.name }
+                                    </DropdownItem>
+                                )
+                            }) }
+                        </DropdownItemGroup>
                     </DropdownMenu>
                 </div>
             );

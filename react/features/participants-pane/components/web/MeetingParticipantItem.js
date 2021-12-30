@@ -20,7 +20,7 @@ import {
     isParticipantAudioMuted,
     isParticipantVideoMuted
 } from '../../../base/tracks';
-import { isFollowMeEnabled } from '../../../follow-me';
+import { getFollowMeModerator, isFollowMeEnabled } from '../../../follow-me';
 import { ACTION_TRIGGER, type MediaState, MEDIA_STATE } from '../../constants';
 import {
     getParticipantAudioMediaState,
@@ -348,11 +348,6 @@ function _mapStateToProps(state, ownProps): Object {
         ? getLocalAudioTrack(tracks) : getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.AUDIO, participantID);
 
     const { disableModeratorIndicator } = state['features/base/config'];
-    let _followMeModerator = state['features/follow-me'].moderator;
-
-    if (!_followMeModerator && isFollowMeEnabled(state)) {
-        _followMeModerator = getLocalParticipant(state).id;
-    }
 
     return {
         _aiAttentionAnalysisEnabled: aiAttentionAnalysisEnabled,
@@ -360,7 +355,7 @@ function _mapStateToProps(state, ownProps): Object {
         _audioTrack,
         _disableModeratorIndicator: disableModeratorIndicator,
         _displayName,
-        _followMeModerator,
+        _followMeModerator: getFollowMeModerator(state),
         _isParticipantBirthday: isParticipantBirthday,
         _isPinned: participant === pinnedParticipant,
         _isVideoMuted,

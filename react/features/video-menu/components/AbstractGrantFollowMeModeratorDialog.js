@@ -52,9 +52,9 @@ export default class AbstractGrantFollowMeModeratorDialog
      * @returns {boolean} - True (to note that the modal should be closed).
      */
     _onSubmit() {
-        const { dispatch, participantID } = this.props;
+        const { _isFollowMeModerator, dispatch, participantID } = this.props;
 
-        dispatch(grantFollowMeModerator(participantID));
+        dispatch(grantFollowMeModerator(participantID, !_isFollowMeModerator));
 
         return true;
     }

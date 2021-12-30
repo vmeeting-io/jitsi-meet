@@ -34,21 +34,25 @@ class GrantFollowMeModeratorButton extends AbstractGrantFollowMeModeratorButton 
      * @returns {ReactElement}
      */
     render() {
-        const { participantID, t, visible } = this.props;
+        const { _isFollowMeModerator, participantID, t, visible } = this.props;
 
         if (!visible) {
             return null;
         }
 
+        const label = _isFollowMeModerator
+            ? 'videothumbnail.cancelFollowMeModerator'
+            : 'videothumbnail.grantFollowMeModerator';
+
         return (
             <ContextMenuItem
-                accessibilityLabel = { t('videothumbnail.grantFollowMeModerator') }
+                accessibilityLabel = { t(label) }
                 className = 'grantmoderatorlink'
                 icon = { IconUserFollow }
                 id = { `grantfollowmemoderatorlink_${participantID}` }
                 // eslint-disable-next-line react/jsx-handler-names
                 onClick = { this._handleClick }
-                text = { t('videothumbnail.grantFollowMeModerator') } />
+                text = { t(label) } />
         );
     }
 

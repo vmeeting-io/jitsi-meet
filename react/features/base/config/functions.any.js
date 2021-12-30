@@ -4,8 +4,8 @@ import Bourne from '@hapi/bourne';
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import _ from 'lodash';
 
-import React from 'react';
-import { Helmet } from 'react-helmet';
+import { isEnabledFromState } from '../../av-moderation/functions';
+import { isLocalParticipantModerator } from '../participants';
 
 import { parseURLParams } from '../util';
 
@@ -186,7 +186,8 @@ export function getWhitelistedJSON(configName: string, configJSON: Object): Obje
  */
 export function isNameReadOnly(state: Object): boolean {
     return state['features/base/config'].disableProfile
-        || state['features/base/config'].readOnlyName;
+        || state['features/base/config'].readOnlyName
+        || (isEnabledFromState('name', state) && !isLocalParticipantModerator(state));
 }
 
 

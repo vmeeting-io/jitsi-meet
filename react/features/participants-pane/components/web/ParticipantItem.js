@@ -215,10 +215,13 @@ function ParticipantItem({
                 {local ? <span>&nbsp;({youText})</span> : null}
             </div>
             <div className = { styles.labelContainer }>
-                {isModerator && !disableModeratorIndicator && <div className = { styles.moderatorLabel }>
+                { isModerator && !disableModeratorIndicator && <div className = { styles.moderatorLabel }>
                     {t('videothumbnail.moderator')}
                 </div>}
-                { followMeModerator === participantID && <div className = { styles.moderatorLabel }>
+                { !(isModerator && !disableModeratorIndicator) && followMeModerator === participantID && <div className = { styles.moderatorLabel }>
+                    {t('videothumbnail.following')}
+                </div>}
+                { isModerator && !disableModeratorIndicator && followMeModerator === participantID && <div className = { styles.moderatorLabel }>
                     , {t('videothumbnail.following')}
                 </div>}
             </div>

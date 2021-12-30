@@ -4,6 +4,8 @@ import { NOTIFICATION_TYPE } from './constants';
 import { i18next } from '../base/i18n';
 import { showToolbox } from '../toolbox/actions.web';
 
+export * from './functions.any';
+
 const Toast = Swal.mixin({
     toast: true,
     position: 'bottom-start',

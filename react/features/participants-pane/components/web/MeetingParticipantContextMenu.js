@@ -94,6 +94,7 @@ class MeetingParticipantContextMenu extends Component<Props> {
             <ParticipantContextMenu
                 closeDrawer = { closeDrawer }
                 drawerParticipant = { drawerParticipant }
+                local = { _participant?.local }
                 localVideoOwner = { _localVideoOwner }
                 offsetTarget = { offsetTarget }
                 onEnter = { onEnter }

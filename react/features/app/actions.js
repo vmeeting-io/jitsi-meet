@@ -274,7 +274,7 @@ export function appNavigate(uri: ?string) {
             try {
                 const headers = jwt ? { Authorization: `Bearer ${jwt}` } : {};
                 resp = await axios.post(apiUrl, {
-                    name: room,
+                    name: getBackendSafeRoomName(room),
                     start_time: new Date(),
                 }, { headers });
                 roomInfo = resp.data.conference;

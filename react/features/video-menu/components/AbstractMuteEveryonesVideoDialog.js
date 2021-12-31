@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { requestDisableVideoModeration, requestEnableVideoModeration } from '../../av-moderation/actions';
+import { requestDisableModeration, requestEnableModeration } from '../../av-moderation/actions';
 import { isEnabledFromState, isSupported } from '../../av-moderation/functions';
 import { Dialog } from '../../base/dialog';
 import { MEDIA_TYPE } from '../../base/media';
@@ -106,9 +106,9 @@ export default class AbstractMuteEveryonesVideoDialog<P: Props>
 
         dispatch(muteAllParticipants(exclude, MEDIA_TYPE.VIDEO));
         if (this.state.moderationEnabled) {
-            dispatch(requestEnableVideoModeration());
+            dispatch(requestEnableModeration(MEDIA_TYPE.VIDEO));
         } else if (this.state.moderationEnabled !== undefined) {
-            dispatch(requestDisableVideoModeration());
+            dispatch(requestDisableModeration(MEDIA_TYPE.VIDEO));
         }
 
         return true;

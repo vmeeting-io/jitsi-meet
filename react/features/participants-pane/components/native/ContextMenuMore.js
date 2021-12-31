@@ -7,10 +7,8 @@ import { Divider, Text } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 
 import {
-    requestDisableAudioModeration,
-    requestDisableVideoModeration,
-    requestEnableAudioModeration,
-    requestEnableVideoModeration
+    requestDisableModeration,
+    requestEnableModeration,
 } from '../../../av-moderation/actions';
 import {
     isSupported as isAvModerationSupported,
@@ -45,11 +43,11 @@ export const ContextMenuMore = () => {
     const isAudioModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.AUDIO));
     const isVideoModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.VIDEO));
 
-    const disableAudioModeration = useCallback(() => dispatch(requestDisableAudioModeration()), [ dispatch ]);
-    const disableVideoModeration = useCallback(() => dispatch(requestDisableVideoModeration()), [ dispatch ]);
+    const disableAudioModeration = useCallback(() => dispatch(requestDisableModeration(MEDIA_TYPE.AUDIO)), [ dispatch ]);
+    const disableVideoModeration = useCallback(() => dispatch(requestDisableModeration(MEDIA_TYPE.VIDEO)), [ dispatch ]);
 
-    const enableAudioModeration = useCallback(() => dispatch(requestEnableAudioModeration()), [ dispatch ]);
-    const enableVideoModeration = useCallback(() => dispatch(requestEnableVideoModeration()), [ dispatch ]);
+    const enableAudioModeration = useCallback(() => dispatch(requestEnableModeration(MEDIA_TYPE.AUDIO)), [ dispatch ]);
+    const enableVideoModeration = useCallback(() => dispatch(requestEnableModeration(MEDIA_TYPE.VIDEO)), [ dispatch ]);
 
     return (
         <BottomSheet

@@ -11,10 +11,8 @@ import {
     approveParticipantVideo,
     rejectParticipantAudio,
     rejectParticipantVideo,
-    requestDisableAudioModeration,
-    requestDisableVideoModeration,
-    requestEnableAudioModeration,
-    requestEnableVideoModeration
+    requestDisableModeration,
+    requestEnableModeration,
 } from '../../react/features/av-moderation/actions';
 import { isEnabledFromState } from '../../react/features/av-moderation/functions';
 import {
@@ -264,22 +262,17 @@ function initCommands() {
             sendAnalytics(createApiEvent('chat.toggled'));
             APP.store.dispatch(toggleChat());
         },
-        'toggle-moderation': (enabled, mediaType) => {
+        'toggle-moderation': (enabled, kind) => {
             const state = APP.store.getState();
 
             if (!isLocalParticipantModerator(state)) {
                 return;
             }
 
-            const enable = mediaType === MEDIA_TYPE.VIDEO
-                ? requestEnableVideoModeration : requestEnableAudioModeration;
-            const disable = mediaType === MEDIA_TYPE.VIDEO
-                ? requestDisableVideoModeration : requestDisableAudioModeration;
-
             if (enabled) {
-                APP.store.dispatch(enable());
+                APP.store.dispatch(requestEnableModeration(kind));
             } else {
-                APP.store.dispatch(disable());
+                APP.store.dispatch(requestDisableModeration(kind));
             }
         },
         'toggle-raise-hand': () => {

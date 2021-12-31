@@ -51,29 +51,27 @@
     padding: 0 16px;
     height: 28px;
     max-width: 324px;
+    position: relative;
 
     @media (max-width: 300px) {
         display: none;
     }
 
     &--content {
-        display: flex;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        position: relative;
+    }
 
-        &.editable {
-            pointer-events: auto;
-            overflow: visible;
-            cursor: pointer;
-    
-            &:hover {
-                padding-right: 20px;
+    &.editable {
+        pointer-events: auto;
+        cursor: pointer;
 
-                .button {
-                    visibility: visible;
-                }
+        &:hover {
+            padding-right: 32px;
+
+            .button {
+                visibility: visible;
             }
         }
     }
@@ -82,7 +80,7 @@
         padding: 4px;
         border-radius: 5px;
         position: absolute;
-        right: -8px;
+        right: 6px;
         top: 2px;
         visibility: hidden;
     }

@@ -55,19 +55,17 @@ const SubjectText = ({ _isModerator, _subject }: Props) => {
     });
 
     return (
-        <div className = 'subject-text'>
+        <div
+            className = {`subject-text${_isModerator ? ' editable' : ''}`}
+            onClick = { _isModerator ? _onEditSubject : undefined }>
             <Tooltip
                 content = { _isModerator ? t('dialog.edit') : _subject }
                 position = 'bottom'>
-                <div
-                    className = {`subject-text--content${_isModerator ? ' editable' : ''}`}
-                    onClick = { _isModerator ? _onEditSubject : undefined }>
-                    { _subject }
-                    { _isModerator && <div className = 'button'>
-                        <Icon size = { 16 } src = { IconEdit } />
-                    </div> }
-                </div>
+                <div className = 'subject-text--content'>{ _subject }</div>
             </Tooltip>
+            { _isModerator && <div className = 'button'>
+                <Icon size = { 16 } src = { IconEdit } />
+            </div> }
         </div>
     );
 }

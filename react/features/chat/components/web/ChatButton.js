@@ -84,12 +84,13 @@ class ChatButton extends AbstractButton<Props, *> {
      * @returns {boReact$Nodeolean}
      */
     render(): React$Node {
+        const { showLabel } = this.props;
+
         return (
             <div
-                className = 'toolbar-button-with-badge'
+                className = {`toolbar-button-with-badge${showLabel ? ' show-label' : ''}`}
                 key = 'chatcontainer'>
                 {super.render()}
-                <ChatCounter />
             </div>
         );
     }

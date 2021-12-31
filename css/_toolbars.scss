@@ -85,6 +85,10 @@
     display: inline-block;
     position: relative;
 
+    &.show-label {
+        display: block;
+    }
+
     .badge-round {
         bottom: -5px;
         font-size: 12px;

@@ -22,7 +22,6 @@ import {
     getTrackByMediaTypeAndParticipant,
     updateLastTrackVideoMediaEvent
 } from '../../../base/tracks';
-import { PresenceLabel } from '../../../presence-status';
 import { getCurrentLayout, LAYOUTS } from '../../../video-layout';
 import {
     DISPLAY_MODE_TO_CLASS_NAME,
@@ -845,13 +844,6 @@ class Thumbnail extends Component<Props, State> {
                         participantId = { id } />
                 </div>
                 { this._renderAvatar(styles.avatar) }
-                { !local && (
-                    <div className = 'presence-label-container'>
-                        <PresenceLabel
-                            className = 'presence-label'
-                            participantID = { id } />
-                    </div>
-                )}
                 <ThumbnailAudioIndicator _audioTrack = { _audioTrack } />
                 <div className = { clsx(classes.borderIndicator, 'raised-hand-border') } />
                 <div className = { clsx(classes.borderIndicator, 'active-speaker-indicator') } />

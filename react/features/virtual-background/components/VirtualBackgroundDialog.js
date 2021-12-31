@@ -3,8 +3,9 @@
 import Spinner from '@atlaskit/spinner';
 import axios from 'axios';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { getAuthUrl } from '../../../api/url';
+import { useSelector } from 'react-redux';
 
+import { getAuthUrl } from '../../../api/url';
 import { Dialog, hideDialog, openDialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
 import { Icon, IconCancelSelection, IconPlusCircle, IconShareDesktop } from '../../base/icons';
@@ -17,12 +18,16 @@ import { Tooltip } from '../../base/tooltip';
 import { getLocalVideoTrack } from '../../base/tracks';
 import TouchmoveHack from '../../chat/components/web/TouchmoveHack';
 import { showErrorNotification, showWarningNotification } from '../../notifications';
-import { backgroundEnabled, setVirtualBackground, toggleBackgroundEffect } from '../actions';
+import {
+    backgroundEnabled,
+    setVirtualBackground,
+    toggleBackgroundEffect,
+    virtualBackgroundTrackChanged
+} from '../actions';
 import { VIRTUAL_BACKGROUND_TYPE } from '../constants';
 import { getRemoteImageUrl, toDataURL } from '../functions';
 import logger from '../logger';
 
-import UploadImageButton from './UploadImageButton';
 import VirtualBackgroundPreview from './VirtualBackgroundPreview';
 
 const COL_WIDTH = 105 + 9;
@@ -65,11 +70,6 @@ const images = [
     }
 ];
 type Props = {
-
-    /**
-     * The list of Images to choose from.
-     */
-    _images: Array<Image>,
 
     /**
      * The current local flip x status.
@@ -132,6 +132,7 @@ function VirtualBackground({
     const [ remoteImages, setRemoteImages ] = useState([]);
     const [ loading, setLoading ] = useState(false);
     const [ activeDesktopVideo ] = useState(_virtualSource?.videoType === VIDEO_TYPE.DESKTOP ? _virtualSource : null);
+    const { disableScreensharingVirtualBackground } = useSelector(state => state['features/base/config']);
     const uploadImageButton: Object = useRef(null);
 
     /**
@@ -303,22 +304,18 @@ function VirtualBackground({
 
     const setImageBackground = useCallback(async e => {
         const imageId = e.currentTarget.getAttribute('data-imageid');
-        const image = _images.find(img => img.id === imageId);
+        const image = images.find(img => img.id === imageId);
 
         if (image) {
-            try {
-                const url = await toDataURL(image.src);
+            const url = await toDataURL(image.src);
 
-                setOptions({
-                    backgroundType: 'image',
-                    enabled: true,
-                    url,
-                    selectedThumbnail: image.id
-                });
-                logger.info('Image set for virtual background preview!');
-            } catch (err) {
-                logger.error('Could not fetch virtual background image:', err);
-            }
+            setOptions({
+                backgroundType: 'image',
+                enabled: true,
+                url,
+                selectedThumbnail: image.id
+            });
+            logger.info('Image setted for virtual background preview!');
 
             setLoading(false);
         }

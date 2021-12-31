@@ -228,7 +228,7 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
 
     case PARTICIPANT_APPROVED: {
         const { kind, id } = action;
-        const newWhitelist = { ...state.whtielist[kind], [id]: true };
+        const newWhitelist = { ...state.whitelist[kind], [id]: true };
 
         return {
             ...state,

@@ -83,10 +83,6 @@ const COMPONENTS = [
     {
         Component: InsecureRoomNameLabel,
         id: 'insecure-room'
-    },
-    {
-        Component: TimerLabel,
-        id: 'timer-label'
     }
 ];
 
@@ -179,6 +175,9 @@ class ConferenceInfo extends Component<Props> {
             <div className = 'details-container' >
                 { this._renderAlwaysVisible() }
                 { this._renderAutoHide() }
+                <TimerLabel
+                    id = 'timer-label'
+                    visible = { this.props._visible } />
             </div>
         );
     }

@@ -59,7 +59,7 @@ export class TimerLabel extends Component<Props> {
 
         this.interval = setInterval(() => {
             const dt = new Date();
-            const delta = this.props.timerEndTime - dt.getTime();
+            const delta = this.props._timerEndTime - dt.getTime();
 
             if (delta < 0) {
                 dispatch(playSound(TIMER_OFF_SOUND_ID));
@@ -89,12 +89,14 @@ export class TimerLabel extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { _timerStarted } = this.props;
+        const { _timerStarted, visible } = this.props;
         let components = [];
 
         if (_timerStarted) {
             components.push(
-                <div className = 'timer-label' key = 'timer-label'>
+                <div
+                    className = {`timer-label${visible ? ' visible' : ''}`}
+                    key = 'timer-label'>
                     <Label
                         className = { this.state.className }
                         icon = { IconStopWatch }

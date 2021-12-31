@@ -2,7 +2,7 @@
 
 import { batch } from 'react-redux';
 
-import { CONFERENCE_LEFT } from '../base/conference';
+import { CONFERENCE_JOINED, CONFERENCE_LEFT } from '../base/conference';
 import {
     getParticipantPresenceStatus,
     PARTICIPANT_JOINED,
@@ -11,7 +11,7 @@ import {
 } from '../base/participants';
 import { MiddlewareRegistry } from '../base/redux';
 import { PERMIT_DATA_REQUEST } from '../did-consent';
-import { PREJOIN_INITIALIZED, PREJOIN_START_CONFERENCE } from '../prejoin';
+import { PREJOIN_INITIALIZED } from '../prejoin';
 import {
     closeAttentionAnalysis,
     initFaceDetect,
@@ -31,7 +31,7 @@ MiddlewareRegistry.register(store => next => action => {
         }
         break;
     }
-    case PREJOIN_START_CONFERENCE: {
+    case CONFERENCE_JOINED: {
         const { face_detect } = store.getState()['features/base/conference'].roomInfo || {};
         if (face_detect) {
             store.dispatch(startFaceDetect());

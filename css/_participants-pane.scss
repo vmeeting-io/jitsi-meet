@@ -42,6 +42,8 @@
 
 .participant-avatar-container {
     position: relative;
+    display: flex;
+    height: 40px;
 
     .pin-icon {
         position: absolute;

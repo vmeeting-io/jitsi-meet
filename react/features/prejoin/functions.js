@@ -143,14 +143,13 @@ export function isPrejoinPageVisible(state: Object): boolean {
         enableForcedReload,
         prejoinConfig,
     } = state['features/base/config'];
-    const { showPrejoin, skipPrejoinOnReload } = state['features/prejoin'];
+    const { showPrejoin, skipPrejoinOnReload } = state['features/prejoin'] || {};
 
     return navigator.product !== 'ReactNative'
-        && (
-            (prejoinConfig?.enabled && showPrejoin)
+        && (prejoinConfig?.enabled
             || isAttentionAnalysisEnabled(state)
-            || (isHost && chatOnlyGuestEnabled)
-        )
+            || (isHost && chatOnlyGuestEnabled))
+        && showPrejoin
         && !(enableForcedReload && skipPrejoinOnReload);
 }
 

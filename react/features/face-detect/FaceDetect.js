@@ -89,6 +89,10 @@ export default class FaceDetect {
         }
 
         this._inputVideo = document.getElementById('localVideo_container');
+        if (!this._inputVideo) {
+            console.error('localVideo_container not found!');
+            return;
+        }
 
         const { videoWidth, videoHeight } = this._inputVideo;
         if (!this._videoCanvas && videoWidth > 0 && videoHeight > 0) {

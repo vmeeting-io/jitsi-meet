@@ -45,19 +45,6 @@
         "delete": "Delete Background Image",
         "none": "None"
     },
-    "breakoutRooms": {
-        "defaultName": "Breakout room #{{index}}",
-        "mainRoom": "Main room",
-        "actions": {
-            "add": "Add breakout room",
-            "autoAssign": "Auto assign to breakout rooms",
-            "close": "Close",
-            "join": "Join",
-            "remove": "Remove",
-            "leaveBreakoutRoom": "Leave breakout room",
-            "sendToBreakoutRoom": "Send to {{name}}"
-        }
-    },
     "blankPage": {
         "meetingEnded": "Meeting ended."
     },

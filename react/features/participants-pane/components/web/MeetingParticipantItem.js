@@ -281,7 +281,7 @@ function MeetingParticipantItem({
             openDrawerForParticipant = { openDrawerForParticipant }
             overflowDrawer = { overflowDrawer }
             participantID = { _participantID }
-            participantStatus = { _participant.presence }
+            participantStatus = { _participant?.presence }
             raisedHand = { _raisedHand }
             videoMediaState = { _videoMediaState }
             youText = { youText }>

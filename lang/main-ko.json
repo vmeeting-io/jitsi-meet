@@ -58,7 +58,7 @@
             "join": "입장",
             "remove": "삭제",
             "leaveBreakoutRoom": "소회의실 나가기",
-            "sendToBreakoutRoom": "{{name}}로 보내기"
+            "sendToBreakoutRoom": "소회의실로 보내기:"
         }
     },
     "calendarSync": {

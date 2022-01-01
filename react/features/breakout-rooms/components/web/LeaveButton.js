@@ -13,12 +13,7 @@ const useStyles = makeStyles(theme => {
     return {
         button: {
             color: theme.palette.textError,
-            backgroundColor: 'transparent',
             width: '100%',
-
-            '&:hover': {
-                backgroundColor: 'transparent'
-            }
         }
     };
 });

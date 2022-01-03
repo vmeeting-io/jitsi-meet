@@ -180,10 +180,9 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
                 state.sortedRemoteParticipants.delete(id);
 
                 // Insert the new participant.
-                const displayName = _getDisplayName(name);
                 const sortedRemoteParticipants = Array.from(state.sortedRemoteParticipants);
         
-                sortedRemoteParticipants.push([ id, displayName ]);
+                sortedRemoteParticipants.push([ id, name ]);
                 sortedRemoteParticipants.sort((a, b) => a[1].localeCompare(b[1]));
         
                 // The sort order of participants is preserved since Map remembers the original insertion order of the keys.

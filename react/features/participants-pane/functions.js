@@ -212,23 +212,21 @@ export function getSortedParticipantIds(stateful: Object | Function): Array<stri
     const { id } = getLocalParticipant(stateful);
     const remoteParticipants = getRemoteParticipantsSorted(stateful);
     const reorderedParticipants = new Set(remoteParticipants);
-    const raisedHandParticipants = getRaiseHandsQueue(stateful);
+    const raisedHandParticipants = getRaiseHandsQueue(stateful).map(({ id: particId }) => particId);;
     const remoteRaisedHandParticipants = new Set(raisedHandParticipants || []);
 
     for (const participant of remoteRaisedHandParticipants.keys()) {
         // Avoid duplicates.
         if (reorderedParticipants.has(participant)) {
             reorderedParticipants.delete(participant);
-        } else {
-            remoteRaisedHandParticipants.delete(participant);
         }
     }
 
-    // Remove self.
-    remoteRaisedHandParticipants.has(id) && remoteRaisedHandParticipants.delete(id);
+    const local = remoteRaisedHandParticipants.has(id) ? [] : [ id ];
+
     // Move self and participants with raised hand to the top of the list.
     return [
-        id,
+        ...local,
         ...Array.from(remoteRaisedHandParticipants.keys()),
         ...Array.from(reorderedParticipants.keys())
     ];

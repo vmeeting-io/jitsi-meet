@@ -49,8 +49,6 @@ import {
     dataChannelOpened,
     getConferenceOptions,
     kickedOut,
-    participantChatDisabled,
-    participantChatEnabled,
     lockStateChanged,
     onStartMutedPolicyChanged,
     p2pStatusChanged,

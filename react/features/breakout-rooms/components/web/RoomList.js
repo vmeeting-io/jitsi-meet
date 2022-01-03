@@ -54,10 +54,9 @@ export const RoomList = ({ searchString }: Props) => {
                             onRaiseMenu = { onRaiseMenu(room) }
                             room = { room }
                             searchString = { searchString }>
-                            {!_overflowDrawer && <>
+                            {!_overflowDrawer && isLocalModerator && !room.isMainRoom && <>
                                 <JoinActionButton room = { room } />
-                                {isLocalModerator && !room.isMainRoom
-                                    && <RoomActionEllipsis onClick = { toggleMenu(room) } />}
+                                <RoomActionEllipsis onClick = { toggleMenu(room) } />
                             </>}
                         </CollapsibleRoom>
                     </React.Fragment>

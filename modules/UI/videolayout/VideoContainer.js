@@ -565,7 +565,7 @@ export class VideoContainer extends LargeContainer {
                 resolve();
             }
 
-            this.$wrapperParent.css('visibility', 'visible').fadeTo(
+            this.$wrapperParent.stop(true).css('visibility', 'visible').fadeTo(
                 FADE_DURATION_MS,
                 1,
                 () => {

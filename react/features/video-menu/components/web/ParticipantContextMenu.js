@@ -14,7 +14,6 @@ import { MEDIA_TYPE } from '../../../base/media';
 import { getLocalParticipant, isParticipantModerator, PARTICIPANT_ROLE } from '../../../base/participants';
 import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms/functions';
 import { setVolume } from '../../../filmstrip/actions.web';
-import { isFollowMeModerator } from '../../../follow-me';
 import { isForceMuted, isTodayParticipantBirthday } from '../../../participants-pane/functions';
 import { requestRemoteControl, stopController } from '../../../remote-control';
 import { stopSharedVideo } from '../../../shared-video/actions.any';

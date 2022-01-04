@@ -13,11 +13,6 @@ const useStyles = makeStyles(theme => {
         button: {
             color: theme.palette.link01,
             width: '100%',
-            backgroundColor: 'transparent',
-
-            '&:hover': {
-                backgroundColor: 'transparent'
-            }
         }
     };
 });

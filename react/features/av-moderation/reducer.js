@@ -140,7 +140,7 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
         const { participant } = action;
 
         // Add participant to pendingAudio array only if it's not already added
-        if (!state.pendingAudio.find(pending => pending.id === participant.id)) {
+        if (!state.pending.audio.find(pending => pending.id === participant.id)) {
             const pending = {
                 ...state.pending,
                 audio: [ ...state.pending.audio ]

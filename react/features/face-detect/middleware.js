@@ -2,7 +2,8 @@
 
 import { batch } from 'react-redux';
 
-import { CONFERENCE_JOINED, CONFERENCE_LEFT } from '../base/conference';
+import { CONFERENCE_JOINED } from '../base/conference';
+import { CONNECTION_DISCONNECTED } from '../base/connection';
 import {
     getParticipantPresenceStatus,
     PARTICIPANT_JOINED,
@@ -10,6 +11,7 @@ import {
     PARTICIPANT_UPDATED
 } from '../base/participants';
 import { MiddlewareRegistry } from '../base/redux';
+import { isInBreakoutRoom } from '../breakout-rooms/functions';
 import { PERMIT_DATA_REQUEST } from '../did-consent';
 import { PREJOIN_INITIALIZED } from '../prejoin';
 import {
@@ -25,20 +27,23 @@ import './subscriber';
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
     case PREJOIN_INITIALIZED: {
-        const { face_detect } = store.getState()['features/base/conference'].roomInfo || {};
-        if (face_detect) {
+        const state = store.getState();
+        const { face_detect } = state['features/base/conference'].roomInfo || {};
+
+        if (face_detect && !isInBreakoutRoom(state)) {
             store.dispatch(initFaceDetect());
         }
         break;
     }
     case CONFERENCE_JOINED: {
-        const { face_detect } = store.getState()['features/base/conference'].roomInfo || {};
-        if (face_detect) {
+        const state = store.getState();
+        const { face_detect } = state['features/base/conference'].roomInfo || {};
+        if (face_detect && !isInBreakoutRoom(state)) {
             store.dispatch(startFaceDetect());
         }
         break;
     }
-    case CONFERENCE_LEFT:
+    case CONNECTION_DISCONNECTED:
         const { face_detect } = store.getState()['features/base/conference'].roomInfo || {};
         if (face_detect) {
             batch(() => {

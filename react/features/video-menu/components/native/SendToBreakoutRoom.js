@@ -46,7 +46,7 @@ class SendToBreakoutRoom extends AbstractButton<Props, *> {
     _getLabel() {
         const { t, room } = this.props;
 
-        return room.name || t('breakoutRooms.mainRoom');
+        return decodeURI(room.name) || t('breakoutRooms.mainRoom');
     }
 
     /**

@@ -80,6 +80,7 @@ const useStyles = makeStyles(theme => {
             position: 'absolute',
             right: `${participantsPaneTheme.panePadding}px`,
             top: 0,
+            overflowY: 'scroll',
             zIndex: 2
         },
 
@@ -134,12 +135,29 @@ const ContextMenu = ({
             && offsetTarget.offsetParent instanceof HTMLElement
         ) {
             const { current: container } = containerRef;
+            container.style.height = 'auto';
+
             const { offsetTop, offsetParent: { offsetHeight, scrollTop } } = offsetTarget;
             const outerHeight = getComputedOuterHeight(container);
 
-            container.style.top = offsetTop + outerHeight > offsetHeight + scrollTop
-                ? `${offsetTop - outerHeight}`
-                : `${offsetTop}`;
+            if ((offsetHeight / offsetTop < 2)
+                && (offsetTop + outerHeight > offsetHeight + scrollTop)) {
+                // top menu style
+                const top = (participantsPaneTheme.panePadding * 2) + 14;
+                if (offsetTop - outerHeight < top) {
+                    container.style.top = `${top}`;
+                    container.style.height = `${offsetTop}`;
+                } else {
+                    container.style.top = `${offsetTop - outerHeight}`;
+                }
+            } else {
+                // bottom menu style
+                container.style.top = `${offsetTop}`;
+                if (offsetTop + outerHeight > offsetHeight) {
+                    container.style.height = `${offsetHeight - offsetTop}`;
+                }
+            }
+            console.log(`offsetTop=${offsetTop}, outerHieght=${outerHeight}`);
 
             setIsHidden(false);
         } else {

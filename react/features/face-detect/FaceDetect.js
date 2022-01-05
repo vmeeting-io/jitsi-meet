@@ -291,17 +291,19 @@ export default class FaceDetect {
      * @returns {void}
      */
     start() {
-        const { faceDetect = {} } = this._getState()['features/base/config'].testing || {};
-        const { frameInterval = 1000 } = faceDetect;
+        if (this._step !== STEP.STARTED) {
+            const { faceDetect = {} } = this._getState()['features/base/config'].testing || {};
+            const { frameInterval = 1000 } = faceDetect;
 
-        this._frameInterval = frameInterval;
-        this._worker.postMessage({
-            command: 'inference',
-            data: this._frames.slice(1),
-            next: STEP.STARTED,
-        });
-        this._frames = [];
-        this._isWaiting = true;
+            this._frameInterval = frameInterval;
+            this._worker.postMessage({
+                command: 'inference',
+                data: this._frames.slice(1),
+                next: STEP.STARTED,
+            });
+            this._frames = [];
+            this._isWaiting = true;
+        }
     }
 
     /**

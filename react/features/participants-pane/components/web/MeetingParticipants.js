@@ -102,7 +102,7 @@ function MeetingParticipants({
                 {currentRoom?.name
 
                     // $FlowExpectedError
-                    ? `${currentRoom.name} (${participantsCount})`
+                    ? `${decodeURI(currentRoom.name)} (${participantsCount})`
                     : t('participantsPane.headings.participantsList', { count: participantsCount })}
             </div>
             {showInviteButton && <InviteButton />}

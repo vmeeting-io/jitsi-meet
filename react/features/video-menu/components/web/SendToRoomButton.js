@@ -36,7 +36,7 @@ const SendToRoomButton = ({ onClick, participantID, room }: Props) => {
         dispatch(sendParticipantToRoom(participantID, room.id));
     }, [ participantID, room ]);
 
-    const roomName = room.name || t('breakoutRooms.mainRoom');
+    const roomName = decodeURI(room.name) || t('breakoutRooms.mainRoom');
 
     return (
         <ContextMenuItem

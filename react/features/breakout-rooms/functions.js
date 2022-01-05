@@ -17,6 +17,19 @@ import { FEATURE_KEY } from './constants';
 export const getBreakoutRooms = (stateful: Function | Object) => toState(stateful)[FEATURE_KEY].rooms;
 
 /**
+ * Returns the rooms object for breakout rooms.
+ *
+ * @param {Function|Object} stateful - The redux store, the redux
+ * {@code getState} function, or the redux state itself.
+ * @returns {Object} Object of rooms.
+ */
+export const getSortedBreakoutRooms = (stateful: Function | Object) => {
+    const rooms = getBreakoutRooms(stateful);
+
+    return _.sortBy(rooms, 'name');
+}
+
+/**
  * Returns the main room.
  *
  * @param {Function|Object} stateful - The redux store, the redux

@@ -105,7 +105,7 @@ export const CollapsibleRoom = ({
     </div>);
 
     const roomName = (<span className = { styles.roomName }>
-        {`${room.name || t('breakoutRooms.mainRoom')} (${Object.keys(room?.participants
+        {`${decodeURI(room.name) || t('breakoutRooms.mainRoom')} (${Object.keys(room?.participants
             || {}).length})`}
     </span>);
 

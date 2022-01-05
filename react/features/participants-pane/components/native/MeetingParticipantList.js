@@ -189,7 +189,7 @@ class MeetingParticipantList extends PureComponent<Props> {
                     {_currentRoom?.name
 
                         // $FlowExpectedError
-                        ? `${_currentRoom.name} (${_participantsCount})`
+                        ? `${decodeURI(_currentRoom.name)} (${_participantsCount})`
                         : t('participantsPane.headings.participantsList', { count: _participantsCount })}
                 </Text>
                 {

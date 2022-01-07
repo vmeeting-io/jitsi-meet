@@ -56,6 +56,7 @@ import {
     isParticipantPending
 } from './functions';
 import { ASKED_TO_UNMUTE_FILE } from './sounds';
+import { startScreenShareFlow } from '../screen-share';
 
 declare var APP: Object;
 
@@ -97,10 +98,10 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
 
         dispatch(showNotification({
             customActionNameKey: [ 'notify.raiseHandAction' ],
-            customActionHandler: [ () => batch(() => {
-                dispatch(raiseHand(true));
-                dispatch(hideNotification(uid));
-            }) ],
+            customActionHandler: [ () => {
+                dispatch(raiseHand(true, action.kind));
+                return true;
+            } ],
             descriptionKey,
             sticky: true,
             titleKey,
@@ -212,8 +213,24 @@ StateListenerRegistry.register(
                         titleKey: 'notify.hostAskedUnmute',
                         sticky: true,
                         customActionNameKey: [ 'notify.unmute' ],
-                        customActionHandler: [ () => dispatch(muteLocal(false, MEDIA_TYPE.AUDIO)) ]
+                        customActionHandler: [ () => dispatch(muteLocal(false, kind)) ]
                     }, NOTIFICATION_TIMEOUT_TYPE.STICKY));
+                    dispatch(playSound(ASKED_TO_UNMUTE_SOUND_ID));
+                } else if (kind === MEDIA_TYPE.VIDEO) {
+                    dispatch(showNotification({
+                        titleKey: 'notify.unmuteVideoByHost',
+                        sticky: true,
+                        customActionNameKey: [ 'notify.unmuteVideo' ],
+                        customActionHandler: [ () => dispatch(muteLocal(false, kind)) ]
+                    }, NOTIFICATION_TIMEOUT_TYPE.STICKY));
+                    dispatch(playSound(ASKED_TO_UNMUTE_SOUND_ID));
+                } else if (kind === MEDIA_TYPE.PRESENTER) {
+                    dispatch(showNotification({
+                        titleKey: 'notify.allowScreenShareByHost',
+                        sticky: true,
+                        customActionNameKey: ['notify.screenShare'],
+                        customActionHandler: [ () => dispatch(startScreenShareFlow()) ]
+                    }));
                     dispatch(playSound(ASKED_TO_UNMUTE_SOUND_ID));
                 }
             });

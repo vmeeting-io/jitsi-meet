@@ -20,10 +20,11 @@ import {
     isParticipantAudioMuted,
     isParticipantVideoMuted
 } from '../../../base/tracks';
-import { getFollowMeModerator, isFollowMeEnabled } from '../../../follow-me';
+import { getFollowMeModerator } from '../../../follow-me';
 import { ACTION_TRIGGER, type MediaState, MEDIA_STATE } from '../../constants';
 import {
     getParticipantAudioMediaState,
+    getParticipantPresenterMediaState,
     getParticipantVideoMediaState,
     getQuickActionButtonType,
     isTodayParticipantBirthday,
@@ -140,11 +141,6 @@ type Props = {
     muteAudio: Function,
 
     /**
-     * The translated text for the mute participant button.
-     */
-    muteParticipantButtonText: string,
-
-    /**
      * Callback for the activation of this item's context menu.
      */
     onContextMenu: Function,
@@ -193,26 +189,26 @@ type Props = {
  */
 function MeetingParticipantItem({
     _aiAttentionAnalysisEnabled,
+    _askToUnmuteText,
     _audioMediaState,
     _audioTrack,
     _disableModeratorIndicator,
     _displayName,
     _followMeModerator,
     _isParticipantBirthday,
-    _isVideoMuted,
     _local,
     _localVideoOwner,
     _matchesSearch,
+    _muteParticipantButtonText,
     _participant,
     _participantID,
+    _presenterMediaState,
     _isPinned,
     _quickActionButtonType,
     _raisedHand,
     _videoMediaState,
-    askUnmuteText,
     isHighlighted,
     muteAudio,
-    muteParticipantButtonText,
     onContextMenu,
     onLeave,
     openDrawerForParticipant,
@@ -258,12 +254,6 @@ function MeetingParticipantItem({
     const audioMediaState = _audioMediaState === MEDIA_STATE.UNMUTED && hasAudioLevels
         ? MEDIA_STATE.DOMINANT_SPEAKER : _audioMediaState;
 
-    let askToUnmuteText = askUnmuteText;
-
-    if (_audioMediaState !== MEDIA_STATE.FORCE_MUTED && _videoMediaState === MEDIA_STATE.FORCE_MUTED) {
-        askToUnmuteText = t('participantsPane.actions.allowVideo');
-    }
-
     return (
         <ParticipantItem
             actionsTrigger = { ACTION_TRIGGER.HOVER }
@@ -282,6 +272,7 @@ function MeetingParticipantItem({
             overflowDrawer = { overflowDrawer }
             participantID = { _participantID }
             participantStatus = { _participant?.presence }
+            presenterMediaState = { _presenterMediaState }
             raisedHand = { _raisedHand }
             videoMediaState = { _videoMediaState }
             youText = { youText }>
@@ -289,10 +280,10 @@ function MeetingParticipantItem({
             {!overflowDrawer && !_local && !_participant?.isFakeParticipant
                 && <>
                     <ParticipantQuickAction
-                        askUnmuteText = { askToUnmuteText }
+                        askUnmuteText = { _askToUnmuteText }
                         buttonType = { _quickActionButtonType }
                         muteAudio = { muteAudio }
-                        muteParticipantButtonText = { muteParticipantButtonText }
+                        muteParticipantButtonText = { _muteParticipantButtonText }
                         participantID = { _participantID }
                         participantName = { _displayName } />
                     <ParticipantActionEllipsis
@@ -326,7 +317,7 @@ function MeetingParticipantItem({
  */
 function _mapStateToProps(state, ownProps): Object {
     const { aiAttentionAnalysisEnabled } = state['features/base/settings'];
-    const { participantID, searchString } = ownProps;
+    const { askUnmuteText, participantID, searchString, t } = ownProps;
     const { ownerId } = state['features/shared-video'];
     const localParticipantId = getLocalParticipant(state).id;
 
@@ -340,6 +331,7 @@ function _mapStateToProps(state, ownProps): Object {
     const _isVideoMuted = isParticipantVideoMuted(participant, state);
     const _audioMediaState = getParticipantAudioMediaState(participant, _isAudioMuted, state);
     const _videoMediaState = getParticipantVideoMediaState(participant, _isVideoMuted, state);
+    const _presenterMediaState = getParticipantPresenterMediaState(participant, state);
     const _quickActionButtonType = getQuickActionButtonType(participant, _isAudioMuted, state);
 
     const isParticipantBirthday = isTodayParticipantBirthday(participant)(state);
@@ -349,8 +341,13 @@ function _mapStateToProps(state, ownProps): Object {
 
     const { disableModeratorIndicator } = state['features/base/config'];
 
+    const askToUnmuteText = askUnmuteText;
+
+    const _muteParticipantButtonText = _isAudioMuted ? t('dialog.muteParticipantsVideoButton') : t('dialog.muteParticipantButton');
+
     return {
         _aiAttentionAnalysisEnabled: aiAttentionAnalysisEnabled,
+        _askToUnmuteText: askToUnmuteText,
         _audioMediaState,
         _audioTrack,
         _disableModeratorIndicator: disableModeratorIndicator,
@@ -358,12 +355,13 @@ function _mapStateToProps(state, ownProps): Object {
         _followMeModerator: getFollowMeModerator(state),
         _isParticipantBirthday: isParticipantBirthday,
         _isPinned: participant === pinnedParticipant,
-        _isVideoMuted,
         _local: Boolean(participant?.local),
         _localVideoOwner: Boolean(ownerId === localParticipantId),
         _matchesSearch,
+        _muteParticipantButtonText,
         _participant: participant,
         _participantID: participant?.id,
+        _presenterMediaState,
         _quickActionButtonType,
         _raisedHand: hasRaisedHand(participant),
         _videoMediaState

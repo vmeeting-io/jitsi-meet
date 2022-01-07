@@ -25,6 +25,7 @@ const initialState = {
         chat: false,
         poll: false,
         name: false,
+        presenter: false,
     },
     whitelist: {
         audio: {},
@@ -32,6 +33,7 @@ const initialState = {
         chat: {},
         poll: {},
         name: {},
+        presenter: {},
     },
     pending: {
         audio: [],
@@ -39,6 +41,7 @@ const initialState = {
         chat: [],
         poll: [],
         name: [],
+        presenter: [],
     },
     unmuteApproved: {
         audio: false,
@@ -46,6 +49,7 @@ const initialState = {
         chat: false,
         poll: false,
         name: false,
+        presenter: false,
     }
 };
 
@@ -87,15 +91,12 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
 
     switch (action.type) {
     case DISABLE_MODERATION: {
-        const moderationEnabled = { ...state.moderationEnabled, [action.kind]: false };
-        const unmuteApproved = { ...state.unmuteApproved, [action.kind]: false };
-
         return {
             ...state,
-            moderationEnabled,
-            unmuteApproved,
-            whitelist: { ...initialState.whitelist },
-            pending: { ...initialState.pending },
+            moderationEnabled: { ...state.moderationEnabled, [action.kind]: false },
+            unmuteApproved: { ...state.unmuteApproved, [action.kind]: false },
+            whitelist: { ...state.whitelist, [action.kind]: {} },
+            pending: { ...state.pending, [action.kind]: [] },
         };
     }
 

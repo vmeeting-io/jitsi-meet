@@ -37,6 +37,7 @@ import {
     RemoteControlButton,
     VolumeSlider
 } from './';
+import { isParticipantAudioMuted, isParticipantVideoMuted } from '../../../base/tracks';
 
 type Props = {
 
@@ -131,10 +132,8 @@ const ParticipantContextMenu = ({
 
     const localParticipant = useSelector(getLocalParticipant);
     const _isModerator = Boolean(localParticipant?.role === PARTICIPANT_ROLE.MODERATOR);
-    const _isAudioForceMuted = useSelector(state =>
-        isForceMuted(participant, MEDIA_TYPE.AUDIO, state));
-    const _isVideoForceMuted = useSelector(state =>
-        isForceMuted(participant, MEDIA_TYPE.VIDEO, state));
+    const _isAudioMuted = useSelector(state => isParticipantAudioMuted(participant, state));
+    const _isVideoMuted = useSelector(state => isParticipantVideoMuted(participant, state));
     const _overflowDrawer = useSelector(showOverflowDrawer);
     const { remoteVideoMenu = {}, disableRemoteMute, startSilent }
         = useSelector(state => state['features/base/config']);
@@ -213,19 +212,16 @@ const ParticipantContextMenu = ({
             );
         }
 
-        if (thumbnailMenu || _overflowDrawer) {
-            buttons.push(
-                <AskToUnmuteButton
-                    isAudioForceMuted = { _isAudioForceMuted }
-                    isVideoForceMuted = { _isVideoForceMuted }
-                    key = 'ask-unmute'
-                    participantID = { _getCurrentParticipantId() } />
-            );
-        }
         if (!disableRemoteMute) {
             buttons.push(
                 <MuteButton
                     key = 'mute'
+                    participantID = { _getCurrentParticipantId() } />
+            );
+            buttons.push(
+                <AskToUnmuteButton
+                    isAudioMuted = { _isAudioMuted }
+                    key = 'ask-unmute'
                     participantID = { _getCurrentParticipantId() } />
             );
             buttons.push(
@@ -236,6 +232,12 @@ const ParticipantContextMenu = ({
             buttons.push(
                 <MuteVideoButton
                     key = 'mute-video'
+                    participantID = { _getCurrentParticipantId() } />
+            );
+            buttons.push(
+                <AskToUnmuteButton
+                    isVideoMuted = { _isVideoMuted }
+                    key = 'allow-video'
                     participantID = { _getCurrentParticipantId() } />
             );
             buttons.push(

@@ -21,92 +21,43 @@ import {
 import { isEnabledFromState } from './functions';
 
 /**
- * Action used by moderator to approve audio for a participant.
+ * Action used by moderator to approve kind for a participant.
  *
  * @param {staring} id - The id of the participant to be approved.
+ * @param {staring} kind - The kind to be approved.
  * @returns {void}
  */
-export const approveParticipantAudio = (id: string) => (dispatch: Function, getState: Function) => {
+export const approveParticipant = (id: string, kind: string) => (dispatch: Function, getState: Function) => {
     const state = getState();
     const { conference } = getConferenceState(state);
     const participant = getParticipantById(state, id);
 
-    const isAudioModerationOn = isEnabledFromState(MEDIA_TYPE.AUDIO, state);
-    const isVideoModerationOn = isEnabledFromState(MEDIA_TYPE.VIDEO, state);
-    const isVideoForceMuted = isForceMuted(participant, MEDIA_TYPE.VIDEO, state);
+    const isModerationOn = isEnabledFromState(kind, state);
+    const forceMuted = isForceMuted(participant, kind, state);
 
-    if (isAudioModerationOn || !isVideoModerationOn || !isVideoForceMuted) {
-        conference.avModerationApprove(MEDIA_TYPE.AUDIO, id);
+    if (isModerationOn || !forceMuted) {
+        conference.avModerationApprove(kind, id);
     }
-};
-
-/**
- * Action used by moderator to approve video for a participant.
- *
- * @param {staring} id - The id of the participant to be approved.
- * @returns {void}
- */
-export const approveParticipantVideo = (id: string) => (dispatch: Function, getState: Function) => {
-    const state = getState();
-    const { conference } = getConferenceState(state);
-    const participant = getParticipantById(state, id);
-
-    const isVideoForceMuted = isForceMuted(participant, MEDIA_TYPE.VIDEO, state);
-    const isVideoModerationOn = isEnabledFromState(MEDIA_TYPE.VIDEO, state);
-
-    if (isVideoModerationOn && isVideoForceMuted) {
-        conference.avModerationApprove(MEDIA_TYPE.VIDEO, id);
-    }
-};
-
-/**
- * Action used by moderator to approve audio and video for a participant.
- *
- * @param {staring} id - The id of the participant to be approved.
- * @returns {void}
- */
-export const approveParticipant = (id: string) => (dispatch: Function) => {
-    dispatch(approveParticipantAudio(id));
-    dispatch(approveParticipantVideo(id));
 };
 
 /**
  * Action used by moderator to reject audio for a participant.
  *
  * @param {staring} id - The id of the participant to be rejected.
+ * @param {staring} kind - The kind to be rejected.
  * @returns {void}
  */
-export const rejectParticipantAudio = (id: string) => (dispatch: Function, getState: Function) => {
+export const rejectParticipant = (id: string, kind: string) => (dispatch: Function, getState: Function) => {
     const state = getState();
     const { conference } = getConferenceState(state);
-    const audioModeration = isEnabledFromState(MEDIA_TYPE.AUDIO, state);
-
     const participant = getParticipantById(state, id);
-    const isAudioForceMuted = isForceMuted(participant, MEDIA_TYPE.AUDIO, state);
+    
+    const isModerationOn = isEnabledFromState(kind, state);
+    const forceMuted = isForceMuted(participant, kind, state);
     const isModerator = isParticipantModerator(participant);
 
-    if (audioModeration && !isAudioForceMuted && !isModerator) {
-        conference.avModerationReject(MEDIA_TYPE.AUDIO, id);
-    }
-};
-
-/**
- * Action used by moderator to reject video for a participant.
- *
- * @param {staring} id - The id of the participant to be rejected.
- * @returns {void}
- */
-export const rejectParticipantVideo = (id: string) => (dispatch: Function, getState: Function) => {
-    const state = getState();
-    const { conference } = getConferenceState(state);
-    const videoModeration = isEnabledFromState(MEDIA_TYPE.VIDEO, state);
-
-    const participant = getParticipantById(state, id);
-    const isVideoForceMuted = isForceMuted(participant, MEDIA_TYPE.VIDEO, state);
-    const isModerator = isParticipantModerator(participant);
-
-    if (videoModeration && !isVideoForceMuted && !isModerator) {
-        conference.avModerationReject(MEDIA_TYPE.VIDEO, id);
+    if (isModerationOn && !forceMuted && !isModerator) {
+        conference.avModerationReject(kind, id);
     }
 };
 

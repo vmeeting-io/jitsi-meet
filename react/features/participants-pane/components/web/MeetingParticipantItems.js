@@ -27,11 +27,6 @@ type Props = {
     muteAudio: Function,
 
     /**
-     * The translated text for the mute participant button.
-     */
-    muteParticipantButtonText: string,
-
-    /**
      * The meeting participants.
      */
     participantIds: Array<string>,
@@ -77,7 +72,6 @@ function MeetingParticipantItems({
     lowerMenu,
     toggleMenu,
     muteAudio,
-    muteParticipantButtonText,
     participantIds,
     openDrawerForParticipant,
     overflowDrawer,
@@ -92,7 +86,6 @@ function MeetingParticipantItems({
             isHighlighted = { raiseContextId === id }
             key = { id }
             muteAudio = { muteAudio }
-            muteParticipantButtonText = { muteParticipantButtonText }
             onContextMenu = { toggleMenu(id) }
             onLeave = { lowerMenu }
             openDrawerForParticipant = { openDrawerForParticipant }

@@ -81,7 +81,7 @@ class AskUnmuteButton extends AbstractButton<Props, *> {
     _handleClick() {
         const { dispatch, participantID } = this.props;
 
-        dispatch(approveParticipant(participantID));
+        dispatch(approveParticipant(participantID, MEDIA_TYPE.AUDIO));
     }
 }
 

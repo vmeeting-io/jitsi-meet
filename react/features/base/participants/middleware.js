@@ -32,7 +32,7 @@ import {
 import { MEDIA_TYPE } from '../media';
 import { MiddlewareRegistry, StateListenerRegistry } from '../redux';
 import { playSound, registerSound, unregisterSound } from '../sounds';
-import { getTrackByJitsiTrack, TRACK_ADDED, TRACK_REMOVED, TRACK_UPDATED } from '../tracks';
+import { getTrackByJitsiTrack, isParticipantAudioMuted, isParticipantVideoMuted, TRACK_ADDED, TRACK_REMOVED, TRACK_UPDATED } from '../tracks';
 
 import {
     DOMINANT_SPEAKER_CHANGED,
@@ -237,7 +237,8 @@ MiddlewareRegistry.register(store => next => action => {
             });
 
             // sort the queue before adding to store.
-            queue = queue.sort(({ raisedHandTimestamp: a }, { raisedHandTimestamp: b }) => a - b);
+            queue = queue.sort(({ raisedHandTimestamp: a }, { raisedHandTimestamp: b }) =>
+                a > b ? 1 : a < b ? -1 : 0 );
         } else {
             // no need to sort on remove value.
             queue = queue.filter(({ id }) => id !== participant.id);
@@ -550,11 +551,10 @@ function _participantJoinedOrUpdated(store, next, action) {
 
         if (local) {
             const { conference } = getState()['features/base/conference'];
-            const rHand = parseInt(raisedHandTimestamp, 10);
 
             // Send raisedHand signalling only if there is a change
-            if (conference && rHand !== getLocalParticipant(getState()).raisedHandTimestamp) {
-                conference.setLocalParticipantProperty('raisedHand', rHand);
+            if (conference && raisedHandTimestamp !== getLocalParticipant(getState()).raisedHandTimestamp) {
+                conference.setLocalParticipantProperty('raisedHand', raisedHandTimestamp);
             }
         }
     }
@@ -601,18 +601,26 @@ function _participantJoinedOrUpdated(store, next, action) {
  */
 function _raiseHandUpdated({ dispatch, getState }, conference, participantId, newValue) {
     let raisedHandTimestamp;
+    let raisedHandType;
+    const pattern = /[0-9]+_/;
 
     switch (newValue) {
+    case 0:
     case undefined:
     case 'false':
-        raisedHandTimestamp = 0;
+        raisedHandTimestamp = null;
         break;
     case 'true':
-        raisedHandTimestamp = Date.now();
+        raisedHandTimestamp = `${Date.now()}`;
         break;
     default:
-        raisedHandTimestamp = parseInt(newValue, 10);
+        raisedHandTimestamp = newValue;
+        if (newValue.match(pattern)) {
+            raisedHandType = newValue.replace(pattern, '');
+        }
     }
+    // console.error('_raiseHandUpdated:', newValue, raisedHandType);
+
     const state = getState();
 
     dispatch(participantUpdated({
@@ -635,13 +643,37 @@ function _raiseHandUpdated({ dispatch, getState }, conference, participantId, ne
     let shouldDisplayAllowAction = false;
 
     if (isModerator) {
-        shouldDisplayAllowAction = isForceMuted(participant, MEDIA_TYPE.AUDIO, state)
-            || isForceMuted(participant, MEDIA_TYPE.VIDEO, state);
+        shouldDisplayAllowAction = 
+            (isForceMuted(participant, MEDIA_TYPE.AUDIO, state) && (
+                (!raisedHandType || raisedHandType === MEDIA_TYPE.AUDIO) && isParticipantAudioMuted(participant, state)
+            ))
+            || (isForceMuted(participant, MEDIA_TYPE.VIDEO, state) && (
+                raisedHandType === MEDIA_TYPE.VIDEO && isParticipantVideoMuted(participant, state)
+            ))
+            || (isForceMuted(participant, MEDIA_TYPE.PRESENTER, state)
+                && raisedHandType === MEDIA_TYPE.PRESENTER);
     }
 
     const action = shouldDisplayAllowAction ? {
         customActionNameKey: [ 'notify.allowAction' ],
-        customActionHandler: [ () => dispatch(approveParticipant(participantId)) ]
+        customActionHandler: [ () => {
+            if (isForceMuted(participant, MEDIA_TYPE.AUDIO, state) && (
+                (!raisedHandType || raisedHandType === MEDIA_TYPE.AUDIO) && isParticipantAudioMuted(participant, state)
+            )) {
+                dispatch(approveParticipant(participantId, MEDIA_TYPE.AUDIO));
+            }
+            if (isForceMuted(participant, MEDIA_TYPE.VIDEO, state) && (
+                raisedHandType === MEDIA_TYPE.VIDEO && isParticipantVideoMuted(participant, state)
+            )) {
+                dispatch(approveParticipant(participantId, MEDIA_TYPE.VIDEO));
+            }
+            if (isForceMuted(participant, MEDIA_TYPE.PRESENTER, state)
+                && raisedHandType === MEDIA_TYPE.PRESENTER) {
+                dispatch(approveParticipant(participantId, MEDIA_TYPE.PRESENTER));
+            }
+
+            return true;
+        } ]
     } : {};
 
     if (raisedHandTimestamp) {
@@ -659,15 +691,30 @@ function _raiseHandUpdated({ dispatch, getState }, conference, participantId, ne
         } else {
             notificationTitle = participantName;
         }
-        dispatch(showNotification({
-            titleKey: 'notify.somebody',
-            title: notificationTitle,
-            descriptionKey: 'notify.raisedHand',
-            raiseHandNotification: true,
-            concatText: true,
-            uid: RAISE_HAND_NOTIFICATION_ID,
-            ...action
-        }, shouldDisplayAllowAction ? NOTIFICATION_TIMEOUT_TYPE.MEDIUM : NOTIFICATION_TIMEOUT_TYPE.SHORT));
+
+        if (raisedHandType === MEDIA_TYPE.PRESENTER) {
+            dispatch(showNotification({
+                titleKey: 'notify.somebody',
+                title: notificationTitle,
+                description: i18n.t('notify.raisedHandForScreenShare'),
+                raiseHandNotification: true,
+                concatText: true,
+                uid: RAISE_HAND_NOTIFICATION_ID,
+                sticky: shouldDisplayAllowAction,
+                ...action
+            }, shouldDisplayAllowAction ? NOTIFICATION_TIMEOUT_TYPE.STICKY : NOTIFICATION_TIMEOUT_TYPE.SHORT));
+        } else {
+            dispatch(showNotification({
+                titleKey: 'notify.somebody',
+                title: notificationTitle,
+                description: i18n.t('notify.raisedHand'),
+                raiseHandNotification: true,
+                concatText: true,
+                uid: RAISE_HAND_NOTIFICATION_ID,
+                sticky: shouldDisplayAllowAction,
+                ...action
+            }, shouldDisplayAllowAction ? NOTIFICATION_TIMEOUT_TYPE.STICKY : NOTIFICATION_TIMEOUT_TYPE.SHORT));
+        }
         dispatch(playSound(RAISE_HAND_SOUND_ID));
     }
 }

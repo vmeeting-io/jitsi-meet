@@ -147,7 +147,7 @@ MiddlewareRegistry.register(store => next => action => {
         if (typeof APP === 'object') {
             // check for A/V Moderation when trying to start screen sharing
             if ((action.enabled || action.enabled === undefined)
-                && shouldShowModeratedNotification(MEDIA_TYPE.VIDEO, store.getState())) {
+                && shouldShowModeratedNotification(MEDIA_TYPE.PRESENTER, store.getState())) {
                 if (!isModerationNotificationDisplayed(MEDIA_TYPE.PRESENTER, store.getState())) {
                     store.dispatch(showModeratedNotification(MEDIA_TYPE.PRESENTER));
                 }

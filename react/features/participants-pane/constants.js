@@ -7,7 +7,8 @@ import {
     IconCameraEmpty,
     IconCameraEmptyDisabled,
     IconMicrophoneEmpty,
-    IconMicrophoneEmptySlash
+    IconMicrophoneEmptySlash,
+    IconShareDesktop
 } from '../base/icons';
 
 /**
@@ -109,6 +110,25 @@ export const VideoStateIcons = {
         <Icon
             size = { 16 }
             src = { IconCameraEmpty } />
+    ),
+    [MEDIA_STATE.NONE]: null
+};
+
+/**
+ * Icon mapping for possible participant video states.
+ */
+export const PresenterStateIcons = {
+    [MEDIA_STATE.FORCE_MUTED]: (
+        <Icon
+            color = '#E04757'
+            id = 'presenterMuted'
+            size = { 16 }
+            src = { IconShareDesktop } />
+    ),
+    [MEDIA_STATE.UNMUTED]: (
+        <Icon
+            size = { 16 }
+            src = { IconShareDesktop } />
     ),
     [MEDIA_STATE.NONE]: null
 };

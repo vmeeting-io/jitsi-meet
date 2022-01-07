@@ -7,10 +7,8 @@ import {
     sendAnalytics
 } from '../../react/features/analytics';
 import {
-    approveParticipantAudio,
-    approveParticipantVideo,
-    rejectParticipantAudio,
-    rejectParticipantVideo,
+    approveParticipant,
+    rejectParticipant,
     requestDisableModeration,
     requestEnableModeration,
 } from '../../react/features/av-moderation/actions';
@@ -122,14 +120,14 @@ function initCommands() {
                 return;
             }
 
-            APP.store.dispatch(approveParticipantVideo(participantId));
+            APP.store.dispatch(approveParticipant(participantId, MEDIA_TYPE.VIDEO));
         },
         'ask-to-unmute': participantId => {
             if (!isLocalParticipantModerator(APP.store.getState())) {
                 return;
             }
 
-            APP.store.dispatch(approveParticipantAudio(participantId));
+            APP.store.dispatch(approveParticipant(participantId, MEDIA_TYPE.AUDIO));
         },
         'display-name': displayName => {
             sendAnalytics(createApiEvent('display.name.changed'));
@@ -190,9 +188,7 @@ function initCommands() {
                 return;
             }
 
-            const reject = mediaType === MEDIA_TYPE.VIDEO ? rejectParticipantVideo : rejectParticipantAudio;
-
-            APP.store.dispatch(reject(participantId));
+            APP.store.dispatch(rejectParticipant(participantId, mediaType));
         },
         'resize-large-video': (width, height) => {
             logger.debug('Resize large video command received');

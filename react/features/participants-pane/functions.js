@@ -116,6 +116,21 @@ export function getParticipantVideoMediaState(participant: Object, muted: Boolea
     return MEDIA_STATE.UNMUTED;
 }
 
+/**
+ * Determines the presenter media state for a participant.
+ *
+ * @param {Object} participant - The participant.
+ * @param {boolean} muted - The mute state of the participant.
+ * @param {Object} state - The redux state.
+ * @returns {MediaState}
+ */
+export function getParticipantPresenterMediaState(participant: Object, state: Object) {
+    if (isForceMuted(participant, MEDIA_TYPE.PRESENTER, state)) {
+        return MEDIA_STATE.FORCE_MUTED;
+    }
+
+    return MEDIA_STATE.UNMUTED;
+}
 
 /**
  * Get a style property from a style declaration as a float.

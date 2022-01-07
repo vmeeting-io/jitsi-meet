@@ -3,9 +3,9 @@
 import { makeStyles } from '@material-ui/styles';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { rejectParticipantAudio } from '../../../av-moderation/actions';
+import { rejectParticipant } from '../../../av-moderation/actions';
 import useContextMenu from '../../../base/components/context-menu/useContextMenu';
 import participantsPaneTheme from '../../../base/components/themes/participantsPaneTheme.json';
 import { isToolbarButtonEnabled } from '../../../base/config/functions.web';
@@ -14,6 +14,7 @@ import {
     getParticipantCountWithFake
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
+import { selectParticipantAudioMuted } from '../../../base/tracks';
 import { normalizeAccents } from '../../../base/util/strings';
 import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms/functions';
 import { showOverflowDrawer } from '../../../toolbox/functions';
@@ -79,7 +80,7 @@ function MeetingParticipants({
     const muteAudio = useCallback(id => e => {
         e.stopPropagation();
         dispatch(muteRemote(id, MEDIA_TYPE.AUDIO));
-        dispatch(rejectParticipantAudio(id));
+        dispatch(rejectParticipant(id, MEDIA_TYPE.AUDIO));
     }, [ dispatch ]);
     const [ drawerParticipant, closeDrawer, openDrawerForParticipant ] = useParticipantDrawer();
 
@@ -92,7 +93,6 @@ function MeetingParticipants({
     const participantActionEllipsisLabel = t('participantsPane.actions.moreParticipantOptions');
     const youText = t('chat.you');
     const askUnmuteText = t('participantsPane.actions.askUnmute');
-    const muteParticipantButtonText = t('dialog.muteParticipantButton');
 
     const styles = useStyles();
 
@@ -114,7 +114,6 @@ function MeetingParticipants({
                     askUnmuteText = { askUnmuteText }
                     lowerMenu = { lowerMenu }
                     muteAudio = { muteAudio }
-                    muteParticipantButtonText = { muteParticipantButtonText }
                     openDrawerForParticipant = { openDrawerForParticipant }
                     overflowDrawer = { overflowDrawer }
                     participantActionEllipsisLabel = { participantActionEllipsisLabel }

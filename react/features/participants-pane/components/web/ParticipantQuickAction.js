@@ -7,6 +7,7 @@ import { useDispatch } from 'react-redux';
 
 import { approveParticipant } from '../../../av-moderation/actions';
 import { QuickActionButton } from '../../../base/components';
+import { MEDIA_TYPE } from '../../../base/media';
 import { QUICK_ACTION_BUTTON } from '../../constants';
 
 type Props = {
@@ -69,7 +70,7 @@ const ParticipantQuickAction = ({
 
     const askToUnmute = useCallback(e => {
         e.stopPropagation();
-        dispatch(approveParticipant(participantID));
+        dispatch(approveParticipant(participantID, MEDIA_TYPE.AUDIO));
     }, [ dispatch, participantID ]);
 
     switch (buttonType) {

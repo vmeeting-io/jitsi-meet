@@ -15,7 +15,8 @@ import {
     MEDIA_STATE,
     type ActionTrigger,
     type MediaState,
-    VideoStateIcons
+    VideoStateIcons,
+    PresenterStateIcons
 } from '../../constants';
 import { STATUS_TABLE } from '../../../face-detect/constants';
 
@@ -172,6 +173,7 @@ function ParticipantItem({
     overflowDrawer,
     participantID,
     participantStatus,
+    presenterMediaState = MEDIA_STATE.NONE,
     raisedHand,
     t,
     videoMediaState = MEDIA_STATE.NONE,
@@ -232,6 +234,7 @@ function ParticipantItem({
         <>
             {isParticipantBirthday && <BirthdayIndicator />}
             {raisedHand && <RaisedHandIndicator />}
+            {PresenterStateIcons[presenterMediaState]}
             {VideoStateIcons[videoMediaState]}
             {AudioStateIcons[audioMediaState]}
         </>

@@ -98,6 +98,7 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
     const isChatModerationEnabled = useSelector(isAvModerationEnabled('chat'));
     const isPollModerationEnabled = useSelector(isAvModerationEnabled('poll'));
     const isNameModerationEnabled = useSelector(isAvModerationEnabled('name'));
+    const isScreenShareModerationEnabled = useSelector(isAvModerationEnabled('presenter'));
     const { id } = useSelector(getLocalParticipant);
     const timerStarted = useSelector(getTimerStarted);
     const participantCount = useSelector(getParticipantCount);
@@ -116,12 +117,14 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
     const disableChatModeration = useCallback(() => dispatch(requestDisableModeration('chat')), [dispatch]);
     const disablePollModeration = useCallback(() => dispatch(requestDisableModeration('poll')), [dispatch]);
     const disableNameModeration = useCallback(() => dispatch(requestDisableModeration('name')), [dispatch]);
+    const disableScreenShareModeration = useCallback(() => dispatch(requestDisableModeration('presenter')), [dispatch]);
 
     const enableAudioModeration = useCallback(() => dispatch(requestEnableModeration('audio')), [dispatch]);
     const enableVideoModeration = useCallback(() => dispatch(requestEnableModeration('video')), [dispatch]);
     const enableChatModeration = useCallback(() => dispatch(requestEnableModeration('chat')), [dispatch]);
     const enablePollModeration = useCallback(() => dispatch(requestEnableModeration('poll')), [dispatch]);
     const enableNameModeration = useCallback(() => dispatch(requestEnableModeration('name')), [dispatch]);
+    const enableScreenShareModeration = useCallback(() => dispatch(requestEnableModeration('presenter')), [dispatch]);
 
     const classes = useStyles();
 
@@ -188,6 +191,15 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
 
     const moderationActions = [
         {
+            accessibilityLabel: t('participantsPane.actions.screenShareModeration'),
+            className: isScreenShareModerationEnabled ? classes.indentedLabel : '',
+            id: isScreenShareModerationEnabled
+                ? 'participants-pane-context-menu-stop-screen-share-moderation'
+                : 'participants-pane-context-menu-start-screen-share-moderation',
+            icon: !isScreenShareModerationEnabled && IconCheck,
+            onClick: isScreenShareModerationEnabled ? disableScreenShareModeration : enableScreenShareModeration,
+            text: t('participantsPane.actions.screenShareModeration')
+        }, {
             accessibilityLabel: t('participantsPane.actions.audioModeration'),
             className: isAudioModerationEnabled ? classes.indentedLabel : '',
             id: isAudioModerationEnabled

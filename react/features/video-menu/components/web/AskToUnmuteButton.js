@@ -6,19 +6,20 @@ import { useDispatch } from 'react-redux';
 
 import { approveParticipant } from '../../../av-moderation/actions';
 import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { IconMicrophoneEmpty } from '../../../base/icons';
+import { IconCamera, IconMicrophoneEmpty } from '../../../base/icons';
+import { MEDIA_TYPE } from '../../../base/media';
 
 type Props = {
 
     /**
-     * Whether or not the participant is audio force muted.
+     * Whether or not the participant is audio muted.
      */
-    isAudioForceMuted: boolean,
+    isAudioMuted: boolean,
 
     /**
-     * Whether or not the participant is video force muted.
+     * Whether or not the participant is video muted.
      */
-    isVideoForceMuted: boolean,
+    isVideoMuted: boolean,
 
     /**
      * The ID for the participant on which the button will act.
@@ -26,21 +27,32 @@ type Props = {
     participantID: string
 }
 
-const AskToUnmuteButton = ({ isAudioForceMuted, isVideoForceMuted, participantID }: Props) => {
+const AskToUnmuteButton = ({ isAudioMuted, isVideoMuted, participantID }: Props) => {
     const dispatch = useDispatch();
     const { t } = useTranslation();
-    const _onClick = useCallback(() => {
-        dispatch(approveParticipant(participantID));
-    }, [ participantID ]);
 
-    const text = isAudioForceMuted || !isVideoForceMuted
+    const _onClick = useCallback(() => {
+        if (isAudioMuted) {
+            dispatch(approveParticipant(participantID, MEDIA_TYPE.AUDIO));
+        } else if (isVideoMuted) {
+            dispatch(approveParticipant(participantID, MEDIA_TYPE.VIDEO));
+        }
+    }, [ participantID, isAudioMuted ]);
+
+    if (!isAudioMuted && !isVideoMuted) {
+        return null;
+    }
+
+    const text = isAudioMuted
         ? t('participantsPane.actions.askUnmute')
         : t('participantsPane.actions.allowVideo');
+
+    const icon = isAudioMuted ? IconMicrophoneEmpty : IconCamera;
 
     return (
         <ContextMenuItem
             accessibilityLabel = { text }
-            icon = { IconMicrophoneEmpty }
+            icon = { icon }
             onClick = { _onClick }
             text = { text } />
     );

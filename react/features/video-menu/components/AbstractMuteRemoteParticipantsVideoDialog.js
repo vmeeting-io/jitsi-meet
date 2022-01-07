@@ -2,7 +2,7 @@
 
 import { Component } from 'react';
 
-import { rejectParticipantVideo } from '../../av-moderation/actions';
+import { rejectParticipant } from '../../av-moderation/actions';
 import { isEnabledFromState } from '../../av-moderation/functions';
 import { MEDIA_TYPE } from '../../base/media';
 import { muteRemote } from '../actions';
@@ -66,7 +66,7 @@ export default class AbstractMuteRemoteParticipantsVideoDialog<P:Props = Props, 
         const { dispatch, participantID } = this.props;
 
         dispatch(muteRemote(participantID, MEDIA_TYPE.VIDEO));
-        dispatch(rejectParticipantVideo(participantID));
+        dispatch(rejectParticipant(participantID, MEDIA_TYPE.VIDEO));
 
         return true;
     }

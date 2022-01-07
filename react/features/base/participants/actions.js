@@ -558,15 +558,16 @@ export function setLoadableAvatarUrl(participantId, url, useCORS) {
  * Raise hand for the local participant.
  *
  * @param {boolean} enabled - Raise or lower hand.
+ * @param {string} kind - Raised kind.
  * @returns {{
  *     type: LOCAL_PARTICIPANT_RAISE_HAND,
- *     raisedHandTimestamp: number
+ *     raisedHandTimestamp: string
  * }}
  */
-export function raiseHand(enabled) {
+export function raiseHand(enabled, kind) {
     return {
         type: LOCAL_PARTICIPANT_RAISE_HAND,
-        raisedHandTimestamp: enabled ? Date.now() : 0
+        raisedHandTimestamp: enabled ? `${Date.now()}${kind ? '_' + kind : ''}` : null
     };
 }
 

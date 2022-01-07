@@ -1,7 +1,7 @@
 // @flow
 
 import React from 'react';
-import { NativeModules, SafeAreaView, StatusBar, View } from 'react-native';
+import { TouchableOpacity, NativeModules, SafeAreaView, StatusBar, View } from 'react-native';
 
 import { appNavigate } from '../../../app/actions';
 import { PIP_ENABLED, FULLSCREEN_ENABLED, getFeatureFlag } from '../../../base/flags';
@@ -40,7 +40,8 @@ import styles from './styles';
 import { openDialog } from '../../../base/dialog';
 import HangupMenu from '../../../toolbox/components/native/HangupMenu';
 import { getLocalParticipant, PARTICIPANT_ROLE } from '../../../base/participants';
-
+import ShowHideFilmstrip from '../../../show-hide-filmstrip/components/native/ShowHideFilmstrip';
+import { toggleHideFilmStrip } from '../../../base/conference';
 
 /**
  * The type of the React {@code Component} props of {@link Conference}.
@@ -124,6 +125,16 @@ class Conference extends AbstractConference<Props, *> {
         this._onClick = this._onClick.bind(this);
         this._onHardwareBackPress = this._onHardwareBackPress.bind(this);
         this._setToolboxVisible = this._setToolboxVisible.bind(this);
+        this._handleHideFilmStrip = this._handleHideFilmStrip.bind(this);
+    }
+
+    /**
+     * Handle Flimstrip show/hide
+     */
+    _handleHideFilmStrip(){
+        const {dispatch,_hideFilmStrip} = this.props;
+        dispatch(toggleHideFilmStrip(!_hideFilmStrip));
+        
     }
 
     /**
@@ -249,7 +260,8 @@ class Conference extends AbstractConference<Props, *> {
             _isParticipantsPaneOpen,
             _largeVideoParticipantId,
             _reducedUI,
-            _shouldDisplayTileView
+            _shouldDisplayTileView,
+            _hideFilmStrip
         } = this.props;
 
         if (_reducedUI) {
@@ -294,7 +306,13 @@ class Conference extends AbstractConference<Props, *> {
 
                     <LonelyMeetingExperience />
 
-                    { _shouldDisplayTileView || <><Filmstrip /><Toolbox /></> }
+                    { _shouldDisplayTileView || <>
+                                    <TouchableOpacity onPress={this._handleHideFilmStrip}> 
+                                        {<ShowHideFilmstrip/>}
+                                    </TouchableOpacity>
+                                    { _hideFilmStrip && <Filmstrip /> }
+                            <Toolbox />
+                        </> }
                 </View>
 
                 <SafeAreaView
@@ -402,10 +420,13 @@ function _mapStateToProps(state) {
         conference,
         joining,
         membersOnly,
-        leaving
+        leaving,
+        hideFilmStrip
     } = state['features/base/conference'];
     const { isOpen } = state['features/participants-pane'];
     const { aspectRatio, reducedUI } = state['features/base/responsive-ui'];
+
+    console.log("vmchg:  Store ", hideFilmStrip);
 
     // XXX There is a window of time between the successful establishment of the
     // XMPP connection and the subsequent commencement of joining the MUC during
@@ -434,7 +455,8 @@ function _mapStateToProps(state) {
         _pictureInPictureEnabled: getFeatureFlag(state, PIP_ENABLED),
         _reducedUI: reducedUI,
         _showHangupMenu: isModerator && remoteParticipants.length > 0,
-        _toolboxVisible: isToolboxVisible(state)
+        _toolboxVisible: isToolboxVisible(state),
+        _hideFilmStrip: hideFilmStrip
     };
 }
 

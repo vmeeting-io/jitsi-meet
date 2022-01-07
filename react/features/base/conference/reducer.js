@@ -24,7 +24,8 @@ import {
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
     SET_START_MUTED_POLICY,
-    DEVICE_ACCESS_DISABLED
+    DEVICE_ACCESS_DISABLED,
+    HIDE_FILMSTRIP
 } from './actionTypes';
 import { isRoomValid } from './functions';
 
@@ -37,7 +38,8 @@ const DEFAULT_STATE = {
     membersOnly: undefined,
     password: undefined,
     passwordRequired: undefined,
-    roomInfo: undefined
+    roomInfo: undefined,
+    hideFilmStrip: false
 };
 
 /**
@@ -125,8 +127,13 @@ ReducerRegistry.register(
                 'noticeMessage',
                 action.noticeMessage
             );
+        case HIDE_FILMSTRIP:
+            return set(
+                state,
+                'hideFilmStrip',
+                action.hideFilmStrip
+            )
         }
-
         return state;
     });
 

@@ -1,6 +1,8 @@
 // @flow
 
 import type { Dispatch } from 'redux';
+import { consolidateStreamedStyles } from 'styled-components';
+import { HIDE_FILMSTRIP } from '.';
 
 import {
     createRemotelyMutedEvent,
@@ -892,6 +894,20 @@ export function setUserDeviceAccessDisabled(userDeviceAccessDisabled: boolean) {
     return {
         type: SET_USER_DEVICE_ACCESS_DISABLED,
         userDeviceAccessDisabled
+    }
+}
+
+/**
+ * Toggle hide filmstrip variable.
+ * 
+ * @param {boolean} hideFilmStrip - Hide filmstrip when true
+ * @returns 
+ */
+export function toggleHideFilmStrip(hideFilmStrip: boolean) {
+    console.log("vmchg: toggleHideFilmStrip: ", hideFilmStrip);
+    return {
+        type: HIDE_FILMSTRIP,
+        hideFilmStrip
     }
 }
 

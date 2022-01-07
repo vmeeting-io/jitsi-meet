@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from 'react';
-import { View, Text,FlatList, SafeAreaView } from 'react-native';
+import { TouchableOpacity ,View, Text,FlatList, SafeAreaView } from 'react-native';
 
 import { Platform } from '../../../base/react';
 import { connect } from '../../../base/redux';
@@ -15,6 +15,7 @@ import LocalThumbnail from './LocalThumbnail';
 import Thumbnail from './Thumbnail';
 import styles from './styles';
 import debounce from 'lodash.debounce';
+import { toggleHideFilmStrip } from '../../../base/conference';
 
 // Immutable reference to avoid re-renders.
 const NO_REMOTE_VIDEOS = [];
@@ -37,7 +38,12 @@ type Props = {
     /**
      * The indicator which determines whether the filmstrip is visible.
      */
-    _visible: boolean
+    _visible: boolean,
+
+    /**
+     * Invoked to trigger state changes in Redux.
+     */
+     dispatch: Dispatch<any>
 };
 
 /**
@@ -92,6 +98,14 @@ class Filmstrip extends Component<Props> {
         };
 
         this.state = { extraData: null };
+
+        this._handleHideFilmStrip = this._handleHideFilmStrip.bind(this);
+    }
+
+    _handleHideFilmStrip(){
+        const {dispatch} = this.props;
+        console.log("vmchg: ++++ ");
+        dispatch(toggleHideFilmStrip(true));
     }
 
     /**
@@ -130,9 +144,11 @@ class Filmstrip extends Component<Props> {
                     viewablilityConfig = { this._viewablilityConfig }
                     windowSize = { 1 } >
                 </FlatList>
-                <View style={styles.hideFilmstripView}>
+                <TouchableOpacity onPress={this._handleHideFilmStrip}> 
+                <View style={styles.hideFilmstripView} >
                     <Text style={styles.hideFilmstrip}>></Text>
                 </View>
+                </TouchableOpacity>
             </SafeAreaView>
         );
     }

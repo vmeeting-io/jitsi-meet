@@ -159,6 +159,19 @@ export default {
         fontSize: 13,
         fontWeight: '600',
         marginLeft: 6,
+    },
+
+    filmstripContainer: {
+        flexDirection:"column"
+    },
+
+    showHideIcon:{
+        flex:2
+        // marginLeft: 100
+    },
+
+    filmstrip:{
+        flex:2
     }
 };
 

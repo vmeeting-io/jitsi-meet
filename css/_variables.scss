@@ -125,7 +125,7 @@ $centeredVideoLabelZ: 1010;
 $overlayZ: 1016;
 // Place filmstrip videos over toolbar in order
 // to make connection info visible.
-$filmstripVideosZ: $toolbarZ + 1;
+$filmstripVideosZ: $toolbarZ - 1;
 
 
 /**

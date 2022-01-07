@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 import { createBreakoutRoomsEvent, sendAnalytics } from '../../../analytics';
 import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
 import { IconRingGroup } from '../../../base/icons';
-import { sendParticipantToRoom } from '../../../breakout-rooms/actions';
+import { sendParticipantToRoom } from '../../../breakout-rooms';
 
 type Props = {
 

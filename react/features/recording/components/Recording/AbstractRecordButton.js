@@ -13,7 +13,7 @@ import {
 } from '../../../base/participants';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
 import { isRecording, isStreaming } from '../../functions';
-import { isInBreakoutRoom } from '../../../breakout-rooms/functions';
+import { isInBreakoutRoom } from '../../../breakout-rooms';
 import { maybeShowPremiumFeatureDialog } from '../../../jaas/actions';
 import { FEATURES } from '../../../jaas/constants';
 

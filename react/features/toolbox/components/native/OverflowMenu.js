@@ -7,7 +7,7 @@ import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { BottomSheet, hideDialog, isDialogOpen } from '../../../base/dialog';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
-import { BreakoutRoomButton } from '../../../breakout-rooms/components/native';
+import { BreakoutRoomButton } from '../../../breakout-rooms';
 import { SharedDocumentButton } from '../../../etherpad';
 import { AudioRouteButton } from '../../../mobile/audio-mode';
 import { ParticipantsPaneButton } from '../../../participants-pane/components/native';

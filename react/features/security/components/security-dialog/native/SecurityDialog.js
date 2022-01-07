@@ -20,7 +20,7 @@ import { isLocalParticipantModerator } from '../../../../base/participants';
 import { connect } from '../../../../base/redux';
 import { StyleType } from '../../../../base/styles';
 import BaseTheme from '../../../../base/ui/components/BaseTheme';
-import { isInBreakoutRoom } from '../../../../breakout-rooms/functions';
+import { isInBreakoutRoom } from '../../../../breakout-rooms';
 import { goBack } from '../../../../conference/components/native/ConferenceNavigationContainerRef';
 import HeaderNavigationButton
     from '../../../../conference/components/native/HeaderNavigationButton';

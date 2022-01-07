@@ -16,10 +16,12 @@ import { equals } from '../../../base/redux';
 import {
     AddBreakoutRoomButton,
     AutoAssignButton,
-    LeaveBreakoutRoomButton
-} from '../../../breakout-rooms/components/native';
-import { CollapsibleRoom } from '../../../breakout-rooms/components/native/CollapsibleRoom';
-import { getBreakoutRooms, getCurrentRoomId, isInBreakoutRoom } from '../../../breakout-rooms/functions';
+    CollapsibleRoom,
+    LeaveBreakoutRoomButton,
+    getBreakoutRooms,
+    getCurrentRoomId,
+    isInBreakoutRoom
+} from '../../../breakout-rooms';
 import MuteEveryoneDialog
     from '../../../video-menu/components/native/MuteEveryoneDialog';
 

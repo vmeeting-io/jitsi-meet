@@ -3,7 +3,7 @@
 import { makeStyles } from '@material-ui/styles';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { rejectParticipant } from '../../../av-moderation/actions';
 import useContextMenu from '../../../base/components/context-menu/useContextMenu';
@@ -14,9 +14,8 @@ import {
     getParticipantCountWithFake
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
-import { selectParticipantAudioMuted } from '../../../base/tracks';
-import { normalizeAccents } from '../../../base/util/strings';
-import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms/functions';
+import { normalizeAccents } from '../../../base/util/strings.web';
+import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms';
 import { showOverflowDrawer } from '../../../toolbox/functions';
 import { muteRemote } from '../../../video-menu/actions.any';
 import { getSortedParticipantIds, shouldRenderInviteButton } from '../../functions';

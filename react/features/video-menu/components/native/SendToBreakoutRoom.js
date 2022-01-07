@@ -6,7 +6,7 @@ import { IconRingGroup } from '../../../base/icons';
 import { isLocalParticipantModerator } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { sendParticipantToRoom } from '../../../breakout-rooms/actions';
+import { sendParticipantToRoom } from '../../../breakout-rooms';
 
 export type Props = AbstractButtonProps & {
 

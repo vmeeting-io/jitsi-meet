@@ -3,6 +3,7 @@
 import _ from 'lodash';
 
 import { getCurrentConference } from '../base/conference';
+import { getParticipantCount } from '../base/participants';
 import { toState } from '../base/redux';
 
 import { FEATURE_KEY } from './constants';
@@ -70,3 +71,11 @@ export const isInBreakoutRoom = (stateful: Function | Object) => {
     return conference?.getBreakoutRooms()
         ?.isBreakoutRoom();
 };
+
+export const getParticipantCountInBreakoutRooms = state => {
+    const rooms = getBreakoutRooms(state);
+
+    return _.size(rooms) === 0
+        ? getParticipantCount(state)
+        : _.reduce(rooms, (sum, room) => sum + _.size(room.participants), 0);
+}

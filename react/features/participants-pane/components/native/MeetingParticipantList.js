@@ -8,7 +8,7 @@ import { translate } from '../../../base/i18n';
 import { Icon, IconInviteMore } from '../../../base/icons';
 import { getLocalParticipant, getParticipantCountWithFake, getRemoteParticipants } from '../../../base/participants';
 import { connect } from '../../../base/redux';
-import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms/functions';
+import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms';
 import { doInvitePeople } from '../../../invite/actions.native';
 import { participantMatchesSearch, shouldRenderInviteButton } from '../../functions';
 

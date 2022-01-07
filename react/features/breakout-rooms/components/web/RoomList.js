@@ -11,9 +11,9 @@ import { getBreakoutRooms, isInBreakoutRoom, getCurrentRoomId } from '../../func
 
 import { AutoAssignButton } from './AutoAssignButton';
 import { CollapsibleRoom } from './CollapsibleRoom';
-import JoinActionButton from './JoinQuickActionButton';
+import { JoinActionButton } from './JoinQuickActionButton';
 import { LeaveButton } from './LeaveButton';
-import RoomActionEllipsis from './RoomActionEllipsis';
+import { RoomActionEllipsis } from './RoomActionEllipsis';
 import { RoomContextMenu } from './RoomContextMenu';
 
 type Props = {

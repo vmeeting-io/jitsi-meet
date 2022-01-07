@@ -6,7 +6,7 @@ import { translate } from '../../../base/i18n';
 import { isLocalParticipantModerator } from '../../../base/participants';
 import { Switch } from '../../../base/react';
 import { connect } from '../../../base/redux';
-import { isInBreakoutRoom } from '../../../breakout-rooms/functions';
+import { isInBreakoutRoom } from '../../../breakout-rooms';
 import { toggleLobbyMode } from '../../actions';
 
 type Props = {

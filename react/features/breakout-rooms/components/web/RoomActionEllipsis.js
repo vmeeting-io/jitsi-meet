@@ -23,7 +23,7 @@ const useStyles = makeStyles(() => {
     };
 });
 
-const RoomActionEllipsis = ({ onClick }: Props) => {
+export const RoomActionEllipsis = ({ onClick }: Props) => {
     const styles = useStyles();
     const { t } = useTranslation();
 
@@ -36,5 +36,3 @@ const RoomActionEllipsis = ({ onClick }: Props) => {
         </QuickActionButton>
     );
 };
-
-export default RoomActionEllipsis;

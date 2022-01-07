@@ -11,7 +11,7 @@ import {
     PARTICIPANT_UPDATED
 } from '../base/participants';
 import { MiddlewareRegistry } from '../base/redux';
-import { isInBreakoutRoom } from '../breakout-rooms/functions';
+import { isInBreakoutRoom } from '../breakout-rooms';
 import { PERMIT_DATA_REQUEST } from '../did-consent';
 import { PREJOIN_INITIALIZED } from '../prejoin';
 import {

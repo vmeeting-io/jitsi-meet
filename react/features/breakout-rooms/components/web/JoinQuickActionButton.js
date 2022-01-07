@@ -25,7 +25,7 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-const JoinActionButton = ({ room }: Props) => {
+export const JoinActionButton = ({ room }: Props) => {
     const styles = useStyles();
     const { t } = useTranslation();
     const dispatch = useDispatch();
@@ -45,5 +45,3 @@ const JoinActionButton = ({ room }: Props) => {
     </QuickActionButton>
     );
 };
-
-export default JoinActionButton;

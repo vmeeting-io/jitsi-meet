@@ -2,7 +2,7 @@
 
 import { batch } from 'react-redux';
 
-import { CONFERENCE_JOINED } from '../base/conference';
+import { CONFERENCE_JOINED, getCurrentConference } from '../base/conference';
 import { CONNECTION_DISCONNECTED } from '../base/connection';
 import {
     getParticipantPresenceStatus,
@@ -38,7 +38,10 @@ MiddlewareRegistry.register(store => next => action => {
     case CONFERENCE_JOINED: {
         const state = store.getState();
         const { face_detect } = state['features/base/conference'].roomInfo || {};
-        if (face_detect && !isInBreakoutRoom(state)) {
+        const conference = getCurrentConference(state);
+        const breakoutDomain = conference?.getBreakoutRooms()?.getComponentAddress();
+        const domain = conference?.room?.roomjid?.split('@')[1];
+        if (face_detect && !(domain && domain === breakoutDomain)) {
             store.dispatch(startFaceDetect());
         }
         break;

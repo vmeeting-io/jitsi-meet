@@ -245,11 +245,13 @@ export class VideoContainer extends LargeContainer {
          */
         this.$wrapperParent = this.$wrapper.parent();
         this.avatarHeight = $('#dominantSpeakerAvatarContainer').height();
-        this.$video[0].onplaying = function(event) {
-            if (typeof resizeContainer === 'function') {
-                resizeContainer(event);
-            }
-        };
+        if (this.$video.length) {
+            this.$video[0].onplaying = function(event) {
+                if (typeof resizeContainer === 'function') {
+                    resizeContainer(event);
+                }
+            };
+        }
 
         /**
          * A Set of functions to invoke when the video element resizes.
@@ -258,14 +260,16 @@ export class VideoContainer extends LargeContainer {
          */
         this._resizeListeners = new Set();
 
-        this.$video[0].onresize = this._onResize.bind(this);
-
-        if (isTestModeEnabled(APP.store.getState())) {
-            const cb = name => APP.store.dispatch(updateLastLargeVideoMediaEvent(name));
-
-            containerEvents.forEach(event => {
-                this.$video[0].addEventListener(event, cb.bind(this, event));
-            });
+        if (this.$video.length) {
+            this.$video[0].onresize = this._onResize.bind(this);
+    
+            if (isTestModeEnabled(APP.store.getState())) {
+                const cb = name => APP.store.dispatch(updateLastLargeVideoMediaEvent(name));
+    
+                containerEvents.forEach(event => {
+                    this.$video[0].addEventListener(event, cb.bind(this, event));
+                });
+            }
         }
     }
 
@@ -381,9 +385,11 @@ export class VideoContainer extends LargeContainer {
         if (this.avatarDisplayed) {
             const $avatarImage = $('#dominantSpeakerAvatarContainer');
 
-            $element.css(
-                'top',
-                $avatarImage.offset().top + $avatarImage.height() + 10);
+            if ($avatarImage.length) {
+                $element.css(
+                    'top',
+                    $avatarImage.offset().top + $avatarImage.height() + 10);
+            }
         } else {
             const height = $element.height();
             const parentHeight = $element.parent().height();

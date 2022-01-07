@@ -8,6 +8,7 @@ import {
 import { ReducerRegistry } from '../base/redux';
 
 import {
+    _RESET_MODERATIONS,
     DISABLE_MODERATION,
     DISMISS_PENDING_PARTICIPANT,
     ENABLE_MODERATION,
@@ -15,7 +16,7 @@ import {
     LOCAL_PARTICIPANT_REJECTED,
     PARTICIPANT_APPROVED,
     PARTICIPANT_PENDING_AUDIO,
-    PARTICIPANT_REJECTED
+    PARTICIPANT_REJECTED,
 } from './actionTypes';
 
 const initialState = {
@@ -278,6 +279,9 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
 
         return state;
     }
+
+    case _RESET_MODERATIONS:
+        return initialState;
 
     }
 

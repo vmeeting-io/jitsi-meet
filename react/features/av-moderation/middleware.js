@@ -18,12 +18,12 @@ import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
 import { playSound, registerSound, unregisterSound } from '../base/sounds';
 import {
     NOTIFICATION_TIMEOUT_TYPE,
-    hideNotification,
     showNotification
 } from '../notifications';
 import { muteLocal } from '../video-menu/actions.any';
 
 import {
+    _RESET_MODERATIONS,
     DISABLE_MODERATION,
     ENABLE_MODERATION,
     LOCAL_PARTICIPANT_APPROVED,
@@ -43,7 +43,7 @@ import {
     participantApproved,
     participantPendingAudio,
     localParticipantRejected,
-    participantRejected
+    participantRejected,
 } from './actions';
 import {
     ASKED_TO_UNMUTE_SOUND_ID, AUDIO_MODERATION_NOTIFICATION_ID,
@@ -266,5 +266,10 @@ StateListenerRegistry.register(
 
                     dispatch(participantRejected(id, kind));
                 });
+
+            // reset moderations
+            conference.on(JitsiConferenceEvents.BREAKOUT_ROOMS_MOVE_TO_ROOM, roomId => {
+                dispatch({ type: _RESET_MODERATIONS });
+            });
         }
     });

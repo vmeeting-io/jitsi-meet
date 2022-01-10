@@ -275,5 +275,7 @@ export function shouldHideSelfView(state: Object) {
  * @returns {boolean}
  */
 export function getHideSelfView(state: Object) {
-    return state['features/base/config'].disableSelfView || state['features/base/settings'].disableSelfView;
+    return state['features/base/config'].disableSelfView
+        || state['features/base/settings'].disableSelfView
+        || state['features/base/settings'].aiAttentionAnalysisEnabled;
 }

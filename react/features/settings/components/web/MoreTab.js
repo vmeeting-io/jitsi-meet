@@ -229,7 +229,7 @@ class MoreTab extends AbstractDialogTab<Props, State> {
         super._onChange({ showPrejoinPage: checked });
     }
 
-    _onKeyboardShortcutEnableChanged: (Object) => void;
+    _onEnabledNotificationsChanged: (Object, string) => void;
 
     /**
      * Callback invoked to select if the given type of
@@ -249,7 +249,7 @@ class MoreTab extends AbstractDialogTab<Props, State> {
         });
     }
 
-    _onEnabledNotificationsChanged: (Object, string) => void;
+    _onKeyboardShortcutEnableChanged: (Object) => void;
 
     /**
      * Callback invoked to select if global keyboard shortcuts
@@ -497,14 +497,14 @@ class MoreTab extends AbstractDialogTab<Props, State> {
      * @returns {ReactElement}
      */
     _renderSettingsRight() {
-        const { showLanguageSettings } = this.props;
+        const { showFramerateSelect, showLanguageSettings } = this.props;
 
         return (
             <div
                 className = 'settings-sub-pane right'
                 key = 'settings-sub-pane-right'>
                 { showLanguageSettings && this._renderLanguageSelect() }
-                { this._renderFramerateSelect() }
+                { showFramerateSelect && this._renderFramerateSelect() }
             </div>
         );
     }

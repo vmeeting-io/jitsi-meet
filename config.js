@@ -1245,6 +1245,8 @@ var config = {
     // disableUserRegistration: true,
     // hideSelectBackground: 'guest',     // true, false, 'guest'
 
+    // showFramerateSelect: true,
+
     /**
      * Default interval (milliseconds) for triggering mouseMoved iframe API event
      */

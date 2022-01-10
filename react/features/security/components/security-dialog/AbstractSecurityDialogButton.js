@@ -12,6 +12,7 @@ import {
 import { IconSecurityOff, IconSecurityOn } from '../../../base/icons';
 import { isLocalParticipantModerator } from '../../../base/participants';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import { isInBreakoutRoom } from '../../../breakout-rooms';
 
 export type Props = AbstractButtonProps & {
 
@@ -95,9 +96,10 @@ export function _mapStateToProps(state: Object) {
     const enabledFlag = getFeatureFlag(state, SECURITY_OPTIONS_ENABLED, true);
     const enabledLobbyModeFlag = getFeatureFlag(state, LOBBY_MODE_ENABLED, true) && lobby;
     const enabledMeetingPassFlag = getFeatureFlag(state, MEETING_PASSWORD_ENABLED, true);
+    const isBreakoutRoom = isInBreakoutRoom(state);
 
     return {
         _locked: locked || lobbyEnabled,
-        visible: enabledFlag || (enabledLobbyModeFlag || enabledMeetingPassFlag)
+        visible: !isBreakoutRoom && (enabledFlag || (enabledLobbyModeFlag || enabledMeetingPassFlag))
     };
 }

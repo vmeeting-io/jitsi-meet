@@ -36,7 +36,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
      */
 
     render() {
-        let index = 0;
+        let key = 1024;
         const { message, t } = this.props;
         const processedMessage = [];
         const serverURL = getBaseUrl();
@@ -57,8 +57,8 @@ class ChatMessage extends AbstractChatMessage<Props> {
                     } else {
                         content.push(...toArray(line, { className: 'smiley' }));
                     }
-                    content.push(React.createElement('br', { key: index }));
-                    index += 1;
+                    content.push(React.createElement('br', { key }));
+                    key += 1;
                 }
             } else {
                 if (token.includes('://')) {

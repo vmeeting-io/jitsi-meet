@@ -8,11 +8,13 @@ import { createBreakoutRoomsEvent, sendAnalytics } from '../../../analytics';
 import { ContextMenu, ContextMenuItemGroup } from '../../../base/components';
 import {
     IconClose,
+    IconEdit,
     IconRingGroup
 } from '../../../base/icons';
 import { isLocalParticipantModerator } from '../../../base/participants';
+import { showConfirmDialog } from '../../../notifications/functions.web';
 import { showOverflowDrawer } from '../../../toolbox/functions.web';
-import { closeBreakoutRoom, moveToRoom, removeBreakoutRoom } from '../../actions';
+import { closeBreakoutRoom, moveToRoom, removeBreakoutRoom, updateBreakoutRoom } from '../../actions';
 
 type Props = {
 
@@ -67,6 +69,24 @@ export const RoomContextMenu = ({
         dispatch(closeBreakoutRoom(room.id));
     }, [ dispatch, room ]);
 
+    const onUpdateBreakoutRoom = useCallback(() => {
+        showConfirmDialog({
+            text: t('dialog.changeSubject'),
+            input: 'text',
+            inputValue: room.name,
+            showCancelButton: true,
+            confirmButtonText: t('dialog.Change'),
+            cancelButtonText: t('dialog.Cancel'),
+            didOpen: () => {
+                $('.swal2-input').select();
+            }
+        }).then(result => {
+            if (result.isConfirmed) {
+                dispatch(updateBreakoutRoom(room.jid, result.value.trim()));
+            }
+        });
+    }, [ dispatch, room ]);
+
     const isRoomEmpty = !(room?.participants && Object.keys(room.participants).length > 0);
 
     const actions = [
@@ -75,6 +95,13 @@ export const RoomContextMenu = ({
             icon: IconRingGroup,
             onClick: onJoinRoom,
             text: t('breakoutRooms.actions.join')
+        } : null,
+        !room?.isMainRoom && isLocalModerator ? {
+            accessibilityLabel: t('breakoutRooms.actions.update'),
+            icon: IconEdit,
+            id: `update-room-${room?.id}`,
+            onClick: onUpdateBreakoutRoom,
+            text: t('breakoutRooms.actions.update')
         } : null,
         !room?.isMainRoom && isLocalModerator ? {
             accessibilityLabel: isRoomEmpty ? t('breakoutRooms.actions.remove') : t('breakoutRooms.actions.close'),

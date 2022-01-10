@@ -265,7 +265,8 @@ export function shouldHideShareAudioHelper(state: Object): boolean {
  * @returns {boolean}
  */
 export function shouldHideSelfView(state: Object) {
-    return getParticipantCount(state) === 1 ? false : getHideSelfView(state);
+    return (getParticipantCount(state) === 1 || state['features/base/settings'].aiAttentionAnalysisEnabled)
+        ? false : getHideSelfView(state);
 }
 
 /**
@@ -276,6 +277,5 @@ export function shouldHideSelfView(state: Object) {
  */
 export function getHideSelfView(state: Object) {
     return state['features/base/config'].disableSelfView
-        || state['features/base/settings'].disableSelfView
-        || state['features/base/settings'].aiAttentionAnalysisEnabled;
+        || state['features/base/settings'].disableSelfView;
 }

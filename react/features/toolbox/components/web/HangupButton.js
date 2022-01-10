@@ -69,6 +69,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
         this._hangup = once(() => {
             sendAnalytics(createToolbarEvent('hangup'));
 
+            this.setState({ isOpen: false, busy: true });
             // FIXME: these should be unified.
             if (browser.isReactNative()) {
                 this.props.dispatch(appNavigate(undefined));
@@ -95,6 +96,10 @@ class HangupButton extends AbstractHangupButton<Props, *> {
      * @returns {void}
      */
     _doHangup() {
+        if (this.state.busy) {
+            return;
+        }
+
         const { _showHangupMenu, _timer } = this.props;
         if (_showHangupMenu) {
             this.setState({ isOpen: true });

@@ -59,7 +59,8 @@
             "leaveBreakoutRoom": "소회의실 나가기",
             "more": "더보기",
             "remove": "삭제",
-            "sendToBreakoutRoom": "소회의실로 보내기:"
+            "sendToBreakoutRoom": "소회의실로 보내기:",
+            "update": "이름 변경"
         },
         "notifications": {
             "joinedTitle": "소회의실",

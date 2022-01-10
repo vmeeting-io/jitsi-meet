@@ -143,7 +143,10 @@ const useStyles = makeStyles(theme => {
         moderatorLabel: {
             ...theme.typography.labelRegular,
             lineHeight: `${theme.typography.labelRegular.lineHeight}px`,
-            color: theme.palette.text03
+            color: theme.palette.text03,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
         }
     };
 });
@@ -208,6 +211,16 @@ function ParticipantItem({
         </div>
     );
 
+    let label = '';
+    if (isModerator && !disableModeratorIndicator) {
+        label = t('videothumbnail.moderator');
+        if (followMeModerator === participantID) {
+            label += `, ${t('videothumbnail.following')}`;
+        }
+    } else if (followMeModerator === participantID) {
+        label = t('videothumbnail.following');
+    }
+
     const text = (
         <div className = { styles.detailsContainer }>
             <div className = { styles.nameContainer }>
@@ -217,15 +230,7 @@ function ParticipantItem({
                 {local ? <span>&nbsp;({youText})</span> : null}
             </div>
             <div className = { styles.labelContainer }>
-                { isModerator && !disableModeratorIndicator && <div className = { styles.moderatorLabel }>
-                    {t('videothumbnail.moderator')}
-                </div>}
-                { !(isModerator && !disableModeratorIndicator) && followMeModerator === participantID && <div className = { styles.moderatorLabel }>
-                    {t('videothumbnail.following')}
-                </div>}
-                { isModerator && !disableModeratorIndicator && followMeModerator === participantID && <div className = { styles.moderatorLabel }>
-                    , {t('videothumbnail.following')}
-                </div>}
+                {label && <div className = { styles.moderatorLabel }>{label}</div>}
             </div>
         </div>
     );

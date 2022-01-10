@@ -223,7 +223,7 @@ function ActionButton({
             className = { containerClasses }
             data-testid = { testId ? testId : undefined }
             onClick = { disabled ? undefined : onClick }
-            onKeyPress = { onKeyPressHandler }
+            onKeyPress = { disabled ? undefined : onKeyPressHandler }
             role = 'button'
             tabIndex = { 0 } >
             {children}
@@ -236,7 +236,7 @@ function ActionButton({
                       className = { classes.options }
                       data-testid = 'prejoin.joinOptions'
                       onClick = { disabled ? undefined : onOptionsClick }
-                      onKeyPress = { onOptionsKeyPressHandler }
+                      onKeyPress = { disabled ? undefined : onOptionsKeyPressHandler }
                       role = { role }
                       tabIndex = { tabIndex }>
                       <Icon

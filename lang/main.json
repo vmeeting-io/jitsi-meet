@@ -59,7 +59,8 @@
             "leaveBreakoutRoom": "Leave breakout room",
             "more": "More",
             "remove": "Remove",
-            "sendToBreakoutRoom": "Send participant to:"
+            "sendToBreakoutRoom": "Send participant to:",
+            "update": "Change name"
         },
         "notifications": {
             "joinedTitle": "Breakout Rooms",
@@ -814,7 +815,7 @@
             "waitingLobby": "Waiting in lobby ({{count}})"
         },
         "actions": {
-            "aiAttentionAnalysis": "Learner's Attention",
+            "aiAttentionAnalysis": "Attentions",
             "allow": "Allow attendees to:",
             "allowVideo": "Allow video",
             "applyBirthdayARHat": "Birthday Hat ON",

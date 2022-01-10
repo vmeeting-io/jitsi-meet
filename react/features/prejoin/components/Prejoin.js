@@ -354,30 +354,31 @@ class Prejoin extends Component<Props, State> {
      * @returns {Object} - The list of extra buttons.
      */
     _getExtraJoinButtons() {
-        const { joinConferenceWithoutAudio, t } = this.props;
+        const { canJoinMeeting, hasJoinByPhoneButton, joinConferenceWithoutAudio, t } = this.props;
+        const buttons = [];
 
-        const noAudio = {
-            key: 'no-audio',
-            dataTestId: 'prejoin.joinWithoutAudio',
-            icon: IconVolumeOff,
-            label: t('prejoin.joinWithoutAudio'),
-            onButtonClick: joinConferenceWithoutAudio,
-            onKeyPressed: this._onJoinConferenceWithoutAudioKeyPress
-        };
+        if (canJoinMeeting) {
+            buttons.push({
+                key: 'no-audio',
+                dataTestId: 'prejoin.joinWithoutAudio',
+                icon: IconVolumeOff,
+                label: t('prejoin.joinWithoutAudio'),
+                onButtonClick: joinConferenceWithoutAudio,
+                onKeyPressed: this._onJoinConferenceWithoutAudioKeyPress
+            });
+            if (hasJoinByPhoneButton) {
+                buttons.push({
+                    key: 'by-phone',
+                    dataTestId: 'prejoin.joinByPhone',
+                    icon: IconPhone,
+                    label: t('prejoin.joinAudioByPhone'),
+                    onButtonClick: this._showDialog,
+                    onKeyPressed: this._showDialogKeyPress
+                });
+            }
+        }
 
-        const byPhone = {
-            key: 'by-phone',
-            dataTestId: 'prejoin.joinByPhone',
-            icon: IconPhone,
-            label: t('prejoin.joinAudioByPhone'),
-            onButtonClick: this._showDialog,
-            onKeyPressed: this._showDialogKeyPress
-        };
-
-        return {
-            noAudio,
-            byPhone
-        };
+        return buttons;
     }
 
     /**
@@ -389,7 +390,6 @@ class Prejoin extends Component<Props, State> {
     render() {
         const {
             deviceStatusVisible,
-            hasJoinByPhoneButton,
             joinConference,
             joinConferenceWithoutAudio,
             name,
@@ -409,9 +409,6 @@ class Prejoin extends Component<Props, State> {
             !(prejoinConfig?.hideExtraJoinButtons || []).includes(val.key)
         );
 
-        if (!hasJoinByPhoneButton) {
-            extraButtonsToRender = extraButtonsToRender.filter((btn: Object) => btn.key !== 'by-phone');
-        }
         const hasExtraJoinButtons = Boolean(extraButtonsToRender.length);
         const { showJoinByPhoneButtons, showError, showDID, completed } = this.state;
 
@@ -422,7 +419,7 @@ class Prejoin extends Component<Props, State> {
                 title = { t('prejoin.joinMeeting') }
                 videoMuted = { !showCameraPreview }
                 videoTrack = { videoTrack }
-                showDID = {showDID}>
+                showDID = { showDID }>
                 <div
                     className = 'prejoin-input-area'
                     data-testid = 'prejoin.screen'>

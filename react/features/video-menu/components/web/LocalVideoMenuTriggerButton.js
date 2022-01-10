@@ -152,6 +152,7 @@ class LocalVideoMenuTriggerButton extends Component<Props> {
      */
     render() {
         const {
+            _aiAttentionAnalysisEnabled,
             _localParticipantId,
             _menuPosition,
             _overflowDrawer,
@@ -176,7 +177,7 @@ class LocalVideoMenuTriggerButton extends Component<Props> {
                         <FlipLocalVideoButton
                             className = { _overflowDrawer ? classes.flipText : '' }
                             onClick = { hidePopover } />
-                        { _showHideSelfViewButton
+                        { !_aiAttentionAnalysisEnabled && _showHideSelfViewButton
                             && <HideSelfViewVideoButton
                                 className = { _overflowDrawer ? classes.flipText : '' }
                                 onClick = { hidePopover } />
@@ -282,6 +283,7 @@ function _mapStateToProps(state) {
     }
 
     return {
+        _aiAttentionAnalysisEnabled: state['features/base/settings'].aiAttentionAnalysisEnabled,
         _menuPosition,
         _showLocalVideoFlipButton: !disableLocalVideoFlip && videoTrack?.videoType !== 'desktop',
         _showHideSelfViewButton: showHideSelfViewButton,

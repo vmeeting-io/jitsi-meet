@@ -2,9 +2,11 @@
 
 import i18next from 'i18next';
 import _ from 'lodash';
+import { batch } from 'react-redux';
 import type { Dispatch } from 'redux';
 
 import { createBreakoutRoomsEvent, sendAnalytics } from '../analytics';
+import { _RESET_MODERATIONS } from '../av-moderation/actionTypes';
 import {
     conferenceLeft,
     conferenceWillLeave,
@@ -101,6 +103,23 @@ export function removeBreakoutRoom(breakoutRoomJid: string) {
         // $FlowExpectedError
         getCurrentConference(getState)?.getBreakoutRooms()
             ?.removeBreakoutRoom(breakoutRoomJid);
+    };
+}
+
+/**
+ * Action to update a breakout room.
+ *
+ * @param {string} breakoutRoomJid - The jid of the breakout room to update.
+ * @param {string} subject - The subject of the breakout room to update.
+ * @returns {Function}
+ */
+export function updateBreakoutRoom(breakoutRoomJid: string, subject: string) {
+    return (dispatch: Dispatch<any>, getState: Function) => {
+        sendAnalytics(createBreakoutRoomsEvent('update'));
+
+        // $FlowExpectedError
+        getCurrentConference(getState)?.getBreakoutRooms()
+            ?.updateBreakoutRoom(breakoutRoomJid, subject);
     };
 }
 
@@ -202,8 +221,9 @@ export function moveToRoom(roomId?: string) {
             return;
         }
 
-        dispatch({
-            type: _RESET_BREAKOUT_ROOMS
+        batch(() => {
+            dispatch({ type: _RESET_BREAKOUT_ROOMS });
+            dispatch({ type: _RESET_MODERATIONS });
         });
 
         if (navigator.product === 'ReactNative') {

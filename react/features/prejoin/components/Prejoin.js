@@ -5,17 +5,27 @@ import axios from 'axios';
 import React, { Component } from 'react';
 
 import { getAuthUrl } from '../../../api/url';
-import { getRoomName } from '../../base/conference';
+import { getCurrentConference, getRoomName, STATUS_COMMAND } from '../../base/conference';
 import { isNameReadOnly } from '../../base/config';
 import { translate } from '../../base/i18n';
 import { IconArrowDown, IconArrowUp, IconPhone, IconVolumeOff } from '../../base/icons';
 import { isVideoMutedByUser } from '../../base/media';
-import { PIC_CONSENT } from '../../base/participants';
+import {
+    PIC_CONSENT,
+    participantPresenceChanged as participantPresenceChangedAction,
+    getLocalParticipant
+} from '../../base/participants';
 import { ActionButton, InputField, PreMeetingScreen } from '../../base/premeeting';
 import { connect } from '../../base/redux';
 import { getDisplayName, updateSettings } from '../../base/settings';
 import { getLocalJitsiVideoTrack } from '../../base/tracks';
-import { getAttentionAnalysisReady, isAttentionAnalysisEnabled } from '../../face-detect/functions';
+import {
+    getAttentionAnalysisReady,
+    initFaceDetect as initFaceDetectAction,
+    isAttentionAnalysisEnabled,
+    startFaceDetect as startFaceDetectAction,
+    stopFaceDetect as stopFaceDetectAction
+} from '../../face-detect';
 import {
     checkDIDConsent,
     permitDataRequest as permitDataRequestAction
@@ -34,6 +44,7 @@ import {
 
 import DropdownButton from './DropdownButton';
 import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
+import { isVideoSettingsButtonDisabled } from '../../toolbox/functions.web';
 
 type Props = {
 
@@ -127,6 +138,33 @@ type State = {
 }
 
 /**
+ *   START
+ *     |
+ * condition0 -- condition1 - N -> JOIN_AS_AWAY <----------+
+ *     |             |                  |                  |
+ *    (Y)            |              (camera O)         (camera X)
+ *     |             |                  |                  |
+ *     |             |                  v                  |
+ *     |             +----------> DETECTING_FACE ----------+
+ *     |                                |
+ *     |                            condition2
+ *     |                                |
+ *     |                                v
+ *     +------------------------> READY_TO_JOIN
+ * 
+ * condition0 : !attentionAnalysisEnabled
+ * condition1 : !isVideoDisabled && !isVideoMuted
+ * condition2 : attentionAnalysisReady
+ */
+const JOIN_STATE = {
+    START: 'start',
+    JOIN_AS_AWAY: 'joinAsAway',
+    DETECTING_FACE: 'detectingFace',
+    READY_TO_JOIN: 'readyToJoin',
+    JOINING: 'joining'
+};
+
+/**
  * This component is displayed before joining a meeting.
  */
 class Prejoin extends Component<Props, State> {
@@ -142,7 +180,8 @@ class Prejoin extends Component<Props, State> {
             showError: false,
             showJoinByPhoneButtons: false,
             showDID: undefined,
-            completed: false
+            completed: false,
+            joinState: JOIN_STATE.START
         };
 
         this._closeDialog = this._closeDialog.bind(this);
@@ -168,6 +207,56 @@ class Prejoin extends Component<Props, State> {
 
     componentWillUnmount() {
         window.removeEventListener('beforeunload', this._beforeUnloadHandler);
+    }
+
+    componentDidUpdate(prevProps: P) {
+        const {
+            _attentionAnalysisEnabled,
+            _attentionAnalysisReady,
+            _didPermitted,
+            _localParticipant,
+            conference,
+            isVideoDisabled,
+            participantPresenceChanged,
+            showCameraPreview,
+        } = this.props;
+        let { joinState, completed } = this.state;
+
+        switch (joinState) {
+        case JOIN_STATE.START:
+            if (!_attentionAnalysisEnabled || (completed && !_didPermitted)) {
+                this.setState({ joinState: JOIN_STATE.READY_TO_JOIN });
+            } else if (!completed && !_didPermitted) {
+                break;
+            } else if (isVideoDisabled || !showCameraPreview) {
+                this.setState({ joinState: JOIN_STATE.JOIN_AS_AWAY });
+            } else if (showCameraPreview) {
+                this.props.initFaceDetect();
+                this.setState({ joinState: JOIN_STATE.DETECTING_FACE });
+            }
+            break;
+        case JOIN_STATE.JOIN_AS_AWAY:
+            if (!isVideoDisabled && prevProps.isVideoDisabled !== isVideoDisabled) {
+                this.setState({ joinState: JOIN_STATE.START });
+            } else if (prevProps.showCameraPreview !== showCameraPreview) {
+                this.props.initFaceDetect();
+                this.setState({ joinState: JOIN_STATE.DETECTING_FACE });
+            } else if (conference) {
+                this.setState({ joinState: JOIN_STATE.JOINING });
+                conference.sendCommand(STATUS_COMMAND, { value: 'absent' });
+                participantPresenceChanged(_localParticipant.id, 'absent');
+            }
+            break;
+        case JOIN_STATE.DETECTING_FACE:
+            if (prevProps.showCameraPreview !== showCameraPreview) {
+                this.props.stopFaceDetect();
+                this.setState({ joinState: JOIN_STATE.JOIN_AS_AWAY });
+            } else if (_attentionAnalysisReady) {
+                this.props.startFaceDetect();
+                this.setState({ joinState: JOIN_STATE.READY_TO_JOIN });
+            }
+            break;
+        }
     }
 
     // should remove conference
@@ -354,10 +443,11 @@ class Prejoin extends Component<Props, State> {
      * @returns {Object} - The list of extra buttons.
      */
     _getExtraJoinButtons() {
-        const { canJoinMeeting, hasJoinByPhoneButton, joinConferenceWithoutAudio, t } = this.props;
+        const { hasJoinByPhoneButton, joinConferenceWithoutAudio, t } = this.props;
+        const { joinState } = this.state;
         const buttons = [];
 
-        if (canJoinMeeting) {
+        if ([JOIN_STATE.READY_TO_JOIN, JOIN_STATE.JOIN_AS_AWAY].includes(joinState)) {
             buttons.push({
                 key: 'no-audio',
                 dataTestId: 'prejoin.joinWithoutAudio',
@@ -399,7 +489,6 @@ class Prejoin extends Component<Props, State> {
             showDialog,
             t,
             videoTrack,
-            canJoinMeeting,
         } = this.props;
         const { _closeDialog, _onDropdownClose, _onJoinButtonClick, _onJoinKeyPress,
             _onOptionsClick, _setName } = this;
@@ -410,12 +499,30 @@ class Prejoin extends Component<Props, State> {
         );
 
         const hasExtraJoinButtons = Boolean(extraButtonsToRender.length);
-        const { showJoinByPhoneButtons, showError, showDID, completed } = this.state;
+        const { joinState, showJoinByPhoneButtons, showError, showDID, completed } = this.state;
+
+        let buttonText = t('prejoin.preparingMeeting');
+        let disabled = true;
+        let helpMessage = undefined;
+
+        if (joinState === JOIN_STATE.JOIN_AS_AWAY) {
+            buttonText = t('prejoin.joinAsAway');
+            helpMessage = t('prejoin.joinAsAwayHelp')
+            disabled = false;
+        } else if (joinState === JOIN_STATE.DETECTING_FACE) {
+            buttonText = t('prejoin.detectingFace');
+        } else if (joinState === JOIN_STATE.READY_TO_JOIN) {
+            buttonText = t('prejoin.joinMeeting');
+            disabled = false;
+        } else if (joinState === JOIN_STATE.JOINING) {
+            buttonText = t('prejoin.joining');
+        }
 
         return (
             <div>
             { completed && <PreMeetingScreen
                 showDeviceStatus = { deviceStatusVisible }
+                helpMessage = { helpMessage }
                 title = { t('prejoin.joinMeeting') }
                 videoMuted = { !showCameraPreview }
                 videoTrack = { videoTrack }
@@ -429,7 +536,7 @@ class Prejoin extends Component<Props, State> {
                         className = { showError ? 'error' : '' }
                         hasError = { showError }
                         onChange = { _setName }
-                        onSubmit = { canJoinMeeting && joinConference }
+                        onSubmit = { joinConference }
                         placeHolder = { t('dialog.enterDisplayName') }
                         readOnly = { readOnlyName }
                         value = { name } />
@@ -454,7 +561,7 @@ class Prejoin extends Component<Props, State> {
                                 ariaDropDownLabel = { t('prejoin.joinWithoutAudio') }
                                 ariaLabel = { t('prejoin.joinMeeting') }
                                 ariaPressed = { showJoinByPhoneButtons }
-                                disabled = { !canJoinMeeting }
+                                disabled = { disabled }
                                 hasOptions = { hasExtraJoinButtons }
                                 onClick = { _onJoinButtonClick }
                                 onKeyPress = { _onJoinKeyPress }
@@ -463,7 +570,7 @@ class Prejoin extends Component<Props, State> {
                                 tabIndex = { 0 }
                                 testId = 'prejoin.joinMeeting'
                                 type = 'primary'>
-                                { canJoinMeeting ? t('prejoin.joinMeeting') : t('prejoin.detectingFace') }
+                                { buttonText }
                             </ActionButton>
                         </InlineDialog>
                     </div>
@@ -489,14 +596,22 @@ function mapStateToProps(state): Object {
     const name = getDisplayName(state);
     const showErrorOnJoin = isDisplayNameRequired(state) && !name;
     const _attentionAnalysisEnabled = isAttentionAnalysisEnabled(state);
-    const canJoinMeeting = Boolean(!_attentionAnalysisEnabled
-        || (getAttentionAnalysisReady(state) || !state['features/did-consent'].permit));
+    const _localParticipant = getLocalParticipant(state);
     const _user = state['features/base/jwt'].user;
+    const { permissions = {} } = state['features/base/devices'];
+    const isDisabled = isVideoSettingsButtonDisabled(state);
+    const videoTrack = getLocalJitsiVideoTrack(state);
+    const isVideoDisabled = (!permissions.video || isDisabled) && !Boolean(videoTrack);
+    const conference = getCurrentConference(state);
 
     return {
         _apiBase: getAuthUrl(state),
         _attentionAnalysisEnabled,
+        _attentionAnalysisReady: getAttentionAnalysisReady(state),
+        _didPermitted: state['features/did-consent'].permit,
+        _localParticipant,
         _user,
+        conference,
         name,
         deviceStatusVisible: isDeviceStatusVisible(state),
         roomName: getRoomName(state),
@@ -507,17 +622,21 @@ function mapStateToProps(state): Object {
         readOnlyName: isNameReadOnly(state),
         showCameraPreview: !isVideoMutedByUser(state),
         videoTrack: getLocalJitsiVideoTrack(state),
-        canJoinMeeting,
-        prejoinConfig: state['features/base/config'].prejoinConfig
+        prejoinConfig: state['features/base/config'].prejoinConfig,
+        isVideoDisabled,
     };
 }
 
 const mapDispatchToProps = {
+    initFaceDetect: initFaceDetectAction,
     joinConferenceWithoutAudio: joinConferenceWithoutAudioAction,
     joinConference: joinConferenceAction,
+    participantPresenceChanged: participantPresenceChangedAction,
     permitDataRequest: permitDataRequestAction,
     setJoinByPhoneDialogVisiblity: setJoinByPhoneDialogVisiblityAction,
-    updateSettings
+    startFaceDetect: startFaceDetectAction,
+    stopFaceDetect: stopFaceDetectAction,
+    updateSettings,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(translate(Prejoin));

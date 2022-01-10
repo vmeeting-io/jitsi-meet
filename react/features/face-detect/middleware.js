@@ -2,7 +2,6 @@
 
 import { batch } from 'react-redux';
 
-import { CONFERENCE_JOINED, getCurrentConference } from '../base/conference';
 import { CONNECTION_DISCONNECTED } from '../base/connection';
 import {
     getParticipantPresenceStatus,
@@ -11,13 +10,8 @@ import {
     PARTICIPANT_UPDATED
 } from '../base/participants';
 import { MiddlewareRegistry } from '../base/redux';
-import { isInBreakoutRoom } from '../breakout-rooms';
-import { PERMIT_DATA_REQUEST } from '../did-consent';
-import { PREJOIN_INITIALIZED } from '../prejoin';
 import {
     closeAttentionAnalysis,
-    initFaceDetect,
-    startFaceDetect,
     stopFaceDetect,
     updateAttentionAnalysis
 } from './actions';
@@ -26,26 +20,6 @@ import './subscriber';
 
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
-    case PREJOIN_INITIALIZED: {
-        const state = store.getState();
-        const { face_detect } = state['features/base/conference'].roomInfo || {};
-
-        if (face_detect && !isInBreakoutRoom(state)) {
-            store.dispatch(initFaceDetect());
-        }
-        break;
-    }
-    case CONFERENCE_JOINED: {
-        const state = store.getState();
-        const { face_detect } = state['features/base/conference'].roomInfo || {};
-        const conference = getCurrentConference(state);
-        const breakoutDomain = conference?.getBreakoutRooms()?.getComponentAddress();
-        const domain = conference?.room?.roomjid?.split('@')[1];
-        if (face_detect && !(domain && domain === breakoutDomain)) {
-            store.dispatch(startFaceDetect());
-        }
-        break;
-    }
     case CONNECTION_DISCONNECTED:
         const { face_detect } = store.getState()['features/base/conference'].roomInfo || {};
         if (face_detect) {
@@ -75,13 +49,6 @@ MiddlewareRegistry.register(store => next => action => {
             const result = next(action);
             store.dispatch(updateAttentionAnalysis());
             return result;
-        }
-        break;
-    }
-    case PERMIT_DATA_REQUEST: {
-        const { face_detect } = store.getState()['features/base/conference'].roomInfo || {};
-        if (face_detect && !action.permit) {
-            store.dispatch(stopFaceDetect());
         }
         break;
     }

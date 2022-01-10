@@ -91,7 +91,7 @@ export default class FaceDetect {
         this._inputVideo = document.getElementById('localVideo_container');
         if (!this._inputVideo) {
             this._frameInterval = 1000;
-            console.warn('localVideo_container not found!');
+            // console.warn('localVideo_container not found!');
             return;
         }
 
@@ -246,8 +246,7 @@ export default class FaceDetect {
         const participant = getLocalParticipant(state);
         const statusValue = STATUS_TABLE[status];
 
-        if (!isPrejoinPageVisible(state)
-            && conference
+        if (conference
             && statusValue
             && statusValue !== this._prevStatus) {
             conference.sendCommand(STATUS_COMMAND, { value: statusValue });

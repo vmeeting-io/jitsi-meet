@@ -35,7 +35,10 @@ export function initFaceDetect() {
         // const granted = await grantFaceDetect(state);
         
         console.log('==> initFaceDetect');
-        const instance = new FaceDetect(dispatch, getState);
+        let instance = getFaceDetector(state);
+        if (!instance) {
+            instance = new FaceDetect(dispatch, getState);
+        }
         instance.init();
 
         dispatch({
@@ -69,10 +72,7 @@ export function stopFaceDetect() {
         const instance = getFaceDetector(state);
         instance?.stop();
 
-        dispatch({
-            type: STOP_FACE_DETECT,
-            instance: null
-        });
+        dispatch({ type: STOP_FACE_DETECT });
     };
 }
 

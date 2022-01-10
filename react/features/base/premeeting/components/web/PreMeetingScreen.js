@@ -582,6 +582,7 @@ class PreMeetingScreen extends PureComponent<Props> {
             _premeetingBackground,
             children,
             className,
+            helpMessage,
             showDeviceStatus,
             skipPrejoinButton,
             title,
@@ -611,7 +612,9 @@ class PreMeetingScreen extends PureComponent<Props> {
                             { children }
                             { _buttons.length && <Toolbox toolbarButtons = { _buttons } /> }
                             { skipPrejoinButton }
-                            { showDeviceStatus && <DeviceStatus /> }
+                            { helpMessage ? <div className = 'prejoin-help'>
+                                { helpMessage }
+                            </div> : showDeviceStatus && <DeviceStatus /> }
                         </div>}
                     </div>
                 </div>

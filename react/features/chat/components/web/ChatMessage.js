@@ -36,9 +36,9 @@ class ChatMessage extends AbstractChatMessage<Props> {
      */
 
     render() {
+        let index = 0;
         const { message, t } = this.props;
         const processedMessage = [];
-
         const serverURL = getBaseUrl();
 
         const txt = this._getMessageText();
@@ -50,13 +50,24 @@ class ChatMessage extends AbstractChatMessage<Props> {
         const content = [];
 
         for (const token of tokens) {
-            if (token.includes('://')) {
-                // It contains a link, bypass the emojification.
-                content.push(token);
+            if (token.includes('\n')) {
+                for (const line of token.split('\n')) {
+                    if (line.includes('://')) {
+                        content.push(line);
+                    } else {
+                        content.push(...toArray(line, { className: 'smiley' }));
+                    }
+                    content.push(React.createElement('br', { key: index }));
+                    index += 1;
+                }
             } else {
-                content.push(...toArray(token, { className: 'smiley' }));
+                if (token.includes('://')) {
+                    // It contains a link, bypass the emojification.
+                    content.push(token);
+                } else {
+                    content.push(...toArray(token, { className: 'smiley' }));
+                }
             }
-
             content.push(' ');
         }
 

@@ -40,3 +40,8 @@ export function getFollowMeModerator(stateful: Object | Function) {
 
     return followMeModerator;
 }
+
+export const isLocalFollowMeModerator = state => {
+    const participant = getLocalParticipant(state);
+    return getFollowMeModerator(state) === participant.id;
+}

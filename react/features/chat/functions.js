@@ -209,7 +209,7 @@ export async function uploadFile(file, store, fileUploadInProgress) {
             // the URL of the server should be adjusted accordingly
 
             // we use encodeURIComponent to ensure that spaces and special characters in filename is well-replaced to represent a URL
-            const newFileUrl = `${serverURL}download/files/${roomName}/${encodeURIComponent(resp.data.fileName)}`;
+            const newFileUrl = `${serverURL}download/files/${encodeURIComponent(roomName)}/${encodeURIComponent(resp.data.fileName)}`;
 
             // dispatch sendMessage action to display the URL of the uploaded file as a message
             dispatch(sendMessage(newFileUrl));

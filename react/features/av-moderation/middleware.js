@@ -266,10 +266,5 @@ StateListenerRegistry.register(
 
                     dispatch(participantRejected(id, kind));
                 });
-
-            // reset moderations
-            conference.on(JitsiConferenceEvents.BREAKOUT_ROOMS_MOVE_TO_ROOM, roomId => {
-                dispatch({ type: _RESET_MODERATIONS });
-            });
         }
     });

@@ -7,7 +7,7 @@ import {
     PARTICIPANT_ROLE
 } from '../../base/participants';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
-import { getFollowMeModerator, grantFollowMeModerator } from '../../follow-me';
+import { getFollowMeModerator } from '../../follow-me';
 
 import { GrantFollowMeModeratorDialog } from '../components';
 

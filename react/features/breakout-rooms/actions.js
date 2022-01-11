@@ -11,7 +11,8 @@ import {
     conferenceLeft,
     conferenceWillLeave,
     createConference,
-    getCurrentConference
+    getCurrentConference,
+    setFollowMe
 } from '../base/conference';
 import {
     MEDIA_TYPE,
@@ -25,6 +26,7 @@ import {
     isLocalTrackMuted
 } from '../base/tracks';
 import { createDesiredLocalTracks } from '../base/tracks/actions';
+import { isLocalFollowMeModerator } from '../follow-me';
 import {
     NOTIFICATION_TIMEOUT_TYPE,
     clearNotifications,
@@ -240,6 +242,10 @@ export function moveToRoom(roomId?: string) {
                 dispatch(conferenceLeft(conference));
             }
 
+            if (isLocalFollowMeModerator(getState)) {
+                dispatch(setFollowMe(false));
+            }
+
             dispatch(clearNotifications());
 
             // dispatch(setRoom(_roomId));
@@ -260,6 +266,10 @@ export function moveToRoom(roomId?: string) {
                 logger.warn('APP.conference.leaveRoom() rejected with:', error);
 
                 // TODO: revisit why we don't dispatch CONFERENCE_LEFT here.
+            }
+
+            if (isLocalFollowMeModerator(getState)) {
+                dispatch(setFollowMe(false));
             }
 
             APP.conference.joinRoom(_roomId, {

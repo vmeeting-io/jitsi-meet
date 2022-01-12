@@ -255,18 +255,20 @@ const defaultStyles = theme => {
             width: '100%',
             height: '100%',
             zIndex: '9',
-            borderRadius: '4px'
+            borderRadius: '4px',
+            top: 0,
+            left: 0
         },
 
         activeSpeaker: {
             '& .active-speaker-indicator': {
-                boxShadow: `inset -1px -1px 2px 4px ${theme.palette.link01Active} !important`
+                boxShadow: `inset 0px 0px 2px 4px ${theme.palette.link01Active} !important`
             }
         },
 
         raisedHand: {
             '& .raised-hand-border': {
-                boxShadow: `inset -1px -1px 2px 4px ${theme.palette.warning02} !important`
+                boxShadow: `inset 0px 0px 2px 4px ${theme.palette.warning02} !important`
             }
         }
     };

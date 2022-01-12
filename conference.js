@@ -430,7 +430,10 @@ class ConferenceConnector {
         const replaceParticipant = getReplaceParticipant(APP.store.getState());
 
         // the local storage overrides here and in connection.js can be used by jibri
-        room.join(jitsiLocalStorage.getItem('xmpp_conference_password_override'), replaceParticipant);
+        const password = jitsiLocalStorage.getItem('xmpp_conference_password_override')
+            || APP.store.getState()['features/base/conference'].roomInfo?.password;
+
+        room.join(password, replaceParticipant);
     }
 }
 
@@ -2577,6 +2580,7 @@ export default {
             const videoMuted = room.isStartVideoMuted();
             const localTracks = getLocalTracks(APP.store.getState()['features/base/tracks']);
             const promises = [];
+            const actions = [];
 
             APP.store.dispatch(setAudioMuted(audioMuted));
             APP.store.dispatch(setVideoMuted(videoMuted));
@@ -2587,18 +2591,25 @@ export default {
                 // if the user joins audio and video muted, i.e., if there is no local media capture.
                 if (audioMuted && track.jitsiTrack?.getType() === MEDIA_TYPE.AUDIO && !browser.isWebKitBased()) {
                     promises.push(this.useAudioStream(null));
+                    actions.push(showNotification({
+                        titleKey: 'notify.mutedTitle',
+                        descriptionKey: 'notify.muted'
+                    }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
                 }
                 if (videoMuted && track.jitsiTrack?.getType() === MEDIA_TYPE.VIDEO) {
                     promises.push(this.useVideoStream(null));
+                    actions.push(showNotification({
+                        titleKey: 'notify.mutedVideoTitle',
+                        descriptionKey: 'notify.mutedVideo'
+                    }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
                 }
             }
 
             Promise.allSettled(promises)
                 .then(() => {
-                    APP.store.dispatch(showNotification({
-                        titleKey: 'notify.mutedTitle',
-                        descriptionKey: 'notify.muted'
-                    }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
+                    for (const action of actions) {
+                        APP.store.dispatch(action);
+                    }
                 });
         });
 

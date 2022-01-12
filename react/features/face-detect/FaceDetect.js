@@ -47,7 +47,7 @@ export default class FaceDetect {
         this._isWaiting = true;
         this._showResult = showResult;
         this._enabled = false;
-        this._prevStatus = -1;
+        this._prevStatus = STATUS_TABLE[0];
         this._timerId = null;
         this._timestamp = 0;
         this._frames = [];
@@ -241,17 +241,11 @@ export default class FaceDetect {
     }
 
     _updateParticipantStatus(status) {
-        const state = this._getState();
-        const conference = getCurrentConference(state);
-        const participant = getLocalParticipant(state);
         const statusValue = STATUS_TABLE[status];
 
-        if (conference
-            && statusValue
-            && statusValue !== this._prevStatus) {
-            conference.sendCommand(STATUS_COMMAND, { value: statusValue });
-            this._dispatch(participantPresenceChanged(participant.id, statusValue));
+        if (statusValue && statusValue !== this._prevStatus) {
             this._prevStatus = statusValue;
+            this.sendPresence();
         }
     }
 
@@ -282,6 +276,7 @@ export default class FaceDetect {
      * @returns {MediaStream} - The stream with the applied effect.
      */
     init() {
+        this._step = STEP.REFERENCE;
         this._timerId = requestAnimationFrame(this._loop);
     }
 
@@ -303,6 +298,66 @@ export default class FaceDetect {
             });
             this._frames = [];
             this._isWaiting = true;
+        }
+    }
+
+    /**
+     * Pause the inference
+     * 
+     * @return {void}
+     */
+    pause() {
+        console.log('==> faceDetect.pause()');
+        if (this._timerId) {
+            cancelAnimationFrame(this._timerId);
+            this._timerId = null;
+        }
+    }
+
+    /**
+     * Resume the inference
+     * 
+     * @return {void}
+     */
+    resume() {
+        console.log('==> faceDetect.resume()');
+        if (!this._timerId) {
+            this._timestamp = 0;
+            this._timerId = requestAnimationFrame(this._loop);
+        }
+    }
+
+    /**
+     * Check whether the inference is running or not
+     */
+    isRunning() {
+        return this._timerId && this._step === STEP.STARTED;
+    }
+
+    /**
+     * Check whether the inference is paused or not
+     */
+    isPaused() {
+        return !this._timerId && this._step === STEP.STARTED;
+    }
+
+    /**
+     * Send presence status to other participants
+     */
+    sendPresence(newPresence) {
+        if (newPresence) {
+            this._prevStatus = newPresence;
+        }
+
+        const state = this._getState();
+        const conference = getCurrentConference(state);
+        const participant = getLocalParticipant(state);
+        const statusValue = this._prevStatus;
+
+        console.log(`==> faceDetect.sendPresence('${this._prevStatus}')`);
+        if (conference && participant && statusValue) {
+            conference.sendCommand(STATUS_COMMAND, { value: statusValue });
+            this._dispatch(participantPresenceChanged(participant.id, statusValue));
         }
     }
 

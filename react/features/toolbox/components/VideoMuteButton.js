@@ -13,7 +13,8 @@ import { getFeatureFlag, VIDEO_MUTE_BUTTON_ENABLED } from '../../base/flags';
 import { translate } from '../../base/i18n';
 import {
     VIDEO_MUTISM_AUTHORITY,
-    setVideoMuted
+    setVideoMuted,
+    MEDIA_TYPE
 } from '../../base/media';
 import { connect } from '../../base/redux';
 import { AbstractVideoMuteButton } from '../../base/toolbox/components';
@@ -21,6 +22,7 @@ import type { AbstractButtonProps } from '../../base/toolbox/components';
 import { getLocalVideoType, isLocalCameraTrackMuted } from '../../base/tracks';
 import { isVideoMuteButtonDisabled } from '../functions';
 import { getLocalParticipant } from '../../base/participants';
+import { shouldShowModeratedNotification } from '../../av-moderation/functions';
 
 declare var APP: Object;
 
@@ -173,10 +175,12 @@ class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
                 VIDEO_MUTISM_AUTHORITY.USER,
                 /* ensureTrack */ true));
 
-        // FIXME: The old conference logic still relies on this event being
-        // emitted.
-        typeof APP === 'undefined'
-            || APP.UI.emitEvent(UIEvents.VIDEO_MUTED, videoMuted, true);
+        if (!videoMuted && !this.props._shouldShowModeratedNotification) {
+            // FIXME: The old conference logic still relies on this event being
+            // emitted.
+            typeof APP === 'undefined'
+                || APP.UI.emitEvent(UIEvents.VIDEO_MUTED, videoMuted, true);
+        }
     }
 }
 
@@ -201,6 +205,7 @@ function _mapStateToProps(state): Object {
 
     return {
         _audioOnly: Boolean(audioOnly),
+        _shouldShowModeratedNotification: shouldShowModeratedNotification(MEDIA_TYPE.VIDEO, state),
         _videoDisabled: !isLocalParticipantAModerator && isVideoMuteButtonDisabled(state),
         _videoMediaType: getLocalVideoType(tracks),
         _videoMuted: isLocalCameraTrackMuted(tracks),

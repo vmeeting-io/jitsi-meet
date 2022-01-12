@@ -413,13 +413,15 @@ function _setPassword(state, { conference, method, password }) {
              *
              * @type {string}
              */
-            password
+            password,
+            roomInfo: { ...state.roomInfo, password }
         });
 
     case conference.lock:
         return assign(state, {
             locked: password ? LOCKED_LOCALLY : undefined,
-            password
+            password,
+            roomInfo: { ...state.roomInfo, password }
         });
     }
 

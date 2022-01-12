@@ -67,6 +67,31 @@ export function isParticipantVideoMuted(participant, state) {
 }
 
 /**
+ * Checks if the remote video track is of type DESKTOP for the participant.
+ *
+ * @param {Object} state - The redux state.
+ * @returns {boolean}
+ */
+export function isParticipantVideoTrackDesktop(participant, state) {
+    if (!participant) {
+        return false;
+    }
+
+    const tracks = getTrackState(state);
+
+    if (participant?.local) {
+        return isLocalVideoTrackDesktop(state);
+    } else if (!participant?.isFakeParticipant) {
+        const videoTrack = getTrackByMediaTypeAndParticipant(
+            tracks, MEDIA_TYPE.VIDEO, participant.id);
+
+        return videoTrack && videoTrack.videoType === VIDEO_TYPE.DESKTOP;
+    }
+
+    return false;
+}
+
+/**
  * Creates a local video track for presenter. The constraints are computed based
  * on the height of the desktop that is being shared.
  *

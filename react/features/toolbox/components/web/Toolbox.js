@@ -43,6 +43,7 @@ import {
 } from '../../../participants-pane/actions';
 import { ParticipantsPaneButton } from '../../../participants-pane/components/web';
 import { getParticipantsPaneOpen } from '../../../participants-pane/functions';
+import { isPrejoinPageVisible } from '../../../prejoin';
 import { addReactionToBuffer } from '../../../reactions/actions.any';
 import { ReactionsMenuButton } from '../../../reactions/components';
 import { REACTIONS, REACTIONS_MENU_HEIGHT } from '../../../reactions/constants';
@@ -618,11 +619,11 @@ class Toolbox extends Component<Props> {
             group: 0
         };
 
-        const profile = this._isProfileVisible() && {
-            key: 'profile',
-            Content: ProfileButton,
-            group: 1
-        };
+        // const profile = this._isProfileVisible() && {
+        //     key: 'profile',
+        //     Content: ProfileButton,
+        //     group: 1
+        // };
 
         const chat = {
             key: 'chat',
@@ -652,11 +653,11 @@ class Toolbox extends Component<Props> {
             group: 2
         };
 
-        const invite = {
-            key: 'invite',
-            Content: InviteButton,
-            group: 2
-        };
+        // const invite = {
+        //     key: 'invite',
+        //     Content: InviteButton,
+        //     group: 2
+        // };
 
         const tileview = {
             key: 'tileview',
@@ -670,12 +671,12 @@ class Toolbox extends Component<Props> {
             group: 2
         };
 
-        const videoQuality = {
-            key: 'videoquality',
-            Content: VideoQualityButton,
-            handleClick: this._onToolbarOpenVideoQuality,
-            group: 2
-        };
+        // const videoQuality = {
+        //     key: 'videoquality',
+        //     Content: VideoQualityButton,
+        //     handleClick: this._onToolbarOpenVideoQuality,
+        //     group: 2
+        // };
 
         const fullscreen = !_isIosMobile && {
             key: 'fullscreen',
@@ -715,17 +716,17 @@ class Toolbox extends Component<Props> {
             group: 2
         };
 
-        const muteEveryone = {
-            key: 'mute-everyone',
-            Content: MuteEveryoneButton,
-            group: 2
-        };
+        // const muteEveryone = {
+        //     key: 'mute-everyone',
+        //     Content: MuteEveryoneButton,
+        //     group: 2
+        // };
 
-        const muteVideoEveryone = {
-            key: 'mute-video-everyone',
-            Content: MuteEveryonesVideoButton,
-            group: 2
-        };
+        // const muteVideoEveryone = {
+        //     key: 'mute-video-everyone',
+        //     Content: MuteEveryonesVideoButton,
+        //     group: 2
+        // };
 
         const shareVideo = {
             key: 'sharedvideo',
@@ -751,11 +752,11 @@ class Toolbox extends Component<Props> {
             group: 3
         };
 
-        const speakerStats = {
-            key: 'stats',
-            Content: SpeakerStatsButton,
-            group: 3
-        };
+        // const speakerStats = {
+        //     key: 'stats',
+        //     Content: SpeakerStatsButton,
+        //     group: 3
+        // };
 
         const arFeature = {
             key: 'ar-effect',
@@ -775,11 +776,11 @@ class Toolbox extends Component<Props> {
             group: 4
         };
 
-        const embed = this._isEmbedMeetingVisible() && {
-            key: 'embedmeeting',
-            Content: EmbedMeetingButton,
-            group: 4
-        };
+        // const embed = this._isEmbedMeetingVisible() && {
+        //     key: 'embedmeeting',
+        //     Content: EmbedMeetingButton,
+        //     group: 4
+        // };
 
         const feedback = _feedbackConfigured && {
             key: 'feedback',
@@ -802,31 +803,31 @@ class Toolbox extends Component<Props> {
         return {
             microphone,
             camera,
-            profile,
+            // profile,
             desktop,
             chat,
             raisehand,
             participants,
-            invite,
+            // invite,
             tileview,
             toggleCamera,
-            videoQuality,
+            // videoQuality,
             fullscreen,
             security,
             cc,
             recording,
             localRecording,
             livestreaming,
-            muteEveryone,
-            muteVideoEveryone,
+            // muteEveryone,
+            // muteVideoEveryone,
             shareVideo,
             shareAudio,
             etherpad,
             virtualBackground,
-            speakerStats,
+            // speakerStats,
             settings,
             shortcuts,
-            embed,
+            // embed,
             feedback,
             download,
             help
@@ -865,6 +866,7 @@ class Toolbox extends Component<Props> {
             _clientWidth,
             _conference,
             _isChatOnly,
+            _isPrejoinPageVisible,
             _toolbarButtons
         } = this.props;
 
@@ -877,7 +879,7 @@ class Toolbox extends Component<Props> {
             || THRESHOLDS[THRESHOLDS.length - 1];
         let sliceIndex = order.length + 2;
 
-        if (_conference) {
+        if (!_isPrejoinPageVisible) {
             order = order.filter(key => _toolbarButtons.includes(key));
             sliceIndex = order.length + 1;
         }
@@ -1421,6 +1423,7 @@ function _mapStateToProps(state, ownProps) {
         _isProfileDisabled: Boolean(disableProfile),
         _isIosMobile: isIosMobileBrowser(),
         _isMobile: isMobileBrowser(),
+        _isPrejoinPageVisible: isPrejoinPageVisible(state),
         _isProfileDisabled: Boolean(disableProfile),
         _isVideoSettingsVisible: !_screenSharing || !browser.isSafari(),
         _isVpaasMeeting: isVpaasMeeting(state),        

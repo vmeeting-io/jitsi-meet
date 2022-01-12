@@ -175,9 +175,9 @@ class ConferenceInfo extends Component<Props> {
             <div className = 'details-container' >
                 { this._renderAlwaysVisible() }
                 { this._renderAutoHide() }
-                <TimerLabel
+                { this.props._timerStarted && <TimerLabel
                     id = 'timer-label'
-                    visible = { this.props._visible } />
+                    visible = { this.props._visible } /> }
             </div>
         );
     }
@@ -195,9 +195,12 @@ class ConferenceInfo extends Component<Props> {
  * }}
  */
 function _mapStateToProps(state) {
+    const { timerStarted } = state['features/base/conference'];
+
     return {
+        _conferenceInfo: getConferenceInfo(state),
+        _timerStarted: timerStarted,
         _visible: isToolboxVisible(state),
-        _conferenceInfo: getConferenceInfo(state)
     };
 }
 

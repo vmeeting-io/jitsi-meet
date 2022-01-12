@@ -61,3 +61,7 @@ export async function checkDIDConsent(){
         return err;
     }
 }
+
+export function isDIDPermitted(state) {
+    return state['features/did-consent'].permit;
+}

@@ -515,7 +515,12 @@ class MoreTab extends AbstractDialogTab<Props, State> {
      * @returns {ReactElement}
      */
     _renderSettingsLeft() {
-        const { disableHideSelfView, showNotificationsSettings, showPrejoinSettings } = this.props;
+        const {
+            disableHideSelfView,
+            disableShortcuts,
+            showNotificationsSettings,
+            showPrejoinSettings
+        } = this.props;
 
         return (
             <div
@@ -523,7 +528,7 @@ class MoreTab extends AbstractDialogTab<Props, State> {
                 key = 'settings-sub-pane-left'>
                 { showPrejoinSettings && this._renderPrejoinScreenSettings() }
                 { showNotificationsSettings && this._renderNotificationsSettings() }
-                { this._renderKeyboardShortcutCheckbox() }
+                { !disableShortcuts && this._renderKeyboardShortcutCheckbox() }
                 { !disableHideSelfView && this._renderSelfViewCheckbox() }
             </div>
         );

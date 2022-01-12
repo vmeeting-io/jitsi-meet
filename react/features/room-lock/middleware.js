@@ -10,6 +10,7 @@ import {
 import { hideDialog } from '../base/dialog';
 import { JitsiConferenceErrors } from '../base/lib-jitsi-meet';
 import { MiddlewareRegistry } from '../base/redux';
+import { isInBreakoutRoom } from '../breakout-rooms';
 import {
     NOTIFICATION_TIMEOUT_TYPE,
     showNotification
@@ -55,7 +56,9 @@ MiddlewareRegistry.register(store => next => action => {
                 showNotification({
                     titleKey: 'notify.passwordSetRemotely'
                 }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
-        } else if (previousLockedState === LOCKED_REMOTELY && !currentLockedState) {
+        } else if (previousLockedState === LOCKED_REMOTELY
+            && !currentLockedState
+            && !isInBreakoutRoom(store.getState())) {
             store.dispatch(
                 showNotification({
                     titleKey: 'notify.passwordRemovedRemotely'

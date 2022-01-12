@@ -186,11 +186,13 @@ export function getConferenceName(stateful: Function | Object): string {
     const { callDisplayName } = state['features/base/config'];
     const { localSubject, room, subject } = getConferenceState(state);
 
-    return localSubject
+    const name = localSubject
         || subject
         || callDisplayName
         || (callee && callee.name)
-        || safeStartCase(safeDecodeURIComponent(room));
+        || room;
+
+    return safeStartCase(safeDecodeURIComponent(name));
 }
 
 /**
@@ -216,7 +218,7 @@ export function getConferenceOptions(stateful: Function | Object) {
     const config = state['features/base/config'];
     const { locationURL } = state['features/base/connection'];
     const { tenant } = state['features/base/jwt'];
-    const { email, name: nick } = getLocalParticipant(state);
+    const { email, name: nick, presence } = getLocalParticipant(state);
     const options = { ...config };
 
     if (tenant) {
@@ -233,6 +235,10 @@ export function getConferenceOptions(stateful: Function | Object) {
 
     if (locationURL) {
         options.confID = `${locationURL.host}${getBackendSafePath(locationURL.pathname)}`;
+    }
+
+    if (presence) {
+        options.presenceStatus = presence;
     }
 
     options.applicationName = getName();

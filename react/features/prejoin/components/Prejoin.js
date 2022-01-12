@@ -214,10 +214,7 @@ class Prejoin extends Component<Props, State> {
             _attentionAnalysisEnabled,
             _attentionAnalysisReady,
             _didPermitted,
-            _localParticipant,
-            conference,
             isVideoDisabled,
-            participantPresenceChanged,
             showCameraPreview,
         } = this.props;
         let { joinState, completed } = this.state;
@@ -241,10 +238,6 @@ class Prejoin extends Component<Props, State> {
             } else if (prevProps.showCameraPreview !== showCameraPreview) {
                 this.props.initFaceDetect();
                 this.setState({ joinState: JOIN_STATE.DETECTING_FACE });
-            } else if (conference) {
-                this.setState({ joinState: JOIN_STATE.JOINING });
-                conference.sendCommand(STATUS_COMMAND, { value: 'absent' });
-                participantPresenceChanged(_localParticipant.id, 'absent');
             }
             break;
         case JOIN_STATE.DETECTING_FACE:

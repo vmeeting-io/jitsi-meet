@@ -32,7 +32,7 @@ import {
 import { MEDIA_TYPE } from '../media';
 import { MiddlewareRegistry, StateListenerRegistry } from '../redux';
 import { playSound, registerSound, unregisterSound } from '../sounds';
-import { getTrackByJitsiTrack, isParticipantAudioMuted, isParticipantVideoMuted, TRACK_ADDED, TRACK_REMOVED, TRACK_UPDATED } from '../tracks';
+import { getTrackByJitsiTrack, isParticipantAudioMuted, isParticipantVideoMuted, isParticipantVideoTrackDesktop, TRACK_ADDED, TRACK_REMOVED, TRACK_UPDATED } from '../tracks';
 
 import {
     DOMINANT_SPEAKER_CHANGED,
@@ -648,7 +648,9 @@ function _raiseHandUpdated({ dispatch, getState }, conference, participantId, ne
                 (!raisedHandType || raisedHandType === MEDIA_TYPE.AUDIO) && isParticipantAudioMuted(participant, state)
             ))
             || (isForceMuted(participant, MEDIA_TYPE.VIDEO, state) && (
-                raisedHandType === MEDIA_TYPE.VIDEO && isParticipantVideoMuted(participant, state)
+                raisedHandType === MEDIA_TYPE.VIDEO && (
+                    isParticipantVideoMuted(participant, state)
+                    || isParticipantVideoTrackDesktop(participant, state))
             ))
             || (isForceMuted(participant, MEDIA_TYPE.PRESENTER, state)
                 && raisedHandType === MEDIA_TYPE.PRESENTER);
@@ -663,7 +665,9 @@ function _raiseHandUpdated({ dispatch, getState }, conference, participantId, ne
                 dispatch(approveParticipant(participantId, MEDIA_TYPE.AUDIO));
             }
             if (isForceMuted(participant, MEDIA_TYPE.VIDEO, state) && (
-                raisedHandType === MEDIA_TYPE.VIDEO && isParticipantVideoMuted(participant, state)
+                raisedHandType === MEDIA_TYPE.VIDEO && (
+                    isParticipantVideoMuted(participant, state)
+                    || isParticipantVideoTrackDesktop(participant, state))
             )) {
                 dispatch(approveParticipant(participantId, MEDIA_TYPE.VIDEO));
             }

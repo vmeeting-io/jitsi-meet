@@ -1,5 +1,8 @@
 // @flow
 
+import { find } from 'lodash';
+
+import { conferenceSubjectChanged } from '../base/conference';
 import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
 import { getParticipantById } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
@@ -16,7 +19,7 @@ import logger from './logger';
  */
 StateListenerRegistry.register(
     state => state['features/base/conference'].conference,
-    (conference, { dispatch }, previousConference) => {
+    (conference, { dispatch, getState }, previousConference) => {
         if (conference && !previousConference) {
             conference.on(JitsiConferenceEvents.BREAKOUT_ROOMS_MOVE_TO_ROOM, roomId => {
                 logger.debug(`Moving to room: ${roomId}`);
@@ -30,6 +33,13 @@ StateListenerRegistry.register(
                     rooms,
                     roomCounter
                 });
+
+                // if current subject of conference is changed, notify it.
+                const currentSubject = getState()['features/base/conference'].subject;
+                const found = find(rooms, room => room.jid === conference?.room?.roomjid);
+                if (found?.name && found.name !== currentSubject) {
+                    dispatch(conferenceSubjectChanged(found.name));
+                }
             });
         }
     });

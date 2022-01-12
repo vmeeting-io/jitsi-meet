@@ -117,14 +117,21 @@ export function getMoreTabProps(stateful: Object | Function) {
     const enabledNotifications = getNotificationsMap(stateful);
 
     // when self view is controlled by the config we hide the settings
-    const { disableSelfView, disableSelfViewSettings, prejoinConfig, showFramerateSelect } = state['features/base/config'];
+    const {
+        disableSelfView,
+        disableSelfViewSettings,
+        disableShortcuts,
+        prejoinConfig,
+        showFramerateSelect
+    } = state['features/base/config'];
     const { aiAttentionAnalysisEnabled, userSelectedSkipPrejoin } = state['features/base/settings'];
 
     return {
         currentFramerate: framerate,
         currentLanguage: language,
         desktopShareFramerates: SS_SUPPORTED_FRAMERATES,
-        disableHideSelfView: disableSelfViewSettings || disableSelfView || aiAttentionAnalysisEnabled,
+        disableHideSelfView: true, // disableSelfViewSettings || disableSelfView || aiAttentionAnalysisEnabled,
+        disableShortcuts,
         hideSelfView: getHideSelfView(state),
         languages: LANGUAGES,
         showLanguageSettings: configuredTabs.includes('language'),

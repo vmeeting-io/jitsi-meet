@@ -456,6 +456,13 @@ class WelcomePage extends AbstractWelcomePage {
                             className = 'watermark'
                             defaultJitsiLogoURL = { _defaultLogoUrl || DEFAULT_WELCOME_PAGE_LOGO_URL } />
                         <div className = 'toolbars'>
+                            <Button
+                                    appearance = 'subtle'
+                                    className = 'button'
+                                    href = { `/metaverse` }
+                                    key = 'metaverse'>
+                                    { t('toolbar.Metaverse') }
+                            </Button>
                             <div className = 'button desktop'>
                                 <DropdownMenu
                                     onOpenChange = { this._onOpenChange }

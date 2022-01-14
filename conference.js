@@ -28,6 +28,7 @@ import {
 } from './react/features/app/actions';
 import { showModeratedNotification } from './react/features/av-moderation/actions';
 import { shouldShowModeratedNotification } from './react/features/av-moderation/functions';
+import { connectionDisconnected } from './react/features/base/connection';
 import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
@@ -430,8 +431,7 @@ class ConferenceConnector {
         const replaceParticipant = getReplaceParticipant(APP.store.getState());
 
         // the local storage overrides here and in connection.js can be used by jibri
-        const password = jitsiLocalStorage.getItem('xmpp_conference_password_override')
-            || APP.store.getState()['features/base/conference'].roomInfo?.password;
+        const password = jitsiLocalStorage.getItem('xmpp_conference_password_override');
 
         room.join(password, replaceParticipant);
     }
@@ -444,6 +444,8 @@ class ConferenceConnector {
  */
 function disconnect() {
     const onDisconnected = () => {
+        const { connection } = APP.store.getState()['features/base/connection'];
+        APP.store.dispatch(connectionDisconnected(connection));
         APP.API.notifyConferenceLeft(APP.conference.roomName);
 
         return Promise.resolve();

@@ -73,7 +73,6 @@ export class VideoQualityLabel extends AbstractVideoQualityLabel<Props> {
         } else {
             className = 'current-video-quality';
             icon = IconGauge;
-            onClick = () => dispatch(openDialog(VideoQualityDialog));
             tooltipKey = 'videoStatus.performanceSettings';
         }
 
@@ -86,7 +85,7 @@ export class VideoQualityLabel extends AbstractVideoQualityLabel<Props> {
                     className = { className }
                     icon = { icon }
                     id = 'videoResolutionLabel'
-                    onClick = { onClick }
+                    onClick = { () => dispatch(openDialog(VideoQualityDialog)) }
                     text = { labelContent } />
             </Tooltip>
         );

@@ -1,5 +1,6 @@
 // @flow
 
+import { jitsiLocalStorage } from '@jitsi/js-utils';
 import i18next from 'i18next';
 import _ from 'lodash';
 import { batch } from 'react-redux';
@@ -224,9 +225,14 @@ export function moveToRoom(roomId?: string) {
         }
 
         batch(() => {
-            dispatch({ type: _RESET_BREAKOUT_ROOMS });
+            // dispatch({ type: _RESET_BREAKOUT_ROOMS });
             dispatch({ type: _RESET_MODERATIONS });
         });
+
+        const { password } = getState()['features/base/conference'].roomInfo || {};
+        if (password) {
+            jitsiLocalStorage.setItem('xmpp_conference_password_override', password);
+        }
 
         if (navigator.product === 'ReactNative') {
             const conference = getCurrentConference(getState);

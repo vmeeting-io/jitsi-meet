@@ -272,6 +272,7 @@ function MeetingParticipantItem({
             overflowDrawer = { overflowDrawer }
             participantID = { _participantID }
             participantStatus = { _participant?.presence }
+            pinEnabled = { true }
             presenterMediaState = { _presenterMediaState }
             raisedHand = { _raisedHand }
             videoMediaState = { _videoMediaState }

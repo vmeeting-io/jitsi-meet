@@ -42,3 +42,7 @@ export function getFaceDetector(state) {
     const { instance } = state['features/face-detect'];
     return instance;
 }
+
+export function getStatusMap(state) {
+    return state['features/face-detect'].statusMap;
+}

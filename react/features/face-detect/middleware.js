@@ -1,12 +1,15 @@
 // @flow
 
+import { isEmpty } from 'lodash';
 import { batch } from 'react-redux';
 
 import { CONFERENCE_JOINED, STATUS_COMMAND } from '../base/conference';
 import { CONNECTION_DISCONNECTED } from '../base/connection';
 import {
     getLocalParticipant,
+    getParticipantById,
     getParticipantPresenceStatus,
+    isLocalParticipantModerator,
     participantPresenceChanged,
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
@@ -15,17 +18,20 @@ import {
 import { MiddlewareRegistry } from '../base/redux';
 import { MEDIA_TYPE, VIDEO_TYPE } from '../base/media';
 import { isParticipantVideoMuted, TRACK_UPDATED } from '../base/tracks';
+import { isDIDPermitted } from '../did-consent';
+import { getBreakoutRooms, UPDATE_BREAKOUT_ROOMS } from '../breakout-rooms';
 import { isPrejoinPageVisible } from '../prejoin';
 
 import {
     closeAttentionAnalysis,
     stopFaceDetect,
-    updateAttentionAnalysis
+    updateAttentionAnalysis,
+    updateAttentionStatus
 } from './actions';
+import { SET_STATUS_MAP, UPDATE_ATTENTION_STATUS } from './actionTypes';
 import { STATUS } from './constants';
-import { getFaceDetector, isAttentionAnalysisEnabled } from './functions';
+import { getFaceDetector, getStatusMap, isAttentionAnalysisEnabled } from './functions';
 import './subscriber';
-import { isDIDPermitted } from '../did-consent';
 
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
@@ -41,7 +47,8 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
     case CONNECTION_DISCONNECTED: {
-        if (isAttentionAnalysisEnabled(store.getState())) {
+        const state = store.getState();
+        if (isAttentionAnalysisEnabled(state)) {
             batch(() => {
                 store.dispatch(closeAttentionAnalysis());
                 store.dispatch(stopFaceDetect());
@@ -51,11 +58,14 @@ MiddlewareRegistry.register(store => next => action => {
     }
     case PARTICIPANT_UPDATED: {
         const state = store.getState();
-        if (isAttentionAnalysisEnabled(state)) {
-            const { id, presence } = action.participant;
-            const old = getParticipantPresenceStatus(state, id);
+        if (isAttentionAnalysisEnabled(state) && isLocalParticipantModerator(state)) {
+            const { id, presence, name } = action.participant;
+            const old = getParticipantById(state, id);
+            const { rooms } = getBreakoutRooms(state);
             const result = next(action);
-            if (presence && old !== presence) {
+            if (presence && old.presence !== presence) {
+                store.dispatch(updateAttentionStatus({ id, status: presence }));
+            } else if (name && old.name !== name && isEmpty(rooms)) {
                 store.dispatch(updateAttentionAnalysis());
             }
             return result;
@@ -64,7 +74,19 @@ MiddlewareRegistry.register(store => next => action => {
     }
     case PARTICIPANT_JOINED:
     case PARTICIPANT_LEFT: {
-        if (isAttentionAnalysisEnabled(store.getState())) {
+        const state = store.getState();
+        const rooms = getBreakoutRooms(state);
+        if (isAttentionAnalysisEnabled(state)
+            && isLocalParticipantModerator(state)
+            && isEmpty(rooms)) {
+            const statusMap = getStatusMap(state);
+            if (action.type === PARTICIPANT_JOINED) {
+                statusMap.set(action.participant.id, action.participant.presence);
+            } else {
+                statusMap.delete(action.participant.id);
+            }
+            store.dispatch({ type: SET_STATUS_MAP, statusMap });
+
             const result = next(action);
             store.dispatch(updateAttentionAnalysis());
             return result;
@@ -73,7 +95,7 @@ MiddlewareRegistry.register(store => next => action => {
     }
     case TRACK_UPDATED: {
         const state = store.getState();
-        if (isAttentionAnalysisEnabled(state)) {
+        if (isAttentionAnalysisEnabled(state) && isDIDPermitted(state)) {
             const result = next(action);
 
             if (isPrejoinPageVisible(state)) {
@@ -98,6 +120,22 @@ MiddlewareRegistry.register(store => next => action => {
                     }
                 }
             }
+        }
+        break;
+    }
+    case UPDATE_BREAKOUT_ROOMS: {
+        const state = store.getState();
+        if (isAttentionAnalysisEnabled(state) && isLocalParticipantModerator(state)) {
+            const result = next(action);
+            store.dispatch(updateAttentionAnalysis());
+            return result;
+        }
+        break;
+    }
+    case UPDATE_ATTENTION_STATUS: {
+        const state = store.getState();
+        if (isAttentionAnalysisEnabled(state) && isLocalParticipantModerator(state)) {
+            store.dispatch(updateAttentionStatus(action));
         }
         break;
     }

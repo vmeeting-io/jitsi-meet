@@ -176,6 +176,7 @@ function ParticipantItem({
     overflowDrawer,
     participantID,
     participantStatus,
+    pinEnabled,
     presenterMediaState = MEDIA_STATE.NONE,
     raisedHand,
     t,
@@ -253,7 +254,7 @@ function ParticipantItem({
             indicators = { indicators }
             isHighlighted = { isHighlighted }
             $local = { local }
-            onClick = { onClick }
+            onClick = { pinEnabled ? onClick : undefined }
             onMouseLeave = { onLeave }
             textChildren = { text }
             trigger = { actionsTrigger } />

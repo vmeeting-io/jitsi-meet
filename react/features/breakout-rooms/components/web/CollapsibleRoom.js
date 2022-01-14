@@ -97,7 +97,8 @@ export const CollapsibleRoom = ({
         onRaiseMenu(target);
     }, [ onRaiseMenu ]);
     const { defaultRemoteDisplayName } = useSelector(state => state['features/base/config']);
-
+    const { aiAttentionAnalysisEnabled } = useSelector(state => state['features/base/settings']);
+    const { statusMap } = useSelector(state => state['features/face-detect']);
     const arrow = (<div className = { styles.arrowContainer }>
         <Icon
             size = { 14 }
@@ -126,10 +127,12 @@ export const CollapsibleRoom = ({
                 && Object.values(room?.participants || {}).map((p: Object) =>
                     participantMatchesSearch(p, searchString) && (
                         <ParticipantItem
+                            aiAttentionFlag = { aiAttentionAnalysisEnabled }
                             displayName = { p.displayName || defaultRemoteDisplayName }
-                            key = { p.jid }
+                            key = { p.id }
                             local = { false }
-                            participantID = { p.jid } />
+                            participantID = { p.id }
+                            participantStatus = { statusMap.get(p.id) } />
                     ))
             }
         </>

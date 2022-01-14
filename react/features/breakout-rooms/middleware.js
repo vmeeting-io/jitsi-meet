@@ -1,12 +1,15 @@
 // @flow
 
+import { jitsiLocalStorage } from '@jitsi/js-utils';
 import { find } from 'lodash';
 
 import { conferenceSubjectChanged } from '../base/conference';
+import { CONNECTION_DISCONNECTED } from '../base/connection';
 import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
 import { getParticipantById } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
 import { editMessage, MESSAGE_TYPE_REMOTE } from '../chat';
+import { UPDATE_ATTENTION_STATUS } from '../face-detect';
 
 import { UPDATE_BREAKOUT_ROOMS } from './actionTypes';
 import { moveToRoom } from './actions';
@@ -41,6 +44,11 @@ StateListenerRegistry.register(
                     dispatch(conferenceSubjectChanged(found.name));
                 }
             });
+
+            conference.on(JitsiConferenceEvents.BREAKOUT_ROOMS_ATTENTION_UPDATED, ({ id, status }) => {
+                logger.debug('Attention is updated:', id, status);
+                dispatch({ type: UPDATE_ATTENTION_STATUS, id, status });
+            });
         }
     });
 
@@ -73,6 +81,9 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
 
         break;
     }
+    case CONNECTION_DISCONNECTED:
+        jitsiLocalStorage.removeItem('xmpp_conference_password_override');
+        break;
     }
 
     return result;

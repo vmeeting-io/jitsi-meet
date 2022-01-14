@@ -1,11 +1,11 @@
-import { filter } from 'lodash';
+import { difference, filter, flattenDeep, isEmpty, last, map } from 'lodash';
 
 import { getCurrentConference } from '../base/conference';
 import {
     getLocalParticipant,
     getRemoteParticipants,
-    getRemoteParticipantsSorted
 } from '../base/participants';
+import { getBreakoutRooms } from '../breakout-rooms/functions';
 
 import {
     INIT_FACE_DETECT,
@@ -14,12 +14,13 @@ import {
     START_FACE_DETECT,
     SET_ATTENTION_ANALYSIS_READY,
     SET_ATTENTION_ANALYSIS_COUNT,
-    SET_ATTENTION_ANALYSIS_TOTAL
+    SET_ATTENTION_ANALYSIS_TOTAL,
+    SET_STATUS_MAP,
 } from './actionTypes';
 import {
     getAttentionAnalysisWindow,
     getFaceDetector,
-    grantFaceDetect
+    getStatusMap,
 } from './functions';
 import FaceDetect from './FaceDetect';
 
@@ -82,11 +83,10 @@ export function openAttentionAnalysis() {
         let childWindow = getAttentionAnalysisWindow(state);
         
         if (!childWindow) {
-            const conference = getCurrentConference(state);
-            const meetingId = conference.room.meetingId;
+            const { roomInfo } = state['features/base/conference'];
 
             childWindow = window.open(
-                `${AUTH_PAGE_BASE}/learnersattention?meetingId=${meetingId}`,
+                `${AUTH_PAGE_BASE}/learnersattention?roomId=${roomInfo._id}`,
                 '_blank',
                 'status=no,location=no,titlebar=no,directories=no,toolbar=no,menubar=no,width=1024,height=700,left=100,top=100'
             );
@@ -123,21 +123,68 @@ export function updateAttentionAnalysis() {
     return function(dispatch, getState) {
         const state = getState();
         const childWindow = getAttentionAnalysisWindow(state);
+        const conference = getCurrentConference(state);
 
-        if (childWindow) {
-            const remote = getRemoteParticipants(state);
-            const participants = filter(getRemoteParticipantsSorted(state).map(pid => {
-                const { id, avatarURL, name, presence } = remote.get(pid) || {};
-                return id ? { id, avatarURL, name, status: presence } : null;
-            }));
+        if (childWindow && conference) {
+            const rooms = { ...getBreakoutRooms(state) };
+            const statusMap = getStatusMap(state);
 
-            const { id, avatarURL, name, presence } = getLocalParticipant(state);
-            participants.unshift({ id, avatarURL, name, status: presence });
+            if (isEmpty(rooms)) {
+                const remote = getRemoteParticipants(state);
+                const participants = {};
+                for (const [id, { role, name: displayName }] of remote) {
+                    const jid = conference.getParticipantById(id)?.getJid();
+                    participants[id] = { displayName, id, jid, role };
+                }
 
+                const { id, role, name: displayName } = getLocalParticipant(state);
+                const jid = state['features/base/connection'].connection?.getJid();
+                participants[id] = { displayName, id, jid, role };
+
+                const name = conference.getName();
+                rooms[name] = {
+                    id: name,
+                    isMainRoom: true,
+                    jid: conference.room.roomjid,
+                    name,
+                    participants
+                };
+            } else {
+                const participantIDs = flattenDeep(
+                    map(rooms, r => map(r.participants, 'id'))
+                );
+                // delete left participant
+                difference([...statusMap.keys()], participantIDs).forEach(id => {
+                    statusMap.delete(id);
+                });
+                // insert joined participant
+                filter(participantIDs, id => !statusMap.has(id)).forEach(id => {
+                    statusMap.set(id, undefined);
+                });
+                dispatch({ type: SET_STATUS_MAP, statusMap });
+            }
+
+            console.log('updateAttentionAnalysis:', rooms);
             childWindow.postMessage({
                 type: 'update-attentions',
-                participants
+                rooms,
+                statusMap
             });
+        }
+    }
+}
+
+export function updateAttentionStatus({ id, status }) {
+    return function(dispatch, getState) {
+        const state = getState();
+        const statusMap = getStatusMap(state);
+
+        statusMap.set(id, status);
+        dispatch({ type: SET_STATUS_MAP, statusMap });
+        
+        const childWindow = getAttentionAnalysisWindow(state);
+        if (childWindow) {
+            childWindow.postMessage({ type: 'update-status', statusMap });
         }
     }
 }

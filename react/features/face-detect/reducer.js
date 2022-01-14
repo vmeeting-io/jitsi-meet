@@ -3,7 +3,6 @@
 import { ReducerRegistry } from '../base/redux';
 
 import {
-    UPDATE_ATTENTION_STATUSES,
     START_FACE_DETECT,
     STOP_FACE_DETECT,
     ATTENTION_ANALYSIS_OPENED,
@@ -11,11 +10,13 @@ import {
     INIT_FACE_DETECT,
     SET_ATTENTION_ANALYSIS_COUNT,
     SET_ATTENTION_ANALYSIS_TOTAL,
+    SET_STATUS_MAP,
 } from './actionTypes';
 
 const DEFAULT_STATE = {
     childWindow: null,
     instance: null,
+    statusMap: new Map()
 };
 
 /**
@@ -29,13 +30,18 @@ ReducerRegistry.register('features/face-detect', (state = DEFAULT_STATE, action)
     case ATTENTION_ANALYSIS_OPENED:
     case START_FACE_DETECT:
     case STOP_FACE_DETECT:
-    case UPDATE_ATTENTION_STATUSES:
     case SET_ATTENTION_ANALYSIS_READY:
     case SET_ATTENTION_ANALYSIS_COUNT:
     case SET_ATTENTION_ANALYSIS_TOTAL:
         return {
             ...state,
             ...data
+        };
+
+    case SET_STATUS_MAP:
+        return {
+            ...state,
+            statusMap: new Map(action.statusMap)
         };
 
     default:

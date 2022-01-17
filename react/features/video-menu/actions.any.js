@@ -49,13 +49,13 @@ export function muteLocal(enable: boolean, mediaType: MEDIA_TYPE, stopScreenShar
         }
 
         // check for A/V Moderation when trying to unmute
-        if (!enable && shouldShowModeratedNotification(MEDIA_TYPE.AUDIO, getState())) {
-            if (!isModerationNotificationDisplayed(MEDIA_TYPE.AUDIO, getState())) {
-                dispatch(showModeratedNotification(MEDIA_TYPE.AUDIO));
-            }
+        // if (!enable && shouldShowModeratedNotification(MEDIA_TYPE.AUDIO, getState())) {
+        //     if (!isModerationNotificationDisplayed(MEDIA_TYPE.AUDIO, getState())) {
+        //         dispatch(showModeratedNotification(MEDIA_TYPE.AUDIO));
+        //     }
 
-            return;
-        }
+        //     return;
+        // }
 
         if (enable && stopScreenSharing) {
             dispatch(toggleScreensharing(false, false, true));

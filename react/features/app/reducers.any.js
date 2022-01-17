@@ -5,6 +5,7 @@ import '../authentication/reducer';
 import '../av-moderation/reducer';
 import '../base/app/reducer';
 import '../base/audio-only/reducer';
+import '../base/auth/reducer';
 import '../base/conference/reducer';
 import '../base/config/reducer';
 import '../base/connection/reducer';

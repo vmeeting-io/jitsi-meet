@@ -120,6 +120,7 @@ MiddlewareRegistry.register(store => next => action => {
                     }
                 }
             }
+            return result;
         }
         break;
     }

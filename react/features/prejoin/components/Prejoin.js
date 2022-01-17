@@ -20,16 +20,16 @@ import { connect } from '../../base/redux';
 import { getDisplayName, updateSettings } from '../../base/settings';
 import { getLocalJitsiVideoTrack } from '../../base/tracks';
 import {
-    getAttentionAnalysisReady,
     initFaceDetect as initFaceDetectAction,
-    isAttentionAnalysisEnabled,
     startFaceDetect as startFaceDetectAction,
     stopFaceDetect as stopFaceDetectAction
-} from '../../face-detect';
+} from '../../face-detect/actions';
 import {
-    checkDIDConsent,
-    permitDataRequest as permitDataRequestAction
-} from '../../did-consent';
+    getAttentionAnalysisReady,
+    isAttentionAnalysisEnabled
+} from '../../face-detect/functions';
+import { checkDIDConsent } from '../../did-consent/functions';
+import { permitDataRequest as permitDataRequestAction } from '../../did-consent/actions';
 import {
     joinConference as joinConferenceAction,
     joinConferenceWithoutAudio as joinConferenceWithoutAudioAction,

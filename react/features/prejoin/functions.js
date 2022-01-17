@@ -3,7 +3,7 @@
 import { getRoomName } from '../base/conference';
 import { getDialOutStatusUrl, getDialOutUrl } from '../base/config/functions';
 import { isAudioMuted, isVideoMutedByUser } from '../base/media';
-import { isAttentionAnalysisEnabled } from '../face-detect';
+import { isAttentionAnalysisEnabled } from '../face-detect/functions';
 
 /**
  * Selector for the visibility of the 'join by phone' button.

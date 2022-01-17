@@ -47,7 +47,7 @@ export default class FaceDetect {
         this._isWaiting = true;
         this._showResult = showResult;
         this._enabled = false;
-        this._prevStatus = STATUS_TABLE[0];
+        this._prevStatus = null;
         this._timerId = null;
         this._timestamp = 0;
         this._frames = [];
@@ -352,7 +352,7 @@ export default class FaceDetect {
         const state = this._getState();
         const conference = getCurrentConference(state);
         const participant = getLocalParticipant(state);
-        const statusValue = this._prevStatus;
+        const statusValue = this._prevStatus || STATUS_TABLE[0];
 
         console.log(`==> faceDetect.sendPresence('${this._prevStatus}')`);
         if (conference && participant && statusValue) {

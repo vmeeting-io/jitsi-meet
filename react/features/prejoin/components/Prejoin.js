@@ -196,6 +196,7 @@ class Prejoin extends Component<Props, State> {
         this._onCheckAlreadyVerified = this._onCheckAlreadyVerified.bind(this);
         this._beforeUnloadHandler = this._beforeUnloadHandler.bind(this);
         this._getExtraJoinButtons = this._getExtraJoinButtons.bind(this);
+        this._hideDID = this._hideDID.bind(this);
     }
 
     componentWillMount(){
@@ -217,13 +218,15 @@ class Prejoin extends Component<Props, State> {
             isVideoDisabled,
             showCameraPreview,
         } = this.props;
-        let { joinState, completed } = this.state;
+        let { joinState, completed, showDID } = this.state;
 
+        console.log('componentDidUpdate:', joinState, completed, _didPermitted, showDID);
         switch (joinState) {
         case JOIN_STATE.START:
-            if (!_attentionAnalysisEnabled || (completed && !_didPermitted)) {
+            if (!_attentionAnalysisEnabled
+                || (!showDID && completed && !_didPermitted)) {
                 this.setState({ joinState: JOIN_STATE.READY_TO_JOIN });
-            } else if (!completed && !_didPermitted) {
+            } else if (!completed || showDID) {
                 break;
             } else if (isVideoDisabled || !showCameraPreview) {
                 this.setState({ joinState: JOIN_STATE.JOIN_AS_AWAY });
@@ -464,6 +467,12 @@ class Prejoin extends Component<Props, State> {
         return buttons;
     }
 
+    _hideDID: () => void;
+
+    _hideDID() {
+        this.setState({ showDID: false });
+    }
+
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -519,7 +528,8 @@ class Prejoin extends Component<Props, State> {
                 title = { t('prejoin.joinMeeting') }
                 videoMuted = { !showCameraPreview }
                 videoTrack = { videoTrack }
-                showDID = { showDID }>
+                showDID = { showDID }
+                hideDID = { this._hideDID }>
                 <div
                     className = 'prejoin-input-area'
                     data-testid = 'prejoin.screen'>

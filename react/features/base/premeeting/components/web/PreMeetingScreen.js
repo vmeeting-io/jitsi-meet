@@ -160,7 +160,6 @@ class PreMeetingScreen extends PureComponent<Props> {
 
         this.state = {
             class: localStorage.language !== "ko" ? "":"-kr",
-            showDID: this.props.showDID,
             page: this._didContentPageOne,
             phoneNumber: props._user?.phoneNumber || '',
             phoneNumberError:false,
@@ -173,9 +172,9 @@ class PreMeetingScreen extends PureComponent<Props> {
 
         // 1. Check consent at DID server and save current state. 
         checkDIDConsent().then(resp=>{
-            if (resp.data.consent===PIC_CONSENT.APPROVED) {
+            if (resp.data.consent === PIC_CONSENT.APPROVED) {
                 dispatch(permitDataRequest(true));
-                this._onCancel();
+                this.props.hideDID && this.props.hideDID();
             } else {
                 dispatch(openDIDProcessingDialog());
                 //TODO Handle 
@@ -285,8 +284,8 @@ class PreMeetingScreen extends PureComponent<Props> {
     }
     
     _onCancel(){
-        this.setState({showDID: false});
         this.props.dispatch(permitDataRequest(false));
+        this.props.hideDID && this.props.hideDID();
     }
 
      /**
@@ -603,9 +602,9 @@ class PreMeetingScreen extends PureComponent<Props> {
                     <div className = 'content'>
                         <ConnectionStatus />
                         
-                        { _attentionAnalysisEnabled && this.state.showDID && this._renderDid() }      
+                        { _attentionAnalysisEnabled && this.props.showDID && this._renderDid() }
                        
-                        { !this.state.showDID && <div className = 'content-controls'>
+                        { !this.props.showDID && <div className = 'content-controls'>
                             <h1 className = 'title'>
                                 { title }
                             </h1>

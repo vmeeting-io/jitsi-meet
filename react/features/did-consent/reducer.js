@@ -20,7 +20,7 @@ const DEFAULT_STATE = {
      * @public
      * @type {boolean}
      */
-    permit: false,
+    permit: undefined,
 };
 
 /**

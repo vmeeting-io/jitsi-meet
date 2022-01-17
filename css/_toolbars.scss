@@ -31,6 +31,7 @@
     transition: opacity .3s ease-in;
     width: 100%;
     pointer-events: none;
+    z-index: $toolbarZ + 2;
 
     &.visible {
         opacity: 1;

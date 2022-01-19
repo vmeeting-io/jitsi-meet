@@ -1233,6 +1233,14 @@ export default {
     },
 
     /**
+     * Obtains the local display name.
+     * @returns {string|undefined}
+     */
+    getLocalDisplayName() {
+        return getLocalParticipant(APP.store.getState())?.name;
+    },
+
+    /**
      * Finds JitsiParticipant for given id.
      *
      * @param {string} id participant's identifier(MUC nickname).

@@ -2,8 +2,9 @@
 
 import { arApprovalDialog, enableARHat } from '../../ar-effect';
 import { IconBirthdayHat } from '../../base/icons';
-import { getLocalParticipant, updateParticipantBirthdayHatFlag } from '../../base/participants';
+import { getLocalParticipant, getParticipantByIdOrUndefined, updateParticipantBirthdayHatFlag } from '../../base/participants';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { notifyBirthdayHatOn } from '../../participants-pane/actions.any';
 
 export type Props = AbstractButtonProps & {
 
@@ -63,8 +64,8 @@ export default class AbstractBirthdayHatButton extends AbstractButton<Props, *> 
  *  }}
  */
 export function _mapStateToProps(state: Object, ownProps: Props) {
-    const _participant = getParticipantByIdOrUndefined(state, participantID);
-    const _isHatOn = participant?.hatOn;
+    const _participant = getParticipantByIdOrUndefined(state, ownProps.participantID);
+    const _isHatOn = _participant?.hatOn;
     const _localDisplayName = getLocalParticipant(state)?.name;
 
     return {

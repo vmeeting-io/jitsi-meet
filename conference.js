@@ -2307,17 +2307,20 @@ export default {
             value => APP.store.dispatch(updateSettings({ aiAttentionAnalysisEnabled: value })));
 
         room.on(JitsiConferenceEvents.NOTIFY_BIRTHDAY_HAT_ON,
-            (nick) => {
-
+            (nick, from) => {
                 APP.store.dispatch(showNotification({
                     descriptionArguments: { initiator: nick , participant: this.getLocalDisplayName()},
                     descriptionKey: 'notify.birthdayHatOn',
                     titleKey: 'notify.birthdayHatOnTitle'
                 }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM)); // hard-coded the duration of notification bubble to 5 seconds
 
-                APP.store.dispatch(arApprovalDialog(true));
-                enableARHat(APP.store.dispatch,true); 
-                APP.store.dispatch(openDialog(BirthdayHatApprove));
+                enableARHat(APP.store.dispatch,true);
+
+                const localParticipantID = getLocalParticipant(APP.store.getState())?.id;
+                if (!from?.endsWith(localParticipantID)) {
+                    APP.store.dispatch(arApprovalDialog(true));
+                    APP.store.dispatch(openDialog(BirthdayHatApprove));
+                }
             });
 
         room.on(JitsiConferenceEvents.NOTIFY_TIMER_STARTED,

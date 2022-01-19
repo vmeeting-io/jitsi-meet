@@ -183,19 +183,11 @@ const ParticipantContextMenu = ({
     } ];
 
     // for local participant
-    if (local && _isModerator) {
-        if (!thumbnailMenu) {
+    if (local) {
+        if (!thumbnailMenu && _isModerator) {
             buttons.push(
                 <GrantFollowMeModeratorButton
                     key = 'grant-follow-me-moderator'
-                    participantID = { _getCurrentParticipantId() } />
-            );
-        }
-
-        if (_isParticipantBirthday) {
-            buttons.push(
-                <BirthdayHatButton
-                    key = 'birthday-hat'
                     participantID = { _getCurrentParticipantId() } />
             );
         }
@@ -261,15 +253,15 @@ const ParticipantContextMenu = ({
                     participantID = { _getCurrentParticipantId() } />
             );
         }
-
-        if (_isParticipantBirthday) {
-            buttons2.push(
-                <BirthdayHatButton
-                    key = 'birthday-hat'
-                    participantID = { _getCurrentParticipantId() } />
-            );
-        }
     }    
+
+    if (_isParticipantBirthday) {
+        buttons.push(
+            <BirthdayHatButton
+                key = 'birthday-hat'
+                participantID = { _getCurrentParticipantId() } />
+        );
+    }
 
     if (!local) {
         buttons2.push(

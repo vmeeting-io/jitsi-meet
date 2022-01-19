@@ -40,10 +40,14 @@ class BirthdayHatButton extends AbstractBirthdayHatButton {
      * @returns {ReactElement}
      */
     render() {
-        const { _isHatOn, participantID, t } = this.props;
+        const { _isHatOn, _participant, participantID, t } = this.props;
         const label = _isHatOn
             ? `participantsPane.actions.removeBirthdayARHat`
             : `participantsPane.actions.applyBirthdayARHat`;
+
+        if (_isHatOn && !_participant.local) {
+            return null;
+        }
 
         return (
             <ContextMenuItem

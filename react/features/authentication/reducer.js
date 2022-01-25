@@ -1,16 +1,23 @@
-/* @flow */
+// @flow
 
 import { assign, ReducerRegistry } from '../base/redux';
 
 import {
     CANCEL_LOGIN,
-    UPDATE_USER_INFO,
     STOP_WAIT_FOR_OWNER,
     UPGRADE_ROLE_FINISHED,
     UPGRADE_ROLE_STARTED,
     WAIT_FOR_OWNER
 } from './actionTypes';
 
+/**
+ * Listens for actions which change the state of the authentication feature.
+ *
+ * @param {Object} state - The Redux state of the authentication feature.
+ * @param {Object} action - Action object.
+ * @param {string} action.type - Type of action.
+ * @returns {Object}
+ */
 ReducerRegistry.register('features/authentication', (state = {}, action) => {
     switch (action.type) {
     case CANCEL_LOGIN:
@@ -19,9 +26,6 @@ ReducerRegistry.register('features/authentication', (state = {}, action) => {
             progress: undefined,
             thenableWithCancel: undefined
         });
-
-    case UPDATE_USER_INFO:
-        return assign(state, { user: action.user });
 
     case STOP_WAIT_FOR_OWNER:
         return assign(state, {

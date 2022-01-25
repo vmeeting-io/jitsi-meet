@@ -9,7 +9,9 @@ local jid = require "util.jid";
 local json_safe = require "cjson.safe";
 local path = require "util.paths";
 local sha256 = require "util.hashes".sha256;
-local http_get_with_retry = module:require "util".http_get_with_retry;
+local main_util = module:require "util";
+local http_get_with_retry = main_util.http_get_with_retry;
+local extract_subdomain = main_util.extract_subdomain;
 
 local nr_retries = 3;
 
@@ -126,9 +128,9 @@ function Util:get_public_key(keyId)
     local content = self.cache:get(keyId);
     if content == nil then
         -- If the key is not found in the cache.
-        module:log("debug", "Cache miss for key: "..keyId);
+        module:log("debug", "Cache miss for key: %s", keyId);
         local keyurl = path.join(self.asapKeyServer, hex.to(sha256(keyId))..'.pem');
-        module:log("debug", "Fetching public key from: "..keyurl);
+        module:log("debug", "Fetching public key from: %s", keyurl);
         content = http_get_with_retry(keyurl, nr_retries);
         if content ~= nil then
             self.cache:set(keyId, content);
@@ -136,46 +138,50 @@ function Util:get_public_key(keyId)
         return content;
     else
         -- If the key is in the cache, use it.
-        module:log("debug", "Cache hit for key: "..keyId);
+        module:log("debug", "Cache hit for key: %s", keyId);
         return content;
     end
 end
 
 --- Verifies issuer part of token
--- @param 'iss' claim from the token to verify
+-- @param 'issClaim' claim from the token to verify
 -- @param 'acceptedIssuers' list of issuers to check
 -- @return nil and error string or true for accepted claim
 function Util:verify_issuer(issClaim, acceptedIssuers)
     if not acceptedIssuers then
         acceptedIssuers = self.acceptedIssuers
     end
-    module:log("debug","verify_issuer claim: %s against accepted: %s",issClaim, acceptedIssuers);
+    module:log("debug", "verify_issuer claim: %s against accepted: %s", issClaim, acceptedIssuers);
     for i, iss in ipairs(acceptedIssuers) do
+        if iss == '*' then
+            -- "*" indicates to accept any issuer in the claims so return success
+            return true;
+        end
         if issClaim == iss then
-            --claim matches an accepted issuer so return success
+            -- claim matches an accepted issuer so return success
             return true;
         end
     end
-    --if issClaim not found in acceptedIssuers, fail claim
+    -- if issClaim not found in acceptedIssuers, fail claim
     return nil, "Invalid issuer ('iss' claim)";
 end
 
 --- Verifies audience part of token
--- @param 'aud' claim from the token to verify
+-- @param 'audClaim' claim from the token to verify
 -- @return nil and error string or true for accepted claim
 function Util:verify_audience(audClaim)
-    module:log("debug","verify_audience claim: %s against accepted: %s",audClaim, self.acceptedAudiences);
+    module:log("debug", "verify_audience claim: %s against accepted: %s", audClaim, self.acceptedAudiences);
     for i, aud in ipairs(self.acceptedAudiences) do
         if aud == '*' then
-            --* indicates to accept any audience in the claims so return success
+            -- "*" indicates to accept any audience in the claims so return success
             return true;
         end
         if audClaim == aud then
-            --claim matches an accepted audience so return success
+            -- claim matches an accepted audience so return success
             return true;
         end
     end
-    --if issClaim not found in acceptedIssuers, fail claim
+    -- if audClaim not found in acceptedAudiences, fail claim
     return nil, "Invalid audience ('aud' claim)";
 end
 
@@ -264,6 +270,13 @@ function Util:process_and_verify_token(session, acceptedIssuers)
         if kid == nil then
             return false, "not-allowed", "'kid' claim is missing";
         end
+        local alg = header["alg"];
+        if alg == nil then
+            return false, "not-allowed", "'alg' claim is missing";
+        end
+        if alg.sub(alg,1,2) ~= "RS" then -- do not remove - needed to protect jwt.decode in verify_token
+            return false, "not-allowed", "'kid' claim only support with RS family";
+        end
         pubKey = self:get_public_key(kid);
         if pubKey == nil then
             return false, "not-allowed", "could not obtain public key";
@@ -297,6 +310,9 @@ function Util:process_and_verify_token(session, acceptedIssuers)
           if claims["context"]["features"] ~= nil then
             -- Binds any features details to the session
             session.jitsi_meet_context_features = claims["context"]["features"];
+          end
+          if claims["context"]["room"] ~= nil then
+            session.jitsi_meet_context_room = claims["context"]["room"]
           end
         end
         return true;
@@ -332,10 +348,13 @@ function Util:verify_room(session, room_address)
     end
 
     local auth_room = session.jitsi_meet_room;
+    if auth_room then
+        auth_room = string.lower(auth_room);
+    end
     if not self.enableDomainVerification then
         -- if auth_room is missing, this means user is anonymous (no token for
         -- its domain) we let it through, jicofo is verifying creation domain
-        if auth_room and room ~= string.lower(auth_room) and auth_room ~= '*' then
+        if auth_room and room ~= auth_room and auth_room ~= '*' then
             return false;
         end
 
@@ -346,7 +365,7 @@ function Util:verify_room(session, room_address)
     local room_node = jid.node(room_address);
     -- parses bare room address, for multidomain expected format is:
     -- [subdomain]roomName@conference.domain
-    local target_subdomain, target_room = room_node:match("^%[([^%]]+)%](.+)$");
+    local target_subdomain, target_room = extract_subdomain(room_node);
 
     -- if we have '*' as room name in token, this means all rooms are allowed
     -- so we will use the actual name of the room when constructing strings
@@ -364,11 +383,25 @@ function Util:verify_room(session, room_address)
             room_to_check = room_node;
         end
     else
-        -- no wildcard, so check room against authorized room in token
-        room_to_check = auth_room;
+        -- no wildcard, so check room against authorized room from the token
+        if session.jitsi_meet_context_room and (session.jitsi_meet_context_room["regex"] == true or session.jitsi_meet_context_room["regex"] == "true") then
+            if target_room ~= nil then
+                -- room with subdomain
+                room_to_check = target_room:match(auth_room);
+            else
+                room_to_check = room_node:match(auth_room);
+            end
+        else
+            -- not a regex
+            room_to_check = auth_room;
+        end
+        module:log("debug", "room to check: %s", room_to_check)
+        if not room_to_check then
+            return false
+        end
     end
 
-    local auth_domain = session.jitsi_meet_domain;
+    local auth_domain = string.lower(session.jitsi_meet_domain);
     local subdomain_to_check;
     if target_subdomain then
         if auth_domain == '*' then
@@ -386,7 +419,7 @@ function Util:verify_room(session, room_address)
         end
 
         return room_address_to_verify == jid.join(
-            "["..string.lower(subdomain_to_check).."]"..string.lower(room_to_check), self.muc_domain);
+            "["..subdomain_to_check.."]"..room_to_check, self.muc_domain);
     else
         if auth_domain == '*' then
             -- check for wildcard in JWT claim, allow access if found
@@ -397,8 +430,7 @@ function Util:verify_room(session, room_address)
         end
         -- we do not have a domain part (multidomain is not enabled)
         -- verify with info from the token
-        return room_address_to_verify == jid.join(
-            string.lower(room_to_check), string.lower(subdomain_to_check));
+        return room_address_to_verify == jid.join(room_to_check, subdomain_to_check);
     end
 end
 

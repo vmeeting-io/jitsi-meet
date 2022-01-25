@@ -1,6 +1,6 @@
 // @flow
 
-import FieldText from '@atlaskit/field-text';
+import { FieldTextStateless as TextField } from '@atlaskit/field-text';
 import {
     HeaderComponentProps,
     ModalHeader
@@ -8,6 +8,7 @@ import {
 import Spinner from '@atlaskit/spinner';
 import { filter, keyBy, map } from 'lodash';
 import React, { Component } from 'react';
+import type { Dispatch } from 'redux';
 
 import { Dialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
@@ -18,10 +19,9 @@ import { loadSpeakerStats } from '../actions';
 import SpeakerStatsItem from './SpeakerStatsItem';
 import SpeakerStatsLabels from './SpeakerStatsLabels';
 
-import s from './SpeakerStats.module.scss';
 import { MEDIA_TYPE, VIDEO_TYPE } from '../../base/media';
-import { getLocalVideoTrack, getTrackByMediaTypeAndParticipant, isLocalTrackMuted, isLocalVideoTrackMuted, isRemoteTrackMuted } from '../../base/tracks';
-import { PARTICIPANT_ROLE } from '../../base/participants';
+import { getLocalVideoTrack, getTrackByMediaTypeAndParticipant, isLocalTrackMuted, isLocalCameraTrackMuted, isRemoteTrackMuted } from '../../base/tracks';
+import { getParticipantById, PARTICIPANT_ROLE } from '../../base/participants';
 import { Icon, IconSearch } from '../../base/icons';
 import CrossCircleIcon from '@atlaskit/icon/glyph/cross-circle';
 
@@ -33,18 +33,17 @@ type Props = {
     /**
      * The JitsiConference from which stats will be pulled.
      */
-    conference: Object,
+    _stats: Object,
 
     /**
-     * The function to translate human-readable text.
+     * The search criteria.
      */
-    t: Function
-};
+    _criteria: string,
 
-/**
- * The type of the React {@code Component} state of {@link SpeakerStats}.
- */
-type State = {
+    /**
+     * The JitsiConference from which stats will be pulled.
+     */
+    conference: Object,
 
     loading: Boolean,
 
@@ -147,13 +146,13 @@ class SpeakerStats extends Component<Props, State> {
 
         return (
             <ModalHeader {...props}>
-                <h4 className={ s.titleContainer }>
+                <h4 className = 'speaker-stats-title'>
                     <span>
                         { t('speakerStats.speakerStats') }
                     </span>
                     { !loading && (
                         <div
-                            className = { `${s.button} ${showSearch ? s.pressed : ''}` }
+                            className = { `button ${showSearch ? 'pressed' : ''}` }
                             onClick = { this._onToggleSearch }>
                             <Tooltip content = { t('speakerStats.search') } position = 'top'>
                                 <Icon size = { 24 } src = { IconSearch } />
@@ -227,29 +226,29 @@ class SpeakerStats extends Component<Props, State> {
                 titleKey = 'speakerStats.speakerStats'>
                 
                 { this.state.showSearch && (
-                    <div className = {`speaker-stats-searchbox ${s.searchContainer}`}>
-                        <FieldText
+                    <div className = 'speaker-stats-searchbox'>
+                        <TextField
                             autoFocus = { true }
                             compact = { true }
                             id = 'searchBox'
-                            isLabelHidden = { true }
                             placeholder =  { this.props.t('speakerStats.searchPlaceholder') }
                             shouldFitContainer = { true }
+                            isLabelHidden = { true }
                             // eslint-disable-next-line react/jsx-no-bind
                             onChange = { this.handleSearchInput }
                             type = 'text'
                             value = { this.state.searchQuery } />
                         <div
-                            className = { s.closeIcon }
+                            className = 'close-icon'
                             onClick = { this._onToggleSearch }>
                             <CrossCircleIcon size = 'small' />
                         </div>
                     </div>
                 )}
 
-                <hr className = { s.divider } />
+                <hr className = 'speaker-stats-divider' />
 
-                <div className = { `speaker-stats ${s.container}` }>
+                <div className = 'speaker-stats'>
                     <SpeakerStatsLabels />
                     { this.state.loading
                         ? <Spinner appearance = 'invert' />
@@ -269,12 +268,11 @@ class SpeakerStats extends Component<Props, State> {
  */
 function _mapStateToProps(state) {
     const tracks = state['features/base/tracks'];
-    const participants = keyBy(state['features/base/participants'], 'id');
     const stats = state['features/speaker-stats'];
 
     return {
         stats: map(stats.items, item => {
-            const p = participants[item.nick];
+            const p = getParticipantById(state, item.nick);
 
             if (p) {
                 const videoTrack = p.local
@@ -288,7 +286,7 @@ function _mapStateToProps(state) {
                         ? isLocalTrackMuted(tracks, MEDIA_TYPE.AUDIO)
                         : isRemoteTrackMuted(tracks, MEDIA_TYPE.AUDIO, item.nick),
                     videoMuted: p.local
-                        ? isLocalVideoTrackMuted(tracks)
+                        ? isLocalCameraTrackMuted(tracks)
                         : !videoTrack || videoTrack.muted,
                     isModerator: p.role === PARTICIPANT_ROLE.MODERATOR,
                     isPresenter: videoTrack?.videoType === VIDEO_TYPE.DESKTOP,

@@ -43,7 +43,7 @@ type Props = {
     children?: React$Node,
 
     /**
-     * item containing data to be rendered
+     * Item containing data to be rendered.
      */
     item: Item,
 
@@ -51,6 +51,11 @@ type Props = {
      * External style prop to be applied to the extra lines.
      */
     linesStyle?: StyleType,
+
+    /**
+     * Function to invoke on long press.
+     */
+    onLongPress: ?Function,
 
     /**
      * Function to invoke on press.
@@ -88,13 +93,16 @@ export default class AvatarListItem extends Component<Props> {
             avatarOnly,
             avatarSize = AVATAR_SIZE,
             avatarStatus,
-            avatarStyle
+            avatarStyle,
+            onLongPress,
+            onPress
         } = this.props;
         const { avatar, colorBase, lines, title } = this.props.item;
 
         return (
             <Container
-                onClick = { this.props.onPress }
+                onClick = { onPress }
+                onLongPress = { onLongPress }
                 style = { styles.listItem }
                 underlayColor = { UNDERLAY_COLOR }>
                 <Avatar

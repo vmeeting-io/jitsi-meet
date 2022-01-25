@@ -1,13 +1,15 @@
-let _selectedParticipants = [];
+// @flow
 
-export function getSelectedParticipants() {
-    return _selectedParticipants;
-}
+import { getParticipantById } from '../base/participants';
 
-export function setSelectedParticipants(ids) {
-    _selectedParticipants = [ ...ids ];
-}
+/**
+ * Selector for the participant currently displaying on the large video.
+ *
+ * @param {Object} state - The redux state.
+ * @returns {Object}
+ */
+export function getLargeVideoParticipant(state: Object) {
+    const { participantId } = state['features/large-video'];
 
-export function findSelectedParticipant(id) {
-    return _selectedParticipants.includes(id);
+    return getParticipantById(state, participantId);
 }

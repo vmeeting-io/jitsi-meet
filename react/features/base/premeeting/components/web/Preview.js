@@ -2,23 +2,29 @@
 
 import React from 'react';
 
+import { getDisplayName } from '../../../../base/settings';
+import { Avatar } from '../../../avatar';
 import { Video } from '../../../media';
+import { getLocalParticipant } from '../../../participants';
 import { connect } from '../../../redux';
 import { getLocalVideoTrack } from '../../../tracks';
-
-import PreviewAvatar from './Avatar';
 
 export type Props = {
 
     /**
-     * The name of the user that is about to join.
+     * Local participant id.
      */
-    name: string,
+    _participantId: string,
 
     /**
-     * Indicates whether the avatar should be shown when video is off
+     * Flag controlling whether the video should be flipped or not.
      */
-    showAvatar: boolean,
+    flipVideo: boolean,
+
+    /**
+     * The name of the user that is about to join.
+     */
+     name: string,
 
     /**
      * Flag signaling the visibility of camera preview.
@@ -38,34 +44,27 @@ export type Props = {
  * @returns {ReactElement}
  */
 function Preview(props: Props) {
-    const { name, showAvatar, videoMuted, videoTrack } = props;
+    const { _participantId, flipVideo, name, videoMuted, videoTrack } = props;
+    const className = flipVideo ? 'flipVideoX' : '';
 
-    if (!videoMuted && videoTrack) {
-        return (
-            <div id = 'preview'>
-                <Video
-                    className = 'flipVideoX'
-                    videoTrack = {{ jitsiTrack: videoTrack }} />
-            </div>
-        );
-    }
-
-    if (showAvatar) {
-        return (
-            <div
-                className = 'no-video'
-                id = 'preview'>
-                <PreviewAvatar name = { name } />
-            </div>
-        );
-    }
-
-    return null;
+    return (
+        <div id = 'preview'>
+            {!videoMuted && videoTrack
+                ? (
+                    <Video
+                        className = { className }
+                        videoTrack = {{ jitsiTrack: videoTrack }} />
+                )
+                : (
+                    <Avatar
+                        className = 'premeeting-screen-avatar'
+                        displayName = { name }
+                        participantId = { _participantId }
+                        size = { 200 } />
+                )}
+        </div>
+    );
 }
-
-Preview.defaultProps = {
-    showAvatar: true
-};
 
 /**
  * Maps part of the Redux state to the props of this component.
@@ -75,7 +74,13 @@ Preview.defaultProps = {
  * @returns {Props}
  */
 function _mapStateToProps(state, ownProps) {
+    const name = getDisplayName(state);
+    const { id: _participantId } = getLocalParticipant(state);
+
     return {
+        _participantId,
+        flipVideo: state['features/base/settings'].localFlipX,
+        name,
         videoMuted: ownProps.videoTrack ? ownProps.videoMuted : state['features/base/media'].video.muted,
         videoTrack: ownProps.videoTrack || (getLocalVideoTrack(state['features/base/tracks']) || {}).jitsiTrack
     };

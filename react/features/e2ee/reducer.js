@@ -2,14 +2,17 @@
 
 import { ReducerRegistry } from '../base/redux';
 
-import { SET_E2EE_KEY } from './actionTypes';
+import {
+    SET_EVERYONE_ENABLED_E2EE,
+    SET_EVERYONE_SUPPORT_E2EE,
+    SET_MAX_MODE,
+    TOGGLE_E2EE
+} from './actionTypes';
+import { MAX_MODE } from './constants';
 
 const DEFAULT_STATE = {
-
-    /**
-     * E2EE key.
-     */
-    e2eeKey: undefined
+    enabled: false,
+    maxMode: MAX_MODE.DISABLED
 };
 
 /**
@@ -17,11 +20,28 @@ const DEFAULT_STATE = {
  */
 ReducerRegistry.register('features/e2ee', (state = DEFAULT_STATE, action) => {
     switch (action.type) {
-    case SET_E2EE_KEY:
+    case TOGGLE_E2EE:
         return {
             ...state,
-            e2eeKey: action.key
+            enabled: action.enabled
         };
+    case SET_EVERYONE_ENABLED_E2EE:
+        return {
+            ...state,
+            everyoneEnabledE2EE: action.everyoneEnabledE2EE
+        };
+    case SET_EVERYONE_SUPPORT_E2EE:
+        return {
+            ...state,
+            everyoneSupportE2EE: action.everyoneSupportE2EE
+        };
+
+    case SET_MAX_MODE: {
+        return {
+            ...state,
+            maxMode: action.maxMode
+        };
+    }
 
     default:
         return state;

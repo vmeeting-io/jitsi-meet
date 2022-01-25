@@ -9,7 +9,6 @@ import { isTestModeEnabled } from '../../../react/features/base/testing';
 import { ORIENTATION, LargeVideoBackground, updateLastLargeVideoMediaEvent } from '../../../react/features/large-video';
 import { LAYOUTS, getCurrentLayout } from '../../../react/features/video-layout';
 /* eslint-enable no-unused-vars */
-import UIEvents from '../../../service/UI/UIEvents';
 import UIUtil from '../util/UIUtil';
 
 import Filmstrip from './Filmstrip';
@@ -46,7 +45,7 @@ function computeDesktopVideoSize( // eslint-disable-line max-params
         videoSpaceWidth,
         videoSpaceHeight) {
     if (videoWidth === 0 || videoHeight === 0 || videoSpaceWidth === 0 || videoSpaceHeight === 0) {
-        // Avoid NaN values caused by devision by 0.
+        // Avoid NaN values caused by division by 0.
         return [ 0, 0 ];
     }
 
@@ -94,19 +93,26 @@ function computeCameraVideoSize( // eslint-disable-line max-params
         videoSpaceHeight,
         videoLayoutFit) {
     if (videoWidth === 0 || videoHeight === 0 || videoSpaceWidth === 0 || videoSpaceHeight === 0) {
-        // Avoid NaN values caused by devision by 0.
+        // Avoid NaN values caused by division by 0.
         return [ 0, 0 ];
     }
 
     const aspectRatio = videoWidth / videoHeight;
+    const videoSpaceRatio = videoSpaceWidth / videoSpaceHeight;
 
     switch (videoLayoutFit) {
     case 'height':
         return [ videoSpaceHeight * aspectRatio, videoSpaceHeight ];
     case 'width':
         return [ videoSpaceWidth, videoSpaceWidth / aspectRatio ];
+    case 'nocrop':
+        return computeCameraVideoSize(
+            videoWidth,
+            videoHeight,
+            videoSpaceWidth,
+            videoSpaceHeight,
+            videoSpaceRatio < aspectRatio ? 'width' : 'height');
     case 'both': {
-        const videoSpaceRatio = videoSpaceWidth / videoSpaceHeight;
         const maxZoomCoefficient = interfaceConfig.MAXIMUM_ZOOMING_COEFFICIENT
             || Infinity;
 
@@ -187,16 +193,13 @@ export class VideoContainer extends LargeContainer {
      * Creates new VideoContainer instance.
      * @param resizeContainer {Function} function that takes care of the size
      * of the video container.
-     * @param emitter {EventEmitter} the event emitter that will be used by
-     * this instance.
      */
-    constructor(resizeContainer, emitter) {
+    constructor(resizeContainer) {
         super();
         this.stream = null;
         this.userId = null;
         this.videoType = null;
         this.localFlipX = true;
-        this.emitter = emitter;
         this.resizeContainer = resizeContainer;
 
         /**
@@ -233,14 +236,6 @@ export class VideoContainer extends LargeContainer {
 
         this.$remotePresenceMessage = $('#remotePresenceMessage');
 
-        /**
-         * Indicates whether or not the video stream attached to the video
-         * element has started(which means that there is any image rendered
-         * even if the video is stalled).
-         * @type {boolean}
-         */
-        this.wasVideoRendered = false;
-
         this.$wrapper = $('#largeVideoWrapper');
 
         /**
@@ -249,17 +244,14 @@ export class VideoContainer extends LargeContainer {
          * video anyway.
          */
         this.$wrapperParent = this.$wrapper.parent();
-
         this.avatarHeight = $('#dominantSpeakerAvatarContainer').height();
-
-        const onPlayingCallback = function(event) {
-            if (typeof resizeContainer === 'function') {
-                resizeContainer(event);
-            }
-            this.wasVideoRendered = true;
-        }.bind(this);
-
-        this.$video[0].onplaying = onPlayingCallback;
+        if (this.$video.length) {
+            this.$video[0].onplaying = function(event) {
+                if (typeof resizeContainer === 'function') {
+                    resizeContainer(event);
+                }
+            };
+        }
 
         /**
          * A Set of functions to invoke when the video element resizes.
@@ -268,14 +260,16 @@ export class VideoContainer extends LargeContainer {
          */
         this._resizeListeners = new Set();
 
-        this.$video[0].onresize = this._onResize.bind(this);
-
-        if (isTestModeEnabled(APP.store.getState())) {
-            const cb = name => APP.store.dispatch(updateLastLargeVideoMediaEvent(name));
-
-            containerEvents.forEach(event => {
-                this.$video[0].addEventListener(event, cb.bind(this, event));
-            });
+        if (this.$video.length) {
+            this.$video[0].onresize = this._onResize.bind(this);
+    
+            if (isTestModeEnabled(APP.store.getState())) {
+                const cb = name => APP.store.dispatch(updateLastLargeVideoMediaEvent(name));
+    
+                containerEvents.forEach(event => {
+                    this.$video[0].addEventListener(event, cb.bind(this, event));
+                });
+            }
         }
     }
 
@@ -391,9 +385,11 @@ export class VideoContainer extends LargeContainer {
         if (this.avatarDisplayed) {
             const $avatarImage = $('#dominantSpeakerAvatarContainer');
 
-            $element.css(
-                'top',
-                $avatarImage.offset().top + $avatarImage.height() + 10);
+            if ($avatarImage.length) {
+                $element.css(
+                    'top',
+                    $avatarImage.offset().top + $avatarImage.height() + 10);
+            }
         } else {
             const height = $element.height();
             const parentHeight = $element.parent().height();
@@ -424,7 +420,7 @@ export class VideoContainer extends LargeContainer {
         const [ width, height ] = this._getVideoSize(containerWidth, containerHeight);
 
         if (width === 0 || height === 0) {
-            // We don't need to set 0 for width or height since the visibility is controled by the visibility css prop
+            // We don't need to set 0 for width or height since the visibility is controlled by the visibility css prop
             // on the largeVideoElementsContainer. Also if the width/height of the video element is 0 the attached
             // stream won't be played. Normally if we attach a new stream we won't resize the video element until the
             // stream has been played. But setting width/height to 0 will prevent the video from playing.
@@ -491,10 +487,6 @@ export class VideoContainer extends LargeContainer {
             return;
         }
 
-        // The stream has changed, so the image will be lost on detach
-        this.wasVideoRendered = false;
-
-
         // detach old stream
         if (this.stream) {
             this.stream.detach(this.$video[0]);
@@ -509,7 +501,11 @@ export class VideoContainer extends LargeContainer {
 
         stream.attach(this.$video[0]);
 
-        const flipX = stream.isLocal() && this.localFlipX;
+        // Ensure large video gets play() called on it when a new stream is attached to it. This is necessary in the
+        // case of Safari as autoplay doesn't kick-in automatically on Safari 15 and newer versions.
+        browser.isWebKitBased() && this.$video[0].play();
+
+        const flipX = stream.isLocal() && this.localFlipX && !this.isScreenSharing();
 
         this.$video.css({
             transform: flipX ? 'scaleX(-1)' : 'none'
@@ -551,7 +547,6 @@ export class VideoContainer extends LargeContainer {
         this.$avatar.css('visibility', show ? 'visible' : 'hidden');
         this.avatarDisplayed = show;
 
-        this.emitter.emit(UIEvents.LARGE_VIDEO_AVATAR_VISIBLE, show);
         APP.API.notifyLargeVideoVisibilityChanged(show);
     }
 
@@ -576,7 +571,7 @@ export class VideoContainer extends LargeContainer {
                 resolve();
             }
 
-            this.$wrapperParent.css('visibility', 'visible').fadeTo(
+            this.$wrapperParent.stop(true).css('visibility', 'visible').fadeTo(
                 FADE_DURATION_MS,
                 1,
                 () => {
@@ -637,7 +632,7 @@ export class VideoContainer extends LargeContainer {
         // explicitly disabled.
         if (interfaceConfig.DISABLE_VIDEO_BACKGROUND
                 || browser.isFirefox()
-                || browser.isSafari()) {
+                || browser.isWebKitBased()) {
             return;
         }
 

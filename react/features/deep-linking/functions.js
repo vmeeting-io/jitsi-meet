@@ -3,7 +3,7 @@
 import { isMobileBrowser } from '../base/environment/utils';
 import { Platform } from '../base/react';
 import { URI_PROTOCOL_PATTERN } from '../base/util';
-import { isVpaasMeeting } from '../billing-counter/functions';
+import { isVpaasMeeting } from '../jaas/functions';
 
 import {
     DeepLinkingDesktopPage,
@@ -24,7 +24,7 @@ export function generateDeepLinkingURL() {
     // appears to be a link with an app-specific scheme, not a Universal
     // Link.
 
-    const appScheme = interfaceConfig.APP_SCHEME || 'org.jitsi.meet';
+    const appScheme = interfaceConfig.APP_SCHEME || 'org.postech.vmeeting';
     const { SSO_AUTH_KEYS } = interfaceConfig;
     let { origin, pathname, search } = window.location;
     const params = new URLSearchParams(search);
@@ -46,7 +46,7 @@ export function generateDeepLinkingURL() {
     if (Platform.OS === 'android') {
         // https://meet.jit.si/foo -> meet.jit.si/foo
         const url = href.replace(regex, '').substr(2);
-        const pkg = interfaceConfig.ANDROID_APP_PACKAGE || 'org.jitsi.meet';
+        const pkg = interfaceConfig.ANDROID_APP_PACKAGE || 'org.postech.vmeeting';
 
         return `intent://${url}#Intent;scheme=${pkg};package=${pkg};end`;
     }
@@ -65,9 +65,13 @@ export function generateDeepLinkingURL() {
 export function getDeepLinkingPage(state) {
     const { room } = state['features/base/conference'];
     const { launchInWeb } = state['features/deep-linking'];
+    const appScheme = typeof interfaceConfig !== 'undefined' && interfaceConfig.APP_SCHEME;
 
     // Show only if we are about to join a conference.
-    if (launchInWeb || !room || state['features/base/config'].disableDeepLinking || isVpaasMeeting(state)) {
+    if (launchInWeb
+            || !room
+            || state['features/base/config'].disableDeepLinking
+            || (isVpaasMeeting(state) && (!appScheme || appScheme === 'com.8x8.meet'))) {
         return Promise.resolve();
     }
 

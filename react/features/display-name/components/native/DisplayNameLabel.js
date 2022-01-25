@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import { Text, View } from 'react-native';
 
+import { translate } from '../../../base/i18n';
 import {
     getLocalParticipant,
     getParticipantById,
@@ -10,6 +11,7 @@ import {
     shouldRenderParticipantVideo
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
+import { appendSuffix } from '../../functions';
 
 import styles from './styles';
 
@@ -45,10 +47,11 @@ class DisplayNameLabel extends Component<Props> {
             return null;
         }
 
+        const { _participantName, displayNameSuffix, t } = this.props;
         return (
             <View style = { styles.displayNameBackdrop }>
                 <Text style = { styles.displayNameText }>
-                    { this.props._participantName }
+                { appendSuffix(_participantName, t(displayNameSuffix)) }
                 </Text>
             </View>
         );
@@ -65,7 +68,7 @@ class DisplayNameLabel extends Component<Props> {
  */
 function _mapStateToProps(state: Object, ownProps: Props) {
     const { participantId } = ownProps;
-    const localParticipant = getLocalParticipant(state);
+    // const localParticipant = getLocalParticipant(state);
     const participant = getParticipantById(state, participantId);
     const isFakeParticipant = participant && participant.isFakeParticipant;
 
@@ -73,15 +76,16 @@ function _mapStateToProps(state: Object, ownProps: Props) {
     // participant and there is no video rendered for
     // them.
     const _render = Boolean(participantId)
-        && localParticipant?.id !== participantId
-        && !shouldRenderParticipantVideo(state, participantId)
+        // && localParticipant?.id !== participantId
+        // && !shouldRenderParticipantVideo(state, participantId)
         && !isFakeParticipant;
 
     return {
+        displayNameSuffix: participant?.local ? 'me' : '',
         _participantName:
             getParticipantDisplayName(state, participantId),
         _render
     };
 }
 
-export default connect(_mapStateToProps)(DisplayNameLabel);
+export default translate(connect(_mapStateToProps)(DisplayNameLabel));

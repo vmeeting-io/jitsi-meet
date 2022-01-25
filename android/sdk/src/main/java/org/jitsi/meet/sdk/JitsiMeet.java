@@ -1,6 +1,5 @@
 /*
- * Copyright @ 2018-present 8x8, Inc.
- * Copyright @ 2017-2018 Atlassian Pty Ltd
+ * Copyright @ 2017-present 8x8, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,10 +91,10 @@ public class JitsiMeet {
      * @param activity - The activity on which to show the SplashScreen {@link Activity}.
      */
     public static void showSplashScreen(Activity activity) {
-      try {
-        SplashScreen.show(activity);
-      } catch (Exception e) {
-        JitsiMeetLogger.e(e, "Failed to show splash screen");
-      }
+        try {
+            SplashScreen.show(activity);
+        } catch (Exception e) {
+            JitsiMeetLogger.e(e, "Failed to show splash screen");
+        }
     }
 }

@@ -11,7 +11,7 @@ const hints = [
 ];
 
 /**
- * Get a random hint meessage from hint array.
+ * Get a random hint message from hint array.
  *
  * @return {string} the hint message.
  */
@@ -44,16 +44,22 @@ function onLoad() {
     // Intentionally use string concatenation as this file does not go through
     // babel but IE11 is still supported.
     // eslint-disable-next-line prefer-template
-    const thankYouMessage = 'Thank you for using ' + interfaceConfig.APP_NAME;
+    const thankYouMessage = interfaceConfig.THANK_YOU_MESSAGE ||
+        'Thank you for using ' + interfaceConfig.APP_NAME;
 
     // Works only for close2.html because close.html doesn't have this element.
     insertTextMsg('thanksMessage', thankYouMessage);
 
+    const savedNotification = window.localStorage.getItem('saved_notification');
+    if (savedNotification) {
+        window.localStorage.removeItem('saved_notification');
+    }
+
     // If there is a setting show a special message only for the guests
     if (interfaceConfig.CLOSE_PAGE_GUEST_HINT) {
-        if (window.sessionStorage.getItem('guest') === 'true') {
-            const element = document.getElementById('hintQuestion');
+        const element = document.getElementById('hintQuestion');
 
+        if (window.sessionStorage.getItem('guest') === 'true' && element) {
             element.classList.add('hide');
             insertTextMsg('hintMessage', interfaceConfig.CLOSE_PAGE_GUEST_HINT);
 

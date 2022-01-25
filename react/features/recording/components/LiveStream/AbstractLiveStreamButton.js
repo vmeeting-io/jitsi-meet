@@ -2,9 +2,15 @@
 
 import { openDialog } from '../../../base/dialog';
 import { IconLiveStreaming } from '../../../base/icons';
-import { getLocalParticipant, isLocalParticipantModerator } from '../../../base/participants';
+import {
+    getLocalParticipant,
+    isLocalParticipantModerator
+} from '../../../base/participants';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
 import { isRecording, isStreaming } from '../../functions';
+import { isInBreakoutRoom } from '../../../breakout-rooms';
+import { maybeShowPremiumFeatureDialog } from '../../../jaas/actions';
+import { FEATURES } from '../../../jaas/constants';
 
 import {
     StartLiveStreamDialog,
@@ -69,12 +75,22 @@ export default class AbstractLiveStreamButton<P: Props> extends AbstractButton<P
      * @protected
      * @returns {void}
      */
-    _handleClick() {
-        const { _isLiveStreamRunning, dispatch } = this.props;
+    async _handleClick() {
+        const { _isLiveStreamRunning, dispatch, handleClick } = this.props;
 
-        dispatch(openDialog(
-            _isLiveStreamRunning ? StopLiveStreamDialog : StartLiveStreamDialog
-        ));
+        if (handleClick) {
+            handleClick();
+
+            return;
+        }
+
+        const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(FEATURES.RECORDING));
+
+        if (!dialogShown) {
+            dispatch(openDialog(
+                _isLiveStreamRunning ? StopLiveStreamDialog : StartLiveStreamDialog
+            ));
+        }
     }
 
     /**
@@ -140,13 +156,7 @@ export function _mapStateToProps(state: Object, ownProps: Props) {
             if (!visible && !_disabled) {
                 _disabled = true;
                 visible = true;
-
-                // button and tooltip
-                if (!state['features/base/jwt'].jwt) {
-                    _tooltip = 'dialog.liveStreamingDisabledForGuestTooltip';
-                } else {
-                    _tooltip = 'dialog.liveStreamingDisabledTooltip';
-                }
+                _tooltip = 'dialog.liveStreamingDisabledTooltip';
             }
         }
     }
@@ -155,6 +165,12 @@ export function _mapStateToProps(state: Object, ownProps: Props) {
     if (isRecording(state)) {
         _disabled = true;
         _tooltip = 'dialog.liveStreamingDisabledBecauseOfActiveRecordingTooltip';
+    }
+
+    // disable the button if we are in a breakout room.
+    if (isInBreakoutRoom(state)) {
+        _disabled = true;
+        visible = false;
     }
 
     return {

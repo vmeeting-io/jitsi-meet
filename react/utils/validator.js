@@ -5,3 +5,8 @@ export const email = (value) =>
 
 export const username = (value) =>
   value && !/^[A-Z0-9.]+$/i.test(value) ? "error.usernameInvalid" : undefined;
+
+export const phoneNumber = value => 
+  value && !/(010)+[0-9]{4}[0-9]{4}$/i.test(value)
+    ? 'error.invalidPhoneNumber'
+    : undefined;

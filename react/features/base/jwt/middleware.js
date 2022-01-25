@@ -29,6 +29,7 @@ MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
     case SET_CONFIG:
     case SET_LOCATION_URL:
+        // XXX The JSON Web Token (JWT) is not the only piece of state that we
         // have decided to store in the feature jwt
         return _setConfigOrLocationURL(store, next, action);
 
@@ -52,10 +53,12 @@ MiddlewareRegistry.register(store => next => action => {
  */
 function _overwriteLocalParticipant(
         { dispatch, getState },
-        { avatarURL, email, name, features }) {
+        { avatarURL, email, id: jwtId, name, features, birthDate }) {
+        // added additional variable birthDate in the second object
     let localParticipant;
 
-    if ((avatarURL || email || name)
+    // add an additional parameter birthDate to check for newProperties
+    if ((avatarURL || email || name || birthDate)
             && (localParticipant = getLocalParticipant(getState))) {
         const newProperties: Object = {
             id: localParticipant.id,
@@ -68,12 +71,20 @@ function _overwriteLocalParticipant(
         if (email) {
             newProperties.email = email;
         }
+        if (jwtId) {
+            newProperties.jwtId = jwtId;
+        }
         if (name) {
             newProperties.name = name;
         }
         if (features) {
             newProperties.features = features;
         }
+
+        if (birthDate) {
+            newProperties.birthDate = birthDate;
+        }
+
         dispatch(participantUpdated(newProperties));
     }
 }
@@ -136,7 +147,7 @@ function _setJWT(store, next, action) {
             }
 
             if (jwtPayload) {
-                const { context, iss } = jwtPayload;
+                const { context, iss, sub } = jwtPayload;
 
                 action.jwt = jwt;
                 action.issuer = iss;
@@ -146,7 +157,7 @@ function _setJWT(store, next, action) {
                     action.callee = context.callee;
                     action.group = context.group;
                     action.server = context.server;
-                    action.tenant = context.tenant;
+                    action.tenant = context.tenant || sub || undefined;
                     action.user = user;
 
                     user && _overwriteLocalParticipant(
@@ -189,10 +200,10 @@ function _setJWT(store, next, action) {
  */
 function _undoOverwriteLocalParticipant(
         { dispatch, getState },
-        { avatarURL, name, email }) {
+        { avatarURL, name, email, birthDate }) {
     let localParticipant;
 
-    if ((avatarURL || name || email)
+    if ((avatarURL || name || email || birthDate)
             && (localParticipant = getLocalParticipant(getState))) {
         const newProperties: Object = {
             id: localParticipant.id,
@@ -208,6 +219,10 @@ function _undoOverwriteLocalParticipant(
         if (name === localParticipant.name) {
             newProperties.name = undefined;
         }
+        if (birthDate === localParticipant.birthDate) {
+            newProperties.birthDate = undefined;
+        }
+
         newProperties.features = undefined;
 
         dispatch(participantUpdated(newProperties));
@@ -224,10 +239,12 @@ function _undoOverwriteLocalParticipant(
  *     avatarURL: ?string,
  *     email: ?string,
  *     id: ?string,
- *     name: ?string
+ *     name: ?string,
+ *     birthDate: ?string
  * }}
  */
-function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, background }) {
+function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, background, birthDate, phoneNumber }) { 
+    // we added additional functional parameter birthDate which is received from context object in _setJWT function
     const participant = {};
 
     if (typeof avatarUrl === 'string') {
@@ -255,6 +272,15 @@ function _user2participant({ avatar, avatarUrl, email, email_verified, id, name,
     }
     if (typeof background === 'string') {
         participant.background = background;
+    }
+
+    // adding the birthDate property received from the JWT data exports
+    if (typeof birthDate === 'string') {
+        participant.birthDate = birthDate;
+    }
+
+    if (typeof phoneNumber === 'string') {
+        participant.phoneNumber = phoneNumber;
     }
 
     return Object.keys(participant).length ? participant : undefined;

@@ -1,10 +1,15 @@
 // @flow
 
+import { batch } from 'react-redux';
+
 import UIEvents from '../../../../service/UI/UIEvents';
+import { showModeratedNotification } from '../../av-moderation/actions';
+import { shouldShowModeratedNotification } from '../../av-moderation/functions';
 import { hideNotification } from '../../notifications';
+import { isModerationNotificationDisplayed } from '../../notifications/functions.any';
 import { isPrejoinPageVisible } from '../../prejoin/functions';
+import { getCurrentConference } from '../conference/functions';
 import { getAvailableDevices } from '../devices/actions';
-import { selectParticipant } from '../../large-video/actions';
 import {
     CAMERA_FACING_MODE,
     MEDIA_TYPE,
@@ -13,9 +18,10 @@ import {
     SET_VIDEO_MUTED,
     VIDEO_MUTISM_AUTHORITY,
     TOGGLE_CAMERA_FACING_MODE,
-    toggleCameraFacingMode
+    toggleCameraFacingMode,
+    VIDEO_TYPE
 } from '../media';
-import { MiddlewareRegistry } from '../redux';
+import { MiddlewareRegistry, StateListenerRegistry } from '../redux';
 
 import {
     TRACK_ADDED,
@@ -26,7 +32,10 @@ import {
 } from './actionTypes';
 import {
     createLocalTracksA,
+    destroyLocalTracks,
     showNoDataFromSourceVideoError,
+    toggleScreensharing,
+    trackRemoved,
     trackNoDataFromSourceNotificationInfoChanged
 } from './actions';
 import {
@@ -35,7 +44,8 @@ import {
     isUserInteractionRequiredForUnmute,
     setTrackMuted
 } from './functions';
-import { findSelectedParticipant } from '../../large-video/functions';
+
+import './subscriber';
 
 declare var APP: Object;
 
@@ -55,7 +65,6 @@ MiddlewareRegistry.register(store => next => action => {
         if (action.track.local) {
             store.dispatch(getAvailableDevices());
         }
-
         break;
     }
     case TRACK_NO_DATA_FROM_SOURCE: {
@@ -98,7 +107,7 @@ MiddlewareRegistry.register(store => next => action => {
         break;
     }
 
-    case SET_VIDEO_MUTED:
+    case SET_VIDEO_MUTED: {
         if (!action.muted
                 && isUserInteractionRequiredForUnmute(store.getState())) {
             return;
@@ -106,6 +115,7 @@ MiddlewareRegistry.register(store => next => action => {
 
         _setMuted(store, action, action.mediaType);
         break;
+    }
 
     case TOGGLE_CAMERA_FACING_MODE: {
         const localTrack = _getLocalTrack(store, MEDIA_TYPE.VIDEO);
@@ -135,11 +145,25 @@ MiddlewareRegistry.register(store => next => action => {
 
     case TOGGLE_SCREENSHARING:
         if (typeof APP === 'object') {
-            APP.UI.emitEvent(UIEvents.TOGGLE_SCREENSHARING);
+            // check for A/V Moderation when trying to start screen sharing
+            if ((action.enabled || action.enabled === undefined)
+                && shouldShowModeratedNotification(MEDIA_TYPE.PRESENTER, store.getState())) {
+                if (!isModerationNotificationDisplayed(MEDIA_TYPE.PRESENTER, store.getState())) {
+                    store.dispatch(showModeratedNotification(MEDIA_TYPE.PRESENTER));
+                }
+
+                return;
+            }
+
+            const { enabled, audioOnly, ignoreDidHaveVideo } = action;
+
+            APP.UI.emitEvent(UIEvents.TOGGLE_SCREENSHARING, { enabled,
+                audioOnly,
+                ignoreDidHaveVideo });
         }
         break;
 
-    case TRACK_UPDATED:
+    case TRACK_UPDATED: {
         // TODO Remove the following calls to APP.UI once components interested
         // in track mute changes are moved into React and/or redux.
         if (typeof APP !== 'undefined') {
@@ -155,35 +179,59 @@ MiddlewareRegistry.register(store => next => action => {
             const isVideoTrack = jitsiTrack.type !== MEDIA_TYPE.AUDIO;
 
             if (isVideoTrack) {
+                // Do not change the video mute state for local presenter tracks.
                 if (jitsiTrack.type === MEDIA_TYPE.PRESENTER) {
                     APP.conference.mutePresenter(muted);
-                }
-
-                // Make sure we change the video mute state only for camera tracks.
-                if (jitsiTrack.isLocal() && jitsiTrack.videoType !== 'desktop') {
-                    APP.conference.setVideoMuteStatus(muted);
+                } else if (jitsiTrack.isLocal() && !(jitsiTrack.videoType === VIDEO_TYPE.DESKTOP)) {
+                    APP.conference.setVideoMuteStatus();
+                } else if (jitsiTrack.isLocal() && muted && jitsiTrack.videoType === VIDEO_TYPE.DESKTOP) {
+                    store.dispatch(toggleScreensharing(false, false, true));
                 } else {
-                    APP.UI.setVideoMuted(participantID, muted);
-
-                    const found = findSelectedParticipant(participantID);
-                    if (found === muted) {
-                        store.dispatch(selectParticipant());
-                    }
+                    APP.UI.setVideoMuted(participantID);
                 }
-                APP.UI.onPeerVideoTypeChanged(participantID, jitsiTrack.videoType);
             } else if (jitsiTrack.isLocal()) {
                 APP.conference.setAudioMuteStatus(muted);
             } else {
-                APP.UI.setAudioMuted(participantID, muted);
+                APP.UI.setAudioMuted(participantID);
             }
 
             return result;
         }
+        const { jitsiTrack } = action.track;
 
+        if (jitsiTrack.isMuted()
+            && jitsiTrack.type === MEDIA_TYPE.VIDEO && jitsiTrack.videoType === VIDEO_TYPE.DESKTOP) {
+            store.dispatch(toggleScreensharing(false));
+        }
+        break;
+    }
     }
 
     return next(action);
 });
+
+/**
+ * Set up state change listener to perform maintenance tasks when the conference
+ * is left or failed, remove all tracks from the store.
+ */
+StateListenerRegistry.register(
+    state => getCurrentConference(state),
+    (conference, { dispatch, getState }, prevConference) => {
+
+        // conference keep flipping while we are authenticating, skip clearing while we are in that process
+        if (prevConference && !conference && !getState()['features/base/conference'].authRequired) {
+
+            // Clear all tracks.
+            const remoteTracks = getState()['features/base/tracks'].filter(t => !t.local);
+
+            batch(() => {
+                dispatch(destroyLocalTracks());
+                for (const track of remoteTracks) {
+                    dispatch(trackRemoved(track.jitsiTrack));
+                }
+            });
+        }
+    });
 
 /**
  * Handles no data from source errors.

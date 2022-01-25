@@ -6,22 +6,153 @@ body.welcome-page {
 .welcome {
     font-family: $welcomePageFontFamily;
     background: $welcomePageBackground;
+    box-sizing: border-box;
+    overflow: hidden;
+    font-size: 14px;
 
     .header {
         width: 100%;
-        position: sticky;
+        position: fixed;
         top: 0;
         background: white;
+        z-index: 2;
+        font-size: 14px;
 
         .container {
-          align-items: center;
-          display: flex;
-          flex-direction: row;
-          justify-content: space-between;
-          //min-height: $welcomePageHeaderMinHeight;
-          //overflow: hidden;
-          //position: relative;
-          text-align: center;
+            align-items: center;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            text-align: center;
+            padding: 0 1em;
+            box-sizing: border-box;
+
+            @include media-breakpoint-up(md) {
+                padding: 0 3rem;
+            }
+        }
+
+        .watermark {
+            display: flex;
+            justify-content: start;
+            align-items: center;
+            height: $watermarkHeight;
+            z-index: $zindex2;
+        
+            .leftwatermark {
+                margin: 0;
+                max-height: 20px;
+                position: relative;
+        
+                @include media-breakpoint-up(md) {
+                    max-height: 36px;
+                }
+            }
+            
+            .rightwatermark {
+                right: 32px;
+                top: 32px;
+                background-position: center right;
+            }
+        }
+
+        .img {
+            width: 24px;
+            height: 24px;
+            margin-right: 6px;
+        }
+
+        .toolbars {
+            z-index: $zindex2;
+            display: inline-flex;
+            align-items: center;
+
+            .desktop.button {
+                display: none;
+
+                @include media-breakpoint-up(md) {
+                    display: flex;
+                }
+            }
+
+            .menu-container {
+                background-color: white;
+            }
+
+            .menu-item {
+                min-width: 100px;
+                min-height: 40px;
+                text-align: left;
+                background: white;
+                fill: white;
+                color: $welcomePageButtonTextColor;
+                font-weight: normal;
+                
+                &:hover {
+                    background: rgba(0,0,0,.1);
+                }
+
+                .badge {
+                    margin-left: 5px;
+                    display : inline-flex;
+                }
+            }
+
+            .menu-item {
+                &.mobile {
+                    display: flex;
+    
+                    @include media-breakpoint-up(md) {
+                        display: none;
+                        min-height: 0;
+                        max-height: 0;
+                    }
+                }
+            }
+
+            button, .button {
+                color: $welcomePageButtonTextColor !important;
+                height: 40px;
+                line-height: 40px;
+                background: none;
+
+                &:hover {
+                    color: $welcomePageButtonTextColor !important;
+                    background: rgba(0,0,0,.1);
+                }
+            }
+
+            .primary.button {
+                border: 1px solid #d2d2d2;
+                background: none;
+                
+                &:hover {
+                    color: $welcomePageButtonTextColor !important;
+                    background: rgba(0,0,0,.1);
+                }
+            }
+
+            .cLrmQm button {
+                padding-right: 0;
+            }
+
+            .iwHKVI {
+                background: white;
+                border: 1px solid #d2d2d2;
+            }
+        }
+
+        .divider {
+            border-color: rgba(255,255,255,0.3);
+            border-width: 1px 0 0 0;
+
+            &.mobile {
+                @include media-breakpoint-up(md) {
+                    display: none;
+                    min-height: 0;
+                    max-height: 0;
+                }
+            }
         }
     }
 
@@ -30,9 +161,15 @@ body.welcome-page {
         flex-direction: column;
         height: calc(100vh - #{$welcomePageHandlerHeight});
         overflow-y: auto;
+        margin-top: $welcomePageHandlerHeight;
 
         .bg-wrapper {
-            display: flex;
+            display: block;
+
+            @include media-breakpoint-up(md) {
+                display: flex;
+                flex-grow: 1;
+            }
         }
 
         .content-wrapper {
@@ -41,7 +178,6 @@ body.welcome-page {
             width: 100%;
             margin: 0 auto;
             display: block;
-            border-bottom: 1px solid #eee;
             text-align: center;
 
             @include media-breakpoint-up(md) {
@@ -51,7 +187,7 @@ body.welcome-page {
         }
 
         .intro-wrapper {
-            padding: 0em 2em 2em;
+            padding: 0em 1em 2em;
             max-width: 39rem;
             display: inline-flex;
             flex-direction: column;
@@ -63,28 +199,30 @@ body.welcome-page {
 
             @include media-breakpoint-up(md) {
                 max-width: 35rem;
-                padding: 3em 3em 6em;
+                padding: 3em 1em 0em 4em;
                 margin: 0;
                 border-bottom: 0;
             }
         }
 
         .header-image {
-            padding: 1em 0em;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            flex-basis: 45%;
+            display: block;
             width: 100%;
             max-width: 39rem;
+            margin: 0 auto;
 
             @include media-breakpoint-up(md) {
+                display: inline-flex;
                 width: initial;
                 max-width: initial;
+                padding: 4em 4em 0em 4em;
+                flex-basis: 45%;
+                margin: 0;
             }
 
-            img {
+            iframe {
                 width: 100%;
+                height: 315px;
             }
         }
     }
@@ -122,11 +260,15 @@ body.welcome-page {
 
     .header-text-title {
         color: $welcomePageTitleColor;
-        font-size: $welcomePageHeaderTextTitleFontSize;
+        font-size: 28px;
         font-weight: $welcomePageHeaderTextTitleFontWeight;
         line-height: $welcomePageHeaderTextTitleLineHeight;
         margin-bottom: $welcomePageHeaderTextTitleMarginBottom;
         opacity: $welcomePageHeaderTextTitleOpacity;
+
+        @include media-breakpoint-up(md) {
+            font-size: $welcomePageHeaderTextTitleFontSize;
+        }
     }
 
     .header-text-description {
@@ -139,52 +281,75 @@ body.welcome-page {
         align-self: $welcomePageHeaderTextDescriptionAlignSelf;
         word-break: keep-all;
 
-        @include media-breakpoint-up(sm) {
+        @include media-breakpoint-up(md) {
             display: $welcomePageHeaderTextDescriptionDisplay;
         }
     }
 
-    #enter_room {
+    .enter-room {
         display: $welcomePageEnterRoomDisplay;
         align-items: center;
         max-width: 100%;
-        z-index: $zindex2;
         background-color: transparent;
         border-radius: $welcomePageEnterRoomBorderRadius;
-
+        color: $welcomePageDescriptionColor;
+        font-size: $welcomePageHeaderTextDescriptionFontSize;
+        font-weight: $welcomePageHeaderTextDescriptionFontWeight;
+        
         .enter-room-input-container {
             width: 100%;
-            padding: $welcomePageEnterRoomInputContainerPadding;
+            margin: $welcomePageEnterRoomInputContainerPadding;
             text-align: left;
             color: #253858;
             height: fit-content;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
 
-            .enter-room-title-container {
-                vertical-align: bottom;
-
-                :first-child {
-                    margin-right: 10px;
-                }
-
-                .enter-room-login-required {
-                    color: $chatPrivateMessageBackgroundColor;
-                }
+            span {
+                color: #253858;
+                margin-left: 4px;
+                margin-right: 4px;
+                font-weight: bold;  
+            }
+            
+            form: {
+                margin-bottom: 0;
             }
 
-            .enter-room-title {
+            .virtual-tenant {
                 display: inline-block;
-                font-size: 18px;
+                position: absolute;
                 font-weight: bold;
-                padding-bottom: 5px;
+                visibility: hidden;
+            }
+            
+            .tenant-input {
+                margin-left: 16px;
+                font-weight: bold;
+                border: none;
+                padding: 0px;
+                border-radius: 4px;
+                background-color: transparent !important;
+            }
+
+            .tenant-input:focus {
+                outline: none;
+            }
+
+            .room-form {
+                flex-grow: 1;
             }
 
             .enter-room-input {
-                border: 1px solid #dadce0;
-                display: inline-block;
+                display: inline;
                 width: 100%;
                 font-size: 16px;
-                padding: 16px;
+                padding: 16px 16px 16px 0;
+                border: none;
                 border-radius: 4px;
+                background-color: transparent !important;
             }
 
             .insecure-room-name-warning {
@@ -194,7 +359,7 @@ body.welcome-page {
                 flex-direction: row;
                 margin-top: 5px;
 
-                .jitsi-icon {
+                .jitsiIcon {
                     margin-right: 15px;
 
                     svg {
@@ -205,9 +370,16 @@ body.welcome-page {
 
             ::placeholder {
                 color: #253858;
+                font-weight: normal;
             }
         }
 
+    }
+
+    .help-message {
+        padding: 5px;
+        color: #343a40;
+        font-size: 15px;
     }
 
     #moderated-meetings {
@@ -255,20 +427,41 @@ body.welcome-page {
             .tab {
                 display: $welcomePageTabDisplay;
                 text-align: center;
-                background: rgba(9,30,66,0.37);
+                font-weight: bold;
+                background: rgba(9,30,66,0.10);
+                border-radius: 7px;
                 height: 55px;
                 line-height: 54px;
                 flex-grow: 1;
                 cursor: pointer;
-
+                margin: auto;
+            
                 &.selected, &:hover {
-                    background: rgba(9,30,66,0.71);
-                }
-
-                &:last-child {
-                    margin-left: 1px;
+                    background: rgba(9,30,66,0.37);
                 }
             }
+
+            .current-tab {
+                display: $welcomePageTabDisplay;
+                text-align: center;
+                font-weight: bold;
+                background: rgba(179,230,255,0.7);
+                border-radius: 7px;
+                height: 55px;
+                line-height: 54px;
+                flex-grow: 1;
+                cursor: pointer;
+                margin: auto;
+            
+                &.selected, &:hover {
+                    background: rgba(94, 198, 250, 0.7);
+                }
+            }
+        }
+
+        .light-modal {
+            background-color: #ffffff;
+            color: #000000;
         }
     }
 
@@ -291,6 +484,8 @@ body.welcome-page {
           background: #f5f5f5;
           border-color: #d9d9d9;
           pointer-events: none;
+          padding: 7px 16px;
+          border: 1px solid #ccc;
         }
     }
 
@@ -309,6 +504,11 @@ body.welcome-page {
 
         .button {
             color: $welcomePageButtonTextColor !important;
+        }
+
+        .toolbox-icon {
+            height: 24px;
+            width: 24px;
         }
     }
 
@@ -331,6 +531,13 @@ body.welcome-page {
             object-fit: cover;
             border-radius: 50%;
             margin-right: 6px;
+            color: white;
+            line-height: 24px;
+        }
+
+        .badge {
+            margin-left: 5px;
+            display: inline-flex;
         }
     }
 
@@ -339,9 +546,15 @@ body.welcome-page {
         background-color: #343a40 !important;
         font-size: 16px;
         z-index: 1;
+        display: block;
 
         .container {
-            padding: 24px 40px;
+            box-sizing: border-box;
+            padding: 1.5em 2em;
+
+            @include media-breakpoint-up(md) {
+                padding: 1.5em 4em;
+            }
 
             .copyright {
                 margin-bottom: 4px;

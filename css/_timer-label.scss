@@ -1,0 +1,36 @@
+.timer-label {
+    position: relative;
+    flex-basis: 100%;
+    z-index: 3;
+    margin-top: 5px;
+    transition: top .6s ease-in-out;
+    top: -32px;
+
+    &.visible {
+        top: 0;
+    }
+
+    .custom-label {
+        font-size: 20px;
+        background-color: #1ec26a;
+        height: 35px;
+        width: 145px;
+        top: 50%;
+        bottom: 50%;
+        margin: 0 auto;
+    }
+    
+    .custom-label-red {
+        font-size: 20px;
+        background-color: #de3849;
+        height: 35px;
+        width: 145px;
+        top: 50%;
+        bottom: 50%;
+        margin: 0 auto;
+    }
+}
+
+.timer-off-gif {
+    position: fixed;
+}

@@ -13,6 +13,9 @@ import {
 } from '../../../base/participants';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
 import { isRecording, isStreaming } from '../../functions';
+import { isInBreakoutRoom } from '../../../breakout-rooms';
+import { maybeShowPremiumFeatureDialog } from '../../../jaas/actions';
+import { FEATURES } from '../../../jaas/constants';
 
 import { StartRecordingDialog, StopRecordingDialog } from './_';
 
@@ -74,8 +77,14 @@ export default class AbstractRecordButton<P: Props> extends AbstractButton<P, *>
      * @protected
      * @returns {void}
      */
-    _handleClick() {
-        const { _isRecordingRunning, dispatch } = this.props;
+    async _handleClick() {
+        const { _isRecordingRunning, dispatch, handleClick } = this.props;
+
+        if (handleClick) {
+            handleClick();
+
+            return;
+        }
 
         sendAnalytics(createToolbarEvent(
             'recording.button',
@@ -84,9 +93,13 @@ export default class AbstractRecordButton<P: Props> extends AbstractButton<P, *>
                 type: JitsiRecordingConstants.mode.FILE
             }));
 
-        dispatch(openDialog(
-            _isRecordingRunning ? StopRecordingDialog : StartRecordingDialog
-        ));
+        const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(FEATURES.RECORDING));
+
+        if (!dialogShown) {
+            dispatch(openDialog(
+                _isRecordingRunning ? StopRecordingDialog : StartRecordingDialog
+            ));
+        }
     }
 
     /**
@@ -143,9 +156,14 @@ export function _mapStateToProps(state: Object, ownProps: Props): Object {
             enableFeaturesBasedOnToken,
             fileRecordingsEnabled
         } = state['features/base/config'];
+        const record_user = state['features/base/jwt'].user;
+        const isLogined = record_user? true : false;
         const { features = {} } = getLocalParticipant(state);
 
-        visible = isModerator && fileRecordingsEnabled;
+        //console.log(`User: ${record_user}`);
+        //console.log(`Logined?: ${isLogined}`);
+
+        visible = isModerator && isLogined && fileRecordingsEnabled;
 
         if (enableFeaturesBasedOnToken) {
             visible = visible && String(features.recording) === 'true';
@@ -153,13 +171,7 @@ export function _mapStateToProps(state: Object, ownProps: Props): Object {
             if (!visible && !_disabled) {
                 _disabled = true;
                 visible = true;
-
-                // button and tooltip
-                if (!state['features/base/jwt'].jwt) {
-                    _tooltip = 'dialog.recordingDisabledForGuestTooltip';
-                } else {
-                    _tooltip = 'dialog.recordingDisabledTooltip';
-                }
+                _tooltip = 'dialog.recordingDisabledTooltip';
             }
         }
     }
@@ -168,6 +180,12 @@ export function _mapStateToProps(state: Object, ownProps: Props): Object {
     if (isStreaming(state)) {
         _disabled = true;
         _tooltip = 'dialog.recordingDisabledBecauseOfActiveLiveStreamingTooltip';
+    }
+
+    // disable the button if we are in a breakout room.
+    if (isInBreakoutRoom(state)) {
+        _disabled = true;
+        visible = false;
     }
 
     return {

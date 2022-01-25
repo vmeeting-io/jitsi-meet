@@ -1,34 +1,42 @@
 // @flow
 
 import _ from 'lodash';
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import VideoLayout from '../../../../../modules/UI/videolayout/VideoLayout';
 import { getConferenceNameForTitle } from '../../../base/conference';
 import { connect, disconnect } from '../../../base/connection';
+import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { connect as reactReduxConnect } from '../../../base/redux';
+import { setColorAlpha } from '../../../base/util';
 import { Chat } from '../../../chat';
 import { Filmstrip } from '../../../filmstrip';
 import { CalleeInfoContainer } from '../../../invite';
 import { LargeVideo } from '../../../large-video';
 import { KnockingParticipantList, LobbyScreen } from '../../../lobby';
+import { getIsLobbyVisible } from '../../../lobby/functions';
+import { ParticipantsPane } from '../../../participants-pane/components/web';
+import { getParticipantsPaneOpen } from '../../../participants-pane/functions';
 import { Prejoin, isPrejoinPageVisible } from '../../../prejoin';
-import { fullScreenChanged, setToolboxAlwaysVisible, showToolbox } from '../../../toolbox/actions.web';
-import { Toolbox } from '../../../toolbox/components/web';
+import { ReactionEmoji } from '../../../reactions/components/web';
+import { type ReactionEmojiProps } from '../../../reactions/constants';
+import { getReactionsQueue } from '../../../reactions/functions.any';
+import { toggleToolboxVisible } from '../../../toolbox/actions.any';
+import { fullScreenChanged, showToolbox } from '../../../toolbox/actions.web';
+import { JitsiPortal, Toolbox } from '../../../toolbox/components/web';
 import { LAYOUTS, getCurrentLayout } from '../../../video-layout';
-import { maybeShowSuboptimalExperienceNotification } from '../../functions';
+import { maybeShowSuboptimalExperienceNotification, reduceRandomSelectionCountdown } from '../../functions';
 import {
     AbstractConference,
     abstractMapStateToProps
 } from '../AbstractConference';
 import type { AbstractProps } from '../AbstractConference';
 
-import Labels from './Labels';
+import ConferenceInfo from './ConferenceInfo';
 import { default as Notice } from './Notice';
 
 declare var APP: Object;
-declare var config: Object;
 declare var interfaceConfig: Object;
 
 /**
@@ -63,14 +71,14 @@ const LAYOUT_CLASSNAMES = {
 type Props = AbstractProps & {
 
     /**
-     * Whether the local participant is recording the conference.
+     * The alpha(opacity) of the background.
      */
-    _iAmRecorder: boolean,
+    _backgroundAlpha: number,
 
     /**
-     * Returns true if the 'lobby screen' is visible.
+     * If participants pane is visible or not.
      */
-    _isLobbyScreenVisible: boolean,
+    _isParticipantsPaneVisible: boolean,
 
     /**
      * The CSS class to apply to the root of {@link Conference} to modify the
@@ -79,9 +87,24 @@ type Props = AbstractProps & {
     _layoutClassName: string,
 
     /**
+     * The config specified interval for triggering mouseMoved iframe api events.
+     */
+    _mouseMoveCallbackInterval: number,
+
+    /**
+     *Whether or not the notifications should be displayed in the overflow drawer.
+     */
+    _overflowDrawer: boolean,
+
+    /**
      * Name for this conference room.
      */
     _roomName: string,
+
+    /**
+     * If lobby page is visible or not.
+     */
+    _showLobby: boolean,
 
     /**
      * If prejoin page is visible or not.
@@ -97,8 +120,15 @@ type Props = AbstractProps & {
  */
 class Conference extends AbstractConference<Props, *> {
     _onFullScreenChange: Function;
+    _onMouseEnter: Function;
+    _onMouseLeave: Function;
+    _onMouseMove: Function;
     _onShowToolbar: Function;
+    _onVidespaceTouchStart: Function;
+    _originalOnMouseMove: Function;
     _originalOnShowToolbar: Function;
+    _setBackground: Function;
+    _renderRandomSelectionCountdown: Function;
 
     /**
      * Initializes a new Conference instance.
@@ -109,9 +139,13 @@ class Conference extends AbstractConference<Props, *> {
     constructor(props) {
         super(props);
 
+        const { _mouseMoveCallbackInterval } = props;
+
         // Throttle and bind this component's mousemove handler to prevent it
         // from firing too often.
         this._originalOnShowToolbar = this._onShowToolbar;
+        this._originalOnMouseMove = this._onMouseMove;
+
         this._onShowToolbar = _.throttle(
             () => this._originalOnShowToolbar(),
             100,
@@ -120,8 +154,19 @@ class Conference extends AbstractConference<Props, *> {
                 trailing: false
             });
 
+        this._onMouseMove = _.throttle(
+            event => this._originalOnMouseMove(event),
+            _mouseMoveCallbackInterval,
+            {
+                leading: true,
+                trailing: false
+            });
+
         // Bind event handler so it is only bound once for every instance.
         this._onFullScreenChange = this._onFullScreenChange.bind(this);
+        this._onVideospaceTouchStart = this._onVideospaceTouchStart.bind(this);
+        this._setBackground = this._setBackground.bind(this);
+        this._renderRandomSelectionCountdown = this._renderRandomSelectionCountdown.bind(this);
     }
 
     /**
@@ -176,42 +221,116 @@ class Conference extends AbstractConference<Props, *> {
      */
     render() {
         const {
-            // XXX The character casing of the name filmStripOnly utilized by
-            // interfaceConfig is obsolete but legacy support is required.
-            filmStripOnly: filmstripOnly
-        } = interfaceConfig;
-        const {
-            _iAmRecorder,
-            _isLobbyScreenVisible,
+            _isParticipantsPaneVisible,
             _layoutClassName,
+            _reactionsQueue,
+            _notificationsVisible,
+            _overflowDrawer,
+            _showLobby,
             _showPrejoin
         } = this.props;
-        const hideLabels = filmstripOnly || _iAmRecorder;
 
         return (
             <div
-                className = { _layoutClassName }
-                id = 'videoconference_page'
-                onMouseMove = { this._onShowToolbar }>
+                id = 'layout_wrapper'
+                onMouseEnter = { this._onMouseEnter }
+                onMouseLeave = { this._onMouseLeave }
+                onMouseMove = { this._onMouseMove } >
+                <div
+                    className = { _layoutClassName }
+                    id = 'videoconference_page'
+                    onMouseMove = { isMobileBrowser() ? undefined : this._onShowToolbar }
+                    ref = { this._setBackground }>
+                    <ConferenceInfo />
 
-                <Notice />
-                <div id = 'videospace'>
-                    <LargeVideo />
-                    <KnockingParticipantList />
-                    <Filmstrip filmstripOnly = { filmstripOnly } />
-                    { hideLabels || <Labels /> }
+                    <Notice />
+                    <div
+                        id = 'videospace'
+                        onTouchStart = { this._onVideospaceTouchStart }>
+                        <LargeVideo />
+                        {!_isParticipantsPaneVisible
+                        && <div id = 'notification-participant-list'>
+                            <KnockingParticipantList />
+                        </div>}
+                        <Filmstrip />
+                        { this._renderRandomSelectionCountdown() }
+                    </div>
+
+                    { _showPrejoin || _showLobby || <Toolbox showDominantSpeakerName = { true } /> }
+                    <Chat />
+
+                    {_notificationsVisible && (_overflowDrawer
+                        ? <JitsiPortal className = 'notification-portal'>
+                            {this.renderNotificationsContainer({ portal: true })}
+                        </JitsiPortal>
+                        : this.renderNotificationsContainer())
+                    }
+
+                    <CalleeInfoContainer />
+
+                    { _showPrejoin && <Prejoin />}
+                    { _showLobby && <LobbyScreen />}
+                    { _reactionsQueue.map(({ reaction, uid }, index) => (<ReactionEmoji
+                        index = { index }
+                        key = { uid }
+                        reaction = { reaction }
+                        uid = { uid } />))}
+
                 </div>
-
-                { filmstripOnly || _showPrejoin || _isLobbyScreenVisible || <Toolbox /> }
-                { filmstripOnly || <Chat /> }
-
-                { this.renderNotificationsContainer() }
-
-                <CalleeInfoContainer />
-
-                { !filmstripOnly && _showPrejoin && <Prejoin />}
+                <ParticipantsPane />
             </div>
         );
+    }
+
+    _renderRandomSelectionCountdown() {
+        if(this.props._startCountdown === true) {
+            return(
+            <div className = 'videospace_countdown' id = 'videospace_countdown'>
+                { reduceRandomSelectionCountdown(this.props._startCountdownFrom) }
+            </div>
+            );
+        } else {
+            return <></>;
+        }
+    }
+
+    /**
+     * Sets custom background opacity based on config. It also applies the
+     * opacity on parent element, as the parent element is not accessible directly,
+     * only though it's child.
+     *
+     * @param {Object} element - The DOM element for which to apply opacity.
+     *
+     * @private
+     * @returns {void}
+     */
+    _setBackground(element) {
+        if (!element) {
+            return;
+        }
+
+        if (this.props._backgroundAlpha !== undefined) {
+            const elemColor = element.style.background;
+            const alphaElemColor = setColorAlpha(elemColor, this.props._backgroundAlpha);
+
+            element.style.background = alphaElemColor;
+            if (element.parentElement) {
+                const parentColor = element.parentElement.style.background;
+                const alphaParentColor = setColorAlpha(parentColor, this.props._backgroundAlpha);
+
+                element.parentElement.style.background = alphaParentColor;
+            }
+        }
+    }
+
+    /**
+     * Handler used for touch start on Video container.
+     *
+     * @private
+     * @returns {void}
+     */
+    _onVideospaceTouchStart() {
+        this.props.dispatch(toggleToolboxVisible());
     }
 
     /**
@@ -223,6 +342,39 @@ class Conference extends AbstractConference<Props, *> {
      */
     _onFullScreenChange() {
         this.props.dispatch(fullScreenChanged(APP.UI.isFullScreen()));
+    }
+
+    /**
+     * Triggers iframe API mouseEnter event.
+     *
+     * @param {MouseEvent} event - The mouse event.
+     * @private
+     * @returns {void}
+     */
+    _onMouseEnter(event) {
+        APP.API.notifyMouseEnter(event);
+    }
+
+    /**
+     * Triggers iframe API mouseLeave event.
+     *
+     * @param {MouseEvent} event - The mouse event.
+     * @private
+     * @returns {void}
+     */
+    _onMouseLeave(event) {
+        APP.API.notifyMouseLeave(event);
+    }
+
+    /**
+     * Triggers iframe API mouseMove event.
+     *
+     * @param {MouseEvent} event - The mouse event.
+     * @private
+     * @returns {void}
+     */
+    _onMouseMove(event) {
+        APP.API.notifyMouseMove(event);
     }
 
     /**
@@ -256,9 +408,6 @@ class Conference extends AbstractConference<Props, *> {
         dispatch(connect());
 
         maybeShowSuboptimalExperienceNotification(dispatch, t);
-
-        interfaceConfig.filmStripOnly
-            && dispatch(setToolboxAlwaysVisible(true));
     }
 }
 
@@ -271,12 +420,27 @@ class Conference extends AbstractConference<Props, *> {
  * @returns {Props}
  */
 function _mapStateToProps(state) {
+    const { backgroundAlpha, mouseMoveCallbackInterval } = state['features/base/config'];
+    const { overflowDrawer } = state['features/toolbox'];
+
+    // variable that identifies whether or not random selection has been initiated or not
+    const startCountdown = state['features/base/conference'].startCountdown;
+
+    // variable that identifies the countdown before random selection is finalized
+    const startCountdownFrom = state['features/base/conference'].countdownRemained;
+
     return {
         ...abstractMapStateToProps(state),
-        _iAmRecorder: state['features/base/config'].iAmRecorder,
-        _isLobbyScreenVisible: state['features/base/dialog']?.component === LobbyScreen,
+        _backgroundAlpha: backgroundAlpha,
+        _isParticipantsPaneVisible: getParticipantsPaneOpen(state),
         _layoutClassName: LAYOUT_CLASSNAMES[getCurrentLayout(state)],
+        _mouseMoveCallbackInterval: mouseMoveCallbackInterval,
+        _overflowDrawer: overflowDrawer,
+        _reactionsQueue: getReactionsQueue(state),
         _roomName: getConferenceNameForTitle(state),
+        _showLobby: getIsLobbyVisible(state),
+        _startCountdown: startCountdown,
+        _startCountdownFrom: startCountdownFrom,
         _showPrejoin: isPrejoinPageVisible(state)
     };
 }

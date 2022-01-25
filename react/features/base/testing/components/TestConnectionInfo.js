@@ -20,7 +20,7 @@ type Props = {
      * are the possible values:
      * 'conference.connectionEstablished'
      * 'conference.connectionInterrupted'
-     * 'conference.connectionRestored'
+     * 'conference.connectionRestored'.
      */
     _conferenceConnectionState: string,
 
@@ -179,19 +179,19 @@ class TestConnectionInfo extends Component<Props, State> {
         return (
             <Fragment accessible = { false } >
                 <TestHint
-                    id = 'org.jitsi.meet.conference.connectionState'
+                    id = 'org.postech.vmeeting.conference.connectionState'
                     value = { this.props._conferenceConnectionState } />
                 <TestHint
-                    id = 'org.jitsi.meet.conference.joinedState'
+                    id = 'org.postech.vmeeting.conference.joinedState'
                     value = { this.props._conferenceJoinedState } />
                 <TestHint
-                    id = 'org.jitsi.meet.conference.grantModeratorAvailable'
+                    id = 'org.postech.vmeeting.conference.grantModeratorAvailable'
                     value = { true } />
                 <TestHint
-                    id = 'org.jitsi.meet.conference.localParticipantRole'
+                    id = 'org.postech.vmeeting.conference.localParticipantRole'
                     value = { this.props._localUserRole } />
                 <TestHint
-                    id = 'org.jitsi.meet.stats.rtp'
+                    id = 'org.postech.vmeeting.stats.rtp'
                     value = { JSON.stringify(this.state.stats) } />
             </Fragment>
         );

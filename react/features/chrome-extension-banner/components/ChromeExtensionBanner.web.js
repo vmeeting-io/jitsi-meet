@@ -16,7 +16,7 @@ import { translate } from '../../base/i18n';
 import { Icon, IconClose } from '../../base/icons';
 import { browser } from '../../base/lib-jitsi-meet';
 import { connect } from '../../base/redux';
-import { isVpaasMeeting } from '../../billing-counter/functions';
+import { isVpaasMeeting } from '../../jaas/functions';
 import logger from '../logger';
 
 
@@ -42,7 +42,7 @@ type Props = {
     bannerCfg: Object,
 
     /**
-     * Conference data, if any
+     * Conference data, if any.
      */
     conference: Object,
 
@@ -55,7 +55,6 @@ type Props = {
      * Whether it's a vpaas meeting or not.
      */
     isVpaas: boolean,
-    
     /**
      * Invoked to obtain translated strings.
      */
@@ -68,7 +67,7 @@ type Props = {
 type State = {
 
     /**
-     * Keeps the current value of dont show again checkbox
+     * Keeps the current value of dont show again checkbox.
      */
     dontShowAgainChecked: boolean,
 
@@ -85,8 +84,9 @@ type State = {
 
 /**
  * Implements a React {@link PureComponent} which displays a banner having a link to the chrome extension.
+ *
  * @class ChromeExtensionBanner
- * @extends PureComponent
+ * @augments PureComponent
  */
 class ChromeExtensionBanner extends PureComponent<Props, State> {
     /**
@@ -107,6 +107,8 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
         this._onInstallExtensionClick = this._onInstallExtensionClick.bind(this);
         this._shouldNotRender = this._shouldNotRender.bind(this);
         this._onDontShowAgainChange = this._onDontShowAgainChange.bind(this);
+        this._onCloseKeyPress = this._onCloseKeyPress.bind(this);
+        this._onInstallExtensionKeyPress = this._onInstallExtensionKeyPress.bind(this);
     }
 
     /**
@@ -152,7 +154,9 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
     _isSupportedEnvironment() {
         return interfaceConfig.SHOW_CHROME_EXTENSION_BANNER
             && browser.isChrome()
-            && !isMobileBrowser();
+            && !browser.isTwa()
+            && !isMobileBrowser()
+            && !this.props.isVpaas;
     }
 
     _onClosePressed: () => void;
@@ -167,6 +171,22 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
         this.setState({ closePressed: true });
     }
 
+    _onCloseKeyPress: (Object) => void;
+
+    /**
+     * KeyPress handler for accessibility.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onCloseKeyPress(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            this._onClosePressed();
+        }
+    }
+
     _onInstallExtensionClick: () => void;
 
     /**
@@ -178,6 +198,22 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
         sendAnalytics(createChromeExtensionBannerEvent(true));
         window.open(this.props.bannerCfg.url);
         this.setState({ closePressed: true });
+    }
+
+    _onInstallExtensionKeyPress: (Object) => void;
+
+    /**
+     * KeyPress handler for accessibility.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onInstallExtensionKeyPress(e) {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            this._onClosePressed();
+        }
     }
 
     _shouldNotRender: () => boolean;
@@ -234,16 +270,23 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
 
         return (
             <div className = { mainClassNames }>
-                <div className = 'chrome-extension-banner__container'>
+                <div
+                    aria-aria-describedby = 'chrome-extension-banner__text-container'
+                    className = 'chrome-extension-banner__container'
+                    role = 'banner'>
+                    <div className = 'chrome-extension-banner__icon-container' />
                     <div
-                        className = 'chrome-extension-banner__icon-container' />
-                    <div
-                        className = 'chrome-extension-banner__text-container'>
+                        className = 'chrome-extension-banner__text-container'
+                        id = 'chrome-extension-banner__text-container'>
                         { t('chromeExtensionBanner.installExtensionText') }
                     </div>
                     <div
+                        aria-label = { t('chromeExtensionBanner.close') }
                         className = 'chrome-extension-banner__close-container'
-                        onClick = { this._onClosePressed }>
+                        onClick = { this._onClosePressed }
+                        onKeyPress = { this._onCloseKeyPress }
+                        role = 'button'
+                        tabIndex = { 0 }>
                         <Icon
                             className = 'gray'
                             size = { 12 }
@@ -253,18 +296,28 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
                 <div
                     className = 'chrome-extension-banner__button-container'>
                     <div
+                        aria-labelledby = 'chrome-extension-banner__button-text'
                         className = 'chrome-extension-banner__button-open-url'
-                        onClick = { this._onInstallExtensionClick }>
+                        onClick = { this._onInstallExtensionClick }
+                        onKeyPress = { this._onInstallExtensionKeyPress }
+                        role = 'button'
+                        tabIndex = { 0 }>
                         <div
-                            className = 'chrome-extension-banner__button-text'>
+                            className = 'chrome-extension-banner__button-text'
+                            id = 'chrome-extension-banner__button-text'>
                             { t('chromeExtensionBanner.buttonText') }
                         </div>
                     </div>
                 </div>
                 <div className = 'chrome-extension-banner__checkbox-container'>
-                    <label className = 'chrome-extension-banner__checkbox-label'>
+                    <label
+                        className = 'chrome-extension-banner__checkbox-label'
+                        htmlFor = 'chrome-extension-banner__checkbox'
+                        id = 'chrome-extension-banner__checkbox-label'>
                         <input
+                            aria-labelledby = 'chrome-extension-banner__checkbox-label'
                             checked = { this.state.dontShowAgainChecked }
+                            id = 'chrome-extension-banner__checkbox'
                             onChange = { this._onDontShowAgainChange }
                             type = 'checkbox' />
                         &nbsp;{ t('chromeExtensionBanner.dontShowAgain') }

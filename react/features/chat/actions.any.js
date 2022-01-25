@@ -3,9 +3,12 @@
 import {
     ADD_MESSAGE,
     CLEAR_MESSAGES,
+    CLOSE_CHAT,
+    FILE_UPLOADED_PERCENTAGE_STATUS,
+    EDIT_MESSAGE,
     SEND_MESSAGE,
     SET_PRIVATE_MESSAGE_RECIPIENT,
-    HANGUP_ALL_MESSAGE
+    SET_IS_POLL_TAB_FOCUSED
 } from './actionTypes';
 
 /**
@@ -21,6 +24,8 @@ import {
  * "error" or "local" or "remote".
  * @param {string} messageDetails.timestamp - A timestamp to display for when
  * the message was received.
+ * @param {string} messageDetails.isReaction - Whether or not the
+ * message is a reaction message.
  * @returns {{
  *     type: ADD_MESSAGE,
  *     displayName: string,
@@ -28,12 +33,30 @@ import {
  *     message: string,
  *     messageType: string,
  *     timestamp: string,
+ *     isReaction: boolean
  * }}
  */
 export function addMessage(messageDetails: Object) {
     return {
         type: ADD_MESSAGE,
         ...messageDetails
+    };
+}
+
+/**
+ * Edits an existing chat message.
+ *
+ * @param {Object} message - The chat message to edit/override. The messages will be matched from the state
+ * comparing the messageId.
+ * @returns {{
+ *     type: EDIT_MESSAGE,
+ *     message: Object
+ * }}
+ */
+export function editMessage(message: Object) {
+    return {
+        type: EDIT_MESSAGE,
+        message
     };
 }
 
@@ -47,6 +70,19 @@ export function addMessage(messageDetails: Object) {
 export function clearMessages() {
     return {
         type: CLEAR_MESSAGES
+    };
+}
+
+/**
+ * Action to signal the closing of the chat dialog.
+ *
+ * @returns {{
+ *     type: CLOSE_CHAT
+ * }}
+ */
+export function closeChat() {
+    return {
+        type: CLOSE_CHAT
     };
 }
 
@@ -69,6 +105,16 @@ export function sendMessage(message: string, ignorePrivacy: boolean = false) {
     };
 }
 
+export function setFileUploadedPercentageValue(percentage: number, fnameWithTS: string, fileSize: number ) {
+    return {
+        type: FILE_UPLOADED_PERCENTAGE_STATUS,
+        percentage,
+        fnameWithTS,
+        fileSize,
+        uploading: true
+    };
+}
+
 /**
  * Initiates the sending of a private message to the supplied participant.
  *
@@ -85,8 +131,15 @@ export function setPrivateMessageRecipient(participant: Object) {
     };
 }
 
-export function sendHangupMessage() {
+/**
+ * Set the value of _isPollsTabFocused.
+ *
+ * @param {boolean} isPollsTabFocused - The new value for _isPollsTabFocused.
+ * @returns {Function}
+ */
+export function setIsPollsTabFocused(isPollsTabFocused: boolean) {
     return {
-        type: HANGUP_ALL_MESSAGE
+        isPollsTabFocused,
+        type: SET_IS_POLL_TAB_FOCUSED
     };
 }

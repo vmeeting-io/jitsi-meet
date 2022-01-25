@@ -1,15 +1,20 @@
 // @flow
 import _ from 'lodash';
 
+import { PREJOIN_INITIALIZED } from '../../prejoin/actionTypes';
+import { setPrejoinPageVisibility } from '../../prejoin/actions';
 import { APP_WILL_MOUNT } from '../app';
 import { setAudioOnly } from '../audio-only';
 import { SET_LOCATION_URL } from '../connection/actionTypes'; // minimize imports to avoid circular imports
+import { getJwtName } from '../jwt/functions';
 import { getLocalParticipant, participantUpdated } from '../participants';
 import { MiddlewareRegistry } from '../redux';
 import { parseURLParams } from '../util';
+import { updateSettings } from './actions';
 
 import { SETTINGS_UPDATED } from './actionTypes';
 import { handleCallIntegrationChange, handleCrashReportingChange } from './functions';
+
 
 /**
  * The middleware of the feature base/settings. Distributes changes to the state
@@ -25,7 +30,12 @@ MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
     case APP_WILL_MOUNT:
         _initializeCallIntegration(store);
+        _initializeShowPrejoin(store);
         break;
+    case PREJOIN_INITIALIZED: {
+        _maybeUpdateDisplayName(store);
+        break;
+    }
     case SETTINGS_UPDATED:
         _maybeHandleCallIntegrationChange(action);
         _maybeSetAudioOnly(store, action);
@@ -39,6 +49,21 @@ MiddlewareRegistry.register(store => next => action => {
 
     return result;
 });
+
+/**
+ * Overwrites the showPrejoin flag based on cached used selection for showing prejoin screen.
+ *
+ * @param {Store} store - The redux store.
+ * @private
+ * @returns {void}
+ */
+function _initializeShowPrejoin({ dispatch, getState }) {
+    const { userSelectedSkipPrejoin } = getState()['features/base/settings'];
+
+    if (userSelectedSkipPrejoin) {
+        dispatch(setPrejoinPageVisibility(false));
+    }
+}
 
 /**
  * Initializes the audio device handler based on the `disableCallIntegration` setting.
@@ -110,7 +135,29 @@ function _maybeSetAudioOnly(
         { dispatch },
         { settings: { startAudioOnly } }) {
     if (typeof startAudioOnly === 'boolean') {
-        dispatch(setAudioOnly(startAudioOnly, true));
+        dispatch(setAudioOnly(startAudioOnly));
+    }
+}
+
+/**
+ * Updates the display name to the one in JWT if there is one.
+ *
+ * @param {Store} store - The redux store.
+ * @private
+ * @returns {void}
+ */
+function _maybeUpdateDisplayName({ dispatch, getState }) {
+    const state = getState();
+    const hasJwt = Boolean(state['features/base/jwt'].jwt);
+
+    if (hasJwt) {
+        const displayName = getJwtName(state);
+
+        if (displayName) {
+            dispatch(updateSettings({
+                displayName
+            }));
+        }
     }
 }
 
@@ -160,10 +207,18 @@ function _updateLocalParticipantFromUrl({ dispatch, getState }) {
     const localParticipant = getLocalParticipant(getState());
 
     if (localParticipant) {
+        const displayName = _.escape(urlDisplayName);
+        const email = _.escape(urlEmail);
+
         dispatch(participantUpdated({
             ...localParticipant,
-            email: _.escape(urlEmail),
-            name: _.escape(urlDisplayName)
+            email,
+            name: displayName
+        }));
+
+        dispatch(updateSettings({
+            displayName,
+            email
         }));
     }
 }

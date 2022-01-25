@@ -1,9 +1,8 @@
 // @flow
 
 import React from 'react';
-
 import SplashScreen from 'react-native-splash-screen';
-import { setColorScheme } from '../../base/color-scheme';
+
 import { DialogContainer } from '../../base/dialog';
 import { updateFlags } from '../../base/flags/actions';
 import { CALL_INTEGRATION_ENABLED, SERVER_URL_CHANGE_ENABLED } from '../../base/flags/constants';
@@ -51,7 +50,7 @@ type Props = AbstractAppProps & {
 /**
  * Root app {@code Component} on mobile/React Native.
  *
- * @extends AbstractApp
+ * @augments AbstractApp
  */
 export class App extends AbstractApp {
     _init: Promise<*>;
@@ -86,12 +85,11 @@ export class App extends AbstractApp {
         super.componentDidMount();
 
         SplashScreen.hide();
-        
+
         this._init.then(() => {
             const { dispatch, getState } = this.state.store;
 
             // We set these early enough so then we avoid any unnecessary re-renders.
-            dispatch(setColorScheme(this.props.colorScheme));
             dispatch(updateFlags(this.props.flags));
 
             // Check if serverURL is configured externally and not allowed to change.
@@ -157,7 +155,7 @@ export class App extends AbstractApp {
             // it is preferred because it is at a later step of the
             // error/exception handling and it is specific to fatal
             // errors/exceptions which were observed to kill the app. The
-            // solution implemented bellow was tested on Android only so it is
+            // solution implemented below was tested on Android only so it is
             // considered safest to use it there only.
             return;
         }

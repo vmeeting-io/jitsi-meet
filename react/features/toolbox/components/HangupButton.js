@@ -1,25 +1,14 @@
 // @flow
 
-import InlineDialog from '@atlaskit/inline-dialog';
-import axios from 'axios';
-import { find, once } from 'lodash';
-import React from 'react';
+import _ from 'lodash';
 
-import { getAuthUrl } from '../../../api/url';
 import { createToolbarEvent, sendAnalytics } from '../../analytics';
 import { appNavigate } from '../../app/actions';
-import { Avatar } from '../../base/avatar';
 import { disconnect } from '../../base/connection';
 import { translate } from '../../base/i18n';
-import { Icon, IconCheck, IconOpenInNew, IconPresentation } from '../../base/icons';
-import { getLocalParticipant, grantModerator, PARTICIPANT_ROLE } from '../../base/participants';
 import { connect } from '../../base/redux';
-import { AbstractHangupButton, HangupMenuItem } from '../../base/toolbox/components';
-import { sendHangupMessage } from '../../chat';
+import { AbstractHangupButton } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
-
-import s from './HangupButton.module.scss';
-import { isHost } from '../../base/jwt';
 
 /**
  * The type of the React {@code Component} props of {@link HangupButton}.
@@ -35,7 +24,7 @@ type Props = AbstractButtonProps & {
 /**
  * Component that renders a toolbar button for leaving the current conference.
  *
- * @extends AbstractHangupButton
+ * @augments AbstractHangupButton
  */
 class HangupButton extends AbstractHangupButton<Props, *> {
     _hangup: Function;
@@ -53,13 +42,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     constructor(props: Props) {
         super(props);
 
-        this.state = {
-            isOpen: false,
-            selected: find(props._participants, { local: false })?.id,
-        };
-        console.log('HangupButton:', props._participants);
-
-        this._hangup = once(() => {
+        this._hangup = _.once(() => {
             sendAnalytics(createToolbarEvent('hangup'));
 
             // FIXME: these should be unified.
@@ -69,24 +52,6 @@ class HangupButton extends AbstractHangupButton<Props, *> {
                 this.props.dispatch(disconnect(true));
             }
         });
-        this._onCloseDialog = this._onCloseDialog.bind(this);
-        this._onHangupAll = this._onHangupAll.bind(this);
-        this._onHangupMe = this._onHangupMe.bind(this);
-        this._onModeratorSelection = this._onModeratorSelection.bind(this);
-        this._onSubmitModeratorSelection = this._onSubmitModeratorSelection.bind(this);
-    }
-    
-    /**
-     * Implements React Component's componentDidUpdate.
-     *
-     * @inheritdoc
-     */
-    componentDidUpdate(prevProps) {
-        const found = find(this.props._participants, { local: false });
-        if (!this.state.selected && found) {
-            this.setState({ selected: found.id });
-            console.log('componentDidUpdate:', found);
-        }
     }
 
     /**
@@ -97,214 +62,8 @@ class HangupButton extends AbstractHangupButton<Props, *> {
      * @returns {void}
      */
     _doHangup() {
-        if (this.props._showHangupMenu) {
-            this.setState({ isOpen: true });
-            this.props._timer?.pause();
-        } else {
-            this._hangup();
-        }
-    }
-
-    _renderHangupOptionsMenuContent() {
-        const { t } = this.props;
-
-        if (this.state.showSelectModerator) {
-            return this._renderModeratorSelectionContent();
-        }
-
-        return [
-            <HangupMenuItem
-                accessibilityLabel = { t('toolbar.accessibilityLabel.hangupAll') }
-                icon = { IconPresentation }
-                key = 'hangupAll'
-                className = { s.menuItemWarning }
-                onClick = { this._onHangupAll }
-                text = { t('toolbar.hangupAll') } />,
-            <HangupMenuItem
-                accessibilityLabel = { t('toolbar.accessibilityLabel.hangup') }
-                icon = { IconOpenInNew }
-                key = 'hangup'
-                className = { s.menuItem }
-                onClick = { this._onHangupMe }
-                text = { t('toolbar.hangup') } />
-        ];
-    }
-
-    _renderModeratorSelectionItem(props) {
-        const { accessibilityLabel, disabled, elementAfter, id, text } = props;
-        const selected = id === this.state.selected;
-
-        let className = selected ? s.menuItemSelected : s.menuItem;
-        className += disabled ? ' disabled' : '';
-
-        return (
-            <li
-                aria-label = { accessibilityLabel }
-                className = { className }
-                onClick = { disabled ? null : () => this._onModeratorSelection(id) }>
-                <div className = { s.avatar }>
-                    <Avatar participantId = { id } size = { 24 } />
-                </div>
-                <div className = { s.text }>{ text }</div>
-                <div className = { s.icon }>
-                { selected && <Icon src = { IconCheck } /> }
-                </div>
-                { elementAfter || null }
-            </li>
-        );
-    }
-
-    _renderModeratorSelectionContent() {
-        const { _participants, t } = this.props;
-
-        if (_participants.length <= 1)
-            return [];
-
-        let items = [];
-
-        for (let i = 0; i < _participants.length; i++){
-            if (_participants[i].local)
-                continue;
-
-            items.push(
-                this._renderModeratorSelectionItem({
-                    key: _participants[i].id,
-                    accessibilityLabel: t('toolbar.accessibilityLabel.moderatorSelectionList'),
-                    text: _participants[i].name,
-                    ..._participants[i]
-                })
-            );
-        }
-
-        items.push(
-            <li
-                aria-label = { t('toolbar.accessibilityLabel.grantModerator') }
-                className = { s.menuItemWarning }
-                onClick =  { this._onSubmitModeratorSelection }>
-                <div className = 'text'>
-                    { t('toolbar.selectModeratorAndLeave') }
-                </div>
-            </li>
-        );
-
-        return items;
-    }
-
-    _onHangupMe: () => void;
-
-    _onHangupMe(e) {
-        this.setState({ showSelectModerator: true });
-    }
-
-    _onHangupAll: () => void;
-
-    _onHangupAll() {
-        const { _apiBase, _roomInfo } = this.props;
-        if (_roomInfo) {
-            const apiUrl = `${_apiBase}/conferences/${_roomInfo._id}`;
-            axios.delete(apiUrl);
-        }
-
-        // FIXME: these should be unified.
-        if (navigator.product === 'ReactNative') {
-            this.props.dispatch(appNavigate(undefined));
-        } else {
-            this.props.dispatch(disconnect(true));
-        }
-    }
-
-    _onModeratorSelection: () => void;
-
-    _onModeratorSelection(id) {
-        this.setState({ selected: id });
-    }
-
-    _onSubmitModeratorSelection: () => void;
-
-    _onSubmitModeratorSelection() {
-        this.props.dispatch(grantModerator(this.state.selected));
-
-        // FIXME: these should be unified.
-        if (navigator.product === 'ReactNative') {
-            this.props.dispatch(appNavigate(undefined));
-        } else {
-            this.props.dispatch(disconnect(true));
-        }
-    }
-
-    /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
-     render() {
-        const { isOpen, showSelectModerator } = this.state;
-        const children = (
-            <ul
-                className = { showSelectModerator ? s.moderatorSelectionMenu : s.hangupMenu }>
-                { this._renderHangupOptionsMenuContent() }
-            </ul>
-        );
-
-        return (
-            <div className = { s.hangupButton }>
-                <InlineDialog
-                    content = { children }
-                    isOpen = { isOpen }
-                    onClose = { this._onCloseDialog }
-                    position = { 'top center' }>
-                    { super.render() }
-                </InlineDialog>
-            </div>
-        );
-    }
-
-    _onCloseDialog: () => void;
-
-    /**
-     * Callback invoked when {@code InlineDialog} signals that it should be
-     * close.
-     *
-     * @private
-     * @returns {void}
-     */
-    _onCloseDialog(e) {
-        if (this.state.showSelectModerator) {
-            const inHangupMenu = e.event.target.closest(`.${s.hangupButton}`);
-            const isGhost = !Boolean(e.event.target.closest('body'));
-            if (isGhost || inHangupMenu) return;
-        }
-
-        this.setState({
-            isOpen: false,
-            showSelectModerator: false,
-        });
-        this.props._timer?.resume();
+        this._hangup();
     }
 }
 
-/**
- * Maps (parts of) the redux state to {@link HangupButton}'s React {@code Component}
- * props.
- *
- * @param {Object} state - The redux store/state.
- * @private
- * @returns {{}}
- */
- function _mapStateToProps(state) {
-    const participants = state['features/base/participants'];
-    const { roomInfo } = state['features/base/conference'];
-    const isModerator = isHost(state);
-
-    return {
-        _apiBase: getAuthUrl(state),
-        _participants: participants,
-        _showHangupMenu: isModerator && participants.length > 1,
-        _roomInfo: roomInfo,
-        _timer: state['features/toolbox'].timer,
-        customClass: s.button,
-    };
-}
-
-export default translate(connect(_mapStateToProps)(HangupButton));
+export default translate(connect()(HangupButton));

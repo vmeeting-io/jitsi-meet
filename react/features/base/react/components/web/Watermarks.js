@@ -2,13 +2,12 @@
 
 import React, { Component } from 'react';
 
-import { isVpaasMeeting } from '../../../../billing-counter/functions';
+import { isVpaasMeeting } from '../../../../jaas/functions';
 import { translate } from '../../../i18n';
 import { connect } from '../../../redux';
 
-import s from './Watermarks.module.scss';
-
 declare var interfaceConfig: Object;
+declare var config: Object;
 
 /**
  * The CSS style of the element with CSS class {@code rightwatermark}.
@@ -103,7 +102,7 @@ class Watermarks extends Component<Props, State> {
      */
     render() {
         return (
-            <div className={s.watermark}>
+            <div className='watermark'>
                 {
                     this._renderJitsiWatermark()
                 }
@@ -162,12 +161,13 @@ class Watermarks extends Component<Props, State> {
             _showJitsiWatermark,
             className
         } = this.props;
+        const { t } = this.props;
         let reactElement = null;
 
         if (_showJitsiWatermark) {
 
             reactElement = (<img
-                className = {`${s.watermark} ${s.leftwatermark}`}
+                className = {`watermark leftwatermark ${!_logoLink ? className : ''}`}
                 src = { _logoUrl } />);
 
             if (_logoLink) {
@@ -248,7 +248,7 @@ function _mapStateToProps(state, ownProps) {
         }
     } else {
         // When there is no custom branding data use defaults
-        _logoUrl = ownProps.defaultJitsiLogoURL || DEFAULT_LOGO_URL;
+        _logoUrl = ownProps.defaultJitsiLogoURL || config.logoUrl || DEFAULT_LOGO_URL;
         _logoLink = JITSI_WATERMARK_LINK;
     }
 

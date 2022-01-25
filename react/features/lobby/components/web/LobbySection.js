@@ -6,6 +6,7 @@ import { translate } from '../../../base/i18n';
 import { isLocalParticipantModerator } from '../../../base/participants';
 import { Switch } from '../../../base/react';
 import { connect } from '../../../base/redux';
+import { isInBreakoutRoom } from '../../../breakout-rooms';
 import { toggleLobbyMode } from '../../actions';
 
 type Props = {
@@ -89,14 +90,17 @@ class LobbySection extends PureComponent<Props, State> {
         return (
             <>
                 <div id = 'lobby-section'>
-                    <p className = 'description'>
+                    <p
+                        className = 'description'
+                        role = 'banner'>
                         { t('lobby.enableDialogText') }
                     </p>
                     <div className = 'control-row'>
-                        <label>
+                        <label htmlFor = 'lobby-section-switch'>
                             { t('lobby.toggleLabel') }
                         </label>
                         <Switch
+                            id = 'lobby-section-switch'
                             onValueChange = { this._onToggleLobby }
                             value = { this.state.lobbyEnabled } />
                     </div>
@@ -132,10 +136,14 @@ class LobbySection extends PureComponent<Props, State> {
  */
 function mapStateToProps(state: Object): $Shape<Props> {
     const { conference } = state['features/base/conference'];
+    const { hideLobbyButton } = state['features/base/config'];
 
     return {
         _lobbyEnabled: state['features/lobby'].lobbyEnabled,
-        _visible: conference && conference.isLobbySupported() && isLocalParticipantModerator(state)
+
+        // $FlowExpectedError
+        _visible: conference?.isLobbySupported() && isLocalParticipantModerator(state)
+            && !hideLobbyButton && !isInBreakoutRoom(state)
     };
 }
 

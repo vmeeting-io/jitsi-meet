@@ -1,5 +1,6 @@
 // @flow
 
+import { isNameReadOnly } from '../base/config';
 import { SERVER_URL_CHANGE_ENABLED, getFeatureFlag } from '../base/flags';
 import { i18next, DEFAULT_LANGUAGE, LANGUAGES } from '../base/i18n';
 import { createLocalTrack } from '../base/lib-jitsi-meet/functions';
@@ -8,8 +9,12 @@ import {
     isLocalParticipantModerator
 } from '../base/participants';
 import { toState } from '../base/redux';
+import { getHideSelfView } from '../base/settings';
 import { parseStandardURIString } from '../base/util';
-import { isFollowMeActive, isFollowMeEnabled } from '../follow-me';
+import { isFollowMeActive } from '../follow-me';
+import { isReactionsEnabled } from '../reactions/functions.any';
+
+import { SS_DEFAULT_FRAME_RATE, SS_SUPPORTED_FRAMERATES } from './constants';
 
 declare var interfaceConfig: Object;
 
@@ -75,14 +80,25 @@ export function normalizeUserInputURL(url: string) {
 }
 
 /**
- * Used for web. Returns whether or not only Device Selection is configured to
- * display as a setting.
+ * Returns the notification types and their user selected configuration.
  *
- * @returns {boolean}
+ * @param {(Function|Object)} stateful -The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state.
+ * @returns {Object} - The section of notifications to be configured.
  */
-export function shouldShowOnlyDeviceSelection() {
-    return interfaceConfig.SETTINGS_SECTIONS.length === 1
-        && isSettingEnabled('devices');
+export function getNotificationsMap(stateful: Object | Function) {
+    const state = toState(stateful);
+    const { notifications } = state['features/base/config'];
+    const { userSelectedNotifications } = state['features/base/settings'];
+
+    return Object.keys(userSelectedNotifications)
+        .filter(key => !notifications || notifications.includes(key))
+        .reduce((notificationsMap, key) => {
+            return {
+                ...notificationsMap,
+                [key]: userSelectedNotifications[key]
+            };
+        }, {});
 }
 
 /**
@@ -95,38 +111,73 @@ export function shouldShowOnlyDeviceSelection() {
  */
 export function getMoreTabProps(stateful: Object | Function) {
     const state = toState(stateful);
+    const framerate = state['features/screen-share'].captureFrameRate ?? SS_DEFAULT_FRAME_RATE;
     const language = i18next.language || DEFAULT_LANGUAGE;
-    const {
-        conference,
-        startAudioMutedPolicy,
-        startVideoMutedPolicy,
-        // add a new state variable to the global state features/base/conference
-        userDeviceAccessDisabled,
-    } = state['features/base/conference'];
-    const followMeActive = isFollowMeActive(state) ||
-        typeof state['features/base/config'].followMeEnabled !== 'undefined';
-    const followMeEnabled = isFollowMeEnabled(state);
     const configuredTabs = interfaceConfig.SETTINGS_SECTIONS || [];
+    const enabledNotifications = getNotificationsMap(stateful);
 
-    // The settings sections to display.
-    const showModeratorSettings = Boolean(
-        conference
-            && configuredTabs.includes('moderator')
-            && isLocalParticipantModerator(state));
+    // when self view is controlled by the config we hide the settings
+    const {
+        disableSelfView,
+        disableSelfViewSettings,
+        disableShortcuts,
+        prejoinConfig,
+        showFramerateSelect
+    } = state['features/base/config'];
+    const { aiAttentionAnalysisEnabled, userSelectedSkipPrejoin } = state['features/base/settings'];
 
     return {
+        currentFramerate: framerate,
         currentLanguage: language,
-        followMeActive: Boolean(conference && followMeActive),
-        followMeEnabled: Boolean(conference && followMeEnabled),
+        desktopShareFramerates: SS_SUPPORTED_FRAMERATES,
+        disableHideSelfView: true, // disableSelfViewSettings || disableSelfView || aiAttentionAnalysisEnabled,
+        disableShortcuts,
+        hideSelfView: getHideSelfView(state),
         languages: LANGUAGES,
         showLanguageSettings: configuredTabs.includes('language'),
+        enabledNotifications,
+        showNotificationsSettings: Object.keys(enabledNotifications).length > 0,
+        showPrejoinPage: !userSelectedSkipPrejoin,
+        showPrejoinSettings: prejoinConfig?.enabled,
+        showFramerateSelect: showFramerateSelect
+    };
+}
+
+/**
+ * Returns the properties for the "More" tab from settings dialog from Redux
+ * state.
+ *
+ * @param {(Function|Object)} stateful -The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state.
+ * @returns {Object} - The properties for the "More" tab from settings dialog.
+ */
+export function getModeratorTabProps(stateful: Object | Function) {
+    const state = toState(stateful);
+    const {
+        conference,
+        followMeEnabled,
+        startAudioMutedPolicy,
+        startVideoMutedPolicy,
+        startReactionsMuted
+    } = state['features/base/conference'];
+    const { disableReactionsModeration } = state['features/base/config'];
+    const followMeActive = isFollowMeActive(state);
+    const configuredTabs = interfaceConfig.SETTINGS_SECTIONS || [];
+
+    const showModeratorSettings = Boolean(
+        conference
+        && configuredTabs.includes('moderator')
+        && isLocalParticipantModerator(state));
+
+    // The settings sections to display.
+    return {
         showModeratorSettings,
-        showPrejoinSettings: state['features/base/config'].prejoinPageEnabled,
-        enableUserDeviceAccessDisabledOption: state['features/base/config'].enableUserDeviceAccessDisabledOption,
-        showPrejoinPage: !state['features/base/settings'].userSelectedSkipPrejoin,
+        disableReactionsModeration: Boolean(disableReactionsModeration),
+        followMeActive: Boolean(conference && followMeActive),
+        followMeEnabled: Boolean(conference && followMeEnabled),
+        startReactionsMuted: Boolean(conference && startReactionsMuted),
         startAudioMuted: Boolean(conference && startAudioMutedPolicy),
         startVideoMuted: Boolean(conference && startVideoMutedPolicy),
-        userDeviceAccessDisabled: Boolean(conference && userDeviceAccessDisabled),
     };
 }
 
@@ -146,13 +197,51 @@ export function getProfileTabProps(stateful: Object | Function) {
         authLogin,
         conference
     } = state['features/base/conference'];
+    const { hideEmailInSettings } = state['features/base/config'];
     const localParticipant = getLocalParticipant(state);
+    const language = i18next.language || DEFAULT_LANGUAGE;
 
     return {
         authEnabled: Boolean(conference && authEnabled),
         authLogin,
+        currentLanguage: language,
         displayName: localParticipant.name,
-        email: localParticipant.email
+        email: localParticipant.email,
+        birthDate: localParticipant.birthDate,
+        readOnlyName: isNameReadOnly(state),
+        hideEmailInSettings
+    };
+}
+
+/**
+ * Returns the properties for the "Sounds" tab from settings dialog from Redux
+ * state.
+ *
+ * @param {(Function|Object)} stateful -The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state.
+ * @returns {Object} - The properties for the "Sounds" tab from settings
+ * dialog.
+ */
+export function getSoundsTabProps(stateful: Object | Function) {
+    const state = toState(stateful);
+    const {
+        soundsIncomingMessage,
+        soundsParticipantJoined,
+        soundsParticipantLeft,
+        soundsTalkWhileMuted,
+        soundsReactions
+    } = state['features/base/settings'];
+    const enableReactions = isReactionsEnabled(state);
+    const moderatorMutedSoundsReactions = state['features/base/conference'].startReactionsMuted ?? false;
+
+    return {
+        soundsIncomingMessage,
+        soundsParticipantJoined,
+        soundsParticipantLeft,
+        soundsTalkWhileMuted,
+        soundsReactions,
+        enableReactions,
+        moderatorMutedSoundsReactions
     };
 }
 
@@ -160,12 +249,13 @@ export function getProfileTabProps(stateful: Object | Function) {
  * Returns a promise which resolves with a list of objects containing
  * all the video jitsiTracks and appropriate errors for the given device ids.
  *
- * @param {string[]} ids - The list of the camera ids for wich to create tracks.
+ * @param {string[]} ids - The list of the camera ids for which to create tracks.
+ * @param {number} [timeout] - A timeout for the createLocalTrack function call.
  *
  * @returns {Promise<Object[]>}
  */
-export function createLocalVideoTracks(ids: string[]) {
-    return Promise.all(ids.map(deviceId => createLocalTrack('video', deviceId)
+export function createLocalVideoTracks(ids: string[], timeout: ?number) {
+    return Promise.all(ids.map(deviceId => createLocalTrack('video', deviceId, timeout)
                    .then(jitsiTrack => {
                        return {
                            jitsiTrack,
@@ -187,6 +277,7 @@ export function createLocalVideoTracks(ids: string[]) {
  * the audio track and the corresponding audio device information.
  *
  * @param {Object[]} devices - A list of microphone devices.
+ * @param {number} [timeout] - A timeout for the createLocalTrack function call.
  * @returns {Promise<{
  *   deviceId: string,
  *   hasError: boolean,
@@ -194,14 +285,14 @@ export function createLocalVideoTracks(ids: string[]) {
  *   label: string
  * }[]>}
  */
-export function createLocalAudioTracks(devices: Object[]) {
+export function createLocalAudioTracks(devices: Object[], timeout: ?number) {
     return Promise.all(
         devices.map(async ({ deviceId, label }) => {
             let jitsiTrack = null;
             let hasError = false;
 
             try {
-                jitsiTrack = await createLocalTrack('audio', deviceId);
+                jitsiTrack = await createLocalTrack('audio', deviceId, timeout);
             } catch (err) {
                 hasError = true;
             }
@@ -234,3 +325,4 @@ export function getAudioSettingsVisibility(state: Object) {
 export function getVideoSettingsVisibility(state: Object) {
     return state['features/settings'].videoSettingsVisible;
 }
+

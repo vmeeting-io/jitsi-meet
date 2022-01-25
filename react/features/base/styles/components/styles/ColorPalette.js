@@ -23,11 +23,13 @@ export const ColorPalette = {
     blueHighlight: '#1081b2',
     buttonUnderlay: '#495258',
     darkGrey: '#555555',
+    darkBackground: 'rgb(19,21,25)',
     green: '#40b183',
     lightGrey: '#AAAAAA',
     overflowMenuItemUnderlay: '#EEEEEE',
     red: '#D00000',
     transparent: 'rgba(0, 0, 0, 0)',
+    toggled: 'rgba(255,255,255,.15)',
     warning: 'rgb(215, 121, 118)',
     white: '#FFFFFF',
 
@@ -38,7 +40,7 @@ export const ColorPalette = {
      * the respective atlaskit components.
      */
     G400: '#00875A', // Slime
-    N500: '#42526E', // McFanning
+    N500: 'rgb(159, 176, 204)', // McFanning
     R400: '#DE350B', // Red dirt
     Y200: '#FFC400' // Pub mix
 };

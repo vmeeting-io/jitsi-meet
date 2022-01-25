@@ -1,7 +1,7 @@
 .notice {
-    position: absolute;
+    position: fixed;
     left: 50%;
-    z-index: 11;
+    z-index: $zindex3;
     margin-top: 6px;
     text-align: center;
 

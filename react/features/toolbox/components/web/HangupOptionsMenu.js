@@ -66,7 +66,7 @@ class HangupOptionsMenu extends Component<Props> {
                     content = { children }
                     isOpen = { isOpen }
                     onClose = { this._onCloseDialog }
-                    position = { 'top center' }>
+                    placement = { 'top' }>
                     <ToolbarButton
                         accessibilityLabel =
                             { t('toolbar.accessibilityLabel.hangup') }

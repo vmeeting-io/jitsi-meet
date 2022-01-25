@@ -16,9 +16,14 @@ export type Props = {
 
     /**
      * Extra styles which will be applied in conjunction with `styles` or
-     * `toggledStyles` when the button is disabled;
+     * `toggledStyles` when the button is disabled;.
      */
     disabledStyles: ?Styles,
+
+    /**
+     * External handler for click action.
+     */
+    handleClick?: Function,
 
     /**
      * Whether to show the label or not.
@@ -246,14 +251,18 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
      * Handles clicking / pressing the button, and toggles the audio mute state
      * accordingly.
      *
+     * @param {Object} e - Event.
      * @private
      * @returns {void}
      */
-    _onClick() {
+    _onClick(e) {
         const { afterClick } = this.props;
 
         this._handleClick();
-        afterClick && afterClick();
+        afterClick && afterClick(e);
+
+        // blur after click to release focus from button to allow PTT.
+        e?.currentTarget?.blur && e.currentTarget.blur();
     }
 
     /**

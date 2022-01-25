@@ -1,11 +1,4 @@
 /**
- * The command type for updating a participant's avatar ID.
- *
- * @type {string}
- */
-export const AVATAR_ID_COMMAND = 'avatar-id';
-
-/**
  * The command type for updating a participant's avatar URL.
  *
  * @type {string}
@@ -13,11 +6,25 @@ export const AVATAR_ID_COMMAND = 'avatar-id';
 export const AVATAR_URL_COMMAND = 'avatar-url';
 
 /**
- * The command type for updating a participant's e-mail address.
+ * The command type for updating a participant's email address.
  *
  * @type {string}
  */
 export const EMAIL_COMMAND = 'email';
+
+/**
+ * The command type for updating a participant's birthDate.
+ * 
+ * @type {string}
+ */
+export const BIRTHDATE_COMMAND = 'birthDate';
+
+/**
+ * The command type for updating a participant's hatOn variable.
+ * 
+ * @type {string}
+ */
+export const HAT_COMMAND = 'hatOn';
 
 /**
  * The name of the {@code JitsiConference} property which identifies the URL of
@@ -36,13 +43,14 @@ export const EMAIL_COMMAND = 'email';
 export const JITSI_CONFERENCE_URL_KEY = Symbol('url');
 
 /**
- * The supported remote video resolutions. The values are currently based on
- * available simulcast layers.
- *
- * @type {object}
+ * The command type for updating a participant's status.
+ * 
+ * @type {string}
  */
-export const VIDEO_QUALITY_LEVELS = {
-    HIGH: 720,
-    STANDARD: 360,
-    LOW: 180
-};
+export const STATUS_COMMAND = 'status';
+
+export const LEAVING_TIMESTAMP = 'leaving-timestamp'; 
+
+export const TRIGGER_READY_TO_CLOSE_REASONS = [
+    'The meeting has been terminated'
+];

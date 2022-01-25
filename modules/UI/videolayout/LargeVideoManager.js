@@ -1,6 +1,6 @@
 /* global $, APP */
 /* eslint-disable no-unused-vars */
-import Logger from 'jitsi-meet-logger';
+import Logger from '@jitsi/logger';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { I18nextProvider } from 'react-i18next';
@@ -8,24 +8,27 @@ import { Provider } from 'react-redux';
 
 import { createScreenSharingIssueEvent, sendAnalytics } from '../../../react/features/analytics';
 import { Avatar } from '../../../react/features/base/avatar';
+import theme from '../../../react/features/base/components/themes/participantsPaneTheme.json';
 import { i18next } from '../../../react/features/base/i18n';
 import {
     JitsiParticipantConnectionStatus
 } from '../../../react/features/base/lib-jitsi-meet';
 import { MEDIA_TYPE, VIDEO_TYPE } from '../../../react/features/base/media';
-import { getParticipantById } from '../../../react/features/base/participants';
+import {
+    getParticipantById,
+    getParticipantDisplayName
+} from '../../../react/features/base/participants';
 import { getTrackByMediaTypeAndParticipant } from '../../../react/features/base/tracks';
 import { CHAT_SIZE } from '../../../react/features/chat';
 import {
     updateKnownLargeVideoResolution
-} from '../../../react/features/large-video';
+} from '../../../react/features/large-video/actions';
+import { getParticipantsPaneOpen } from '../../../react/features/participants-pane/functions';
 import { PresenceLabel } from '../../../react/features/presence-status';
 import { shouldDisplayTileView } from '../../../react/features/video-layout';
 /* eslint-enable no-unused-vars */
-import UIEvents from '../../../service/UI/UIEvents';
 import { createDeferred } from '../../util/helpers';
 import AudioLevels from '../audio_levels/AudioLevels';
-import UIUtil from '../util/UIUtil';
 
 import { VideoContainer, VIDEO_CONTAINER_TYPE } from './VideoContainer';
 
@@ -52,27 +55,48 @@ export default class LargeVideoManager {
     /**
      *
      */
-    constructor(emitter) {
+    constructor() {
         /**
          * The map of <tt>LargeContainer</tt>s where the key is the video
          * container type.
          * @type {Object.<string, LargeContainer>}
          */
         this.containers = {};
-        this.eventEmitter = emitter;
 
         this.state = VIDEO_CONTAINER_TYPE;
 
         // FIXME: We are passing resizeContainer as parameter which is calling
         // Container.resize. Probably there's better way to implement this.
-        this.videoContainer = new VideoContainer(
-            () => this.resizeContainer(VIDEO_CONTAINER_TYPE), emitter);
+        this.videoContainer = new VideoContainer(() => this.resizeContainer(VIDEO_CONTAINER_TYPE));
         this.addContainer(VIDEO_CONTAINER_TYPE, this.videoContainer);
 
         // use the same video container to handle desktop tracks
         this.addContainer(DESKTOP_CONTAINER_TYPE, this.videoContainer);
 
+        /**
+         * The preferred width passed as an argument to {@link updateContainerSize}.
+         *
+         * @type {number|undefined}
+         */
+        this.preferredWidth = undefined;
+
+        /**
+         * The preferred height passed as an argument to {@link updateContainerSize}.
+         *
+         * @type {number|undefined}
+         */
+        this.preferredHeight = undefined;
+
+        /**
+         * The calculated width that will be used for the large video.
+         * @type {number}
+         */
         this.width = 0;
+
+        /**
+         * The calculated height that will be used for the large video.
+         * @type {number}
+         */
         this.height = 0;
 
         /**
@@ -198,28 +222,16 @@ export default class LargeVideoManager {
             // change the avatar url on large
             this.updateAvatar();
 
-            // If the user's connection is disrupted then the avatar will be
-            // displayed in case we have no video image cached. That is if
-            // there was a user switch (image is lost on stream detach) or if
-            // the video was not rendered, before the connection has failed.
-            const wasUsersImageCached
-                = !isUserSwitch && container.wasVideoRendered;
             const isVideoMuted = !stream || stream.isMuted();
             const state = APP.store.getState();
             const participant = getParticipantById(state, id);
-            const connectionStatus
-                = APP.conference.getParticipantConnectionStatus(id);
-            const isVideoRenderable
-                = !isVideoMuted
-                    && (APP.conference.isLocalId(id)
-                        || connectionStatus
-                                === JitsiParticipantConnectionStatus.ACTIVE
-                        || wasUsersImageCached);
+            const connectionStatus = participant?.connectionStatus;
+            const isVideoRenderable = !isVideoMuted
+                && (APP.conference.isLocalId(id) || connectionStatus === JitsiParticipantConnectionStatus.ACTIVE);
             const isAudioOnly = APP.conference.isAudioOnly();
-
             const showAvatar
                 = isVideoContainer
-                && ((isAudioOnly && videoType !== VIDEO_TYPE.DESKTOP) || !isVideoRenderable);
+                    && ((isAudioOnly && videoType !== VIDEO_TYPE.DESKTOP) || !isVideoRenderable);
 
             let promise;
 
@@ -278,7 +290,7 @@ export default class LargeVideoManager {
                     !overrideAndHide && messageKey);
 
             // Change the participant id the presence label is listening to.
-            this.updatePresenceLabel(id);
+            // this.updatePresenceLabel(id);
 
             this.videoContainer.positionRemoteStatusMessages();
 
@@ -290,7 +302,6 @@ export default class LargeVideoManager {
             // after everything is done check again if there are any pending
             // new streams.
             this.updateInProcess = false;
-            this.eventEmitter.emit(UIEvents.LARGE_VIDEO_ID_CHANGED, this.id);
             this.scheduleLargeVideoUpdate();
         });
     }
@@ -306,10 +317,12 @@ export default class LargeVideoManager {
      * @private
      */
     updateParticipantConnStatusIndication(id, messageKey) {
+        const state = APP.store.getState();
+
         if (messageKey) {
             // Get user's display name
             const displayName
-                = APP.conference.getParticipantDisplayName(id);
+                = getParticipantDisplayName(state, id);
 
             this._setRemoteConnectionMessage(
                 messageKey,
@@ -351,11 +364,24 @@ export default class LargeVideoManager {
     /**
      * Update container size.
      */
-    updateContainerSize() {
-        let widthToUse = UIUtil.getAvailableVideoWidth();
-        const { isOpen } = APP.store.getState()['features/chat'];
+    updateContainerSize(width, height) {
+        if (typeof width === 'number') {
+            this.preferredWidth = width;
+        }
+        if (typeof height === 'number') {
+            this.preferredHeight = height;
+        }
 
-        if (isOpen) {
+        let widthToUse = this.preferredWidth || window.innerWidth;
+        const state = APP.store.getState();
+        const { isOpen } = state['features/chat'];
+        const isParticipantsPaneOpen = getParticipantsPaneOpen(state);
+
+        if (isParticipantsPaneOpen) {
+            widthToUse -= theme.participantsPaneWidth;
+        }
+
+        if (isOpen && window.innerWidth > 580) {
             /**
              * If chat state is open, we re-compute the container width
              * by subtracting the default width of the chat.
@@ -364,7 +390,7 @@ export default class LargeVideoManager {
         }
 
         this.width = widthToUse;
-        this.height = window.innerHeight;
+        this.height = this.preferredHeight || window.innerHeight;
     }
 
     /**
@@ -478,8 +504,8 @@ export default class LargeVideoManager {
      */
     showRemoteConnectionMessage(show) {
         if (typeof show !== 'boolean') {
-            const connStatus
-                = APP.conference.getParticipantConnectionStatus(this.id);
+            const participant = getParticipantById(APP.store.getState(), this.id);
+            const connStatus = participant?.connectionStatus;
 
             // eslint-disable-next-line no-param-reassign
             show = !APP.conference.isLocalId(this.id)

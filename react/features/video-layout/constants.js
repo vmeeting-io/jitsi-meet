@@ -8,3 +8,8 @@ export const LAYOUTS = {
     TILE_VIEW: 'tile-view',
     VERTICAL_FILMSTRIP_VIEW: 'vertical-filmstrip-view'
 };
+
+export const ORDER_BY = {
+    DISPLAY_NAME: 'displayName',
+    USER_DEFINED: 'userDefined',
+};

@@ -37,7 +37,7 @@ type Props = BaseProps & {
     initialValue?: ?string,
 
     /**
-     * A message key to be shown for the user (e.g. an error that is defined after submitting the form).
+     * A message key to be shown for the user (e.g. An error that is defined after submitting the form).
      */
     messageKey?: string,
 
@@ -99,6 +99,7 @@ class InputDialog extends BaseDialog<Props, State> {
                         { t(this.props.contentKey) }
                     </Text>
                     <TextInput
+                        autoFocus = { true }
                         onChangeText = { this._onChangeText }
                         style = { _dialogStyles.field }
                         underlineColorAndroid = { FIELD_UNDERLINE }

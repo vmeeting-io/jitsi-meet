@@ -9,17 +9,20 @@ import {
     sendAnalytics
 } from '../../analytics';
 import { setAudioOnly } from '../../base/audio-only';
-import { hasAvailableDevices } from '../../base/devices';
+import { getFeatureFlag, VIDEO_MUTE_BUTTON_ENABLED } from '../../base/flags';
 import { translate } from '../../base/i18n';
 import {
     VIDEO_MUTISM_AUTHORITY,
-    setVideoMuted
+    setVideoMuted,
+    MEDIA_TYPE
 } from '../../base/media';
 import { connect } from '../../base/redux';
 import { AbstractVideoMuteButton } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
-import { getLocalVideoType, isLocalVideoTrackMuted } from '../../base/tracks';
+import { getLocalVideoType, isLocalCameraTrackMuted } from '../../base/tracks';
+import { isVideoMuteButtonDisabled } from '../functions';
 import { getLocalParticipant } from '../../base/participants';
+import { shouldShowModeratedNotification } from '../../av-moderation/functions';
 
 declare var APP: Object;
 
@@ -57,7 +60,7 @@ type Props = AbstractButtonProps & {
 /**
  * Component that renders a toolbar button for toggling video mute.
  *
- * @extends AbstractVideoMuteButton
+ * @augments AbstractVideoMuteButton
  */
 class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.videomute';
@@ -115,7 +118,7 @@ class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
     }
 
     /**
-     * Indicates if video is currently muted ot nor.
+     * Indicates if video is currently muted or not.
      *
      * @override
      * @protected
@@ -135,6 +138,11 @@ class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
      * @returns {void}
      */
     _onKeyboardShortcut() {
+        // Ignore keyboard shortcuts if the video button is disabled.
+        if (this._isDisabled()) {
+            return;
+        }
+
         sendAnalytics(
             createShortcutEvent(
                 VIDEO_MUTE,
@@ -167,10 +175,12 @@ class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
                 VIDEO_MUTISM_AUTHORITY.USER,
                 /* ensureTrack */ true));
 
-        // FIXME: The old conference logic still relies on this event being
-        // emitted.
-        typeof APP === 'undefined'
-            || APP.UI.emitEvent(UIEvents.VIDEO_MUTED, videoMuted, true);
+        if (!videoMuted && !this.props._shouldShowModeratedNotification) {
+            // FIXME: The old conference logic still relies on this event being
+            // emitted.
+            typeof APP === 'undefined'
+                || APP.UI.emitEvent(UIEvents.VIDEO_MUTED, videoMuted, true);
+        }
     }
 }
 
@@ -188,21 +198,18 @@ class VideoMuteButton extends AbstractVideoMuteButton<Props, *> {
 function _mapStateToProps(state): Object {
     const { enabled: audioOnly } = state['features/base/audio-only'];
     const tracks = state['features/base/tracks'];
+    const enabledFlag = getFeatureFlag(state, VIDEO_MUTE_BUTTON_ENABLED, true);
 
     const localParticipant = getLocalParticipant(APP.store.getState());
     let isLocalParticipantAModerator = (localParticipant.role === "moderator");
 
-    let isUserDeviceAccessDisabled = state['features/base/conference'].userDeviceAccessDisabled;
-    isUserDeviceAccessDisabled = false ? undefined : isUserDeviceAccessDisabled;
-
     return {
         _audioOnly: Boolean(audioOnly),
-        // we should show that the camera is disabled when the moderator has disabled user's access to device
-        // or when the device is not available
-        _videoDisabled: !isLocalParticipantAModerator && (!hasAvailableDevices(state, 'videoInput') || isUserDeviceAccessDisabled),
-        // _videoDisabled: true,
+        _shouldShowModeratedNotification: shouldShowModeratedNotification(MEDIA_TYPE.VIDEO, state),
+        _videoDisabled: !isLocalParticipantAModerator && isVideoMuteButtonDisabled(state),
         _videoMediaType: getLocalVideoType(tracks),
-        _videoMuted: isLocalVideoTrackMuted(tracks)
+        _videoMuted: isLocalCameraTrackMuted(tracks),
+        visible: enabledFlag
     };
 }
 

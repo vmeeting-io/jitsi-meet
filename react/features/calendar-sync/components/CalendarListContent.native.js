@@ -106,7 +106,7 @@ class CalendarListContent extends Component<Props> {
         );
     }
 
-    _onPress: (string, ?string) => Function;
+    _onPress: (string, ?string) => void;
 
     /**
      * Handles the list's navigate action.
@@ -117,7 +117,7 @@ class CalendarListContent extends Component<Props> {
      * associated with this action.
      * @returns {void}
      */
-    _onPress(url, analyticsEventName = 'calendar.meeting.tile') {
+    _onPress(url, analyticsEventName = 'meeting.tile') {
         sendAnalytics(createCalendarClickedEvent(analyticsEventName));
 
         this.props.dispatch(appNavigate(url));
@@ -259,9 +259,7 @@ class CalendarListContent extends Component<Props> {
  * Maps redux state to component props.
  *
  * @param {Object} state - The redux state.
- * @returns {{
- *     _eventList: Array<Object>
- * }}
+ * @returns {Props}
  */
 function _mapStateToProps(state: Object) {
     return {

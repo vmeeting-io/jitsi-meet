@@ -1,0 +1,43 @@
+.timer-dialog {
+    .row {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .reset-button-container {
+        position: relative;
+    }
+    
+    .reset-button {
+        position: absolute;
+        bottom: 3px;
+    }
+    
+    .setting-header {
+        margin-top: 10px;
+
+        span {
+            font-weight: bold;
+        }
+    }
+    
+    .col {
+        margin-right: 10px;
+        flex: 1;
+    }
+    
+    .coll {
+        margin-right: 10px;
+        flex: 2;
+    }
+    
+    .button-group {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+

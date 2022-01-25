@@ -1,13 +1,11 @@
 // @flow
 
-import React, { Component } from 'react';
+import { Component } from 'react';
 
 import { renderConferenceTimer } from '../';
 import { getConferenceTimestamp, getConferenceTimeRemained } from '../../base/conference/functions';
 import { getLocalizedDurationFormatter, translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
-
-import s from './ConferenceTimer.module.scss';
 
 /**
  * The type of the React {@code Component} props of {@link ConferenceTimer}.
@@ -18,6 +16,11 @@ type Props = {
      * The UTC timestamp representing the time when first participant joined.
      */
     _startTimestamp: ?number,
+
+    /**
+     * Style to be applied to the rendered text.
+     */
+    textStyle: ?Object,
 
     /**
      * The redux {@code dispatch} function.
@@ -40,7 +43,7 @@ type State = {
  * ConferenceTimer react component.
  *
  * @class ConferenceTimer
- * @extends Component
+ * @augments Component
  */
 class ConferenceTimer extends Component<Props, State> {
 
@@ -99,24 +102,20 @@ class ConferenceTimer extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { timerValue } = this.state;
-        const { _startTimestamp, _timeRemained, t } = this.props;
+        let timerValue = this.state.timerValue;
+        const { _startTimestamp, _timeRemained, t, textStyle } = this.props;
 
         if (!_startTimestamp && !_timeRemained) {
             return null;
         }
 
         if (_timeRemained) {
-            return (
-                <div className = { s.timeRemainedContainer }>
-                    { t('dialog.conferenceTimeRemaining', {
-                        seconds: getLocalizedDurationFormatter(timerValue * 1000)
-                    }) }
-                </div>
-            )
+            timerValue = t('dialog.conferenceTimeRemaining', {
+                seconds: getLocalizedDurationFormatter(timerValue * 1000)
+            });
         }
 
-        return renderConferenceTimer(timerValue);
+        return renderConferenceTimer(timerValue, textStyle);
     }
 
     /**
@@ -128,7 +127,6 @@ class ConferenceTimer extends Component<Props, State> {
      * @returns {void}
      */
     _setStateFromUTC(refValueUTC, currentValueUTC) {
-
         if (!refValueUTC || !currentValueUTC) {
             return;
         }

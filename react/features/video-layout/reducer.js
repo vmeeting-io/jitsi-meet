@@ -3,14 +3,13 @@
 import { ReducerRegistry } from '../base/redux';
 
 import {
-    ORDERED_TILE_VIEW,
-    SCREEN_SHARE_PARTICIPANTS_UPDATED,
+    SCREEN_SHARE_REMOTE_PARTICIPANTS_UPDATED,
+    SET_PAGINATION,
     SET_TILE_VIEW,
-    SET_TILE_VIEW_ORDER
 } from './actionTypes';
 
 const DEFAULT_STATE = {
-    screenShares: [],
+    remoteScreenShares: [],
 
     /**
      * The indicator which determines whether the video layout should display
@@ -24,9 +23,11 @@ const DEFAULT_STATE = {
      */
     tileViewEnabled: undefined,
 
-    order: {
-        videoMuted: true,
-        by: 'displayName'
+    pagination: {
+        // order: ['video.muted', 'name'],
+        current: 1,
+        pageSize: 1,
+        totalPages: 1
     }
 };
 
@@ -34,31 +35,23 @@ const STORE_NAME = 'features/video-layout';
 
 ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
     switch (action.type) {
-    case SCREEN_SHARE_PARTICIPANTS_UPDATED: {
+    case SCREEN_SHARE_REMOTE_PARTICIPANTS_UPDATED: {
         return {
             ...state,
-            screenShares: action.participantIds
+            remoteScreenShares: action.participantIds
         };
     }
 
-    case SET_TILE_VIEW: {
+    case SET_TILE_VIEW:
         return {
             ...state,
             tileViewEnabled: action.enabled
         };
-    }
 
-    case SET_TILE_VIEW_ORDER: {
+    case SET_PAGINATION: {
         return {
             ...state,
-            order: action.order
-        };
-    }
-
-    case ORDERED_TILE_VIEW: {
-        return {
-            ...state,
-            ordered: action.ordered
+            pagination: action.pagination
         };
     }
     }

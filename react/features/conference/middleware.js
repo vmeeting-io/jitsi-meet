@@ -3,27 +3,18 @@ import { appNavigate } from '../app/actions';
 import {
     CONFERENCE_JOINED,
     KICKED_OUT,
-    LEFT_BY_HANGUP_ALL,
-    PARTICIPANT_CHAT_DISABLED,
-    PARTICIPANT_CHAT_ENABLED,
-    conferenceLeft,
     getCurrentConference
 } from '../base/conference';
 import { disconnect } from '../base/connection';
 import { hideDialog, isDialogOpen } from '../base/dialog';
-import { setActiveModalId } from '../base/modal';
-import { getParticipantById, getParticipantDisplayName, participantUpdated, pinParticipant } from '../base/participants';
+import { browser } from '../base/lib-jitsi-meet';
+import { getParticipantDisplayName, pinParticipant } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
 import { SET_REDUCED_UI } from '../base/responsive-ui';
 import { FeedbackDialog } from '../feedback';
 import { setFilmstripEnabled } from '../filmstrip';
 import { saveErrorNotification } from '../notifications';
 import { setToolboxEnabled } from '../toolbox/actions';
-
-import { 
-    notifyChatDisabled,
-    notifyChatEnabled
-} from './actions';
 
 MiddlewareRegistry.register(store => next => action => {
     const result = next(action);
@@ -54,60 +45,14 @@ MiddlewareRegistry.register(store => next => action => {
             titleKey: 'dialog.sessTerminated',
         }));
 
-        dispatch(disconnect(false));
-        break;
-    }
-
-    case LEFT_BY_HANGUP_ALL: {
-        const { dispatch, getState } = store;
-        const participant = getParticipantById(getState, action.args);
-        
-        if (participant && !participant.local) {
-            const descriptionArguments = {
-                participantDisplayName: participant.name
-            };
-            dispatch(saveErrorNotification({
-                descriptionKey: 'dialog.hangupAllTitle',
-                descriptionArguments,
-                titleKey: 'dialog.sessTerminated',
-            }));
-        }
-
-        dispatch(disconnect(false));
-        break;
-    }
-
-    case PARTICIPANT_CHAT_DISABLED: {
-        const { dispatch, getState } = store;
-        const participant = getParticipantById(getState(), action.participant);
-        if (typeof participant.chat === 'undefined') {
-            dispatch(participantUpdated({
-                id: participant.id,
-                chat: false,
-            }));
+        if (browser.isReactNative()) {
+            dispatch(appNavigate(undefined));
         } else {
-            dispatch(notifyChatDisabled(
-                action.participant
-            ));
+            dispatch(disconnect(false));
         }
         break;
     }
 
-    case PARTICIPANT_CHAT_ENABLED: {
-        const { dispatch, getState } = store;
-        const participant = getParticipantById(getState(), action.participant);
-        if (typeof participant.chat === 'undefined') {
-            dispatch(participantUpdated({
-                id: participant.id,
-                chat: true,
-            }));
-        } else {
-            dispatch(notifyChatEnabled(
-                action.participant
-            ));
-        }
-        break;
-    }
     }
 
     return result;
@@ -141,8 +86,5 @@ StateListenerRegistry.register(
                 // dialog we might have open.
                 dispatch(hideDialog());
             }
-
-            // We want to close all modals.
-            dispatch(setActiveModalId());
         }
     });

@@ -11,6 +11,7 @@ import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
     CONFERENCE_LEFT,
+    CONFERENCE_LOCAL_SUBJECT_CHANGED,
     CONFERENCE_SUBJECT_CHANGED,
     CONFERENCE_TIMESTAMP_CHANGED,
     CONFERENCE_TIME_REMAINED,
@@ -18,19 +19,16 @@ import {
     CONFERENCE_WILL_LEAVE,
     LOCK_STATE_CHANGED,
     P2P_STATUS_CHANGED,
-    SET_DESKTOP_SHARING_ENABLED,
     SET_FOLLOW_ME,
-    SET_MAX_RECEIVER_VIDEO_QUALITY,
     SET_NOTICE_MESSAGE,
     SET_PASSWORD,
     SET_PENDING_SUBJECT_CHANGE,
-    SET_PREFERRED_VIDEO_QUALITY,
     SET_ROOM,
-    SET_SIP_GATEWAY_ENABLED,
     SET_START_MUTED_POLICY,
-    DEVICE_ACCESS_DISABLED
+    START_RANDOM_SELECTION_COUNTDOWN,
+    START_TIMER,
+    SET_START_REACTIONS_MUTED
 } from './actionTypes';
-import { VIDEO_QUALITY_LEVELS } from './constants';
 import { isRoomValid } from './functions';
 
 const DEFAULT_STATE = {
@@ -39,11 +37,9 @@ const DEFAULT_STATE = {
     joining: undefined,
     leaving: undefined,
     locked: undefined,
-    maxReceiverVideoQuality: VIDEO_QUALITY_LEVELS.HIGH,
     membersOnly: undefined,
     password: undefined,
     passwordRequired: undefined,
-    preferredVideoQuality: VIDEO_QUALITY_LEVELS.HIGH,
     roomInfo: undefined
 };
 
@@ -70,6 +66,9 @@ ReducerRegistry.register(
         case CONFERENCE_TIME_REMAINED:
             return set(state, 'conferenceTimeRemained', action.timeRemained);
 
+        case CONFERENCE_LOCAL_SUBJECT_CHANGED:
+            return set(state, 'localSubject', action.localSubject);
+
         case CONFERENCE_TIMESTAMP_CHANGED:
             return set(state, 'conferenceTimestamp', action.conferenceTimestamp);
 
@@ -89,20 +88,14 @@ ReducerRegistry.register(
         case P2P_STATUS_CHANGED:
             return _p2pStatusChanged(state, action);
 
-        case SET_DESKTOP_SHARING_ENABLED:
-            return _setDesktopSharingEnabled(state, action);
-
         case SET_FOLLOW_ME:
             return set(state, 'followMeEnabled', action.enabled);
 
+        case SET_START_REACTIONS_MUTED:
+            return set(state, 'startReactionsMuted', action.muted);
+
         case SET_LOCATION_URL:
             return set(state, 'room', undefined);
-
-        case SET_MAX_RECEIVER_VIDEO_QUALITY:
-            return set(
-                state,
-                'maxReceiverVideoQuality',
-                action.maxReceiverVideoQuality);
 
         case SET_PASSWORD:
             return _setPassword(state, action);
@@ -110,17 +103,8 @@ ReducerRegistry.register(
         case SET_PENDING_SUBJECT_CHANGE:
             return set(state, 'pendingSubjectChange', action.subject);
 
-        case SET_PREFERRED_VIDEO_QUALITY:
-            return set(
-                state,
-                'preferredVideoQuality',
-                action.preferredVideoQuality);
-
         case SET_ROOM:
             return _setRoom(state, action);
-
-        case SET_SIP_GATEWAY_ENABLED:
-            return _setSIPGatewayEnabled(state, action);
 
         case SET_START_MUTED_POLICY:
             return {
@@ -129,14 +113,19 @@ ReducerRegistry.register(
                 startVideoMutedPolicy: action.startVideoMutedPolicy
             };
         
-        case DEVICE_ACCESS_DISABLED:
-            return  {
-                ...state, 
-                roomInfo : { 
-                    ...state.roomInfo, 
-                    userDeviceAccessDisabled: action.userDeviceAccessDisabled },
-                userDeviceAccessDisabled: action.userDeviceAccessDisabled
-            };
+        case START_TIMER:
+            return {
+                ...state,
+                timerEndTime: action.endTime,
+                timerStarted: action.timerStarted
+            }
+        
+        case START_RANDOM_SELECTION_COUNTDOWN:
+            return {
+                ...state,
+                countdownRemained: action.countdownRemained,
+                startCountdown: action.startCountdown
+            }
 
         case SET_PUBLIC_SCOPE_ENABLED:
             return set(
@@ -391,21 +380,6 @@ function _p2pStatusChanged(state, action) {
 }
 
 /**
- * Reduces a specific Redux action SET_DESKTOP_SHARING_ENABLED of the feature
- * base/conference.
- *
- * @param {Object} state - The Redux state of the feature base/conference.
- * @param {Action} action - The Redux action SET_DESKTOP_SHARING_ENABLED to
- * reduce.
- * @private
- * @returns {Object} The new state of the feature base/conference after the
- * reduction of the specified action.
- */
-function _setDesktopSharingEnabled(state, action) {
-    return set(state, 'desktopSharingEnabled', action.desktopSharingEnabled);
-}
-
-/**
  * Reduces a specific Redux action SET_PASSWORD of the feature base/conference.
  *
  * @param {Object} state - The Redux state of the feature base/conference.
@@ -439,13 +413,15 @@ function _setPassword(state, { conference, method, password }) {
              *
              * @type {string}
              */
-            password
+            password,
+            roomInfo: { ...state.roomInfo, password }
         });
 
     case conference.lock:
         return assign(state, {
             locked: password ? LOCKED_LOCALLY : undefined,
-            password
+            password,
+            roomInfo: { ...state.roomInfo, password }
         });
     }
 
@@ -484,16 +460,3 @@ function _setRoom(state, action) {
     });
 }
 
-/**
- * Reduces a specific Redux action SET_SIP_GATEWAY_ENABLED of the feature
- * base/conference.
- *
- * @param {Object} state - The Redux state of the feature base/conference.
- * @param {Action} action - The Redux action SET_SIP_GATEWAY_ENABLED to reduce.
- * @private
- * @returns {Object} The new state of the feature base/conference after the
- * reduction of the specified action.
- */
-function _setSIPGatewayEnabled(state, action) {
-    return set(state, 'isSIPGatewayEnabled', action.isSIPGatewayEnabled);
-}

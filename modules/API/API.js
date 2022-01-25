@@ -71,6 +71,7 @@ import { toggleTileView, setTileView } from '../../react/features/video-layout';
 import { muteAllParticipants } from '../../react/features/video-menu/actions';
 import { setVideoQuality } from '../../react/features/video-quality';
 import VirtualBackgroundDialog from '../../react/features/virtual-background/components/VirtualBackgroundDialog';
+import VirtualAvatarDialog from '../../react/features/virtual-avatar/components/VirtualAvatarDialog';
 import { getJitsiMeetTransport } from '../transport';
 
 import { API_ID, ENDPOINT_TEXT_MESSAGE_NAME } from './constants';
@@ -541,6 +542,9 @@ function initCommands() {
         },
         'toggle-virtual-background': () => {
             APP.store.dispatch(toggleDialog(VirtualBackgroundDialog));
+        },
+        'toggle-virtual-avatar': () => {
+            APP.store.dispatch(toggleDialog(VirtualAvatarDialog));
         }
     };
     transport.on('event', ({ data, name }) => {

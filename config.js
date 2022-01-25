@@ -647,6 +647,7 @@ var config = {
        'recording',
        'security',
        'select-background',
+       'select-virtual-avatar',
        'settings',
        'shareaudio',
        'sharedvideo',

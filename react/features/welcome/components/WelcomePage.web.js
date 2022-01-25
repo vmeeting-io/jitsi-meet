@@ -21,6 +21,7 @@ import { RecentList } from '../../recent-list';
 import { SETTINGS_TABS } from '../../settings';
 import { openSettingsDialog } from '../../settings/actions';
 import { checkBlurSupport, VirtualBackgroundDialog } from '../../virtual-background';
+import { VirtualAvatarDialog } from '../../virtual-avatar';
 
 import { AbstractWelcomePage, _mapStateToProps } from './AbstractWelcomePage';
 import Tabs from './Tabs';
@@ -145,6 +146,7 @@ class WelcomePage extends AbstractWelcomePage {
             = this._setAdditionalToolbarContentRef.bind(this);
         this._onTabSelected = this._onTabSelected.bind(this);
         this._onVirtualBackground = this._onVirtualBackground.bind(this);
+        this._onVirtualAvatar = this._onVirtualAvatar.bind(this);
         this._onLogout = this._onLogout.bind(this);
         this._onOpenChange = this._onOpenChange.bind(this);
         this._onOpenSettings = this._onOpenSettings.bind(this);
@@ -222,17 +224,17 @@ class WelcomePage extends AbstractWelcomePage {
             }
         }
     }
-    
+
     /***
      * Navigate to Vmeeting User pdf link
-     * 
-     * @returns None 
-     *  */    
+     *
+     * @returns None
+     *  */
     _getManualDownloadLink(){
         const krLink = window.config.features.download.krLink;
         const enLink = window.config.features.download.enLink;
         const selectedLang =  localStorage.language == "ko" ? krLink:enLink;
-        
+
         var a = document.createElement('A');
         a.href = selectedLang;
         a.download = selectedLang.substr(selectedLang.lastIndexOf('/') + 1);
@@ -243,9 +245,9 @@ class WelcomePage extends AbstractWelcomePage {
 
     /***
      * Navigate to Vmeeting User Guide site link
-     * 
-     * @returns None 
-     *  */    
+     *
+     * @returns None
+     *  */
     _getSiteLink(){
         const krLink = window.config.features.learnMore.krLink;
         const enLink = window.config.features.learnMore.enLink;
@@ -275,8 +277,14 @@ class WelcomePage extends AbstractWelcomePage {
 
     _onVirtualBackground(){
         const { dispatch } = this.props;
-        
+
         dispatch(openDialog(VirtualBackgroundDialog));
+    }
+
+    _onVirtualAvatar() {
+        const { dispatch } = this.props;
+
+        dispatch(openDialog(VirtualAvatarDialog));
     }
 
     _onOpenChange() {
@@ -292,7 +300,7 @@ class WelcomePage extends AbstractWelcomePage {
     _onOpenSettings() {
         const { dispatch } = this.props;
         const defaultTab = SETTINGS_TABS.DEVICES;
-       
+
         dispatch(openSettingsDialog(defaultTab));
     }
 
@@ -352,28 +360,28 @@ class WelcomePage extends AbstractWelcomePage {
                         }
                         triggerType = 'button'>
                         <DropdownItemGroup className = 'menu-container'>
-                            <DropdownItem 
+                            <DropdownItem
                                 className = 'menu-item mobile'
                                 onClick = { this._getSiteLink }>
-                                { t('toolbar.features.learnMore') } 
+                                { t('toolbar.features.learnMore') }
                             </DropdownItem>
-                            
-                            <DropdownItem 
+
+                            <DropdownItem
                                 className = 'menu-item mobile'
                                 onClick = { this._getManualDownloadLink }>
                                 { t('toolbar.features.downloadManual') }
                             </DropdownItem>
-                        
+
                             <DropdownItem
                                 className = 'menu-item mobile'
                                 href = { "mailto:vmeeting-info@kedutech.kr"} >
-                                {t('toolbar.features.support')} 
+                                {t('toolbar.features.support')}
                             </DropdownItem>
                             <hr className = 'divider mobile' />
                         </DropdownItemGroup>
-                        { _user.isAdmin && 
+                        { _user.isAdmin &&
                             <DropdownItemGroup className = 'menu-container'>
-                                <DropdownItem 
+                                <DropdownItem
                                     className = 'menu-item mobile'
                                     href = { `${AUTH_PAGE_BASE}/admin/rooms` }>
                                     {t('welcomepage.adminConsole')}
@@ -403,6 +411,11 @@ class WelcomePage extends AbstractWelcomePage {
                                     { t('toolbar.selectBackground') }
                                 </DropdownItem>
                             )}
+                            <DropdownItem
+                                className='menu-item'
+                                onClick={this._onVirtualAvatar}>
+                                {t('toolbar.selectVirtualAvatar')}
+                            </DropdownItem>
                             <DropdownItem
                                 className = 'menu-item'
                                 onClick = { this._onLogout }>
@@ -469,28 +482,28 @@ class WelcomePage extends AbstractWelcomePage {
                                     }
                                     triggerType = 'button'>
                                     <DropdownItemGroup className = 'menu-container'>
-                                        <DropdownItem 
+                                        <DropdownItem
                                             className = 'menu-item'
                                             onClick = { this._getSiteLink }>
-                                            { t('toolbar.features.learnMore') } 
+                                            { t('toolbar.features.learnMore') }
                                         </DropdownItem>
-                                        
-                                        <DropdownItem 
+
+                                        <DropdownItem
                                             className = 'menu-item'
                                             onClick = { this._getManualDownloadLink }>
                                             { t('toolbar.features.downloadManual') }
                                         </DropdownItem>
-                                    
-                                    
+
+
                                         <DropdownItem
                                             className = 'menu-item'
                                             href = { "mailto:vmeeting-info@kedutech.kr"} >
-                                            {t('toolbar.features.support')} 
+                                            {t('toolbar.features.support')}
                                         </DropdownItem>
                                     </DropdownItemGroup>
                                 </DropdownMenu>
                             </div>
-                            
+
                             <ButtonGroup>
                                 {/* <Button
                                     appearance = 'subtle'
@@ -536,16 +549,16 @@ class WelcomePage extends AbstractWelcomePage {
                                     </p>
                                 </div>
                                 <div className = 'enter-room'>
-                                    <div className = 'enter-room-input-container'>   
+                                    <div className = 'enter-room-input-container'>
                                         <div // virtual input tag to calculate the width of tenant input tag
                                             ref={this._setVirtualTenantRef}
                                             id='virtual_tenant'
                                             className='virtual-tenant'>
                                             {inputTenant || currentTenant}
-                                        </div>                                    
-                                        
+                                        </div>
+
                                         <form onSubmit={this._onFormSubmit}>
-                                            <input 
+                                            <input
                                                 placeholder={currentTenant}
                                                 ref={this._setTenantInputRef}
                                                 defaultValue={currentTenant}
@@ -553,7 +566,7 @@ class WelcomePage extends AbstractWelcomePage {
                                                 className='tenant-input'/>
                                         </form>
                                         <span>/</span>
-                                        <form 
+                                        <form
                                             className= 'room-form'
                                             onSubmit = { this._onFormSubmit }>
                                             <input
@@ -561,14 +574,14 @@ class WelcomePage extends AbstractWelcomePage {
                                                 className = 'enter-room-input'
                                                 id = 'enter_room_field'
                                                 onChange = { this._onRoomChange }
-                                                onClick = { e => e.stopPropagation() }                                                
+                                                onClick = { e => e.stopPropagation() }
                                                 pattern = { ROOM_NAME_VALIDATE_PATTERN_STR }
                                                 placeholder = { this.state.roomPlaceholder }
                                                 ref = { this._setRoomInputRef }
                                                 title = { t('welcomepage.roomNameAllowedChars') }
                                                 type = 'text' />
                                             { this._renderInsecureRoomNameWarning() }
-                                        </form>    
+                                        </form>
                                     </div>
                                     { tenant && tenant !== currentTenant ? (
                                         <div
@@ -684,7 +697,7 @@ class WelcomePage extends AbstractWelcomePage {
      */
     _onRoomChange(event) {
         event.stopPropagation();
-        
+
         const forbiddenChars = /[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣_]/ig;
         const replacedStr =  event.currentTarget.value.replaceAll(forbiddenChars, '');
         this._roomInputRef.value = replacedStr; // removes forbidden characters
@@ -699,7 +712,7 @@ class WelcomePage extends AbstractWelcomePage {
         const forbiddenChars = /[^a-zA-Z0-9_]/ig; // alphabet, numbers and underscore is allowed for tenant
         const replacedStr =  event.currentTarget.value.replaceAll(forbiddenChars, '');
         this._tenantInputRef.value = replacedStr; //  removes forbidden characters
-        
+
         this.setState(() => ({inputTenant: replacedStr}), () => {
             this._tenantInputRef.style=`width:${window.getComputedStyle(this._virtualTenantRef).width}`;
             super._onRoomChange(`${replacedStr || this.state.currentTenant}/${roomname}`);
@@ -708,7 +721,7 @@ class WelcomePage extends AbstractWelcomePage {
 
     /**
      * Overrides the super to implement the tenant(site or license) feature
-     * 
+     *
      * Handles joining. Either by clicking on 'Join' button
      * or by pressing 'Enter' in room name input field.
      * @inheritdoc
@@ -718,7 +731,7 @@ class WelcomePage extends AbstractWelcomePage {
      */
     _onJoin() {
         const roomname = this._roomInputRef.value || this.state.generatedRoomname; // value at the roomname input tag
-        
+
         if(!this.state.inputTenant) {
             this.setState(() => ({ room: `${this.state.currentTenant}/${roomname}` }), () => {
                 super._onJoin();

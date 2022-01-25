@@ -532,7 +532,20 @@
         "desktopShareAudioWarningDesc": "Audio is not shared in Desktop-share background mode.",
         "webAssemblyWarning": "WebAssembly not supported",
         "webAssemblyWarningDescription": "WebAssembly disabled or not supported by this browser",
-        "backgroundEffectError": "Failed to apply background effect."
+        "backgroundEffectError": "Failed to apply background effect.",
+        "virtualAvatarEffectError": "Failed to apply virtual avatar effect."
+    },
+
+    "virtualAvatar": {
+        "apply": "Apply",
+        "title": "Virtual Avatar",
+        "removeAvatar": "Remove Avatar",
+        "pleaseWait": "Please wait...",
+        "none": "None",
+        "image1": "Cute Boy",
+
+        "webAssemblyWarning": "WebAssembly not supported",
+        "webAssemblyWarningDescription": "WebAssembly disabled or not supported by this browser"
     },
     "faceDetect": {
         "failToLoadError": "Failed to apply face detect."
@@ -1186,6 +1199,7 @@
             "videomute": "Start / Stop camera",
             "videoblur": "Toggle video blur",
             "selectBackground": "Select Background",
+            "selectVirtualAvatar": "Select Virtual Avatar",
             "expand": "Expand",
             "collapse": "Collapse"
         },
@@ -1289,7 +1303,8 @@
         "whiteboardClose": "Close whiteboard",
         "whiteboardOpen": "Open whiteboard",
         "videoSettings": "Video settings",
-        "selectBackground": "Select background"
+        "selectBackground": "Select background",
+        "selectVirtualAvatar": "Select virtual avatar"
     },
     "transcribing": {
         "ccButtonTooltip": "Start / Stop subtitles",

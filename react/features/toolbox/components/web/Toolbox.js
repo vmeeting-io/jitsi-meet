@@ -35,6 +35,7 @@ import { InviteButton } from '../../../invite/components/add-people-dialog';
 import { isVpaasMeeting } from '../../../jaas/functions';
 import { KeyboardShortcutsButton } from '../../../keyboard-shortcuts';
 import { LocalRecordingButton } from '../../../local-recording';
+import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../../../notifications';
 import {
     close as closeParticipantsPane,
     open as openParticipantsPane
@@ -590,6 +591,10 @@ class Toolbox extends Component<Props, State> {
         }
 
         if (_desktopSharingEnabled) {
+            dispatch(showNotification({
+                descriptionKey: 'notify.desktopShareDescription',
+                titleKey: 'notify.warning',
+            }, NOTIFICATION_TIMEOUT_TYPE.LONG));
             dispatch(startScreenShareFlow());
         }
     }

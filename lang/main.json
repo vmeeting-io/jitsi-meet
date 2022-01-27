@@ -788,7 +788,10 @@
         "moderationToggleDescription": "by {{participantDisplayName}}",
         "raiseHandAction": "Raise hand",
         "reactionSounds": "Disable sounds",
-        "groupTitle": "Notifications"
+        "groupTitle": "Notifications",
+        "desktopShareAction": "Desktop share",
+        "warning": "Warning",
+        "desktopShareDescription": "Please be sure not to click on the tab that shows your live streaming screen when you are about to share your screen midst a live streaming. If you did, the screen will appear as if it's reflected by a mirror. To avoid it, please select another window or chrome tab when you want to share your screen."
     },
     "participantsPane": {
         "close": "Close",

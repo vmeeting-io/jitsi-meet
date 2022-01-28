@@ -14,10 +14,12 @@ import {
 import { hideDialog, openDialog } from '../base/dialog';
 import { i18next } from '../base/i18n';
 import { updateSettings } from '../base/settings';
+import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../notifications';
 import { setScreenshareFramerate } from '../screen-share/actions';
 
 import {
     SET_AUDIO_SETTINGS_VISIBILITY,
+    SET_TILE_VIEW_SETTINGS_VISIBILITY,
     SET_VIDEO_SETTINGS_VISIBILITY
 } from './actionTypes';
 import { LogoutDialog, SettingsDialog } from './components';
@@ -27,7 +29,6 @@ import {
     getProfileTabProps,
     getSoundsTabProps
 } from './functions';
-import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../notifications';
 
 declare var APP: Object;
 
@@ -75,6 +76,19 @@ function setAudioSettingsVisibility(value: boolean) {
 function setVideoSettingsVisibility(value: boolean) {
     return {
         type: SET_VIDEO_SETTINGS_VISIBILITY,
+        value
+    };
+}
+
+/**
+ * Sets the visibility of the tile view settings.
+ *
+ * @param {boolean} value - The new value.
+ * @returns {Function}
+ */
+function setTileViewSettingsVisibility(value: boolean) {
+    return {
+        type: SET_TILE_VIEW_SETTINGS_VISIBILITY,
         value
     };
 }
@@ -288,5 +302,18 @@ export function toggleVideoSettings() {
         const value = getState()['features/settings'].videoSettingsVisible;
 
         dispatch(setVideoSettingsVisibility(!value));
+    };
+}
+
+/**
+ * Toggles the visibility of the tile view settings.
+ *
+ * @returns {void}
+ */
+export function toggleTileViewSettings() {
+    return (dispatch: Function, getState: Function) => {
+        const value = getState()['features/settings'].tileViewSettingsVisible;
+
+        dispatch(setTileViewSettingsVisibility(!value));
     };
 }

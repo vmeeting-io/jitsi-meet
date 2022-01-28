@@ -49,7 +49,8 @@ export function sendConsentVerifyOnProgressNotification(dispatch){
 export async function checkDIDConsent(){
     const state = APP.store.getState();
     const config = {
-        headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(state)}`}
+        headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(state)}`},
+        timeout: 2000,
     };
     const _apiBase = getAuthUrl(state);
     
@@ -57,7 +58,7 @@ export async function checkDIDConsent(){
         const response = await axios.get(`${_apiBase}/verifyConsent`, config);
         return response;
     } catch(err) {
-        console.log("Error while verifying consent ", err);
+        console.log("Error while verifying consent ", err.message);
         return err;
     }
 }

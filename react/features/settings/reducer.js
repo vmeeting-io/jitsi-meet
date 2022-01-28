@@ -4,6 +4,7 @@ import { ReducerRegistry } from '../base/redux';
 
 import {
     SET_AUDIO_SETTINGS_VISIBILITY,
+    SET_TILE_VIEW_SETTINGS_VISIBILITY,
     SET_VIDEO_SETTINGS_VISIBILITY
 } from './actionTypes';
 
@@ -13,6 +14,11 @@ ReducerRegistry.register('features/settings', (state = {}, action) => {
         return {
             ...state,
             audioSettingsVisible: action.value
+        };
+    case SET_TILE_VIEW_SETTINGS_VISIBILITY:
+        return {
+            ...state,
+            tileViewSettingsVisible: action.value
         };
     case SET_VIDEO_SETTINGS_VISIBILITY:
         return {

@@ -1,10 +1,12 @@
 // @flow
 
-import { omit } from 'lodash';
+import axios from 'axios';
+import { isEqual, omit } from 'lodash';
 import i18n from 'i18next';
 import { batch } from 'react-redux';
 
 import UIEvents from '../../../../service/UI/UIEvents';
+import { getAuthUrl } from '../../../api/url';
 import { approveParticipant } from '../../av-moderation/actions';
 import { toggleE2EE } from '../../e2ee/actions';
 import { MAX_MODE } from '../../e2ee/constants';
@@ -44,6 +46,7 @@ import {
     PARTICIPANT_JOINED,
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED,
+    PIN_TILES,
     RAISE_HAND_UPDATED,
     PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED
 } from './actionTypes';
@@ -74,7 +77,7 @@ import {
 } from './functions';
 import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
 
-import { hasRaisedHand, raiseHand } from '.';
+import { hasRaisedHand, raiseHand, setPinnedTiles } from '.';
 
 declare var APP: Object;
 
@@ -276,6 +279,19 @@ MiddlewareRegistry.register(store => next => action => {
     case PARTICIPANT_UPDATED: {
         const result = _participantJoinedOrUpdated(store, next, action);
         return result;
+    }
+
+    case PIN_TILES: {
+        const state = store.getState();
+        const reqConfig = {
+            headers: { Authorization: `Bearer ${process.env.VMEETING_API_TOKEN}`}
+        };
+        const apiBase = getAuthUrl(state);
+        const { roomInfo: room } = state['features/base/conference'];
+        axios.patch(`${apiBase}/conferences/${room._id}`, {
+            pinned_tiles: action.participants
+        }, reqConfig);
+        break;
     }
 
     case TRACK_ADDED:
@@ -774,3 +790,28 @@ function _trackUpdated({ dispatch, getState }, next, action) {
 
     return result;
 }
+
+StateListenerRegistry.register(
+    /* selector */ state => getCurrentConference(state),
+    /* listener */ (conference, store) => {
+        const receiveMessage = (_, data) => {
+            // console.log('message is received:', data);
+            const { type, ...payload } = data;
+            switch (type) {
+            case 'features/base/participants/pinned_tiles': {
+                const { pinned_tiles } = payload;
+                const { pinnedTiles } = store.getState()['features/base/participants'];
+                if (!isEqual(pinned_tiles, pinnedTiles)) {
+                    // console.log('setPinnedTiles:', pinned_tiles);
+                    store.dispatch(setPinnedTiles(pinned_tiles));
+                }
+            }
+            }
+        };
+
+        if (conference) {
+            conference.on(JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED, receiveMessage);
+            conference.on(JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED, receiveMessage);
+        }
+    }
+)

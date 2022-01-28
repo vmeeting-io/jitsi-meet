@@ -66,7 +66,6 @@ import {
     ClosedCaptionButton
 } from '../../../subtitles';
 import {
-    TileViewButton,
     shouldDisplayTileView,
     toggleTileView
 } from '../../../video-layout';
@@ -93,6 +92,7 @@ import OverflowMenuButton from './OverflowMenuButton';
 import ProfileButton from './ProfileButton';
 import Separator from './Separator';
 import ShareDesktopButton from './ShareDesktopButton';
+import TileViewSettingsButton from './TileViewSettingsButton';
 import ToggleCameraButton from './ToggleCameraButton';
 import VideoSettingsButton from './VideoSettingsButton';
 
@@ -661,7 +661,7 @@ class Toolbox extends Component<Props> {
 
         const tileview = {
             key: 'tileview',
-            Content: TileViewButton,
+            Content: TileViewSettingsButton,
             group: 2
         };
 

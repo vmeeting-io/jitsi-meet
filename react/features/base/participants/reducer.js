@@ -10,7 +10,9 @@ import {
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED,
     PIN_PARTICIPANT,
+    PIN_TILES,
     RAISE_HAND_UPDATED,
+    SET_PINNED_TILES,
     SET_LOADABLE_AVATAR_URL
 } from './actionTypes';
 import { LOCAL_PARTICIPANT_DEFAULT_ID, PARTICIPANT_ROLE } from './constants';
@@ -62,6 +64,7 @@ const DEFAULT_STATE = {
     local: undefined,
     moderators: new Map(),
     pinnedParticipant: undefined,
+    pinnedTiles: [],
     raisedHandsQueue: [],
     remote: new Map(),
     sortedRemoteParticipants: new Map(),
@@ -159,6 +162,15 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
 
         return {
             ...state
+        };
+    }
+    case SET_PINNED_TILES:
+    case PIN_TILES: {
+        const { participants } = action;
+
+        return {
+            ...state,
+            pinnedTiles: participants.filter(id => state.remote.get(id) || state.local?.id === id)
         };
     }
     case SET_LOADABLE_AVATAR_URL:
@@ -289,7 +301,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
         // (and the fact that the local participant "joins" at the beginning of
         // the app and "leaves" at the end of the app).
         const { conference, id } = action.participant;
-        const { fakeParticipants, remote, moderators, local, dominantSpeaker, pinnedParticipant } = state;
+        const { fakeParticipants, remote, moderators, local, dominantSpeaker, pinnedParticipant, pinnedTiles } = state;
         let oldParticipant = remote.get(id);
 
         if (oldParticipant && oldParticipant.conference === conference) {
@@ -346,6 +358,10 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
 
         if (moderators.has(id)) {
             moderators.delete(id);
+        }
+
+        if (pinnedTiles.indexOf(id)) {
+            state.pinnedTiles = state.pinnedTiles.filter(p => p !== id);
         }
 
         return { ...state };

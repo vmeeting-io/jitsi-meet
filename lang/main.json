@@ -219,6 +219,7 @@
         "alreadySharedVideoMsg": "Another participant is already sharing a video. This conference allows only one shared video at a time.",
         "alreadySharedVideoTitle": "Only one shared video is allowed at a time",
         "applicationWindow": "Application window",
+        "apply": "Apply",
         "authenticationRequired": "Authentication required",
         "Back": "Back",
         "banButton": "Ban",
@@ -397,6 +398,8 @@
         "permissionErrorTitle": "Permission required",
         "permissionCameraRequiredError": "Camera permission is required to participate in conferences with video. Please grant it in Settings",
         "permissionMicRequiredError": "Microphone permission is required to participate in conferences with audio. Please grant it in Settings",
+        "pinParticipantsDescription": "Participants can be pinned up to {{rows}}x{{rows}}.",
+        "pinParticipantsDescription2": "A participant can adjust the order of tiles by dragging.",
         "popupError": "Your browser is blocking pop-up windows from this site. Please enable pop-ups in your browser's security settings and try again.",
         "popupErrorTitle": "Pop-up blocked",
         "privateMessage": "Send private message",
@@ -805,7 +808,10 @@
         "reactionSoundsForAll": "Disable sounds for all",
         "groupTitle": "Notifications",
         "videoUnmuteBlockedTitle": "Camera unmute and desktop sharing blocked!",
-        "videoUnmuteBlockedDescription": "Camera unmute and desktop sharing operation have been temporarily blocked because of system limits."
+        "videoUnmuteBlockedDescription": "Camera unmute and desktop sharing operation have been temporarily blocked because of system limits.",
+        "desktopShareAction": "Desktop share",
+        "warning": "Warning",
+        "desktopShareDescription": "Please be sure not to click on the tab that shows your live streaming screen when you are about to share your screen midst a live streaming. If you did, the screen will appear as if it's reflected by a mirror. To avoid it, please select another window or chrome tab when you want to share your screen."
     },
     "participantsPane": {
         "close": "Close",
@@ -1159,6 +1165,7 @@
             "muteEveryonesVideoStream": "Stop everyone's video",
             "muteEveryoneElsesVideoStream": "Stop everyone else's video",
             "participants": "Participants",
+            "pinParticipants": "Pin participant tiles",
             "pip": "Toggle Picture-in-Picture mode",
             "privateMessage": "Send private message",
             "profile": "Edit your profile",
@@ -1180,6 +1187,7 @@
             "speakerStats": "Toggle speaker statistics",
             "surprised": "Surprised",
             "tileView": "Toggle tile view",
+            "tileViewSettingsMenu": "Tile view settings menu",
             "toggleCamera": "Toggle camera",
             "toggleFilmstrip": "Toggle filmstrip",
             "toggleWhiteboard": "Toggle whiteboard",
@@ -1253,6 +1261,7 @@
         "openChat": "Open chat",
         "openReactionsMenu": "Open reactions menu",
         "participants": "Participants",
+        "pinParticipants": "Pin participant tiles",
         "pip": "Enter Picture-in-Picture mode",
         "privateMessage": "Send private message",
         "profile": "Edit your profile",
@@ -1265,6 +1274,7 @@
         "reactionLike": "Send thumbs up reaction",
         "reactionSilence": "Send silence reaction",
         "reactionSurprised": "Send surprised reaction",
+        "reset": "Reset",
         "security": "Security options",
         "selectModeratorAndLeave": "Select and Leave",
         "selectNewModerator": "Select New Host",
@@ -1283,6 +1293,7 @@
         "stopSharedVideo": "Stop video",
         "surprised": "Surprised",
         "talkWhileMutedPopup": "Trying to speak? You are muted.",
+        "tileViewSettings": "Tile view settings",
         "tileViewToggle": "Toggle tile view",
         "toggleCamera": "Toggle camera",
         "videomute": "Start / Stop camera",
@@ -1375,7 +1386,8 @@
         "videomuted": "Camera stopped",
         "audioconnected": "Participant is connected to audio",
         "videoconnected": "Participant is connected to video",
-        "presenter": "Participant is sharing the desktop"
+        "presenter": "Participant is sharing the desktop",
+        "pinned": "Pinned"
     },
     "welcomepage": {
         "addMeetingName": "Add Meeting name",

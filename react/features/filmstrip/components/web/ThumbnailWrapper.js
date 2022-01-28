@@ -1,6 +1,8 @@
 /* @flow */
+import { difference } from 'lodash';
 import React, { Component } from 'react';
 import { shouldComponentUpdate } from 'react-window';
+import { getPinnedTiles } from '../../../base/participants';
 
 import { connect } from '../../../base/redux';
 import { shouldHideSelfView } from '../../../base/settings/functions.any';
@@ -82,6 +84,7 @@ class ThumbnailWrapper extends Component<Props> {
     render() {
         const { _participantID, style, _horizontalOffset = 0, _isAnyParticipantPinned, _disableSelfView } = this.props;
 
+        // console.log('ThumbnailWrapper:', _participantID, this.props.rowIndex, this.props.columnIndex);
         if (typeof _participantID !== 'string') {
             return null;
         }
@@ -124,6 +127,7 @@ function _mapStateToProps(state, ownProps) {
     if (_currentLayout === LAYOUTS.TILE_VIEW) {
         const { columnIndex, rowIndex } = ownProps;
         const { gridDimensions = {}, thumbnailSize } = state['features/filmstrip'].tileViewDimensions;
+        const pinnedTiles = getPinnedTiles(state);
         const { columns, rows } = gridDimensions;
         const index = (rowIndex * columns) + columnIndex;
         let horizontalOffset;
@@ -143,10 +147,12 @@ function _mapStateToProps(state, ownProps) {
             return {};
         }
 
+        let localIndex = pinnedTiles.indexOf(local?.id);
+        if (localIndex < 0) {
+            localIndex = pinnedTiles.length;
+        }
+    
         // When the thumbnails are reordered, local participant is inserted at index 0.
-        const localIndex = enableThumbnailReordering && !disableSelfView ? 0 : remoteParticipantsLength;
-        const remoteIndex = enableThumbnailReordering && !iAmRecorder && !disableSelfView ? index - 1 : index;
-
         if (!iAmRecorder && index === localIndex) {
             return {
                 _disableSelfView: disableSelfView,
@@ -155,8 +161,13 @@ function _mapStateToProps(state, ownProps) {
             };
         }
 
+        let newRemoteParticipants = [ ...pinnedTiles ];
+        if (localIndex >= pinnedTiles.length) {
+            newRemoteParticipants.push(local?.id);
+        }
+        newRemoteParticipants.push(...difference(remoteParticipants, pinnedTiles));
         return {
-            _participantID: remoteParticipants[remoteIndex],
+            _participantID: newRemoteParticipants[index],
             _horizontalOffset: horizontalOffset
         };
     }

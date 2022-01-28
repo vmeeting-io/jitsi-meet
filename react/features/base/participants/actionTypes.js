@@ -194,3 +194,23 @@ export const LOCAL_PARTICIPANT_RAISE_HAND = 'LOCAL_PARTICIPANT_RAISE_HAND';
 export const RAISE_HAND_UPDATED = 'RAISE_HAND_UPDATED';
 
 export const PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED = 'PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED';
+
+/**
+ * The type of the Redux action which pinned tiles.
+ *
+ * {
+ *     type: PIN_TILES,
+ *     participants: Array<string>
+ * }
+ */
+export const PIN_TILES = 'PIN_TILES';
+
+/**
+ * The type of the Redux action which received pinned tiles message
+ *
+ * {
+ *     type: SET_PINNED_TILES,
+ *     participants: Array<string>
+ * }
+ */
+export const SET_PINNED_TILES = 'SET_PINNED_TILES';

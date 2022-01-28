@@ -25,3 +25,10 @@ StateListenerRegistry.register(
 StateListenerRegistry.register(
     /* selector */ state => state['features/base/participants'].sortedRemoteParticipants,
     /* listener */ (sortedRemoteParticipants, store) => updateRemoteParticipants(store));
+
+/**
+ * Listens for changes to the dominant speaker to recompute the reordered list of the remote endpoints.
+ */
+StateListenerRegistry.register(
+    /* selector */ state => state['features/base/participants'].pinnedTiles,
+    /* listener */ (pinnedTiles, store) => updateRemoteParticipants(store));

@@ -59,24 +59,6 @@
             border: $thumbnailsBorder solid transparent;
             padding-left: 0;
             width: 100%;
-
-            .page-button {
-                position: relative;
-                top: initial;
-                left: initial;
-                right: initial;
-                bottom: initial;
-                box-sizing: border-box;
-                width: 120px;
-                padding: 0;
-
-                &.prev {
-                    margin: 2px;
-                }
-                &.next {
-                    margin: 2px;
-                }
-            }
         }
     }
 

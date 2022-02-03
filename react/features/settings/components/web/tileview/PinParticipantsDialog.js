@@ -43,6 +43,25 @@ class PinParticipantsDialog extends AbstractPinParticipantsDialog {
         this._onSubmitForm = this._onSubmitForm.bind(this);
     }
 
+    /**
+     * Implements {@code PureComponent.getDerivedStateFromProps}.
+     *
+     * @inheritdoc
+     */
+    static getDerivedStateFromProps(props: Props, state: State) {
+        const { _local, _remote } = props;
+        const pinned = state.pinned.filter(id => _remote.get(id) || _local?.id === id);
+
+        if (!isEqual(state.pinned, pinned)) {
+            return {
+                ...state,
+                pinned
+            };
+        }
+
+        return null;
+    }
+
     _isPinned: (id: string) => boolean;
 
     _isPinned(id) {
@@ -142,7 +161,9 @@ class PinParticipantsDialog extends AbstractPinParticipantsDialog {
  */
 function mapStateToProps(state) {
     return {
+        _local: state['features/base/participants'].local,
         _pinnedTiles: getPinnedTiles(state),
+        _remote: state['features/base/participants'].sortedRemoteParticipants,
         _rows: interfaceConfig.TILE_VIEW_MAX_COLUMNS
     };
 }

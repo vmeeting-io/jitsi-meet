@@ -132,26 +132,27 @@ function _mapStateToProps(state, ownProps) {
         const index = (rowIndex * columns) + columnIndex;
         let horizontalOffset;
         const { iAmRecorder } = state['features/base/config'];
-        const participantsLenght = remoteParticipantsLength + (iAmRecorder ? 0 : 1) - (disableSelfView ? 1 : 0);
+    
+        const participantsLength = remoteParticipantsLength + (iAmRecorder ? 0 : 1);
 
         if (rowIndex === rows - 1) { // center the last row
             const { width: thumbnailWidth } = thumbnailSize;
-            const partialLastRowParticipantsNumber = participantsLenght % columns;
+            const partialLastRowParticipantsNumber = participantsLength % columns;
 
             if (partialLastRowParticipantsNumber > 0) {
                 horizontalOffset = Math.floor((columns - partialLastRowParticipantsNumber) * (thumbnailWidth + 4) / 2);
             }
         }
 
-        if (index > participantsLenght - 1) {
+        if (index > participantsLength - 1) {
             return {};
         }
 
         let localIndex = pinnedTiles.indexOf(local?.id);
-        if (localIndex < 0) {
+        if (!iAmRecorder && localIndex < 0) {
             localIndex = pinnedTiles.length;
         }
-    
+
         // When the thumbnails are reordered, local participant is inserted at index 0.
         if (!iAmRecorder && index === localIndex) {
             return {

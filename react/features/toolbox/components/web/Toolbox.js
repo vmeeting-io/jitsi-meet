@@ -66,6 +66,7 @@ import {
     ClosedCaptionButton
 } from '../../../subtitles';
 import {
+    TileViewButton,
     shouldDisplayTileView,
     toggleTileView
 } from '../../../video-layout';
@@ -601,6 +602,7 @@ class Toolbox extends Component<Props> {
      */
     _getAllButtons() {
         const {
+            _clientWidth,
             _feedbackConfigured,
             _isIosMobile,
             _isMobile,
@@ -659,9 +661,12 @@ class Toolbox extends Component<Props> {
         //     group: 2
         // };
 
+        const { order } = THRESHOLDS.find(({ width }) => _clientWidth > width);
         const tileview = {
             key: 'tileview',
-            Content: TileViewSettingsButton,
+            Content: order.indexOf('tileview') < 0
+                ? TileViewButton
+                : TileViewSettingsButton,
             group: 2
         };
 

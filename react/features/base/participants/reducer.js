@@ -360,7 +360,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
             moderators.delete(id);
         }
 
-        if (pinnedTiles.indexOf(id)) {
+        if (pinnedTiles.indexOf(id) >= 0) {
             state.pinnedTiles = state.pinnedTiles.filter(p => p !== id);
         }
 

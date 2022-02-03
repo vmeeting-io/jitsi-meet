@@ -386,7 +386,7 @@ class Filmstrip extends PureComponent <Props> {
         } = this.props;
         const index = (rowIndex * _columns) + columnIndex;
 
-        if (index > _remoteParticipantsLength - (_iAmRecorder ? 1 : 0)) {
+        if (index > _remoteParticipantsLength) {
             return `empty-${index}`;
         }
 

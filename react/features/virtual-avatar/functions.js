@@ -106,7 +106,7 @@ export function localTrackStopped(dispatch: Function, desktopTrack: Object, curr
     const noneOptions = {
         enabled: false,
         virtualAvatarType: 'none',
-        selectedThumbnail: 'none',
+        selectedVirtualAvatarUrl: 'none',
         virtualAvatarEffectEnabled: false
     };
 

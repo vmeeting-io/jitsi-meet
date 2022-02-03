@@ -26,9 +26,18 @@ const images = [
     {
         tooltip: 'image1',
         id: '1',
-        src: 'images/virtual-avatar/cartoon_boy.png'
+        src: 'images/virtual-avatar/cartoon_boy.png',
+        modelUrl: 'https://cdn.jsdelivr.net/gh/tu-nv/vrm_models/boy-4.vrm'
+    },
+
+    {
+        tooltip: 'image2',
+        id: '2',
+        src: 'images/virtual-avatar/girl-1.jpg',
+        modelUrl: 'https://cdn.jsdelivr.net/gh/tu-nv/vrm_models/girl-1.vrm'
     },
 ];
+
 type Props = {
 
     /**
@@ -95,13 +104,13 @@ function VirtualAvatar({
     const removeVirtualAvatar = useCallback(async e => {
         setOptions({
             enabled: false,
-            selectedThumbnail: 'none'
+            selectedVirtualAvatarUrl: 'none'
         });
         logger.info('Uploaded image setted for virtual avatar preview!');
     }, [ ]);
 
 
-    const setVirtualAvatar = useCallback(async e => {
+    const setPreviewVirtualAvatar = useCallback(async e => {
         const imageId = e.currentTarget.getAttribute('data-imageid');
         const image = images.find(img => img.id === imageId);
 
@@ -111,8 +120,8 @@ function VirtualAvatar({
             setOptions({
                 virtualAvatarType: 'image',
                 enabled: true,
-                url,
-                selectedThumbnail: image.id
+                selectedVirtualAvatarUrl: image.modelUrl,
+                url: url
             });
             logger.info('Image setted for virtual avatar preview!');
 
@@ -180,9 +189,9 @@ function VirtualAvatar({
                                     content = { t('virtualAvatar.removeVirtualAvatar') }
                                     position = { 'top' }>
                                     <div
-                                        aria-checked = { options.selectedThumbnail === 'none' }
+                                        aria-checked = { options.selectedVirtualAvatarUrl === 'none' }
                                         aria-label = { t('virtualAvatar.removeVirtualAvatar') }
-                                        className = { options.selectedThumbnail === 'none' ? 'background-option none-selected'
+                                        className = { options.selectedVirtualAvatarUrl === 'none' ? 'background-option none-selected'
                                             : 'background-option virtual-background-none' }
                                         onClick = { removeVirtualAvatar }
                                         role = 'radio'
@@ -197,13 +206,13 @@ function VirtualAvatar({
                                         position = { 'top' }>
                                         <img
                                             alt = { image.tooltip && t(`virtualAvatar.${image.tooltip}`) }
-                                            aria-checked = { options.selectedThumbnail === image.id
-                                                || options.selectedThumbnail === image.id }
+                                            aria-checked={options.selectedVirtualAvatarUrl === image.modelUrl
+                                                || options.selectedVirtualAvatarUrl === image.modelUrl }
                                             className = {
-                                                options.selectedThumbnail === image.id
+                                                options.selectedVirtualAvatarUrl === image.modelUrl
                                                     ? 'background-option thumbnail-selected' : 'background-option thumbnail' }
                                             data-imageid = { image.id }
-                                            onClick = { setVirtualAvatar }
+                                            onClick={ setPreviewVirtualAvatar }
                                             onError = { onError }
                                             role = 'radio'
                                             src = { image.src }

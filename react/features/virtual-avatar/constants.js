@@ -14,7 +14,8 @@ export const VIRTUAL_AVATAR_TYPE = {
 export type Image = {
     tooltip?: string,
     id: string,
-    src: string
+    src: string,
+    modelUrl: string
 }
 
 
@@ -22,11 +23,14 @@ export const IMAGES: Array<Image> = [
     {
         tooltip: 'image1',
         id: '1',
-        src: 'images/virtual-background/background-1.jpg'
+        src: 'images/virtual-avatar/cartoon_boy.png',
+        modelUrl: 'https://cdn.jsdelivr.net/gh/tu-nv/vrm_models/boy-4.vrm'
     },
+
     {
         tooltip: 'image2',
         id: '2',
-        src: 'images/virtual-background/background-2.jpg'
+        src: 'images/virtual-avatar/girl-1.jpg',
+        modelUrl: 'https://cdn.jsdelivr.net/gh/tu-nv/vrm_models/girl-1.vrm'
     }
 ];

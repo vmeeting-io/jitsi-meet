@@ -6,7 +6,7 @@ import logger from '../../virtual-avatar/logger';
 
 import JitsiStreamVirtualAvatarEffect from './JitsiStreamVirtualAvatarEffect';
 
-import * as mpFaceMesh from '@mediapipe/face_mesh';
+import * as mpHolistic from '@mediapipe/holistic';
 
 /**
  * Creates a new instance of JitsiStreamVirtualAvatarEffect. This loads the Meet virtual avatar model that is used to
@@ -24,27 +24,21 @@ export async function createVirtualAvatarEffect(virtualAvatar: Object, dispatch:
 
     const config = {
         locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@` +
-                `${mpFaceMesh.VERSION}/${file}`;
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic@` +
+                `${mpHolistic.VERSION}/${file}`;
         }
     };
 
-    const faceMesh = new mpFaceMesh.FaceMesh(config);
+    const holistic = new mpHolistic.Holistic(config);
 
-    faceMesh.setOptions({
-        maxNumFaces: 1,
-        refineLandmarks: true,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
+    holistic.setOptions({
+        modelComplexity: 0,
+        smoothLandmarks: true,
+        // enableSegmentation: false,
+        refineFaceLandmarks: true,
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.6
     });
 
-    // Checks if WebAssembly feature is supported or enabled by/in the browser.
-    // Conditional import of wasm-check package is done to prevent
-    // the browser from crashing when the user opens the app.
-
-    const options = {
-        virtualAvatar
-    };
-
-    return new JitsiStreamVirtualAvatarEffect(faceMesh, options);
+    return new JitsiStreamVirtualAvatarEffect(holistic, virtualAvatar);
 }

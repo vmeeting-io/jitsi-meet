@@ -1190,17 +1190,23 @@ var config = {
      websocketKeepAliveUrl
      */
 
-    // thirdPartyAuth: {
-    //     // vmeeting.kr
-    //     postech: {
-    //         url: 'https://login.postech.ac.kr/SSOService.do?targetAppId=postech-vmeetingKr-web',
-    //     }
-
-    //     // vmeeting.postech.ac.kr
-    //     postech: {
-    //         url: 'https://login.postech.ac.kr/SSOService.do?targetAppId=postech-vmeeting-web',
-    //     }
-    // },
+    thirdPartyAuth: {
+        postech: {
+            url: 'https://login.postech.ac.kr/SSOService.do?targetAppId=postech-vmeetingKr-web',
+        },
+        google:{
+            url: '/auth/api/complete/google/login',
+        },
+        facebook:{
+            url: '/auth/api/complete/facebook/login',
+        },
+        naver:{
+            url: '/auth/api/complete/naver/login',
+        },
+        kakao:{
+            url: '/auth/api/complete/kakao/login',
+        },
+    },
 
     presenter: {
         startEnabled: true, // default: true

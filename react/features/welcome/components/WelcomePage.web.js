@@ -259,17 +259,18 @@ class WelcomePage extends AbstractWelcomePage {
      * @inheritdoc
      * @returns {void}
      */
-    _onLogout() {
+    async _onLogout() {
         const { dispatch } = this.props;
 
         this.setState({ submitting: true });
 
-        return axios.get(`${AUTH_API_BASE}/logout`).then(() => {
+        await axios.get(`${AUTH_API_BASE}/logout`).then(() => {
             // dispatch(setCurrentUser());
             tokenLocalStorage.removeItem(APP.store.getState());
             dispatch(setJWT());
             this.setState({ submitting: false });
         });
+        window.location="/";
     }
 
     _onVirtualBackground(){

@@ -661,7 +661,8 @@ class Toolbox extends Component<Props> {
         //     group: 2
         // };
 
-        const { order } = THRESHOLDS.find(({ width }) => _clientWidth > width);
+        const { order } = THRESHOLDS.find(({ width }) => _clientWidth > width)
+            || THRESHOLDS[THRESHOLDS.length - 1];
         const tileview = {
             key: 'tileview',
             Content: order.indexOf('tileview') < 0

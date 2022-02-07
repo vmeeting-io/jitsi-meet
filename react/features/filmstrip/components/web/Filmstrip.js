@@ -18,7 +18,6 @@ import { translate } from '../../../base/i18n';
 import { Icon, IconMenuDown, IconMenuUp } from '../../../base/icons';
 import { getLocalParticipant, getPinnedTiles } from '../../../base/participants';
 import { connect } from '../../../base/redux';
-import { shouldHideSelfView } from '../../../base/settings/functions.any';
 import { showToolbox } from '../../../toolbox/actions.web';
 import { isButtonEnabled, isToolboxVisible } from '../../../toolbox/functions.web';
 import { LAYOUTS, getCurrentLayout } from '../../../video-layout';
@@ -58,11 +57,6 @@ type Props = {
      * The number of columns in tile view.
      */
     _columns: number,
-
-    /**
-     * Whether or not to hide the self view.
-     */
-    _disableSelfView: boolean,
 
     /**
      * The width of the filmstrip.
@@ -287,7 +281,7 @@ class Filmstrip extends PureComponent <Props> {
      */
     render() {
         const filmstripStyle = { };
-        const { _currentLayout, _disableSelfView, classes, _visible } = this.props;
+        const { _currentLayout, classes, _visible } = this.props;
         const tileViewActive = _currentLayout === LAYOUTS.TILE_VIEW;
 
         switch (_currentLayout) {
@@ -318,7 +312,7 @@ class Filmstrip extends PureComponent <Props> {
                 <div
                     className = { this.props._videosClassName }
                     id = 'remoteVideos'>
-                    {!_disableSelfView && !tileViewActive && (
+                    {!tileViewActive && (
                         <div
                             className = 'filmstrip__videos'
                             id = 'filmstripLocalVideo'>
@@ -377,7 +371,6 @@ class Filmstrip extends PureComponent <Props> {
      */
     _gridItemKey({ columnIndex, rowIndex }) {
         const {
-            // _disableSelfView,
             _columns,
             _iAmRecorder,
             _localIndex,
@@ -645,7 +638,6 @@ function _mapStateToProps(state) {
         thumbnailSize: tileViewThumbnailSize
     } = state['features/filmstrip'].tileViewDimensions;
     const _currentLayout = getCurrentLayout(state);
-    const disableSelfView = shouldHideSelfView(state);
     const localParticipantId = getLocalParticipant(state)?.id;
     const pinnedTiles = getPinnedTiles(state);
 
@@ -715,7 +707,6 @@ function _mapStateToProps(state) {
         _className: className,
         _columns: gridDimensions.columns,
         _currentLayout,
-        _disableSelfView: disableSelfView,
         _filmstripHeight: remoteFilmstripHeight,
         _filmstripWidth: remoteFilmstripWidth,
         _hideFilmstrip: Boolean(hideLocalVideo && hideRemoteVideos),

@@ -5,7 +5,6 @@ import { shouldComponentUpdate } from 'react-window';
 import { getPinnedTiles } from '../../../base/participants';
 
 import { connect } from '../../../base/redux';
-import { shouldHideSelfView } from '../../../base/settings/functions.any';
 import { getCurrentLayout, LAYOUTS } from '../../../video-layout';
 
 import Thumbnail from './Thumbnail';
@@ -14,11 +13,6 @@ import Thumbnail from './Thumbnail';
  * The type of the React {@code Component} props of {@link ThumbnailWrapper}.
  */
 type Props = {
-
-    /**
-     * Whether or not to hide the self view.
-     */
-    _disableSelfView: boolean,
 
     /**
      * The horizontal offset in px for the thumbnail. Used to center the thumbnails in the last row in tile view.
@@ -82,7 +76,7 @@ class ThumbnailWrapper extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { _participantID, style, _horizontalOffset = 0, _isAnyParticipantPinned, _disableSelfView } = this.props;
+        const { _participantID, style, _horizontalOffset = 0, _isAnyParticipantPinned } = this.props;
 
         // console.log('ThumbnailWrapper:', _participantID, this.props.rowIndex, this.props.columnIndex);
         if (typeof _participantID !== 'string') {
@@ -90,11 +84,10 @@ class ThumbnailWrapper extends Component<Props> {
         }
 
         if (_participantID === 'local') {
-            return _disableSelfView ? null : (
-                <Thumbnail
-                    horizontalOffset = { _horizontalOffset }
-                    key = 'local'
-                    style = { style } />);
+            return (<Thumbnail
+                horizontalOffset = { _horizontalOffset }
+                key = 'local'
+                style = { style } />);
         }
 
         return (
@@ -120,9 +113,6 @@ function _mapStateToProps(state, ownProps) {
     const { remoteParticipants } = state['features/filmstrip'];
     const { remote, local } = state['features/base/participants'];
     const remoteParticipantsLength = remoteParticipants.length;
-    const { testing = {} } = state['features/base/config'];
-    const disableSelfView = shouldHideSelfView(state);
-    const enableThumbnailReordering = testing.enableThumbnailReordering ?? true;
 
     if (_currentLayout === LAYOUTS.TILE_VIEW) {
         const { columnIndex, rowIndex } = ownProps;
@@ -156,7 +146,6 @@ function _mapStateToProps(state, ownProps) {
         // When the thumbnails are reordered, local participant is inserted at index 0.
         if (!iAmRecorder && index === localIndex) {
             return {
-                _disableSelfView: disableSelfView,
                 _participantID: 'local',
                 _horizontalOffset: horizontalOffset
             };

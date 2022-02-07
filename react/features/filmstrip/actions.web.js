@@ -2,7 +2,6 @@
 import type { Dispatch } from 'redux';
 
 import { getLocalParticipant, getParticipantById, pinParticipant } from '../base/participants';
-import { shouldHideSelfView } from '../base/settings/functions.any';
 
 import {
     SET_HORIZONTAL_VIEW_DIMENSIONS,
@@ -80,7 +79,6 @@ export function setVerticalViewDimensions() {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const state = getState();
         const { clientHeight = 0, clientWidth = 0 } = state['features/base/responsive-ui'];
-        const disableSelfView = shouldHideSelfView(state);
         const thumbnails = calculateThumbnailSizeForVerticalView(clientWidth);
 
         dispatch({
@@ -90,7 +88,7 @@ export function setVerticalViewDimensions() {
                 remoteVideosContainer: {
                     width: thumbnails?.local?.width
                         + TILE_HORIZONTAL_MARGIN + STAGE_VIEW_THUMBNAIL_HORIZONTAL_BORDER + SCROLL_SIZE,
-                    height: clientHeight - (disableSelfView ? 0 : thumbnails?.local?.height)
+                    height: clientHeight - (thumbnails?.local?.height)
                         - VERTICAL_FILMSTRIP_VERTICAL_MARGIN
                 }
             }
@@ -108,7 +106,6 @@ export function setHorizontalViewDimensions() {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const state = getState();
         const { clientHeight = 0, clientWidth = 0 } = state['features/base/responsive-ui'];
-        const disableSelfView = shouldHideSelfView(state);
         const thumbnails = calculateThumbnailSizeForHorizontalView(clientHeight);
 
         dispatch({
@@ -116,7 +113,7 @@ export function setHorizontalViewDimensions() {
             dimensions: {
                 ...thumbnails,
                 remoteVideosContainer: {
-                    width: clientWidth - (disableSelfView ? 0 : thumbnails?.local?.width) - HORIZONTAL_FILMSTRIP_MARGIN,
+                    width: clientWidth - (thumbnails?.local?.width) - HORIZONTAL_FILMSTRIP_MARGIN,
                     height: thumbnails?.local?.height
                         + TILE_VERTICAL_MARGIN + STAGE_VIEW_THUMBNAIL_VERTICAL_BORDER + SCROLL_SIZE
                 }

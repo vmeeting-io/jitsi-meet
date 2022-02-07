@@ -130,7 +130,7 @@ export function getMoreTabProps(stateful: Object | Function) {
         currentFramerate: framerate,
         currentLanguage: language,
         desktopShareFramerates: SS_SUPPORTED_FRAMERATES,
-        disableHideSelfView: true, // disableSelfViewSettings || disableSelfView || aiAttentionAnalysisEnabled,
+        disableHideSelfView: disableSelfViewSettings || disableSelfView || aiAttentionAnalysisEnabled,
         disableShortcuts,
         hideSelfView: getHideSelfView(state),
         languages: LANGUAGES,

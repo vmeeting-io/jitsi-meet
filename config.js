@@ -1192,18 +1192,23 @@ var config = {
 
     // thirdPartyAuth: {
     //     postech: {
+    //         label: false,
     //         url: 'https://login.postech.ac.kr/SSOService.do?targetAppId=postech-vmeetingKr-web',
     //     },
     //     google:{
+    //         label: false,
     //         url: '/auth/api/complete/google/login',
     //     },
     //     facebook:{
+    //         label: false,
     //         url: '/auth/api/complete/facebook/login',
     //     },
     //     naver:{
+    //         label: false,
     //         url: '/auth/api/complete/naver/login',
     //     },
     //     kakao:{
+    //         label: false,
     //         url: '/auth/api/complete/kakao/login',
     //     },
     // },

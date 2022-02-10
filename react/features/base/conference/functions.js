@@ -483,9 +483,9 @@ export function getRoomInfo(store) {
         // update conference database information to set 
         // 1. timerEndTime: End time of timerclock.
         config:{
-            headers: { Authorization: `Bearer ${process.env.VMEETING_API_TOKEN}`}
+            headers: { Authorization: `Bearer ${window._env_.VMEETING_API_TOKEN}`}
         },
-        apiBaseUrl : `${store.getState()['features/base/connection'].locationURL.origin}${process.env.VMEETING_API_BASE}`,
+        apiBaseUrl : `${store.getState()['features/base/connection'].locationURL.origin}${window._env_.VMEETING_API_BASE}`,
     };
 }
 

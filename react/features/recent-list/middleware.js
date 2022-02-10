@@ -133,7 +133,7 @@ function _setRoom({ dispatch, getState }, next, action) {
         const pattern = /(?<tenant>\/[^\/]+)?(?<room>\/.+)$/;
         const { groups } = locationURL.pathname.match(pattern);
         const { user = {} } = getState()['features/base/jwt'];
-        const tenant = groups.tenant || user.tenant || process.env.DEFAULT_SITE_ID;
+        const tenant = groups.tenant || user.tenant || window._env_.DEFAULT_SITE_ID;
 
         if (locationURL && tenant) {
             const pathname = `${tenant}${groups.room}`;

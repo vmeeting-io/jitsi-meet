@@ -7,7 +7,7 @@ import { translate, translateToHTML } from '../../../base/i18n';
 import { connect } from '../../../base/redux';
 import { sendConsentDisagreeNotification } from '../../functions';
 
-const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
+const AUTH_PAGE_BASE = window._env_.VMEETING_FRONT_BASE;
 
 /**
  * The type of the React {@code Component} props of {@link WaitForOwnerDialog}.

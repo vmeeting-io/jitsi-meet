@@ -37,9 +37,9 @@ export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣_
 // export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[a-zA-Z0-9가-힣_]+$'; // this allows alphabet, numbers, underscore and completed korean
 // export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[a-zA-Z0-9_]+$'; // this allows alphabet, numbers and underscore only
 
-const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
-const AUTH_API_BASE = process.env.VMEETING_API_BASE;
-const DEFAULT_TENANT = process.env.DEFAULT_SITE_ID;
+const AUTH_PAGE_BASE = window._env_.VMEETING_FRONT_BASE;
+const AUTH_API_BASE = window._env_.VMEETING_API_BASE;
+const DEFAULT_TENANT = window._env_.DEFAULT_SITE_ID;
 
 
 /**

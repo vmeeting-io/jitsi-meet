@@ -25,7 +25,7 @@ const _sendCommand = function (newSelectedValue, store) {
     }
 
     const reqConfig = {
-        headers: { Authorization: `Bearer ${process.env.VMEETING_API_TOKEN}`}
+        headers: { Authorization: `Bearer ${window._env_.VMEETING_API_TOKEN}`}
     };
     const apiBase = getAuthUrl(state);
     const { roomInfo: room } = state['features/base/conference'];

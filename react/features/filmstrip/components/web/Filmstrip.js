@@ -2,6 +2,7 @@
 
 import { withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
+import { difference } from 'lodash';
 import React, { PureComponent } from 'react';
 import { FixedSizeList, FixedSizeGrid } from 'react-window';
 import type { Dispatch } from 'redux';
@@ -15,8 +16,8 @@ import { getToolbarButtons } from '../../../base/config';
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { Icon, IconMenuDown, IconMenuUp } from '../../../base/icons';
+import { getLocalParticipant, getPinnedTiles } from '../../../base/participants';
 import { connect } from '../../../base/redux';
-import { shouldHideSelfView } from '../../../base/settings/functions.any';
 import { showToolbox } from '../../../toolbox/actions.web';
 import { isButtonEnabled, isToolboxVisible } from '../../../toolbox/functions.web';
 import { LAYOUTS, getCurrentLayout } from '../../../video-layout';
@@ -56,11 +57,6 @@ type Props = {
      * The number of columns in tile view.
      */
     _columns: number,
-
-    /**
-     * Whether or not to hide the self view.
-     */
-    _disableSelfView: boolean,
 
     /**
      * The width of the filmstrip.
@@ -285,7 +281,7 @@ class Filmstrip extends PureComponent <Props> {
      */
     render() {
         const filmstripStyle = { };
-        const { _currentLayout, _disableSelfView, classes, _visible } = this.props;
+        const { _currentLayout, classes, _visible } = this.props;
         const tileViewActive = _currentLayout === LAYOUTS.TILE_VIEW;
 
         switch (_currentLayout) {
@@ -317,15 +313,12 @@ class Filmstrip extends PureComponent <Props> {
                 <div
                     className = { this.props._videosClassName }
                     id = 'remoteVideos'>
-                    {!_disableSelfView && (
+                    {!tileViewActive && (
                         <div
                             className = 'filmstrip__videos'
                             id = 'filmstripLocalVideo'>
                             <div id = 'filmstripLocalVideoThumbnail'>
-                                {
-                                    !tileViewActive && <Thumbnail
-                                        key = 'local' />
-                                }
+                                <Thumbnail key = 'local' />
                             </div>
                         </div>
                     )}
@@ -336,33 +329,6 @@ class Filmstrip extends PureComponent <Props> {
                 <AudioTracksContainer />
             </div>
         );
-    }
-
-    /**
-     * Calculates the start and stop indices based on whether the thumbnails need to be reordered in the filmstrip.
-     *
-     * @param {number} startIndex - The start index.
-     * @param {number} stopIndex - The stop index.
-     * @returns {Object}
-     */
-    _calculateIndices(startIndex, stopIndex) {
-        const { _currentLayout, _iAmRecorder, _thumbnailsReordered, _disableSelfView } = this.props;
-        let start = startIndex;
-        let stop = stopIndex;
-
-        if (_thumbnailsReordered && !_disableSelfView) {
-            // In tile view, the indices needs to be offset by 1 because the first thumbnail is that of the local
-            // endpoint. The remote participants start from index 1.
-            if (!_iAmRecorder && _currentLayout === LAYOUTS.TILE_VIEW) {
-                start = Math.max(startIndex - 1, 0);
-                stop = stopIndex - 1;
-            }
-        }
-
-        return {
-            startIndex: start,
-            stopIndex: stop
-        };
     }
 
     _onTabIn: () => void;
@@ -406,28 +372,23 @@ class Filmstrip extends PureComponent <Props> {
      */
     _gridItemKey({ columnIndex, rowIndex }) {
         const {
-            _disableSelfView,
             _columns,
             _iAmRecorder,
+            _localIndex,
             _remoteParticipants,
             _remoteParticipantsLength,
-            _thumbnailsReordered
         } = this.props;
         const index = (rowIndex * _columns) + columnIndex;
 
-        // When the thumbnails are reordered, local participant is inserted at index 0.
-        const localIndex = _thumbnailsReordered && !_disableSelfView ? 0 : _remoteParticipantsLength;
-        const remoteIndex = _thumbnailsReordered && !_iAmRecorder && !_disableSelfView ? index - 1 : index;
-
-        if (index > _remoteParticipantsLength - (_iAmRecorder ? 1 : 0)) {
+        if (index > _remoteParticipantsLength) {
             return `empty-${index}`;
         }
 
-        if (!_iAmRecorder && index === localIndex) {
+        if (!_iAmRecorder && index === _localIndex) {
             return 'local';
         }
 
-        return _remoteParticipants[remoteIndex];
+        return _remoteParticipants[index];
     }
 
     _onListItemsRendered: Object => void;
@@ -440,9 +401,8 @@ class Filmstrip extends PureComponent <Props> {
      */
     _onListItemsRendered({ visibleStartIndex, visibleStopIndex }) {
         const { dispatch } = this.props;
-        const { startIndex, stopIndex } = this._calculateIndices(visibleStartIndex, visibleStopIndex);
 
-        dispatch(setVisibleRemoteParticipants(startIndex, stopIndex));
+        dispatch(setVisibleRemoteParticipants(visibleStartIndex, visibleStopIndex));
     }
 
     _onGridItemsRendered: Object => void;
@@ -462,9 +422,8 @@ class Filmstrip extends PureComponent <Props> {
         const { _columns, dispatch } = this.props;
         const start = (visibleRowStartIndex * _columns) + visibleColumnStartIndex;
         const stop = (visibleRowStopIndex * _columns) + visibleColumnStopIndex;
-        const { startIndex, stopIndex } = this._calculateIndices(start, stop);
 
-        dispatch(setVisibleRemoteParticipants(startIndex, stopIndex));
+        dispatch(setVisibleRemoteParticipants(start, stop));
     }
 
     /**
@@ -669,7 +628,7 @@ function _mapStateToProps(state) {
     const toolbarButtons = getToolbarButtons(state);
     const { testing = {}, iAmRecorder, hideLocalVideo, hideRemoteVideos } = state['features/base/config'];
     const enableThumbnailReordering = testing.enableThumbnailReordering ?? true;
-    const { visible, remoteParticipants } = state['features/filmstrip'];
+    let { visible, remoteParticipants } = state['features/filmstrip'];
     const reduceHeight = state['features/toolbox'].visible && toolbarButtons.length;
     const remoteVideosVisible = shouldRemoteVideosBeVisible(state);
     const { isOpen: shiftRight } = state['features/chat'];
@@ -680,7 +639,8 @@ function _mapStateToProps(state) {
         thumbnailSize: tileViewThumbnailSize
     } = state['features/filmstrip'].tileViewDimensions;
     const _currentLayout = getCurrentLayout(state);
-    const disableSelfView = shouldHideSelfView(state);
+    const localParticipantId = getLocalParticipant(state)?.id;
+    const pinnedTiles = getPinnedTiles(state);
 
     const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
     const availableSpace = clientHeight - filmstripHeight;
@@ -709,11 +669,22 @@ function _mapStateToProps(state) {
     } ${shiftRight ? 'shift-right' : ''} ${collapseTileView ? 'collapse' : ''} ${visible ? '' : 'hidden'}`.trim();
     let _thumbnailSize, remoteFilmstripHeight, remoteFilmstripWidth;
 
+    let localIndex = pinnedTiles.indexOf(localParticipantId);
+    if (localIndex < 0) {
+        localIndex = pinnedTiles.length;
+    }
+
     switch (_currentLayout) {
     case LAYOUTS.TILE_VIEW:
         _thumbnailSize = tileViewThumbnailSize;
         remoteFilmstripHeight = filmstripHeight - (collapseTileView && filmstripPadding > 0 ? filmstripPadding : 0);
         remoteFilmstripWidth = filmstripWidth;
+        let newRemoteParticipants = [ ...pinnedTiles ];
+        if (localIndex >= pinnedTiles.length) {
+            newRemoteParticipants.push(localParticipantId);
+        }
+        newRemoteParticipants.push(...difference(remoteParticipants));
+        remoteParticipants = newRemoteParticipants;
         break;
     case LAYOUTS.VERTICAL_FILMSTRIP_VIEW: {
         const { remote, remoteVideosContainer } = state['features/filmstrip'].verticalViewDimensions;
@@ -737,12 +708,13 @@ function _mapStateToProps(state) {
         _className: className,
         _columns: gridDimensions.columns,
         _currentLayout,
-        _disableSelfView: disableSelfView,
         _filmstripHeight: remoteFilmstripHeight,
         _filmstripWidth: remoteFilmstripWidth,
         _hideFilmstrip: Boolean(hideLocalVideo && hideRemoteVideos),
         _iAmRecorder: Boolean(iAmRecorder),
         _isFilmstripButtonEnabled: isButtonEnabled('filmstrip', state),
+        _localIndex: localIndex,
+        _pinnedTiles: pinnedTiles,
         _remoteParticipantsLength: remoteParticipants.length,
         _remoteParticipants: remoteParticipants,
         _rows: gridDimensions.rows,

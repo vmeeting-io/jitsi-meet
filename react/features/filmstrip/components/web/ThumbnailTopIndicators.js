@@ -113,6 +113,7 @@ const ThumbnailTopIndicators = ({
                     <div className = { clsx(indicatorsClassName, 'top-indicators') }>
                         <StatusIndicators
                             participantID = { participantId }
+                            pinned = { true }
                             screenshare = { true } />
                     </div>
                 )}

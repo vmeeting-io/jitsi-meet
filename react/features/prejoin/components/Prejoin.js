@@ -276,12 +276,14 @@ class Prejoin extends Component<Props, State> {
                 }
 
                 try {
-                    const resp = await checkDIDConsent()
+                    const resp = await checkDIDConsent();
+
                     // If consent has not been approved, show popup
                     const permit = resp.data.consent === PIC_CONSENT.APPROVED;
                     if (permit) {
                         this.props.permitDataRequest(true);
                     }
+
                     return !permit;
                 } catch (err) {
                     console.error('checkDIDConsent is failed.', err);

@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 
 import { MEDIA_TYPE } from '../../../base/media';
-import { getParticipantByIdOrUndefined, PARTICIPANT_ROLE } from '../../../base/participants';
+import { getParticipantByIdOrUndefined, getPinnedTiles, PARTICIPANT_ROLE } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { getTrackByMediaTypeAndParticipant, isLocalTrackMuted, isRemoteTrackMuted } from '../../../base/tracks';
 import { getCurrentLayout } from '../../../video-layout';
@@ -11,6 +11,7 @@ import { getIndicatorsTooltipPosition } from '../../functions.web';
 
 import AudioMutedIndicator from './AudioMutedIndicator';
 import ModeratorIndicator from './ModeratorIndicator';
+import PinnedIndicator from './PinnedIndicator';
 import ScreenShareIndicator from './ScreenShareIndicator';
 
 declare var interfaceConfig: Object;
@@ -63,6 +64,7 @@ class StatusIndicators extends Component<Props> {
             _currentLayout,
             _showAudioMutedIndicator,
             _showModeratorIndicator,
+            _showPinnedIndicator,
             _showScreenShareIndicator
         } = this.props;
         const tooltipPosition = getIndicatorsTooltipPosition(_currentLayout);
@@ -71,6 +73,7 @@ class StatusIndicators extends Component<Props> {
             <>
                 { _showAudioMutedIndicator && <AudioMutedIndicator tooltipPosition = { tooltipPosition } /> }
                 { _showModeratorIndicator && <ModeratorIndicator tooltipPosition = { tooltipPosition } />}
+                { _showPinnedIndicator && <PinnedIndicator tooltipPosition = { tooltipPosition } /> }
                 { _showScreenShareIndicator && <ScreenShareIndicator tooltipPosition = { tooltipPosition } /> }
             </>
         );
@@ -90,11 +93,11 @@ class StatusIndicators extends Component<Props> {
  * }}
 */
 function _mapStateToProps(state, ownProps) {
-    const { participantID, audio, moderator, screenshare } = ownProps;
+    const { participantID, audio, moderator, screenshare, pinned } = ownProps;
 
     // Only the local participant won't have id for the time when the conference is not yet joined.
     const participant = getParticipantByIdOrUndefined(state, participantID);
-
+    const pinnedTiles = getPinnedTiles(state);
     const tracks = state['features/base/tracks'];
     let isAudioMuted = true;
     let isScreenSharing = false;
@@ -115,6 +118,7 @@ function _mapStateToProps(state, ownProps) {
         _showAudioMutedIndicator: isAudioMuted && audio,
         _showModeratorIndicator:
             !disableModeratorIndicator && participant && participant.role === PARTICIPANT_ROLE.MODERATOR && moderator,
+        _showPinnedIndicator: pinned && pinnedTiles.indexOf(participantID) >= 0,
         _showScreenShareIndicator: isScreenSharing && screenshare
     };
 }

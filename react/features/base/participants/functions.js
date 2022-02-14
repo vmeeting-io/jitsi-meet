@@ -531,3 +531,17 @@ export function getRaiseHandsQueue(stateful: Object | Function): Array<Object> {
 export function hasRaisedHand(participant: Object): boolean {
     return Boolean(participant && participant.raisedHandTimestamp);
 }
+
+/**
+ * Get the participants pinned tiles.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state
+ * features/base/participants.
+ * @returns {Array<Object>}
+ */
+export function getPinnedTiles(stateful: Object | Function): Array<Object> {
+    const { pinnedTiles } = toState(stateful)['features/base/participants'];
+
+    return pinnedTiles;
+}

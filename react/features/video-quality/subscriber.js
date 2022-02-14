@@ -1,5 +1,6 @@
 // @flow
 
+import { difference } from 'lodash';
 import debounce from 'lodash/debounce';
 
 import { _handleParticipantError } from '../base/conference';
@@ -61,28 +62,6 @@ StateListenerRegistry.register(
         _updateReceiverVideoConstraints(store);
     }
 );
-
-
-/**
-* StateListenerRegistry provides a reliable way of detecting changes to selected
-* endpoints state and dispatching additional actions. The listener is debounced
-* so that the client doesn't end up sending too many bridge messages when the user is
-* scrolling through the thumbnails prompting updates to the selected endpoints.
-*/
-StateListenerRegistry.register(
-    /* selector */ state => {
-        const pagination = state['features/video-layout'].pagination;
-        const currentPage = pagination.current;
-        const pageSize = pagination.pageSize;
-
-        return {
-            currentPage,
-            pageSize
-        };
-    },
-    /* listener */ debounce((_, store) => {
-        _updateReceiverVideoConstraints(store);
-    }, 100));
 
 /**
  * StateListenerRegistry provides a reliable way of detecting changes to
@@ -217,7 +196,13 @@ function _updateReceiverVideoConstraints({ getState }) {
     const { participantId: largeVideoParticipantId } = state['features/large-video'];
     const maxFrameHeight = Math.min(maxReceiverVideoQuality, preferredVideoQuality);
     const { remoteScreenShares } = state['features/video-layout'];
-    const { visibleRemoteParticipants } = state['features/filmstrip'];
+    let {
+        remoteParticipants,
+        visibleRemoteParticipants,
+        visibleParticipantsStartIndex: startIndex,
+        visibleParticipantsEndIndex: endIndex
+    } = state['features/filmstrip'];
+    const { pinnedTiles } = state['features/base/participants'];
     const tracks = state['features/base/tracks'];
     const sourceNameSignaling = getSourceNameSignalingFeatureFlag(state);
     const localParticipantId = getLocalParticipant(state).id;
@@ -294,6 +279,16 @@ function _updateReceiverVideoConstraints({ getState }) {
         if (shouldDisplayTileView(state)) {
             if (!visibleRemoteParticipants?.size) {
                 return;
+            }
+
+            if (pinnedTiles.length > 0) {
+                remoteParticipants = difference(remoteParticipants, pinnedTiles);
+
+                visibleRemoteParticipants = [...pinnedTiles, ...remoteParticipants]
+                    .slice(startIndex, endIndex + 1)
+                    .filter(id => id !== localParticipantId);
+
+                visibleRemoteParticipants = new Set(visibleRemoteParticipants);
             }
 
             visibleRemoteParticipants.forEach(participantId => {

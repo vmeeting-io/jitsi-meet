@@ -1,6 +1,6 @@
 // @flow
 
-import { omit } from 'lodash';
+import { isEqual, omit } from 'lodash';
 import i18n from 'i18next';
 import { batch } from 'react-redux';
 
@@ -74,7 +74,8 @@ import {
 } from './functions';
 import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
 
-import { hasRaisedHand, raiseHand } from '.';
+import { hasRaisedHand, raiseHand, setPinnedTiles } from '.';
+import { setTileViewMaxColumns } from '../../settings';
 
 declare var APP: Object;
 
@@ -774,3 +775,33 @@ function _trackUpdated({ dispatch, getState }, next, action) {
 
     return result;
 }
+
+StateListenerRegistry.register(
+    /* selector */ state => getCurrentConference(state),
+    /* listener */ (conference, store) => {
+        const receiveMessage = (_, data) => {
+            // console.log('message is received:', data);
+            const { type, ...payload } = data;
+            switch (type) {
+            case 'features/settings/tileview': {
+                const { pinned_tiles, tileview_max_columns } = payload;
+                const { pinnedTiles } = store.getState()['features/base/participants'];
+                const { tileViewMaxColumns } = store.getState()['features/settings'];
+                if (pinned_tiles.length && !isEqual(pinned_tiles, pinnedTiles)) {
+                    // console.log('setPinnedTiles:', pinned_tiles);
+                    store.dispatch(setPinnedTiles(pinned_tiles));
+                }
+                if (tileview_max_columns && tileview_max_columns !== tileViewMaxColumns) {
+                    store.dispatch(setTileViewMaxColumns(tileview_max_columns));
+                }
+                break;
+            }
+            }
+        };
+
+        if (conference) {
+            conference.on(JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED, receiveMessage);
+            conference.on(JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED, receiveMessage);
+        }
+    }
+)

@@ -326,3 +326,12 @@ export function getVideoSettingsVisibility(state: Object) {
     return state['features/settings'].videoSettingsVisible;
 }
 
+/**
+ * Returns the visibility state of the tile view settings.
+ *
+ * @param {Object} state - The state of the application.
+ * @returns {boolean}
+ */
+export function getTileViewSettingsVisibility(state: Object) {
+    return state['features/settings'].tileViewSettingsVisible;
+}

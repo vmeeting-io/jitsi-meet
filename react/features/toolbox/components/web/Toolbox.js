@@ -93,6 +93,7 @@ import OverflowMenuButton from './OverflowMenuButton';
 import ProfileButton from './ProfileButton';
 import Separator from './Separator';
 import ShareDesktopButton from './ShareDesktopButton';
+import TileViewSettingsButton from './TileViewSettingsButton';
 import ToggleCameraButton from './ToggleCameraButton';
 import VideoSettingsButton from './VideoSettingsButton';
 
@@ -601,6 +602,7 @@ class Toolbox extends Component<Props> {
      */
     _getAllButtons() {
         const {
+            _clientWidth,
             _feedbackConfigured,
             _isIosMobile,
             _isMobile,
@@ -659,9 +661,14 @@ class Toolbox extends Component<Props> {
         //     group: 2
         // };
 
+        const { order } = THRESHOLDS.find(({ width }) => _clientWidth > width)
+            || THRESHOLDS[THRESHOLDS.length - 1];
+
         const tileview = {
             key: 'tileview',
-            Content: TileViewButton,
+            Content: order.indexOf('tileview') < 0
+                ? TileViewButton
+                : TileViewSettingsButton,
             group: 2
         };
 

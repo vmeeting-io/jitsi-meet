@@ -15,6 +15,8 @@ import {
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED,
     PIN_PARTICIPANT,
+    PIN_TILES,
+    SET_PINNED_TILES,
     SET_LOADABLE_AVATAR_URL,
     RAISE_HAND_UPDATED,
     PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED
@@ -600,4 +602,36 @@ export function updateParticipantBirthdayHatFlag(id, hatOn) {
         id,
         hatOn
     }
+}
+
+/**
+ * Create an action which pinned tiles.
+ *
+ * @param {Array<string>} participants - Participant IDs of pinned tiles.
+ * @returns {{
+ *     type: PIN_TILES,
+ *     participants: Array<string>
+ * }}
+ */
+export function pinTiles(participants) {
+    return {
+        type: PIN_TILES,
+        participants
+    };
+}
+
+/**
+ * Create an action which received pinned tiles message.
+ *
+ * @param {Array<string>} participants - Participant IDs of pinned tiles.
+ * @returns {{
+ *     type: SET_PINNED_TILES,
+ *     participants: Array<string>
+ * }}
+ */
+export function setPinnedTiles(participants) {
+    return {
+        type: SET_PINNED_TILES,
+        participants
+    };
 }

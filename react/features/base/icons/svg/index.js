@@ -156,6 +156,8 @@ export { default as IconStopAudioShare } from './stop-audio-share.svg';
 export { default as IconStopWatch } from './timer.svg';
 export { default as IconSwitchCamera } from './switch-camera.svg';
 export { default as IconTileView } from './tiles-many.svg';
+export { default as IconTileMax } from './tile-x9-solid.svg';
+export { default as IconTileMin } from './tile-x4-solid.svg';
 export { default as IconToggleRecording } from './camera-take-picture.svg';
 export { default as IconTrash } from './trash.svg';
 export { default as IconVideoOff } from './video-off.svg';

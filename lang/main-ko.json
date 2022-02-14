@@ -219,6 +219,7 @@
         "alreadySharedVideoMsg": "다른 참가자가 이미 비디오를 공유하고 있습니다. 이 회의는 한 번에 하나의 공유 비디오 만 허용합니다.",
         "alreadySharedVideoTitle": "한 번에 하나의 공유 비디오 만 허용됩니다",
         "applicationWindow": "응용 프로그램 창",
+        "apply": "적용",
         "authenticationRequired": "인증 필요",
         "Back": "뒤로가기",
         "banButton": "차단",
@@ -391,6 +392,8 @@
         "passwordNotSupportedTitle": "$t(lockRoomPasswordUppercase) 지원되지 않음",
         "passwordRequired": "$t(lockRoomPasswordUppercase)가 필요합니다",
         "passwordValid": "올바른 비밀번호!",
+        "pinParticipantsDescription": "최대 {{rows}}x{{rows}}까지 참가자를 고정할 수 있습니다.",
+        "pinParticipantsDescription2": "고정된 참가자를 드래그하여 타일 순서를 조정할 수 있습니다.",
         "placeholderName": "이름",
         "placeholderOrganization": "직책, 소속",
         "permissionErrorTitle": "권한 필요",
@@ -803,7 +806,10 @@
         "reactionSoundsForAll": "모두에게 알림음 끄기",
         "groupTitle": "알림",
         "videoUnmuteBlockedTitle": "카메라 켜기 및 화면 공유 차단!",
-        "videoUnmuteBlockedDescription": "시스템 제한으로 인해 카메라 켜기 및 화면 공유가 일시적으로 차단되었습니다."
+        "videoUnmuteBlockedDescription": "시스템 제한으로 인해 카메라 켜기 및 화면 공유가 일시적으로 차단되었습니다.",
+        "desktopShareAction": "화면 공유",
+        "warning": "주의사항",
+        "desktopShareDescription": "라이브 스트리밍 중에 화면 공유시 라이브 스트리밍 화면이 표시되는 탭을 클릭하지 마세요. 거울에 반사된 것처럼 화면이 표시됩니다. 이를 방지하려면 화면을 공유할 때 다른 창이나 크롬 탭을 선택하세요."
     },
     "participantsPane": {
         "close": "닫기",
@@ -1055,6 +1061,8 @@
         "startVideoMuted": "모두가 카메라 꺼짐 상태로 시작합니다",
         "disableDeviceAccess": "참가자 마이크와 카메라 제어를 제한",
         "talkWhileMuted": "음소거 상태로 대화 중",
+        "tile": "타일 ({{column}}x{{column}})",
+        "tileDescription": "창 크기에 따라 타일 최대 개수가 표시됩니다.",
         "title": "설정",
         "turnOffAIAttentionAnalysis": "미사용",
         "turnOnAIAttentionAnalysis": "사용"
@@ -1157,6 +1165,7 @@
             "muteEveryonesVideoStream": "카메라 모두 끄기",
             "muteEveryoneElsesVideoStream": "다른 카메라 모두 끄기",
             "participants": "참가자 목록",
+            "pinParticipants": "참가자 타일 고정하기",
             "pip": "PIP 모드 토글",
             "privateMessage": "개인메시지 보내기",
             "profile": "프로필 편집",
@@ -1178,6 +1187,7 @@
             "speakerStats": "발표자 통계 토글",
             "surprised": "놀람",
             "tileView": "타일뷰 토글",
+            "tileViewSettings": "타일뷰 설정",
             "toggleCamera": "카메라 토글",
             "toggleFilmstrip": "필름 스트립 전환",
             "toggleWhiteboard": "판서 토글",
@@ -1251,6 +1261,7 @@
         "openChat": "채팅창 열기",
         "openReactionsMenu": "리액션 메뉴 열기",
         "participants": "참가자 목록",
+        "pinParticipants": "참가자 타일 고정하기",
         "pip": "PIP 모드 시작",
         "privateMessage": "개인메시지 보내기",
         "profile": "프로필 편집",
@@ -1263,6 +1274,7 @@
         "reactionLike": "좋아요 리액션 보내기",
         "reactionParty": "축하 리액션 보내기",
         "reactionSurprised": "놀라움 리액션 보내기",
+        "reset": "모두 해제",
         "security": "보안 옵션",
         "selectModeratorAndLeave": "지정 후 나가기",
         "selectNewModerator": "새 호스트 지정",
@@ -1281,6 +1293,7 @@
         "stopSharedVideo": "비디오 종료",
         "surprised": "놀람",
         "talkWhileMutedPopup": "음소거 상태입니다.",
+        "tileViewSettings": "타일뷰 설정",
         "tileViewToggle": "타일뷰 토글",
         "toggleCamera": "카메라 토글",
         "videomute": "카메라 켜기/끄기",
@@ -1373,7 +1386,8 @@
         "videomuted": "카메라 꺼짐",
         "audioconnected": "마이크 사용",
         "videoconnected": "카메라 사용",
-        "presenter": "화면 공유 중"
+        "presenter": "화면 공유 중",
+        "pinned": "고정"
     },
     "welcomepage": {
         "addMeetingName": "회의 이름 추가",

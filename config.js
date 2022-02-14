@@ -147,7 +147,7 @@ var config = {
     // disableSelfView: false,
 
     // Disables self-view settings in UI
-    // disableSelfViewSettings: false,
+    disableSelfViewSettings: true,
 
     // Disables ICE/UDP by filtering out local and remote UDP candidates in
     // signalling.

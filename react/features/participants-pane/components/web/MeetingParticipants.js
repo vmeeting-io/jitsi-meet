@@ -29,7 +29,7 @@ import MeetingParticipantItems from './MeetingParticipantItems';
 const useStyles = makeStyles(theme => {
     return {
         heading: {
-            color: theme.palette.text02,
+            color: theme.palette.support01,
             ...theme.typography.labelButton,
             lineHeight: `${theme.typography.labelButton.lineHeight}px`,
             margin: `8px 0 ${participantsPaneTheme.panePadding}px`,

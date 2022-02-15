@@ -3,14 +3,16 @@
 import { isNameReadOnly } from '../base/config';
 import { SERVER_URL_CHANGE_ENABLED, getFeatureFlag } from '../base/flags';
 import { i18next, DEFAULT_LANGUAGE, LANGUAGES } from '../base/i18n';
-import { createLocalTrack } from '../base/lib-jitsi-meet/functions';
+import { browser, createLocalTrack } from '../base/lib-jitsi-meet';
 import {
     getLocalParticipant,
     isLocalParticipantModerator
 } from '../base/participants';
 import { toState } from '../base/redux';
+import { ASPECT_RATIO_NARROW } from '../base/responsive-ui/constants';
 import { getHideSelfView } from '../base/settings';
 import { parseStandardURIString } from '../base/util';
+import { DEFAULT_MAX_COLUMNS } from '../filmstrip/constants';
 import { isFollowMeActive } from '../follow-me';
 import { isReactionsEnabled } from '../reactions/functions.any';
 
@@ -334,4 +336,25 @@ export function getVideoSettingsVisibility(state: Object) {
  */
 export function getTileViewSettingsVisibility(state: Object) {
     return state['features/settings'].tileViewSettingsVisible;
+}
+
+/**
+ * Returns the max columns of the tile view settings.
+ *
+ * @param {Object} state - The state of the application.
+ * @returns {number}
+ */
+export function getTileViewMaxColumns(state: Object) {
+    const { aspectRatio } = state['features/base/responsive-ui'];
+    let configuredMax;
+
+    if (browser.isReactNative()) {
+        configuredMax = aspectRatio === ASPECT_RATIO_NARROW ? 2 : 3;
+    } else {
+        configuredMax = state['features/settings'].tileViewMaxColumns
+            || interfaceConfig.TILE_VIEW_MAX_COLUMNS
+            || DEFAULT_MAX_COLUMNS;
+    }
+
+    return configuredMax;
 }

@@ -3,6 +3,7 @@
 import React, { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 
+import { isEnabled } from '../../../av-moderation/functions';
 import useContextMenu from '../../../base/components/context-menu/useContextMenu';
 import { getParticipantCount, isLocalParticipantModerator } from '../../../base/participants';
 import { equals } from '../../../base/redux';
@@ -33,6 +34,8 @@ export const RoomList = ({ searchString }: Props) => {
     const isLocalModerator = useSelector(isLocalParticipantModerator);
     const participantsCount = useSelector(getParticipantCount);
     const _overflowDrawer = useSelector(showOverflowDrawer);
+    const isModerationOn = useSelector(isEnabled('breakout'));
+
     const [ lowerMenu, raiseMenu, toggleMenu, menuEnter, menuLeave, raiseContext ] = useContextMenu();
 
     const onRaiseMenu = useCallback(room => target => raiseMenu(room, target), [ raiseMenu ]);
@@ -54,6 +57,7 @@ export const RoomList = ({ searchString }: Props) => {
                             onRaiseMenu = { onRaiseMenu(room) }
                             room = { room }
                             searchString = { searchString }>
+                            {!isLocalModerator && !isModerationOn && <JoinActionButton room = { room } />}
                             {!_overflowDrawer && isLocalModerator && !room.isMainRoom && <>
                                 <JoinActionButton room = { room } />
                                 <RoomActionEllipsis onClick = { toggleMenu(room) } />

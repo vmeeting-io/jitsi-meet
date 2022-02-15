@@ -842,6 +842,7 @@
             "pollModeration": "Create poll",
             "videoModeration": "Start their video",
             "screenShareModeration": "Screen share",
+            "breakoutModeration": "Join breakout room",
             "startModeration": "Unmute themselves or start video",
             "startRandomSelection": "Random Selection",
             "startTimerLabel": "Timer",

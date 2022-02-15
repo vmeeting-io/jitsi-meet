@@ -27,6 +27,7 @@ const initialState = {
         poll: false,
         name: false,
         presenter: false,
+        breakout: false,
     },
     whitelist: {
         audio: {},
@@ -35,6 +36,7 @@ const initialState = {
         poll: {},
         name: {},
         presenter: {},
+        breakout: {},
     },
     pending: {
         audio: [],
@@ -43,6 +45,7 @@ const initialState = {
         poll: [],
         name: [],
         presenter: [],
+        breakout: [],
     },
     unmuteApproved: {
         audio: false,
@@ -51,6 +54,7 @@ const initialState = {
         poll: false,
         name: false,
         presenter: false,
+        breakout: false,
     }
 };
 

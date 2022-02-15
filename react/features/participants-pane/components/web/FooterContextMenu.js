@@ -99,6 +99,7 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
     const isPollModerationEnabled = useSelector(isAvModerationEnabled('poll'));
     const isNameModerationEnabled = useSelector(isAvModerationEnabled('name'));
     const isScreenShareModerationEnabled = useSelector(isAvModerationEnabled('presenter'));
+    const isBreakoutModerationEnabled = useSelector(isAvModerationEnabled('breakout'));
     const { id } = useSelector(getLocalParticipant);
     const timerStarted = useSelector(getTimerStarted);
     const participantCount = useSelector(getParticipantCount);
@@ -118,6 +119,7 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
     const disablePollModeration = useCallback(() => dispatch(requestDisableModeration('poll')), [dispatch]);
     const disableNameModeration = useCallback(() => dispatch(requestDisableModeration('name')), [dispatch]);
     const disableScreenShareModeration = useCallback(() => dispatch(requestDisableModeration('presenter')), [dispatch]);
+    const disableBreakoutModeration = useCallback(() => dispatch(requestDisableModeration('breakout')), [dispatch]);
 
     const enableAudioModeration = useCallback(() => dispatch(requestEnableModeration('audio')), [dispatch]);
     const enableVideoModeration = useCallback(() => dispatch(requestEnableModeration('video')), [dispatch]);
@@ -125,6 +127,7 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
     const enablePollModeration = useCallback(() => dispatch(requestEnableModeration('poll')), [dispatch]);
     const enableNameModeration = useCallback(() => dispatch(requestEnableModeration('name')), [dispatch]);
     const enableScreenShareModeration = useCallback(() => dispatch(requestEnableModeration('presenter')), [dispatch]);
+    const enableBreakoutModeration = useCallback(() => dispatch(requestEnableModeration('breakout')), [dispatch]);
 
     const classes = useStyles();
 
@@ -244,6 +247,15 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
             icon: !isNameModerationEnabled && IconCheck,
             onClick: isNameModerationEnabled ? disableNameModeration : enableNameModeration,
             text: t('participantsPane.actions.nameModeration')
+        }, {
+            accessibilityLabel: t('participantsPane.actions.breakoutModeration'),
+            className: isBreakoutModerationEnabled ? classes.indentedLabel : '',
+            id: isBreakoutModerationEnabled
+                ? 'participants-pane-context-menu-stop-breakout-moderation'
+                : 'participants-pane-context-menu-start-breakout-moderation',
+            icon: !isBreakoutModerationEnabled && IconCheck,
+            onClick: isBreakoutModerationEnabled ? disableBreakoutModeration : enableBreakoutModeration,
+            text: t('participantsPane.actions.breakoutModeration')
         }
     ];
 

@@ -9,14 +9,13 @@ import {
     pinParticipant,
     getParticipantCountWithFake
 } from '../base/participants';
-import { ASPECT_RATIO_NARROW } from '../base/responsive-ui';
 import {
     ASPECT_RATIO_BREAKPOINT,
-    DEFAULT_MAX_COLUMNS,
     ABSOLUTE_MAX_COLUMNS,
     SINGLE_COLUMN_BREAKPOINT,
     TWO_COLUMN_BREAKPOINT
 } from '../filmstrip/constants';
+import { getTileViewMaxColumns } from '../settings/functions';
 import { isVideoPlaying } from '../shared-video/functions';
 
 import { LAYOUTS } from './constants';
@@ -63,15 +62,8 @@ export function getCurrentLayout(state: Object) {
  * @returns {number}
  */
 export function getMaxColumnCount(state: Object) {
-    let configuredMax;
     const { disableResponsiveTiles } = state['features/base/config'];
-    const { aspectRatio, clientWidth } = state['features/base/responsive-ui'];
-
-    if (browser.isReactNative()) {
-        configuredMax = aspectRatio === ASPECT_RATIO_NARROW ? 2 : 3;
-    } else {
-        configuredMax = interfaceConfig.TILE_VIEW_MAX_COLUMNS || DEFAULT_MAX_COLUMNS;
-    }
+    const configuredMax = getTileViewMaxColumns(state);
 
     if (!browser.isReactNative() && !disableResponsiveTiles) {
         const { clientWidth } = state['features/base/responsive-ui'];
@@ -97,16 +89,7 @@ export function getMaxColumnCount(state: Object) {
 }
 
 export function getMaxRowCount(state: Object) {
-    let configuredMax;
-    const { aspectRatio } = state['features/base/responsive-ui'];
-
-    if (browser.isReactNative()) {
-        configuredMax = aspectRatio === ASPECT_RATIO_NARROW ? 3 : 2;
-    } else {
-        configuredMax = interfaceConfig.TILE_VIEW_MAX_COLUMNS || DEFAULT_MAX_COLUMNS;
-    }
-
-    return configuredMax;
+    return getTileViewMaxColumns(state);
 }
 
 /**

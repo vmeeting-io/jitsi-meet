@@ -20,7 +20,7 @@ type Props = {
 const useStyles = makeStyles(theme => {
     return {
         button: {
-            marginRight: `${theme.spacing(2)}px`
+            // marginRight: `${theme.spacing(2)}px`
         }
     };
 });

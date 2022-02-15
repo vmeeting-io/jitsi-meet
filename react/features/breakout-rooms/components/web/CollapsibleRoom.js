@@ -62,7 +62,8 @@ const useStyles = makeStyles(theme => {
             whiteSpace: 'nowrap',
             ...theme.typography.labelButton,
             lineHeight: `${theme.typography.labelButton.lineHeight}px`,
-            padding: '12px 0'
+            padding: '12px 0',
+            color: theme.palette.support01
         },
 
         arrowContainer: {

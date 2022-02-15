@@ -17,6 +17,7 @@ import PinnedPane from './PinnedPane';
 import ParticipantsPane from './ParticipantsPane';
 import TileViewMaxColumnsSettings from './TileViewMaxColumnsSettings';
 import { getAuthUrl } from '../../../../../api/url';
+import { getTileViewMaxColumns } from '../../..';
 
 const styles = theme => {
     return {
@@ -82,7 +83,10 @@ class TileViewSettingsDialog extends AbstractTileViewSettingsDialog {
     _onChangeTileViewMaxColumns: (value: Number) => void;
 
     _onChangeTileViewMaxColumns(value) {
-        this.setState({ tileViewMaxColumns: value });
+        this.setState({
+            pinned: this.state.pinned.slice(0, value * value),
+            tileViewMaxColumns: value
+        });
     }
 
     _onMoveItem: () => void
@@ -192,7 +196,7 @@ function mapStateToProps(state) {
         _pinnedTiles: getPinnedTiles(state),
         _remote: state['features/base/participants'].sortedRemoteParticipants,
         _roomInfo: state['features/base/conference']?.roomInfo,
-        _tileViewMaxColumns: state['features/settings'].tileViewMaxColumns || interfaceConfig.TILE_VIEW_MAX_COLUMNS
+        _tileViewMaxColumns: getTileViewMaxColumns(state)
     };
 }
 

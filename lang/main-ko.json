@@ -840,6 +840,7 @@
             "pollModeration": "투표 생성",
             "videoModeration": "카메라 켜기",
             "screenShareModeration": "화면 공유",
+            "breakoutModeration": "소회의실 입장",
             "startModeration": "마이크 또는 카메라 켜기",
             "startRandomSelection": "랜덤 지목",
             "startTimerLabel": "타이머",

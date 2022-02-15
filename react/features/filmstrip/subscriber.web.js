@@ -6,6 +6,7 @@ import { StateListenerRegistry, equals } from '../base/redux';
 import { clientResized } from '../base/responsive-ui';
 import { setFilmstripVisible } from '../filmstrip/actions';
 import { getParticipantsPaneOpen } from '../participants-pane/functions';
+import { getTileViewMaxColumns } from '../settings';
 import { setOverflowDrawer } from '../toolbox/actions.web';
 import { getCurrentLayout, getTileViewGridDimensions, shouldDisplayTileView, LAYOUTS } from '../video-layout';
 
@@ -61,6 +62,18 @@ StateListenerRegistry.register(
         case LAYOUTS.VERTICAL_FILMSTRIP_VIEW:
             store.dispatch(setVerticalViewDimensions());
             break;
+        }
+    });
+
+/**
+ * Listens for changes in the selected layout to calculate the dimensions of the tile view grid and horizontal view.
+ */
+StateListenerRegistry.register(
+    /* selector */ state => getTileViewMaxColumns(state),
+    /* listener */ (_, store) => {
+        const state = store.getState();
+        if (getCurrentLayout(state) === LAYOUTS.TILE_VIEW) {
+            store.dispatch(setTileViewDimensions(getTileViewGridDimensions(state)));
         }
     });
 

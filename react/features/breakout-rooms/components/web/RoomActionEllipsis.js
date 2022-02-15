@@ -15,9 +15,10 @@ type Props = {
     onClick: Function
 }
 
-const useStyles = makeStyles(() => {
+const useStyles = makeStyles(theme => {
     return {
         button: {
+            marginLeft: `${theme.spacing(2)}px`,
             padding: '6px'
         }
     };

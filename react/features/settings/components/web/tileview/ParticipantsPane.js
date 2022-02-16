@@ -40,6 +40,10 @@ const useStyles = makeStyles(theme => {
                 backgroundColor: theme.palette.action02Hover,
             }
         },
+        list: {
+            overflowY: 'auto',
+            maxHeight: 'calc(400px - 40px)'
+        }
     };
 });
 
@@ -95,11 +99,13 @@ function ParticipantsPane({
                 )}
             </dt>
             <Separator />
-            <ParticipantItem
-                isChecked = { isPinned(_local.id) }
-                onChange = { onChange(_local.id) }
-                participant = { _local } />
-            {items}
+            <div className = { styles.list }>
+                <ParticipantItem
+                    isChecked = { isPinned(_local.id) }
+                    onChange = { onChange(_local.id) }
+                    participant = { _local } />
+                {items}
+            </div>
         </dl>
     )
 }

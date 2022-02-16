@@ -124,12 +124,12 @@ class TileViewSettingsDialog extends AbstractTileViewSettingsDialog {
     _onPinParticipant: (id: string) => Function;
 
     _onPinParticipant(id) {
-        const { _tileViewMaxColumns } = this.props;
+        const { tileViewMaxColumns } = this.state;
 
         return e => {
             if (e.target.checked) {
-                if (this.state.pinned.length === (_tileViewMaxColumns * _tileViewMaxColumns)) {
-                    console.error('Participants can pin up to', _tileViewMaxColumns * _tileViewMaxColumns);
+                if (this.state.pinned.length === (tileViewMaxColumns * tileViewMaxColumns)) {
+                    console.error('Participants can pin up to', tileViewMaxColumns * tileViewMaxColumns);
                 } else {
                     this.setState({
                         pinned: [...this.state.pinned, id]

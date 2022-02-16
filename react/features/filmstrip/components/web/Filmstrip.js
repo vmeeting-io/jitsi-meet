@@ -331,6 +331,33 @@ class Filmstrip extends PureComponent <Props> {
         );
     }
 
+    /**
+     * Calculates the start and stop indices based on whether the thumbnails need to be reordered in the filmstrip.
+     *
+     * @param {number} startIndex - The start index.
+     * @param {number} stopIndex - The stop index.
+     * @returns {Object}
+     */
+    _calculateIndices(startIndex, stopIndex) {
+        const { _currentLayout, _iAmRecorder, _pinnedTiles, _thumbnailsReordered } = this.props;
+        let start = startIndex;
+        let stop = stopIndex;
+
+        if (_pinnedTiles.length == 0 && _thumbnailsReordered) {
+            // In tile view, the indices needs to be offset by 1 because the first thumbnail is that of the local
+            // endpoint. The remote participants start from index 1.
+            if (!_iAmRecorder && _currentLayout === LAYOUTS.TILE_VIEW) {
+                start = Math.max(startIndex - 1, 0);
+                stop = stopIndex - 1;
+            }
+        }
+
+        return {
+            startIndex: start,
+            stopIndex: stop
+        };
+    }
+
     _onTabIn: () => void;
 
     /**
@@ -401,8 +428,9 @@ class Filmstrip extends PureComponent <Props> {
      */
     _onListItemsRendered({ visibleStartIndex, visibleStopIndex }) {
         const { dispatch } = this.props;
+        const { startIndex, stopIndex } = this._calculateIndices(visibleStartIndex, visibleStopIndex);
 
-        dispatch(setVisibleRemoteParticipants(visibleStartIndex, visibleStopIndex));
+        dispatch(setVisibleRemoteParticipants(startIndex, stopIndex));
     }
 
     _onGridItemsRendered: Object => void;
@@ -422,8 +450,9 @@ class Filmstrip extends PureComponent <Props> {
         const { _columns, dispatch } = this.props;
         const start = (visibleRowStartIndex * _columns) + visibleColumnStartIndex;
         const stop = (visibleRowStopIndex * _columns) + visibleColumnStopIndex;
+        const { startIndex, stopIndex } = this._calculateIndices(start, stop);
 
-        dispatch(setVisibleRemoteParticipants(start, stop));
+        dispatch(setVisibleRemoteParticipants(startIndex, stopIndex));
     }
 
     /**
@@ -683,7 +712,7 @@ function _mapStateToProps(state) {
         if (localIndex >= pinnedTiles.length) {
             newRemoteParticipants.push(localParticipantId);
         }
-        newRemoteParticipants.push(...difference(remoteParticipants));
+        newRemoteParticipants.push(...difference(remoteParticipants, pinnedTiles));
         remoteParticipants = newRemoteParticipants;
         break;
     case LAYOUTS.VERTICAL_FILMSTRIP_VIEW: {

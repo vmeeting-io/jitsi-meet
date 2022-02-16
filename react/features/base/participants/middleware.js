@@ -787,7 +787,7 @@ StateListenerRegistry.register(
                 const { pinned_tiles, tileview_max_columns } = payload;
                 const { pinnedTiles } = store.getState()['features/base/participants'];
                 const { tileViewMaxColumns } = store.getState()['features/settings'];
-                if (pinned_tiles.length && !isEqual(pinned_tiles, pinnedTiles)) {
+                if (!isEqual(pinned_tiles, pinnedTiles)) {
                     // console.log('setPinnedTiles:', pinned_tiles);
                     store.dispatch(setPinnedTiles(pinned_tiles));
                 }

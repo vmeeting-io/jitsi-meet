@@ -1,8 +1,6 @@
 // @flow
 
-import { getLocalVideoTrack } from '../../features/base/tracks';
-
-
+import { getLocalVideoTrack } from '../base/tracks';
 import { SET_SCREENSHOT_CAPTURE } from './actionTypes';
 import { createScreenshotCaptureSummary } from './functions';
 import logger from './logger';
@@ -35,7 +33,7 @@ export function toggleScreenshotCaptureSummary(enabled: boolean) {
     return async function(dispatch: (Object) => Object, getState: () => any) {
         const state = getState();
 
-        if (state['features/screenshot-capture'].capturesEnabled !== enabled) {
+        if (Boolean(state['features/screenshot-capture'].capturesEnabled) !== enabled) {
             const { jitsiTrack } = getLocalVideoTrack(state['features/base/tracks']);
 
             if (!screenshotSummary) {

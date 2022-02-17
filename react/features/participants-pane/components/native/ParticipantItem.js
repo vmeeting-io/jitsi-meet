@@ -28,6 +28,11 @@ type Props = {
      * The name of the participant. Used for showing lobby names.
      */
     displayName: string,
+    
+    /**
+     * Flag to identify it participant is a moderator.
+     */
+    isModerator: boolean,
 
     /**
      * Is the participant waiting?
@@ -61,6 +66,18 @@ type Props = {
 }
 
 /**
+ * 
+ * Truncate the string greater than certain text size.
+ * 
+ * @param {String} text String text to be truncated. 
+ * @param {Integer} max Maximum length of the string
+ * @returns 
+ */
+function shortName(text, max){
+    return text.length > max ? text.substring(0,max-3) + "...": text;  
+}
+
+/**
  * Participant item.
  *
  * @returns {React$Element<any>}
@@ -68,6 +85,7 @@ type Props = {
 function ParticipantItem({
     children,
     displayName,
+    isModerator,
     isKnockingParticipant,
     local,
     onPress,
@@ -78,6 +96,7 @@ function ParticipantItem({
 }: Props) {
 
     const { t } = useTranslation();
+    const shortDisplayName = shortName(displayName,18);
 
     return (
         <View style = { styles.participantContainer } >
@@ -91,8 +110,17 @@ function ParticipantItem({
                 <Text
                     numberOfLines = { 2 }
                     style = { styles.participantName }>
-                    { local ? `${displayName} (${t('me')})` : displayName }
+                    { local ? `${shortDisplayName} (${t('me')})` : shortDisplayName }
+                    { isModerator &&<Text 
+                        style = { styles.participantIsModerator }>
+                        {`\nModerator`}
+                    </Text> }
                 </Text>
+                {/* <Text
+                    numberOfLines = { 1 }
+                    style = { styles.participantIsModerator }>
+                    { isModerator ? "(Moderator)" : "" }
+                </Text> */}
                 {
                     !isKnockingParticipant
                     && <>

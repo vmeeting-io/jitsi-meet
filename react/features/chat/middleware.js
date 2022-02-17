@@ -253,7 +253,13 @@ function _addChatMsgListener(conference, store) {
                     batch(() => {
                         store.dispatch(setToolboxVisible(true));
                         store.dispatch(setToolboxTimeout(
-                                () => store.dispatch(hideToolbox()),
+                                () => {
+                                    if (typeof navigator != 'undefined' && navigator.product == 'ReactNative') {
+                                        console.log("TODO: Handle the following on reactnative.")
+                                    }else{
+                                        store.dispatch(hideToolbox()); // Only Executed on web.
+                                    }
+                                },
                                 5000)
                         );
                         store.dispatch(pushReactions(eventData.reactions));

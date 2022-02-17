@@ -5,7 +5,8 @@ import React from 'react';
 import { translate } from '../../../base/i18n';
 import {
     getParticipantByIdOrUndefined,
-    getParticipantDisplayName
+    getParticipantDisplayName,
+    PARTICIPANT_ROLE
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import {
@@ -71,6 +72,7 @@ type Props = {
 function MeetingParticipantItem({
     _audioMediaState,
     _displayName,
+    _isModerator,
     _isVideoMuted,
     _local,
     _participantID,
@@ -82,6 +84,7 @@ function MeetingParticipantItem({
             audioMediaState = { _audioMediaState }
             displayName = { _displayName }
             isKnockingParticipant = { false }
+            isModerator = {_isModerator}
             local = { _local }
             onPress = { onPress }
             participantID = { _participantID }
@@ -106,11 +109,15 @@ function mapStateToProps(state, ownProps): Object {
     const audioMediaState = getParticipantAudioMediaState(
         participant, _isAudioMuted, state
     );
-
+    
+    const _isModerator
+        = participant && participant.role === PARTICIPANT_ROLE.MODERATOR ? true: false;
+    
     return {
         _audioMediaState: audioMediaState,
         _displayName: getParticipantDisplayName(state, participant?.id),
         _isAudioMuted,
+        _isModerator: _isModerator,
         _isVideoMuted: isVideoMuted,
         _local: Boolean(participant?.local),
         _participantID: participant?.id,

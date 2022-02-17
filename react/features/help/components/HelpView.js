@@ -6,8 +6,9 @@ import WebView from 'react-native-webview';
 import { JitsiModal } from '../../base/modal';
 import { connect } from '../../base/redux';
 import { HELP_VIEW_MODAL_ID } from '../constants';
+import { getHelpLink } from './functions';
 
-const DEFAULT_HELP_CENTRE_URL = 'https://vmeeting.io/auth/page/features';
+let DEFAULT_HELP_CENTRE_URL = "";
 
 type Props = {
 
@@ -28,6 +29,7 @@ class HelpView extends PureComponent<Props> {
      * @returns {ReactElement}
      */
     render() {
+        DEFAULT_HELP_CENTRE_URL = getHelpLink();
         return (
             <JitsiModal
                 headerProps = {{

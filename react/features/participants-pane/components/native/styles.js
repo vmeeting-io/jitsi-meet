@@ -152,6 +152,11 @@ export default {
         textOverflow: 'ellipsis'
     },
 
+    participantIsModerator: {
+        color: '#858585',
+        opacity: 1
+    },
+
     participantsPane: {
         backgroundColor: BaseTheme.palette.ui01
     },

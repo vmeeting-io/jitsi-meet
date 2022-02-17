@@ -1,7 +1,7 @@
 // @flow
 
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, Image,Linking,TouchableHighlight} from 'react-native';
 
 import { Avatar } from '../../../base/avatar';
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
@@ -13,6 +13,9 @@ import { MESSAGE_TYPE_ERROR, MESSAGE_TYPE_LOCAL } from '../../constants';
 import { replaceNonUnicodeEmojis } from '../../functions';
 import AbstractChatMessage, { type Props as AbstractProps } from '../AbstractChatMessage';
 import PrivateMessageButton from '../PrivateMessageButton';
+import { Icon, IconDocDOC, IconDocHTML, IconDocHWP, IconDocJPEG, IconDocMP3, IconDocMP4, IconDocPDF, IconDocXLS, IconDocZIP, IconDocGENERAL} from '../../../base/icons';
+import { getBaseUrl, getFileSize, processFileSize, validURL} from '../../../base/util';
+import { getServerURL } from '../../../base/settings';
 
 import styles from './styles';
 
@@ -34,9 +37,10 @@ class ChatMessage extends AbstractChatMessage<Props> {
      * @inheritdoc
      */
     render() {
-        const { _styles, message } = this.props;
+        const { _styles, message, _serverURL } = this.props;
         const localMessage = message.messageType === MESSAGE_TYPE_LOCAL;
         const { privateMessage } = message;
+        const serverURL = _serverURL;
 
         // Style arrays that need to be updated in various scenarios, such as
         // error messages or others.
@@ -78,9 +82,9 @@ class ChatMessage extends AbstractChatMessage<Props> {
                     <View style = { messageBubbleStyle }>
                         <View style = { styles.textWrapper } >
                             { this._renderDisplayName() }
-                            <Linkify linkStyle = { styles.chatLink }>
-                                { replaceNonUnicodeEmojis(this._getMessageText()) }
-                            </Linkify>
+                            
+                            { this._renderFileMessage(serverURL) }
+                               
                             { this._renderPrivateNotice() }
                         </View>
                         { this._renderPrivateReplyButton() }
@@ -89,6 +93,131 @@ class ChatMessage extends AbstractChatMessage<Props> {
                 </View>
             </View>
         );
+    }
+
+    _truncateDateTimeStamp(filename){
+        // Remove datetime stamp appended at the end of the file.
+        const x = filename.lastIndexOf('_')
+        const y = filename.lastIndexOf('.')
+        return filename.substring(0,x) + filename.substring(y,filename.length);
+    }
+    _getShortName(filename){
+        const len = filename.length;
+        if(len>25){
+            return filename.substring(0,16) + "..." + filename.substring(len-8,len);
+        }
+        return filename;
+    }
+
+    _renderFileMessage(serverURL){    
+        let msg = this._getMessageText();  
+        let iconToDisplay = null;
+        let filename = null;
+        let processedSize = null;
+        // msg = decodeURIComponent(msg);
+        let image = false;
+
+        if(typeof msg === 'string' && msg.startsWith(serverURL)) {
+            const filelink = msg;
+            filename = filelink.split('/').pop(); // use pop to fetch the last element contained in the array after using split
+            filename = decodeURIComponent(filename);
+            
+            filename = this._truncateDateTimeStamp(filename);
+            filename = this._getShortName(filename);
+
+            processedSize = processFileSize((Math.random() * (900024 - 1) + 1).toFixed(4));//TODO: Dummy file size for UI only.
+            if((filename !== undefined) && (filename !== '')) {
+
+                // const processedSize = processFileSize(size); // TODO-: Filesize
+
+                // poetic way to check whether the file extension types
+                if(/\.(jpe?g|png|gif|bmp)$/i.test(filelink)) {
+                    image=true;
+                }
+                else if(/\.(pdf)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
+                    iconToDisplay = IconDocPDF;
+                }
+                else if(/\.(html|htm)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
+                    iconToDisplay = IconDocHTML;
+                }
+                else if(/\.(hwp)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
+                    iconToDisplay = IconDocHWP;
+                }
+                else if(/\.(doc|docx|hwp)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
+                    iconToDisplay = IconDocDOC;
+                }
+                else if(/\.(xls|xlsx)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
+                    iconToDisplay = IconDocXLS;
+                }
+                else if(/\.(zip)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
+                    iconToDisplay = IconDocZIP;
+                }
+                else if(/\.(mp3)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
+                    iconToDisplay = IconDocMP3;
+                }
+                else if(/\.(mp4)$/i.test(filelink) && (filename !== undefined) && (filename !== '')) {
+                    iconToDisplay = IconDocMP4;
+                }
+                // else it is an uploaded file but we don't have corresponding icon, we use the base icon
+                else {
+                    iconToDisplay = IconDocGENERAL;
+                }
+            } 
+        }
+
+        return(
+            <View>
+            {/* If Image display preview of image. */}
+            {image && <View>
+            <TouchableHighlight
+                  onPress={() => Linking.openURL(msg)}>
+                <Image
+                    style={styles.chatmessageUploadedImage}
+                    source={{uri:msg}}
+                />    
+            </TouchableHighlight>    
+
+            </View>}
+            
+            {/* If file being sent is not an image, show as icon */}
+            {!image && <TouchableHighlight
+                  onPress={() => Linking.openURL(msg)}>
+                    <View>
+                        {/* For Text Messages */}
+                       { !iconToDisplay && <Linkify linkStyle = { styles.chatLink }>
+                            { !iconToDisplay && replaceNonUnicodeEmojis(this._getMessageText()) }  
+                        </Linkify>}
+                        
+                        { iconToDisplay && <View style={[styles.fileContainer, {
+                                flexDirection: "row"
+                                }]}>
+
+                                <View style={styles.fileIconInisdeContainer} >
+                                    { iconToDisplay && <Icon
+                                        src = { iconToDisplay }
+                                        style = { styles.fileShareIcon } /> }
+                                </View>
+                                
+                                <View style={styles.fileDetailInisdeContainer } >
+                                    <View style={{
+                                            flexDirection: "column"
+                                    }}>
+                                        <View style={styles.fileNameContainer} > 
+                                            {/* <Text style={styles.fileName}>01 FileName_File Detail Work_Place_Dummy.txt</Text> */}
+                                            {/* <Text style={styles.fileName}>01 ABC 기술이전화 사업계획서_최종버전.pdf</Text> */}
+                                            {/* <Text style={styles.fileName}>ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456.pdf</Text> */}
+                                            <Text>{filename}</Text>
+                                        </View>
+                                        <View style={ styles.fileSizeContainer } >
+                                            <Text style={ styles.fileSize }>Size : {processedSize} </Text>
+                                        </View>
+                                    </View>        
+                                </View>
+                        </View>}
+                    </View>
+                </TouchableHighlight>}
+            </View>
+        )
     }
 
     _getFormattedTimestamp: () => string;
@@ -204,7 +333,8 @@ class ChatMessage extends AbstractChatMessage<Props> {
  */
 function _mapStateToProps(state) {
     return {
-        _styles: ColorSchemeRegistry.get(state, 'Chat')
+        _styles: ColorSchemeRegistry.get(state, 'Chat'),
+        _serverURL: state['features/base/settings'].serverURL
     };
 }
 

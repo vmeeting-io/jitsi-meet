@@ -286,7 +286,7 @@ PODS:
     - React
   - react-native-netinfo (4.1.5):
     - React
-  - react-native-orientation (1.0.1):
+  - react-native-orientation (3.1.3):
     - React
   - react-native-slider (3.0.3):
     - React
@@ -402,7 +402,7 @@ DEPENDENCIES:
   - react-native-calendar-events (from `../node_modules/react-native-calendar-events`)
   - react-native-keep-awake (from `../node_modules/react-native-keep-awake`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
-  - "react-native-orientation (from `../node_modules/@dachongziy/react-native-orientation/react-native-orientation.podspec`)"
+  - react-native-orientation (from `../node_modules/react-native-orientation/react-native-orientation.podspec`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
   - react-native-video (from `../node_modules/react-native-video/react-native-video.podspec`)
@@ -489,7 +489,7 @@ EXTERNAL SOURCES:
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-orientation:
-    :path: "../node_modules/@dachongziy/react-native-orientation/react-native-orientation.podspec"
+    :path: "../node_modules/react-native-orientation/react-native-orientation.podspec"
   react-native-slider:
     :path: "../node_modules/@react-native-community/slider"
   react-native-splash-screen:
@@ -576,7 +576,7 @@ SPEC CHECKSUMS:
   react-native-calendar-events: 82dc6c915653a1a8a266e43fdbbfdb3b1022ca99
   react-native-keep-awake: afad8a51dfef9fe9655a6344771be32c8596d774
   react-native-netinfo: 0e563248a4b9a99c33ec29bd03c2d50767db22a6
-  react-native-orientation: 6277f2febb12d2dd4581fa38b308ad333bf677fe
+  react-native-orientation: f1caf84d65f1a4fd4511a18f2b924e634ad7a628
   react-native-slider: e99fc201cefe81270fc9d81714a7a0f5e566b168
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   react-native-video: 0bb76b6d6b77da3009611586c7dbf817b947f30e
@@ -601,6 +601,6 @@ SPEC CHECKSUMS:
   RNWatch: a5320c959c75e72845c07985f3e935e58998f1d3
   Yoga: 96b469c5e81ff51b917b92e8c3390642d4ded30c
 
-PODFILE CHECKSUM: 5242c6deffd76036a44213b74ce57312f98a2970
+PODFILE CHECKSUM: 959a703e9b2f473904b9750a895361fd97c13632
 
-COCOAPODS: 1.11.0
+COCOAPODS: 1.11.2

@@ -4,7 +4,7 @@
 import { StyleSheet, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import DeviceInfo from 'react-native-device-info';
-import Orientation from '@dachongziy/react-native-orientation';
+import Orientation from 'react-native-orientation';
 import { WebView } from 'react-native-webview';
 import { useSelector, useStore } from 'react-redux';
 

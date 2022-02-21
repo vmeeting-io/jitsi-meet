@@ -47,7 +47,7 @@ export default class AbstractTileViewSettingsDialog
      */
     _onSubmit(data) {
         batch(() => {
-            this.props.dispatch(pinTiles(data.pinned));
+            this.props.dispatch(pinTiles(data.selected));
             this.props.dispatch(setTileViewMaxColumns(data.tileViewMaxColumns));
         });
 
@@ -56,7 +56,7 @@ export default class AbstractTileViewSettingsDialog
         };
         const { _apiBase, _roomInfo } = this.props;
         axios.patch(`${_apiBase}/conferences/${_roomInfo._id}`, {
-            pinned_tiles: data.pinned,
+            pinned_tiles: data.selected,
             tileview_max_columns: data.tileViewMaxColumns
         }, reqConfig);
     

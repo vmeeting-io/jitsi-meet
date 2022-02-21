@@ -140,6 +140,8 @@ function _setRoom({ dispatch, getState }, next, action) {
             const newURL = new URL(locationURL.toString());
             newURL.pathname = pathname[0] !== '/' ? `/${pathname}` : pathname;
 
+            // remove search
+            newURL.search = '';
             dispatch(_storeCurrentConference(newURL));
 
             // Whatever domain the feature recent-list knows about, the app as a

@@ -1,7 +1,7 @@
 import Button from '@atlaskit/button/standard-button';
 import { Checkbox } from '@atlaskit/checkbox';
 import { makeStyles } from '@material-ui/core/styles';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -14,8 +14,6 @@ const useStyles = makeStyles(theme => {
             width: '240px',
             padding: '0 0 0 16px',
             margin: 0,
-            overflowY: 'auto',
-            flexGrow: 1,
 
             '& dt': {
                 display: 'flex',
@@ -43,7 +41,7 @@ const useStyles = makeStyles(theme => {
         },
         list: {
             overflowY: 'auto',
-            maxHeight: 'calc(400px - 170px)'
+            maxHeight: 'calc(400px - 40px)'
         }
     };
 });
@@ -65,11 +63,10 @@ function ParticipantItem({
     );
 }
 
-function ParticipantsPane({
-    isPinned,
+function ParticipantList({
     onChange,
-    onReset,
-    pinnedCount
+    onSelect,
+    selected
 }) {
     const styles = useStyles();
     const { t } = useTranslation();
@@ -77,19 +74,22 @@ function ParticipantsPane({
     const _remote = useSelector(state => state['features/base/participants'].sortedRemoteParticipants);
     const items = [];
 
+    const isPinned = useCallback(id => selected.indexOf(id) >= 0, [selected]);
+    const onReset = useCallback(() => onChange([]), []);
+
     for (const [id, participant] of _remote) {
         items.push(<ParticipantItem
             isChecked = { isPinned(id) }
             key = { id }
-            onChange = { onChange(id) }
+            onChange = { onSelect(id) }
             participant = { participant } />);
     }
 
     return (
         <dl className = { styles.container }>
             <dt>
-                <span>{`${t('toolbar.participants')} (${pinnedCount})`}</span>
-                { onReset && (
+                <span>{`${t('toolbar.participants')} (${selected?.length}/${_remote.size + 1})`}</span>
+                { selected?.length > 0 && (
                     <Button
                         appearance = 'subtle'
                         onClick = { onReset }
@@ -103,7 +103,8 @@ function ParticipantsPane({
             <div className = { styles.list }>
                 <ParticipantItem
                     isChecked = { isPinned(_local.id) }
-                    onChange = { onChange(_local.id) }
+                    key = { _local.id }
+                    onChange = { onSelect(_local.id) }
                     participant = { _local } />
                 {items}
             </div>
@@ -111,4 +112,4 @@ function ParticipantsPane({
     )
 }
 
-export default ParticipantsPane;
+export default ParticipantList;

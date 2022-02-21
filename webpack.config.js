@@ -3,7 +3,6 @@
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const dotenv = require('dotenv');
 const fs = require('fs');
-const path = require('path');
 const { join } = require('path');
 const process = require('process');
 const webpack = require('webpack');

@@ -331,6 +331,13 @@ export function redirectWithStoredParams(pathname: string) {
         const newLocationURL = new URL(locationURL.href);
 
         newLocationURL.pathname = pathname;
+
+        if (newLocationURL.search) {
+            let search = qs.parse(newLocationURL.search);
+            delete search.token;
+            newLocationURL.search = `?${qs.stringify(search)}`;
+        }
+
         window.location.assign(newLocationURL.toString());
     };
 }

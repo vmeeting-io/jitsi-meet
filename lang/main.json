@@ -1066,6 +1066,10 @@
         "talkWhileMuted": "Talk while muted",
         "tile": "Tile ({{column}}x{{column}})",
         "tileDescription": "Maximum tiles to display, depending on window size. Selection is not saved for future meetings.",
+        "tileViewLayout": "Tile view layout",
+        "tileViewMaxNumber": "Tile view max number",
+        "tileViewPinned": "Pin participants",
+        "tileViewPinnedDescription": "Pin participants from the participant list and drag the pinned item for reordering",
         "title": "Settings",
         "turnOffAIAttentionAnalysis": "Do Not Use",
         "turnOnAIAttentionAnalysis": "Use"

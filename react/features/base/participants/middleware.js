@@ -784,9 +784,12 @@ StateListenerRegistry.register(
             const { type, ...payload } = data;
             switch (type) {
             case 'features/settings/tileview': {
-                const { pinned_tiles, tileview_max_columns } = payload;
-                const { pinnedTiles } = store.getState()['features/base/participants'];
+                let { pinned_tiles, tileview_max_columns } = payload;
+                const { pinnedTiles, remote, local } = store.getState()['features/base/participants'];
                 const { tileViewMaxColumns } = store.getState()['features/settings'];
+                if (pinned_tiles?.length) {
+                    pinned_tiles = pinned_tiles.filter(id => id == local.id || remote.has(id));
+                }
                 if (!isEqual(pinned_tiles, pinnedTiles)) {
                     // console.log('setPinnedTiles:', pinned_tiles);
                     store.dispatch(setPinnedTiles(pinned_tiles));

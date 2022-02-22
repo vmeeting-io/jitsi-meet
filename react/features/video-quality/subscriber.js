@@ -203,6 +203,7 @@ function _updateReceiverVideoConstraints({ getState }) {
         visibleParticipantsEndIndex: endIndex
     } = state['features/filmstrip'];
     const { pinnedTiles } = state['features/base/participants'];
+    const { iAmRecorder } = state['features/base/config'];
     const tracks = state['features/base/tracks'];
     const sourceNameSignaling = getSourceNameSignalingFeatureFlag(state);
     const localParticipantId = getLocalParticipant(state).id;
@@ -281,15 +282,19 @@ function _updateReceiverVideoConstraints({ getState }) {
                 return;
             }
 
-            if (pinnedTiles.length > 0) {
-                remoteParticipants = difference(remoteParticipants, pinnedTiles);
-
-                visibleRemoteParticipants = [...pinnedTiles, ...remoteParticipants]
-                    .slice(startIndex, endIndex + 1)
-                    .filter(id => id !== localParticipantId);
-
-                visibleRemoteParticipants = new Set(visibleRemoteParticipants);
+            remoteParticipants = difference(remoteParticipants, pinnedTiles);
+            visibleRemoteParticipants = [...pinnedTiles, ...remoteParticipants]
+                .slice(0, endIndex + 1);
+            if (!iAmRecorder && !pinnedTiles.includes(localParticipantId)) {
+                visibleRemoteParticipants = visibleRemoteParticipants.slice(Math.max(startIndex-1, 0), endIndex);
+            } else {
+                visibleRemoteParticipants = visibleRemoteParticipants.slice(startIndex, endIndex + 1);
             }
+
+            visibleRemoteParticipants = visibleRemoteParticipants
+                .filter(id => id !== localParticipantId);
+
+            visibleRemoteParticipants = new Set(visibleRemoteParticipants);
 
             visibleRemoteParticipants.forEach(participantId => {
                 receiverConstraints.constraints[participantId] = { 'maxHeight': maxFrameHeight };
@@ -317,7 +322,7 @@ function _updateReceiverVideoConstraints({ getState }) {
         }
     }
 
-    // logger.debug(`Setting receiver video constraints to ${JSON.stringify(receiverConstraints)}`);
+    logger.debug(`Setting receiver video constraints to ${JSON.stringify(receiverConstraints)}`);
     try {
         conference.setReceiverConstraints(receiverConstraints);
     } catch (error) {

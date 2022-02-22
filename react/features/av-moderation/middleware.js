@@ -209,20 +209,16 @@ StateListenerRegistry.register(
                 // Audio & video moderation are both enabled at the same time.
                 // Avoid displaying 2 different notifications.
                 if (kind === MEDIA_TYPE.AUDIO) {
+                    dispatch(muteLocal(false, kind));
                     dispatch(showNotification({
                         titleKey: 'notify.hostAskedUnmute',
-                        sticky: true,
-                        customActionNameKey: [ 'notify.unmute' ],
-                        customActionHandler: [ () => dispatch(muteLocal(false, kind)) ]
-                    }, NOTIFICATION_TIMEOUT_TYPE.STICKY));
+                    }, NOTIFICATION_TIMEOUT_TYPE.LONG));
                     dispatch(playSound(ASKED_TO_UNMUTE_SOUND_ID));
                 } else if (kind === MEDIA_TYPE.VIDEO) {
+                    dispatch(muteLocal(false, kind));
                     dispatch(showNotification({
                         titleKey: 'notify.unmuteVideoByHost',
-                        sticky: true,
-                        customActionNameKey: [ 'notify.unmuteVideo' ],
-                        customActionHandler: [ () => dispatch(muteLocal(false, kind)) ]
-                    }, NOTIFICATION_TIMEOUT_TYPE.STICKY));
+                    }, NOTIFICATION_TIMEOUT_TYPE.LONG));
                     dispatch(playSound(ASKED_TO_UNMUTE_SOUND_ID));
                 } else if (kind === MEDIA_TYPE.PRESENTER) {
                     dispatch(showNotification({

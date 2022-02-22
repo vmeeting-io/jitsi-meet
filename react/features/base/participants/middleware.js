@@ -799,8 +799,11 @@ StateListenerRegistry.register(
             const { type, ...payload } = data;
             switch (type) {
             case 'features/base/participants/pinned_tiles': {
-                const { pinned_tiles } = payload;
-                const { pinnedTiles } = store.getState()['features/base/participants'];
+                let { pinned_tiles } = payload;
+                const { pinnedTiles, remote, local } = store.getState()['features/base/participants'];
+                if (pinned_tiles?.length) {
+                    pinned_tiles = pinned_tiles.filter(id => id == local.id || remote.has(id));
+                }
                 if (!isEqual(pinned_tiles, pinnedTiles)) {
                     // console.log('setPinnedTiles:', pinned_tiles);
                     store.dispatch(setPinnedTiles(pinned_tiles));

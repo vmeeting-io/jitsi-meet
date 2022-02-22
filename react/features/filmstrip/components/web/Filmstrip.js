@@ -342,14 +342,14 @@ class Filmstrip extends PureComponent <Props> {
         let start = startIndex;
         let stop = stopIndex;
 
-        if (_pinnedTiles.length == 0 && _thumbnailsReordered) {
-            // In tile view, the indices needs to be offset by 1 because the first thumbnail is that of the local
-            // endpoint. The remote participants start from index 1.
-            if (!_iAmRecorder && _currentLayout === LAYOUTS.TILE_VIEW) {
-                start = Math.max(startIndex - 1, 0);
-                stop = stopIndex - 1;
-            }
-        }
+        // if (_pinnedTiles.length == 0 && _thumbnailsReordered) {
+        //     // In tile view, the indices needs to be offset by 1 because the first thumbnail is that of the local
+        //     // endpoint. The remote participants start from index 1.
+        //     if (!_iAmRecorder && _currentLayout === LAYOUTS.TILE_VIEW) {
+        //         start = Math.max(startIndex - 1, 0);
+        //         stop = stopIndex - 1;
+        //     }
+        // }
 
         return {
             startIndex: start,

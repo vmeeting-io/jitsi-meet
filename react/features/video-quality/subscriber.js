@@ -285,7 +285,7 @@ function _updateReceiverVideoConstraints({ getState }) {
             remoteParticipants = difference(remoteParticipants, pinnedTiles);
             visibleRemoteParticipants = [...pinnedTiles, ...remoteParticipants]
                 .slice(0, endIndex + 1);
-            if (!iAmRecorder && pinnedTiles.length === 0 && visibleRemoteParticipants.includes(localParticipantId)) {
+            if (!iAmRecorder && !pinnedTiles.includes(localParticipantId)) {
                 visibleRemoteParticipants = visibleRemoteParticipants.slice(Math.max(startIndex-1, 0), endIndex);
             } else {
                 visibleRemoteParticipants = visibleRemoteParticipants.slice(startIndex, endIndex + 1);

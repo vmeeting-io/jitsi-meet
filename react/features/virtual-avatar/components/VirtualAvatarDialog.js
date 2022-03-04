@@ -26,7 +26,7 @@ const images = [
     {
         tooltip: 'image1',
         id: '1',
-        src: 'images/virtual-avatar/cartoon_boy.png',
+        src: 'images/virtual-avatar/boy-4.jpg',
         modelUrl: 'https://cdn.jsdelivr.net/gh/tu-nv/vrm_models/boy-4.vrm'
     },
 

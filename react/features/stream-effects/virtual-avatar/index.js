@@ -22,23 +22,8 @@ export async function createVirtualAvatarEffect(virtualAvatar: Object, dispatch:
         throw new Error('JitsiStreamVirtualAvatarEffect not supported!');
     }
 
-    const config = {
-        locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic@` +
-                `${mpHolistic.VERSION}/${file}`;
-        }
-    };
+    const virtualAvatarEffect = new JitsiStreamVirtualAvatarEffect(virtualAvatar);
+    virtualAvatarEffect.loadVRM(virtualAvatar.selectedVirtualAvatarUrl);
 
-    const holistic = new mpHolistic.Holistic(config);
-
-    holistic.setOptions({
-        modelComplexity: 0,
-        smoothLandmarks: true,
-        // enableSegmentation: false,
-        refineFaceLandmarks: true,
-        minDetectionConfidence: 0.6,
-        minTrackingConfidence: 0.6
-    });
-
-    return new JitsiStreamVirtualAvatarEffect(holistic, virtualAvatar);
+    return virtualAvatarEffect;
 }

@@ -9,11 +9,13 @@ import {
 
 import * as drawingUtils from '@mediapipe/drawing_utils';
 import * as mpHolistic from '@mediapipe/holistic';
+import * as mpFacemesh from '@mediapipe/face_mesh';
 import { Face, Pose, Hand, Utils, Vector } from "kalidokit";
 import * as THREE from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { VRM, VRMUtils, VRMSchema } from "@pixiv/three-vrm";
 import { updateSettings } from '../../base/settings';
+import { getLocalVideoTrack } from '../../base/tracks';
 
 /**
  * Represents a modified MediaStream that adds effects to video background.
@@ -38,6 +40,7 @@ export default class JitsiStreamVirtualAvatarEffect {
     renderer: Object;
     orbitCamera: Object;
     scene: Object;
+    light: Object;
     clock: Object;
     animate: Function;
     rigRotation: Function;
@@ -48,18 +51,31 @@ export default class JitsiStreamVirtualAvatarEffect {
     rigRightHand: Function;
     oldLookTarget: Object;
     animateVRM: Function;
+    loadVRM: Function;
+    // count the number of services currently access the singleton object
+    // (e.g., preview and real virtual avatar)
+    usedServices: Number;
+    initHolisticModel: Function;
+    initFacemeshModel: Function;
+    isFacemesh: Boolean;
+    FaceMorphTargetNames: Array;
+    outputStream: Object;
 
     /**
      * Represents a modified video MediaStream track.
      *
      * @class
-     * @param {Object} model - Meet model.
      * @param {Object} options - Segmentation dimensions.
      */
-    constructor(model: Object, options: Object) {
-        this._options = options;
+    constructor(options: Object) {
+        // singleton
+        if (JitsiStreamVirtualAvatarEffect._instance) {
+            return JitsiStreamVirtualAvatarEffect._instance
+        }
+        JitsiStreamVirtualAvatarEffect._instance = this;
 
-        this._model = model;
+
+        this._options = options;
 
         // Bind event handler so it is only bound once for every instance.
         this._onMaskFrameTimer = this._onMaskFrameTimer.bind(this);
@@ -73,48 +89,27 @@ export default class JitsiStreamVirtualAvatarEffect {
         this.rigRightHand = this.rigRightHand.bind(this);
         this.rigLeftHand = this.rigLeftHand.bind(this);
         this.animateVRM = this.animateVRM.bind(this);
+        this.loadVRM = this.loadVRM.bind(this);
+        this.initHolisticModel = this.initHolisticModel.bind(this);
+        this.initFacemeshModel = this.initFacemeshModel.bind(this);
 
-        this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        // this.initHolisticModel();
+        this.initFacemeshModel();
+
+        this.usedServices = 0;
+
+        this.renderer = new THREE.WebGLRenderer({ alpha: false, antialias: true });
 
         // scene
         this.scene = new THREE.Scene();
         // light
-        const light = new THREE.DirectionalLight(0xffffff);
-        light.position.set(1.0, 1.0, 1.0).normalize();
-        this.scene.add(light);
+        this.light = new THREE.DirectionalLight(0xffffff);
+        this.light.position.set(1.0, 1.0, 1.0).normalize();
+
 
         this.clock = new THREE.Clock();
         this.oldLookTarget = new THREE.Euler();
 
-        // Import Character VRM
-        const loader = new GLTFLoader();
-        loader.crossOrigin = "anonymous";
-        // Import model from URL, add your own model here
-        loader.load(
-            // "https://cdn.glitch.com/29e07830-2317-4b15-a044-135e73c7f840%2FAshtra.vrm?v=1630342336981",
-            options.selectedVirtualAvatarUrl,
-            // 'https://cdn.jsdelivr.net/gh/tu-nv/vrm_models/boy-4.vrm',
-
-            gltf => {
-                VRMUtils.removeUnnecessaryJoints(gltf.scene);
-
-                VRM.from(gltf).then(vrm => {
-                    this.scene.add(vrm.scene);
-                    this.currentVrm = vrm;
-                    this.currentVrm.scene.rotation.y = Math.PI; // Rotate model 180deg to face camera
-                });
-            },
-
-            progress => {
-                if (progress.loaded == progress.total)
-                    console.log("Model loaded!")
-            },
-
-            error => console.error(error)
-        );
-
-
-        this._inputVideoElement = document.createElement('video');
         this._outputCanvasElement = document.createElement('canvas');
         this._outputCanvasElement.getContext('2d');
         this._model.onResults(this._onResults);
@@ -133,6 +128,84 @@ export default class JitsiStreamVirtualAvatarEffect {
         }
     }
 
+    initHolisticModel() {
+        this.isFacemesh = false;
+        const config = {
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic@` +
+                    `${mpHolistic.VERSION}/${file}`;
+            }
+        };
+
+        this._model = new mpHolistic.Holistic(config);
+
+        this._model.setOptions({
+            modelComplexity: 0,
+            smoothLandmarks: true,
+            // enableSegmentation: false,
+            refineFaceLandmarks: true,
+            minDetectionConfidence: 0.6,
+            minTrackingConfidence: 0.6
+        });
+
+    }
+
+    initFacemeshModel() {
+        this.isFacemesh = true;
+        this._model = new mpFacemesh.FaceMesh({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@` +
+                    `${mpFacemesh.VERSION}/${file}`;
+            }
+        });
+        this._model.setOptions({
+            maxNumFaces: 1,
+            refineLandmarks: true,
+            minDetectionConfidence: 0.6,
+            minTrackingConfidence: 0.6
+        });
+    }
+
+    loadVRM(avatarModelUrl: String) {
+        // need to clear sence first to prevent previous model to continue rendering
+        // for a short period of time
+        if (this.scene) {
+            this.scene.clear();
+        }
+
+        const loader = new GLTFLoader();
+        loader.crossOrigin = "anonymous";
+        // Import model from URL, add your own model here
+        loader.load(
+            avatarModelUrl,
+            gltf => {
+                // debugger;
+                VRMUtils.removeUnnecessaryJoints(gltf.scene);
+                VRMUtils.removeUnnecessaryVertices(gltf.scene);
+
+
+                VRM.from(gltf).then(vrm => {
+                    // FIXME: somehow we need to also clear to make sure all previous sence are cleared
+                    if (this.scene) {
+                        this.scene.clear();
+                    }
+                    this.scene.add(this.light);
+                    this.currentVrm = vrm;
+                    this.scene.add(this.currentVrm.scene);
+                    this.currentVrm.scene.rotation.y = Math.PI; // Rotate model 180deg to face camera
+
+                    this.FaceMorphTargetNames = this.scene.getObjectByName("Facebaked").geometry.userData.targetNames;
+                });
+            },
+
+            progress => {
+                if (progress.loaded == progress.total)
+                    console.log("Model loaded!")
+            },
+
+            error => console.error(error)
+        );
+    }
 
     /**
      * Loop function to render the background mask.
@@ -142,11 +215,13 @@ export default class JitsiStreamVirtualAvatarEffect {
      */
     async _inferenceLoop() {
 
-        await this._model.send({ image: this._inputVideoElement });
+        if (this.usedServices > 0 && this._inputVideoElement.readyState >= 2) {
+            await this._model.send({ image: this._inputVideoElement });
+        }
 
         this._maskFrameTimerWorker.postMessage({
             id: SET_TIMEOUT,
-            timeMs: 1000 / 50
+            timeMs: 1000 / 40
         });
     }
 
@@ -163,7 +238,7 @@ export default class JitsiStreamVirtualAvatarEffect {
     }
 
     _onResults(results) {
-        // this._drawMeshOverlay(results);
+        this._drawMeshOverlay(results);
         this.animateVRM(results);
         this.animate();
     }
@@ -211,24 +286,38 @@ export default class JitsiStreamVirtualAvatarEffect {
 
     rigFace(riggedFace){
         if (!this.currentVrm) { return }
+        // console.log(riggedFace.mouth);
 
-        // console.log(riggedFace);
+        // debugger;
+
         const lerp = Vector.lerp;
-        const clamp = Utils.clamp;
 
-        this.rigRotation("Neck", riggedFace.head, 0.7);
+        const headMirror = {
+            x: riggedFace.head.x,
+            y: -riggedFace.head.y,
+            z: -riggedFace.head.z,
+        }
+
+        this.rigRotation("Neck", headMirror, 0.7);
+        // console.log(headMirror);
+
+        if (this.isFacemesh === true) {
+            this.rigRotation("Chest", headMirror, 0.15, .3);
+            this.rigRotation("Spine", headMirror, 0.25, .3);
+        }
 
         // Blendshapes and Preset Name Schema
         const Blendshape = this.currentVrm.blendShapeProxy;
+        // debugger;
         const PresetName = VRMSchema.BlendShapePresetName;
 
         // Simple example without winking. Interpolate based on old blendshape, then stabilize blink with `Kalidokit` helper function.
         // for VRM, 1 is closed, 0 is open.
-        riggedFace.eye.l = lerp(1 - riggedFace.eye.l, Blendshape.getValue(PresetName.BlinkL), .5)
-        riggedFace.eye.r = lerp(1 - riggedFace.eye.r, Blendshape.getValue(PresetName.BlinkR), .5)
-        // riggedFace.eye = Face.stabilizeBlink(riggedFace.eye, riggedFace.head.y)
-        Blendshape.setValue(PresetName.BlinkL, riggedFace.eye.l);
-        Blendshape.setValue(PresetName.BlinkR, riggedFace.eye.r);
+        riggedFace.eye.l = lerp(1 - riggedFace.eye.l, Blendshape.getValue(PresetName.BlinkR), .5)
+        riggedFace.eye.r = lerp(1 - riggedFace.eye.r, Blendshape.getValue(PresetName.BlinkL), .5)
+        riggedFace.eye = Face.stabilizeBlink(riggedFace.eye, riggedFace.head.y)
+        Blendshape.setValue(PresetName.BlinkR, riggedFace.eye.l);
+        Blendshape.setValue(PresetName.BlinkL, riggedFace.eye.r);
 
         // Interpolate and set mouth blendshapes
         Blendshape.setValue(PresetName.I, lerp(riggedFace.mouth.shape.I, Blendshape.getValue(PresetName.I), .5));
@@ -237,35 +326,35 @@ export default class JitsiStreamVirtualAvatarEffect {
         Blendshape.setValue(PresetName.O, lerp(riggedFace.mouth.shape.O, Blendshape.getValue(PresetName.O), .5));
         Blendshape.setValue(PresetName.U, lerp(riggedFace.mouth.shape.U, Blendshape.getValue(PresetName.U), .5));
 
-        // Blendshape.setValue(PresetName.U, 1);
-        // Blendshape.setValue(PresetName.Angry, lerp(riggedFace.mouth.shape.U, Blendshape.getValue(PresetName.U), .5));
+        Blendshape.setValue(PresetName.Joy, lerp(riggedFace.mouth.shape.Joy, Blendshape.getValue(PresetName.Joy), .5));
+
+
 
         //PUPILS
         //interpolate pupil and keep a copy of the value
         let lookTarget =
             new THREE.Euler(
                 lerp(this.oldLookTarget.x, riggedFace.pupil.y, .4),
-                lerp(this.oldLookTarget.y, riggedFace.pupil.x, .4),
+                lerp(this.oldLookTarget.y, -riggedFace.pupil.x, .4),
                 0,
                 "XYZ"
             )
-        this.oldLookTarget.copy(lookTarget)
+        this.oldLookTarget.copy(lookTarget);
         this.currentVrm.lookAt.applyer.lookAt(lookTarget);
     }
 
     rigPose(riggedPose){
-        // console.log(riggedPose)
         this.rigRotation("Hips", riggedPose.Hips.rotation, 0.7);
         this.rigPosition(
             "Hips",
             {
                 // x: -riggedPose.Hips.position.x, // Reverse direction
-                x: -riggedPose.Hips.position.x + 0.25, // Reverse direction
+                x: -riggedPose.Hips.position.x, // Reverse direction
                 y: riggedPose.Hips.position.y + 1, // Add a bit of height
-                z: -riggedPose.Hips.position.z // Reverse direction
+                z: -riggedPose.Hips.position.z * 2 // Reverse direction, make it more sensitive to Z distance
             },
             1,
-            0.07
+            0.1
         );
 
         this.rigRotation("Chest", riggedPose.Spine, 0.25, .3);
@@ -275,6 +364,13 @@ export default class JitsiStreamVirtualAvatarEffect {
         this.rigRotation("RightLowerArm", riggedPose.RightLowerArm, 1, .3);
         this.rigRotation("LeftUpperArm", riggedPose.LeftUpperArm, 1, .3);
         this.rigRotation("LeftLowerArm", riggedPose.LeftLowerArm, 1, .3);
+        // this.rigRotation("LeftLowerArm", {
+        //     z: riggedPose.LeftLowerArm.z,
+        //     y: riggedPose.LeftLowerArm.y,
+        //     x: riggedPose.LeftLowerArm.x,
+        //     // x: riggedLeftHand?.LeftWrist?.z || 0,
+        //     // z: riggedPose.LeftLowerArm.z
+        // }, 1, .3);
 
         this.rigRotation("LeftUpperLeg", riggedPose.LeftUpperLeg, 1, .3);
         this.rigRotation("LeftLowerLeg", riggedPose.LeftLowerLeg, 1, .3);
@@ -283,12 +379,18 @@ export default class JitsiStreamVirtualAvatarEffect {
     }
 
     rigLeftHand(riggedLeftHand, rotation){
-        // console.log(riggedLeftHand);
+        let z = Math.PI - (riggedLeftHand.LeftWrist.z + 1.4);
+        console.log(z, riggedLeftHand.LeftWrist);
         this.rigRotation("LeftHand", {
             // Combine pose rotation Z and hand rotation X Y
             z: rotation,
             y: riggedLeftHand.LeftWrist.y,
-            x: riggedLeftHand.LeftWrist.x
+            x: z,
+            // y: 0,
+            // x: (Math.round(Date.now() / 1000) % 2) * Math.PI,
+            // z: 0,
+            // y: 0,
+            // x: -1
         });
         this.rigRotation("LeftRingProximal", riggedLeftHand.LeftRingProximal);
         this.rigRotation("LeftRingIntermediate", riggedLeftHand.LeftRingIntermediate);
@@ -308,12 +410,13 @@ export default class JitsiStreamVirtualAvatarEffect {
     }
 
     rigRightHand(riggedRightHand, rotation) {
-        // console.log(riggedRightHand);
+        let z = (riggedRightHand.RightWrist.z + 1.4);
+        console.log(z, riggedRightHand.RightWrist);
         this.rigRotation("RightHand", {
             // Combine Z axis from pose hand and X/Y axis from hand wrist rotation
             z: rotation,
             y: riggedRightHand.RightWrist.y,
-            x: riggedRightHand.RightWrist.x
+            x: z
         });
 
         this.rigRotation("RightRingProximal", riggedRightHand.RightRingProximal);
@@ -340,7 +443,8 @@ export default class JitsiStreamVirtualAvatarEffect {
         // Take the results from `Holistic` and animate character based on its Face, Pose, and Hand Keypoints.
         let riggedPose, riggedLeftHand, riggedRightHand, riggedFace;
 
-        const faceLandmarks = results.faceLandmarks;
+        const faceLandmarks = (this.isFacemesh === false) ? results.faceLandmarks : results.multiFaceLandmarks[0];
+
         // Pose 3D Landmarks are with respect to Hip distance in meters
         const pose3DLandmarks = results.ea;
         // Pose 2D landmarks are with respect to videoWidth and videoHeight
@@ -357,6 +461,16 @@ export default class JitsiStreamVirtualAvatarEffect {
                 video: this._inputVideoElement
             });
             this.rigFace(riggedFace)
+        }
+
+        // from T-pose to natural rest pose
+        if (this.isFacemesh === true) {
+            this.rigRotation("RightUpperArm", { z: -1.4, y: 0, x: 0 });
+            this.rigRotation("LeftUpperArm", { z: 1.4, y: 0, x: 0 });
+            this.rigRotation("RightLowerArm", { z: -0.5, y: 0, x: 0 });
+            this.rigRotation("LeftLowerArm", { z: 0.5, y: 0, x: 0 });
+
+            this.rigPosition( "Chest", { z: 0, y: 0, x: 0 });
         }
 
         if (pose2DLandmarks && pose3DLandmarks) {
@@ -401,13 +515,15 @@ export default class JitsiStreamVirtualAvatarEffect {
             lineWidth: 2
         });
 
-        drawingUtils.drawConnectors(this._outputCanvasCtx, results.faceLandmarks, mpHolistic.FACEMESH_TESSELATION, {
+        const faceLandmarks = (this.isFacemesh === false) ? results.faceLandmarks : results.multiFaceLandmarks[0];
+
+        drawingUtils.drawConnectors(this._outputCanvasCtx, faceLandmarks, mpHolistic.FACEMESH_TESSELATION, {
             color: "#C0C0C070",
             lineWidth: 1,
         });
-        if (results.faceLandmarks && results.faceLandmarks.length === 478) {
+        if (faceLandmarks && faceLandmarks.length === 478) {
             //draw pupils
-            drawingUtils.drawLandmarks(this._outputCanvasCtx, [results.faceLandmarks[468], results.faceLandmarks[468 + 5]], {
+            drawingUtils.drawLandmarks(this._outputCanvasCtx, [faceLandmarks[468], faceLandmarks[468 + 5]], {
                 color: "#ffe603",
                 lineWidth: 2
             });
@@ -438,42 +554,54 @@ export default class JitsiStreamVirtualAvatarEffect {
      * @returns {MediaStream} - The stream with the applied effect.
      */
     startEffect(stream: MediaStream) {
-        this._stream = stream;
-        this._maskFrameTimerWorker = new Worker(timerWorkerScript, { name: 'virtual avatar effect worker' });
-        this._maskFrameTimerWorker.onmessage = this._onMaskFrameTimer;
-        const firstVideoTrack = this._stream.getVideoTracks()[0];
-        let { height, frameRate, width }
-            = firstVideoTrack.getSettings ? firstVideoTrack.getSettings() : firstVideoTrack.getConstraints();
-        width = parseInt(width, 10) / 2;
-        height = parseInt(height, 10) / 2;
-        frameRate = parseInt(frameRate, 10);
+        const width = 1280;
+        const height = 720;
+        const frameRate = 25;
 
-        this.renderer.setSize(width, height);
-        // this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.usedServices += 1;
 
-        // camera
-        this.orbitCamera = new THREE.PerspectiveCamera(35, width / height, 0.1, 1000);
-        this.orbitCamera.position.set(0.0, 1.5, 1);
+        if (! this._stream) {
+            this._stream = stream;
 
-        this._outputCanvasElement.width = width;
-        this._outputCanvasElement.height = height;
-        this._outputCanvasCtx = this._outputCanvasElement.getContext('2d');
+            this._maskFrameTimerWorker = new Worker(timerWorkerScript, { name: 'virtual avatar effect worker' });
+            this._maskFrameTimerWorker.onmessage = this._onMaskFrameTimer;
+            this._maskFrameTimerWorker.postMessage({
+                id: SET_TIMEOUT,
+                timeMs: 1000 / 40
+            });
 
-        this._inputVideoElement.width = width;
-        this._inputVideoElement.height = height;
-        this._inputVideoElement.autoplay = true;
-        this._inputVideoElement.srcObject = this._stream;
-        this._inputVideoElement.onloadeddata = () => {
-                this._maskFrameTimerWorker.postMessage({
-                        id: SET_TIMEOUT,
-                        timeMs: 1000 / 40
-                    });
-                };
+            this.renderer.setSize(width, height);
+            this.renderer.setPixelRatio(window.devicePixelRatio);
 
-        this.flipLocalVideo();
+            // camera
+            this.orbitCamera = new THREE.PerspectiveCamera(35, width / height, 0.1, 1000);
+            // this.orbitCamera.position.set(0.0, 1.5, 1);
+            this.orbitCamera.position.set(0.0, 1, 1);
 
-        return this.renderer.domElement.captureStream(frameRate);
-        // return this._outputCanvasElement.captureStream(frameRate);
+            this._outputCanvasElement.width = width;
+            this._outputCanvasElement.height = height;
+            this._outputCanvasCtx = this._outputCanvasElement.getContext('2d');
+
+            this._inputVideoElement = document.createElement('video');
+            this._inputVideoElement.width = width / 2;
+            this._inputVideoElement.height = height / 2;
+            this._inputVideoElement.autoplay = true;
+            this._inputVideoElement.srcObject = this._stream;
+
+            this.outputStream = this.renderer.domElement.captureStream(frameRate);
+            // this.outputStream = this._outputCanvasElement.captureStream(frameRate);
+
+        } else if (this._stream !== stream) {
+            // this._inputVideoElement.pause();
+            this._stream = stream;
+            this._inputVideoElement.srcObject = this._stream;
+            this._inputVideoElement.load();
+            //  this._inputVideoElement.play();
+        }
+
+
+
+        return this.outputStream;
     }
 
     /**
@@ -482,16 +610,15 @@ export default class JitsiStreamVirtualAvatarEffect {
      * @returns {void}
      */
     stopEffect() {
-        this._maskFrameTimerWorker.postMessage({
-            id: CLEAR_TIMEOUT
-        });
+        // this._maskFrameTimerWorker.postMessage({
+        //     id: CLEAR_TIMEOUT
+        // });
 
-        this._maskFrameTimerWorker.terminate();
-
-        this.flipLocalVideo();
+        // this._maskFrameTimerWorker.terminate();
+        this.usedServices -= 1;
     }
 
-    flipLocalVideo() {
+    _flipLocalVideo() {
         const { localFlipX: currentFlipX } = APP.store.getState()['features/base/settings'];
         APP.store.dispatch(updateSettings({ localFlipX: !currentFlipX }));
     }

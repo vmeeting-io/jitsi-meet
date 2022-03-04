@@ -539,10 +539,11 @@
     "virtualAvatar": {
         "apply": "Apply",
         "title": "Virtual Avatar",
-        "removeAvatar": "Remove Avatar",
+        "removeVirtualAvatar": "Remove Avatar",
         "pleaseWait": "Please wait...",
         "none": "None",
         "image1": "Cute Boy",
+        "image2": "Cute Girl",
 
         "webAssemblyWarning": "WebAssembly not supported",
         "webAssemblyWarningDescription": "WebAssembly disabled or not supported by this browser"

@@ -31,14 +31,8 @@ var config = {
         noOfFailedLoginAttemptsAllowed: 5  //no of failed login attempt allowed with captcha disabled.
     },
 
-    // enable DID Consent for flagship
-    // enableDIDConsent: true,
-
     // whether or not we want to use the birthday AR hat feature
     // enableBirthdayARHat: true,
-
-    // whether or not we want to use AI attention analysis
-    // useAIAttentionAnalysis: true, // default value is true for flagship project
 
     // Connection
     //

@@ -154,10 +154,11 @@ function getConfig(options = {}) {
                             }
                         ],
                         require.resolve('@babel/preset-flow'),
-                        require.resolve('@babel/preset-react')
+                        require.resolve('@babel/preset-typescript'),
+                        require.resolve('@babel/preset-react'),
                     ]
                 },
-                test: /\.jsx?$/
+                test: /\.(js|ts)x?$/
             }, {
                 // TODO: get rid of this.
                 // Expose jquery as the globals $ and jQuery because it is expected
@@ -267,7 +268,8 @@ function getConfig(options = {}) {
 
                 // Webpack defaults:
                 '.js',
-                '.json'
+                '.json',
+                '.ts'
             ],
             fallback: {
                 // Provide some empty Node modules (required by AtlasKit, olm).
@@ -452,6 +454,7 @@ module.exports = (_env, argv) => {
                 output: Object.assign({}, config.output, {
                     library: 'JitsiMeetJS',
                     libraryTarget: 'umd',
+                    path: join(process.cwd(), 'lib-jitsi-meet', 'dist', 'umd')
                 })
             })
         ])

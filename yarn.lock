@@ -3080,6 +3080,11 @@
   "resolved" "https://registry.npmjs.org/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz"
   "version" "1.1.0"
 
+"@zip.js/zip.js@^2.4.5":
+  "integrity" "sha512-woLBVy50a9evpFFxyZiW6Jj4BXROJlQF2dF9Wzk0ZFqhjQBJ9uS21+KQkrz54674r7Ppiy61gXnzpVie+EMkfw=="
+  "resolved" "https://registry.npmjs.org/@zip.js/zip.js/-/zip.js-2.4.5.tgz"
+  "version" "2.4.5"
+
 "abbrev@*", "abbrev@1":
   "integrity" "sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q=="
   "resolved" "https://registry.npmjs.org/abbrev/-/abbrev-1.1.1.tgz"
@@ -7760,9 +7765,10 @@
   "resolved" "https://registry.npmjs.org/jwt-decode/-/jwt-decode-2.2.0.tgz"
   "version" "2.2.0"
 
-"kalidokit@file:../kalidokit":
-  "resolved" "file:../kalidokit"
-  "version" "1.1.5"
+"kalidokit@1.1.4":
+  "integrity" "sha512-dJdapPHXIONUk8pB17d1pjawTwRemfaHj5KaPc+iwA1XQglGncDsnf699eJ00K57PeAbIRa/jEtvvE3YigKl4g=="
+  "resolved" "https://registry.npmjs.org/kalidokit/-/kalidokit-1.1.4.tgz"
+  "version" "1.1.4"
 
 "keymirror@^0.1.1":
   "integrity" "sha1-kYiJ6hP40KQufFVyUO7nE63JXDU="

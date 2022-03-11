@@ -23,7 +23,10 @@ export async function createVirtualAvatarEffect(virtualAvatar: Object, dispatch:
     }
 
     const virtualAvatarEffect = new JitsiStreamVirtualAvatarEffect(virtualAvatar);
-    virtualAvatarEffect.loadVRM(virtualAvatar.selectedVirtualAvatarUrl);
+    if (virtualAvatar.virtualAvatarType === 'image')
+        virtualAvatarEffect.loadVRM(virtualAvatar.selectedVirtualAvatarUrl);
+    else if (virtualAvatar.virtualAvatarType === 'realistic')
+        virtualAvatarEffect.loadGLB(virtualAvatar.selectedVirtualAvatarUrl);
 
     return virtualAvatarEffect;
 }

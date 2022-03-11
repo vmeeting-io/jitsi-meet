@@ -103,8 +103,9 @@ export default class JitsiStreamVirtualAvatarEffect {
         // scene
         this.scene = new THREE.Scene();
         // light
-        this.light = new THREE.DirectionalLight(0xffffff);
-        this.light.position.set(1.0, 1.0, 1.0).normalize();
+        // this.light = new THREE.DirectionalLight(0xffffff);
+        // this.light.position.set(0.0, 0.0, 1.0).normalize();
+        this.light = new THREE.AmbientLight(0xffffff, 1.5); // soft white light
 
 
         this.clock = new THREE.Clock();
@@ -207,6 +208,40 @@ export default class JitsiStreamVirtualAvatarEffect {
         );
     }
 
+    loadGLB(avatarModelUrl: Blob) {
+        // need to clear sence first to prevent previous model to continue rendering
+        // for a short period of time
+        if (this.scene) {
+            this.scene.clear();
+        }
+
+        const loader = new GLTFLoader();
+        loader.crossOrigin = "anonymous";
+        // Import model from URL, add your own model here
+        loader.load(
+            avatarModelUrl,
+            gltf => {
+                // FIXME: somehow we need to also clear to make sure all previous sence are cleared
+                if (this.scene) {
+                    this.scene.clear();
+                }
+                this.scene.add(this.light);
+                this.currentVrm = gltf;
+                console.log(gltf);
+                this.scene.add(this.currentVrm.scene);
+                // this.currentVrm.scene.rotation.y = Math.PI; // Rotate model 180deg to face camera
+
+            },
+
+            progress => {
+                if (progress.loaded == progress.total)
+                    console.log("Model loaded!")
+            },
+
+            error => console.error(error)
+        );
+    }
+
     /**
      * Loop function to render the background mask.
      *
@@ -239,7 +274,7 @@ export default class JitsiStreamVirtualAvatarEffect {
 
     _onResults(results) {
         this._drawMeshOverlay(results);
-        this.animateVRM(results);
+        // this.animateVRM(results);
         this.animate();
     }
 
@@ -437,6 +472,7 @@ export default class JitsiStreamVirtualAvatarEffect {
     }
 
     animateVRM(results){
+        return;
         if (!this.currentVrm) {
             return;
         }
@@ -495,7 +531,7 @@ export default class JitsiStreamVirtualAvatarEffect {
     animate() {
         if (this.currentVrm) {
             // Update model to render physics
-            this.currentVrm.update(this.clock.getDelta());
+            // this.currentVrm.update(this.clock.getDelta());
         }
         this.renderer.render(this.scene, this.orbitCamera);
         // console.log(this.currentVrm, "animating...");
@@ -576,7 +612,7 @@ export default class JitsiStreamVirtualAvatarEffect {
             // camera
             this.orbitCamera = new THREE.PerspectiveCamera(35, width / height, 0.1, 1000);
             // this.orbitCamera.position.set(0.0, 1.5, 1);
-            this.orbitCamera.position.set(0.0, 1, 1);
+            this.orbitCamera.position.set(0.0, 0.0, 1);
 
             this._outputCanvasElement.width = width;
             this._outputCanvasElement.height = height;

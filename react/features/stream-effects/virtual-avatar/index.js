@@ -23,7 +23,7 @@ export async function createVirtualAvatarEffect(virtualAvatar: Object, dispatch:
     }
 
     const virtualAvatarEffect = new JitsiStreamVirtualAvatarEffect(virtualAvatar);
-    virtualAvatarEffect.loadVRM(virtualAvatar.selectedVirtualAvatarUrl);
+    virtualAvatarEffect.load3DModel(virtualAvatar.selectedVirtualAvatarUrl);
 
     return virtualAvatarEffect;
 }

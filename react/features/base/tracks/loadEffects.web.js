@@ -20,24 +20,6 @@ export default function loadEffects(store: Object): Promise<any> {
     const ar = state['features/ar-effect'];
     const apiBase = getAuthUrl(state);
 
-    const arPromise = ar.arEffectEnabled
-        ? createAREffect({ ...ar, apiBase })
-            .catch(error => {
-                logger.error('Failed to obtain the background effect instance with error: ', error);
-
-                return Promise.resolve();
-            })
-        : Promise.resolve();
-
-    const backgroundPromise = virtualBackground.backgroundEffectEnabled
-        ? createVirtualBackgroundEffect({ ...virtualBackground, apiBase }, store.dispatch)
-            .catch(error => {
-                logger.error('Failed to obtain the background effect instance with error: ', error);
-
-                return Promise.resolve();
-            })
-        : Promise.resolve();
-
     const virtualAvatarPromise = virtualAvatar.virtualAvatarEffectEnabled
         ? createVirtualAvatarEffect({ ...virtualAvatar, apiBase }, store.dispatch)
             .catch(error => {
@@ -47,5 +29,25 @@ export default function loadEffects(store: Object): Promise<any> {
             })
         : Promise.resolve();
 
-    return Promise.all([ backgroundPromise, virtualAvatarPromise, arPromise ]);
+
+
+    const backgroundPromise = virtualBackground.backgroundEffectEnabled
+    ? createVirtualBackgroundEffect({ ...virtualBackground, apiBase }, store.dispatch)
+            .catch(error => {
+                logger.error('Failed to obtain the background effect instance with error: ', error);
+
+                return Promise.resolve();
+            })
+            : Promise.resolve();
+
+            const arPromise = ar.arEffectEnabled
+                ? createAREffect({ ...ar, apiBase })
+                    .catch(error => {
+                        logger.error('Failed to obtain the background effect instance with error: ', error);
+
+                        return Promise.resolve();
+                    })
+                : Promise.resolve();
+
+    return Promise.all([ virtualAvatarPromise, backgroundPromise, arPromise ]);
 }

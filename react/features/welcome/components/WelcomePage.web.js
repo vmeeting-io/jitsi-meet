@@ -381,11 +381,11 @@ class WelcomePage extends AbstractWelcomePage {
                                 <hr className = 'divider mobile' />
                             </DropdownItemGroup> }
                         <DropdownItemGroup className = 'menu-container'>
-                            {/* <DropdownItem
+                            <DropdownItem
                                 className = 'menu-item'
-                                href = { `${AUTH_PAGE_BASE}/meetingdetails` }>
-                                { t('welcomepage.meetingDetails') }
-                            </DropdownItem> */}
+                                href = { `${AUTH_PAGE_BASE}/meetingmanage` }>
+                                { t('welcomepage.meetingManage') }
+                            </DropdownItem>
                             <DropdownItem
                                 className = 'menu-item'
                                 href = { `${AUTH_PAGE_BASE}/account` }>

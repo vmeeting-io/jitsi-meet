@@ -9,7 +9,6 @@ import { createWelcomePageEvent, sendAnalytics } from '../../analytics';
 import { appNavigate } from '../../app/actions';
 import isInsecureRoomName from '../../base/util/isInsecureRoomName';
 import { isCalendarEnabled } from '../../calendar-sync';
-import { showNotification } from '../../notifications';
 import { isRecentListEnabled } from '../../recent-list/functions';
 
 /**

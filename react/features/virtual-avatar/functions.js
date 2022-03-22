@@ -107,6 +107,7 @@ export function localTrackStopped(dispatch: Function, desktopTrack: Object, curr
         enabled: false,
         virtualAvatarType: 'none',
         selectedVirtualAvatarUrl: 'none',
+        selectedAvatarBackgroundUrl: 'none',
         virtualAvatarEffectEnabled: false
     };
 

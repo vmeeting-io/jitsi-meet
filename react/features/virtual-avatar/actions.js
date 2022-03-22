@@ -50,7 +50,8 @@ export function setVirtualAvatar(options: Object) {
         type: SET_VIRTUAL_AVATAR,
         virtualSource: options?.url,
         virtualAvatarType: options?.virtualAvatarType,
-        selectedVirtualAvatarUrl: options?.selectedVirtualAvatarUrl
+        selectedVirtualAvatarUrl: options?.selectedVirtualAvatarUrl,
+        selectedAvatarBackgroundUrl: options?.selectedAvatarBackgroundUrl
     };
 }
 

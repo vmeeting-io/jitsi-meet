@@ -44,6 +44,7 @@ export default class JitsiStreamVirtualAvatarEffect {
     oldLookTarget: Object;
     animate3DModel: Function;
     load3DModel: Function;
+    setBackground: Function;
     // count the number of services currently access the singleton object
     // (e.g., preview and real virtual avatar)
     usedServices: Number;
@@ -78,6 +79,7 @@ export default class JitsiStreamVirtualAvatarEffect {
         this.rigFace = this.rigFace.bind(this);
         this.animate3DModel = this.animate3DModel.bind(this);
         this.load3DModel = this.load3DModel.bind(this);
+        this.setBackground = this.setBackground.bind(this);
         this.initFacemeshModel = this.initFacemeshModel.bind(this);
 
         this.initFacemeshModel();
@@ -90,7 +92,7 @@ export default class JitsiStreamVirtualAvatarEffect {
 
         // scene
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x6b6b6b);
+
 
         this.clock = new THREE.Clock();
         this.oldLookTarget = new THREE.Euler();
@@ -124,6 +126,19 @@ export default class JitsiStreamVirtualAvatarEffect {
             minDetectionConfidence: 0.6,
             minTrackingConfidence: 0.6
         });
+    }
+
+    setBackground(backgroundImageUrl: String) {
+        const loader = new THREE.TextureLoader();
+        if (backgroundImageUrl && backgroundImageUrl !== 'none')
+        {
+            loader.load(backgroundImageUrl, texture => {
+                this.scene.background = texture;
+            });
+        } else {
+            this.scene.background = new THREE.Color(0x6b6b6b);
+        }
+
     }
 
     load3DModel(avatarModelUrl: String) {
@@ -326,8 +341,9 @@ export default class JitsiStreamVirtualAvatarEffect {
             this.renderer.setPixelRatio(window.devicePixelRatio);
 
             // camera
-            this.orbitCamera = new THREE.PerspectiveCamera(35, width / height, 0.1, 1000);
-            // this.orbitCamera.position.set(0.0, 1.5, 1);
+            this.orbitCamera = new THREE.PerspectiveCamera(35);
+            this.orbitCamera.aspect = width/height;
+            this.orbitCamera.updateProjectionMatrix();
             this.orbitCamera.position.set(0.0, 1.65, 1);
 
             this._inputVideoElement = document.createElement('video');

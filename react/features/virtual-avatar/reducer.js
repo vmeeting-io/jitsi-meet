@@ -18,7 +18,7 @@ const STORE_NAME = 'features/virtual-avatar';
  * specified action.
  */
 ReducerRegistry.register(STORE_NAME, (state = {}, action) => {
-    const { virtualSource, virtualAvatarEffectEnabled, virtualAvatarType, selectedVirtualAvatarUrl } = action;
+    const { virtualSource, virtualAvatarEffectEnabled, virtualAvatarType, selectedVirtualAvatarUrl, selectedAvatarBackgroundUrl } = action;
 
     /**
      * Sets up the persistence of the feature {@code virtual-avatar}.
@@ -31,7 +31,8 @@ ReducerRegistry.register(STORE_NAME, (state = {}, action) => {
             ...state,
             virtualSource,
             virtualAvatarType,
-            selectedVirtualAvatarUrl
+            selectedVirtualAvatarUrl,
+            selectedAvatarBackgroundUrl
         };
     }
     case VIRTUAL_AVATAR_ENABLED: {

@@ -9,6 +9,7 @@ import { translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
 import { updateSettings } from '../../base/settings';
 import { Tooltip } from '../../base/tooltip';
+import { VIDEO_TYPE } from '../../base/media';
 import { getLocalVideoTrack } from '../../base/tracks';
 import TouchmoveHack from '../../chat/components/web/TouchmoveHack';
 import { Icon, IconCancelSelection, IconPlusCircle, IconShareDesktop } from '../../base/icons';
@@ -21,34 +22,41 @@ import {
 import { toDataURL } from '../functions';
 import logger from '../logger';
 
-import VirtualAvatarPreview from './VirtualAvatarPreview';
+import * as THREE from "three";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment';
 
-const images = [
+import VirtualAvatarPreview from './VirtualAvatarPreview';
+import axios from 'axios';
+import {images as backgroundImages} from '../../virtual-background/components/VirtualBackgroundDialog';
+import {getRemoteImageUrl} from '../../virtual-background/functions';
+
+const prebuildAvatars = [
     {
         tooltip: 'image1',
         id: '1',
-        src: 'images/virtual-avatar/boy-4.jpg',
-        modelUrl: 'https://d1a370nemizbjq.cloudfront.net/ada1a7fd-9c61-41ab-98c0-56118dd544e0.glb'
+        src: 'images/virtual-avatar/man-1.jpg',
+        modelUrl: 'https://d1a370nemizbjq.cloudfront.net/25502881-022b-4689-8e88-bef3fab1edfc.glb'
     },
 
     {
         tooltip: 'image2',
         id: '2',
-        src: 'images/virtual-avatar/girl-1.jpg',
-        modelUrl: 'https://d1a370nemizbjq.cloudfront.net/ad8a6543-4f4d-461e-a6b6-add022f072c9.glb'
+        src: 'images/virtual-avatar/woman-1.jpg',
+        modelUrl: 'https://d1a370nemizbjq.cloudfront.net/97c21f02-2d94-4753-a180-45063954e641.glb'
     },
 
     {
         tooltip: 'image3',
         id: '3',
-        src: 'images/virtual-avatar/girl-1.jpg',
-        modelUrl: 'https://d1a370nemizbjq.cloudfront.net/ad8a6543-4f4d-461e-a6b6-add022f072c9.glb'
+        src: 'images/virtual-avatar/woman-2.jpg',
+        modelUrl: 'https://d1a370nemizbjq.cloudfront.net/de08cef3-94cc-43e2-a709-82a37a387c37.glb'
     },
     {
         tooltip: 'image4',
         id: '4',
-        src: 'images/virtual-avatar/girl-1.jpg',
-        modelUrl: 'https://d1a370nemizbjq.cloudfront.net/ad8a6543-4f4d-461e-a6b6-add022f072c9.glb'
+        src: 'images/virtual-avatar/man-2.jpg',
+        modelUrl: 'https://d1a370nemizbjq.cloudfront.net/e7068183-1e83-40a2-bcf8-e2914c0fcb66.glb'
     },
 ];
 
@@ -95,6 +103,37 @@ const onError = event => {
 
 const VirtualAvatarDialog = translate(connect(_mapStateToProps)(VirtualAvatar));
 
+const renderModelThumbnail = async modelUrl => {
+    if (modelUrl === null || modelUrl === 'none')
+        return null;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: false, antialias: false });
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.setSize(320, 180);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0f1c26);
+
+    const loader = new GLTFLoader();
+    loader.crossOrigin = "anonymous";
+    // Import model from URL, add your own model here
+    const model = await loader.loadAsync(modelUrl);
+    scene.add(model.scene);
+    scene.updateMatrixWorld(true);
+
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmremGenerator.fromScene(new RoomEnvironment()).texture;
+
+    const orbitCamera = new THREE.PerspectiveCamera(20, 16/9, 0.1, 1000);
+    const headBone = scene.getObjectByName("Head");
+    const { y } = headBone.matrixWorld.getPosition();
+    orbitCamera.position.set(0.0, y+0.05, 1);
+
+    renderer.render(scene, orbitCamera);
+
+    return renderer.domElement.toDataURL();
+}
+
 /**
  * Renders virtual avatar dialog.
  *
@@ -114,54 +153,95 @@ function VirtualAvatar({
     const [ options, setOptions ] = useState(_virtualAvatar);
     const [ loading, setLoading ] = useState(false);
     const [createVirtualAvatar, setCreateVirtualAvatar ] = useState(false);
-    const [virtualAvatarUrl, setVirtualAvatarUrl ] = useState(null);
+    const [rpVirtualAvatarUrl, setVirtualAvatarUrl] = useState(_virtualAvatar.virtualAvatarType === 'readyplayer' ? _virtualAvatar.selectedVirtualAvatarUrl : null);
+    const [remoteImages, setRemoteImages] = useState([]);
+    const [activeDesktopVideo] = useState(_virtualSource?.videoType === VIDEO_TYPE.DESKTOP ? _virtualSource : null);
 
-    let iframe;
+    const iframe = useRef(null);
+    // const [rpThumnailUrl, setRpThumnailUrl] = useState(_virtualAvatar.selectedVirtualAvatarUrl);
+    const [rpThumnailUrl, setRpThumnailUrl] = useState(null);
+
+
+    /**
+     * Loads images from server.
+     */
+    useEffect(() => {
+        async function loadRemoteImages() {
+            setLoading(true);
+            try {
+                const resp = await axios.get(`${_apiBase}/backgrounds?pagination=false`);
+                setRemoteImages([...resp.data.docs, ...remoteImages]);
+                setLoading(false);
+            } catch {
+                setLoading(false);
+            }
+        }
+
+        loadRemoteImages();
+    }, []);
+
+    // load rpThumnailUrl
+    useEffect(() => {
+        async function loadOldRpThumnail() {
+            if (rpVirtualAvatarUrl === 'none' || rpVirtualAvatarUrl === null)
+                return;
+
+            setLoading(true);
+            setRpThumnailUrl(await renderModelThumbnail(rpVirtualAvatarUrl));
+            setLoading(false);
+        }
+
+        loadOldRpThumnail();
+    }, []);
+
 
 
     const removeVirtualAvatar = useCallback(async e => {
         setOptions({
             enabled: false,
-            selectedVirtualAvatarUrl: 'none'
+            selectedVirtualAvatarUrl: 'none',
+            selectedAvatarBackgroundUrl: 'none'
         });
         logger.info('Uploaded image setted for virtual avatar preview!');
     }, [ ]);
 
 
     const setPreviewVirtualAvatar = useCallback(async e => {
-        const imageId = e.currentTarget.getAttribute('data-imageid');
-        const image = images.find(img => img.id === imageId);
+        const avatarId = e.currentTarget.getAttribute('data-imageid');
+        const avatar = prebuildAvatars.find(avatar => avatar.id === avatarId);
 
-        if (image) {
-            const url = await toDataURL(image.src);
-
+        if (avatar) {
             setOptions({
-                virtualAvatarType: 'image',
+                ...options,
+                virtualAvatarType: 'avatar',
                 enabled: true,
-                selectedVirtualAvatarUrl: image.modelUrl,
+                selectedVirtualAvatarUrl: avatar.modelUrl,
                 url: "none"
             });
             logger.info('Image setted for virtual avatar preview!');
 
             setLoading(false);
         }
-    }, []);
+    }, [options]);
 
     const setReadyplayerAvatar = useCallback(async e => {
         setOptions({
+            ...options,
             virtualAvatarType: 'readyplayer',
             enabled: true,
-            selectedVirtualAvatarUrl: virtualAvatarUrl,
+            selectedVirtualAvatarUrl: rpVirtualAvatarUrl,
             url: "none"
         });
-        logger.info('Image setted for virtual avatar preview!');
 
         setLoading(false);
 
-    }, [virtualAvatarUrl]);
+    }, [rpVirtualAvatarUrl, options]);
 
 
     const applyVirtualAvatar = useCallback(async () => {
+        if (activeDesktopVideo) {
+            await activeDesktopVideo.dispose();
+        }
         setLoading(true);
         await dispatch(toggleVirtualAvatarEffect(options, _jitsiTrack));
         setLoading(false);
@@ -182,14 +262,45 @@ function VirtualAvatar({
             virtualAvatarType: origin.virtualAvatarType,
             enabled: origin.virtualAvatarEffectEnabled,
             selectedVirtualAvatarUrl: origin.selectedVirtualAvatarUrl,
+            selectedAvatarBackgroundUrl: origin.selectedAvatarBackgroundUrl,
             url: "none"
         }
-        await dispatch(toggleVirtualAvatarEffect(originOptions, _jitsiTrack));
-        dispatch(updateSettings({
-            localFlipX: origin.virtualAvatarEffectEnabled? false : _localFlipX
-        }));
-        await dispatch(virtualAvatarTrackChanged());
+
+        setOptions(originOptions);
+
+        if (origin.virtualAvatarEffectEnabled) {
+            await dispatch(toggleVirtualAvatarEffect(originOptions, _jitsiTrack));
+            dispatch(updateSettings({
+                localFlipX: origin.virtualAvatarEffectEnabled? false : _localFlipX
+            }));
+            await dispatch(virtualAvatarTrackChanged());
+        }
     }, [dispatch, origin, options, _localFlipX ]);
+
+    const setImageBackground = useCallback(async e => {
+        const imageId = e.currentTarget.getAttribute('data-imageid');
+        const image = backgroundImages.find(img => img.id === imageId);
+
+        if (image) {
+            const url = await toDataURL(image.src);
+            setOptions({...options,
+                enabled: options.virtualAvatarEffectEnabled,
+                selectedAvatarBackgroundUrl: url,
+            });
+
+            setLoading(false);
+        }
+    }, [options]);
+
+    const removeAvatarBackground = useCallback(async e => {
+        setOptions({
+            ...options,
+            enabled: options.virtualAvatarEffectEnabled,
+            selectedAvatarBackgroundUrl: 'none',
+        });
+
+        setLoading(false);
+    }, [options]);
 
     const loadedPreviewState = useCallback(async loaded => {
         setPreviewIsLoaded(loaded);
@@ -203,11 +314,13 @@ function VirtualAvatar({
         }
     }
 
-    const configVirtualAvatarIframe = _iframe => {
+    const rpConfigVirtualAvatarIframe = _iframe => {
         if (_iframe === null) return;
-        iframe = _iframe;
+        iframe.current = _iframe;
+    }
 
-        const subscribe = event => {
+    useEffect(() => {
+        const subscribe = async event => {
             const json = parseJsonWithNull(event);
             if (json?.source !== 'readyplayerme') {
                 return;
@@ -215,34 +328,35 @@ function VirtualAvatar({
 
             // Susbribe to all events sent from Ready Player Me once frame is ready
             if (json.eventName === 'v1.frame.ready') {
-                iframe.contentWindow.postMessage(
+                if (iframe.current === null) return;
+                iframe.current.contentWindow.postMessage(
                     JSON.stringify({
                         target: 'readyplayerme',
                         type: 'subscribe',
                         eventName: 'v1.**'
                     }),
                     '*'
-                );
+                    );
             }
 
             // Get avatar GLB URL
             if (json.eventName === 'v1.avatar.exported') {
+                setLoading(true);
                 setVirtualAvatarUrl(json.data.url);
-
-                // setOptions({
-                //     virtualAvatarType: 'readyplayer',
-                //     enabled: true,
-                //     selectedVirtualAvatarUrl: json.data.url,
-                //     url: json.data.url
-                // });
-
                 setCreateVirtualAvatar(false);
+                const url = await renderModelThumbnail(json.data.url);
+                setRpThumnailUrl(url);
                 setLoading(false);
             }
-        }
+        };
 
         window.addEventListener('message', subscribe);
-    }
+
+        return () => {
+            window.removeEventListener('message', subscribe);
+        }
+    }, [options, rpThumnailUrl]);
+
 
     return (
         <Dialog
@@ -257,7 +371,7 @@ function VirtualAvatar({
             {createVirtualAvatar ? (
                 <iframe src="https://fullbody.readyplayer.me/avatar?frameApi"
                     allow="camera *; microphone *"
-                    ref={iframe => {configVirtualAvatarIframe(iframe)}}
+                    ref={rpConfigVirtualAvatarIframe}
                     width="100%" height="600" />
             ) : (<React.Fragment>
                     <VirtualAvatarPreview
@@ -304,39 +418,98 @@ function VirtualAvatar({
                                                 {t('virtualAvatar.none')}
                                             </div>
                                         </Tooltip>
-                                        {virtualAvatarUrl !== null && <Tooltip
+                                        {rpThumnailUrl && <Tooltip
                                             content={t('virtualAvatar.readyplayerAvatar')}
                                             position={'top'}>
-                                            <div
-                                                    aria-checked={options.virtualAvatarType === 'readyplayer'}
-                                                    aria-label={t('virtualAvatar.readyplayerAvatar')}
-                                                    className={options.virtualAvatarType === 'readyplayer' ? 'background-option blur-selected'
-                                                        : 'background-option blur'}
-                                                    onClick={setReadyplayerAvatar}
+                                            <img
+                                                aria-checked={options.virtualAvatarType === 'readyplayer'}
+                                                aria-label={t('virtualAvatar.readyplayerAvatar')}
+                                                className={options.selectedVirtualAvatarUrl === rpVirtualAvatarUrl ? 'background-option thumbnail-selected' : 'background-option thumbnail'}
+                                                onClick={setReadyplayerAvatar}
                                                 role='radio'
-                                                tabIndex={0} >
-                                                {t('Custom Avatar')}
-                                            </div>
+                                                src={rpThumnailUrl}
+                                                tabIndex={0} />
                                         </Tooltip>}
-                                        {images.map((image, index) => (
+                                        {prebuildAvatars.map((avatar, index) => (
                                             <Tooltip
-                                                content = { image.tooltip && t(`virtualAvatar.${image.tooltip}`) }
-                                                key = { image.id }
+                                                content = { avatar.tooltip && t(`virtualAvatar.${avatar.tooltip}`) }
+                                                key = { avatar.id }
                                                 position = { 'top' }>
                                                 <img
-                                                    alt = { image.tooltip && t(`virtualAvatar.${image.tooltip}`) }
-                                                    aria-checked={options.selectedVirtualAvatarUrl === image.modelUrl
-                                                        && options.virtualAvatarType === "image" }
+                                                    alt = { avatar.tooltip && t(`virtualAvatar.${avatar.tooltip}`) }
+                                                    aria-checked={options.selectedVirtualAvatarUrl === avatar.modelUrl
+                                                        && options.virtualAvatarType === "avatar" }
                                                     className = {
-                                                        (options.selectedVirtualAvatarUrl === image.modelUrl && options.virtualAvatarType === "image")
+                                                        (options.selectedVirtualAvatarUrl === avatar.modelUrl && options.virtualAvatarType === "avatar")
                                                             ? 'background-option thumbnail-selected' : 'background-option thumbnail' }
-                                                    data-imageid = { image.id }
+                                                    data-imageid = { avatar.id }
                                                     onClick={ setPreviewVirtualAvatar }
                                                     onError = { onError }
                                                     role = 'radio'
-                                                    src = { image.src }
+                                                    src = { avatar.src }
                                                     tabIndex = { 0 } />
                                             </Tooltip>
+                                        ))}
+                                    </div>
+                                    <div>
+                                            <label className='dialog-text-label'>
+                                            {t('Select Background')}
+                                        </label>
+                                    </div>
+                                    {/* background */}
+                                    <div className='virtual-background-dialog'
+                                        role='radiogroup'
+                                        tabIndex='-1'>
+                                        <Tooltip
+                                            content={t('virtualAvatar.removeAvatarBackground')}
+                                            position={'top'}>
+                                            <div
+                                                aria-checked={options.selectedAvatarBackgroundUrl === 'none'}
+                                                aria-label={t('virtualAvatar.removeAvatarBackground')}
+                                                className={options.selectedAvatarBackgroundUrl === 'none' ? 'background-option none-selected'
+                                                    : 'background-option virtual-background-none'}
+                                                onClick={removeAvatarBackground}
+                                                role='radio'
+                                                tabIndex={0} >
+                                                {t('virtualAvatar.none')}
+                                            </div>
+                                        </Tooltip>
+                                        {backgroundImages.map((image, index) => (
+                                            <Tooltip
+                                                content={image.tooltip && t(`virtualBackground.${image.tooltip}`)}
+                                                key={image.id}
+                                                position={'top'}>
+                                                <img
+                                                    alt={image.tooltip && t(`virtualBackground.${image.tooltip}`)}
+                                                    aria-checked={options.selectedThumbnail === image.id
+                                                        || options.selectedThumbnail === image.id}
+                                                    className={
+                                                        options.selectedThumbnail === image.id
+                                                            ? 'background-option thumbnail-selected' : 'background-option thumbnail'}
+                                                    data-imageid={image.id}
+                                                    onClick={setImageBackground}
+                                                    onError={onError}
+                                                    role='radio'
+                                                    src={image.src}
+                                                    tabIndex={0} />
+                                            </Tooltip>
+                                        ))}
+                                        {remoteImages.map((image, index) => (
+                                            <div
+                                                className={'thumbnail-container'}
+                                                key={image._id}>
+                                                <img
+                                                    alt={t('virtualBackground.uploadedImage', { index: index + 1 })}
+                                                    aria-checked={options.selectedThumbnail === image.id}
+                                                    className={options.selectedThumbnail === image._id
+                                                        ? 'background-option thumbnail-selected' : 'background-option thumbnail'}
+                                                    data-imageid={image._id}
+                                                    // onClick={setUploadedImageBackground}
+                                                    onError={onError}
+                                                    role='radio'
+                                                    src={getRemoteImageUrl(image, 'ld')}
+                                                    tabIndex={0} />
+                                            </div>
                                         ))}
                                     </div>
                                 </TouchmoveHack>

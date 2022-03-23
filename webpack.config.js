@@ -229,7 +229,11 @@ function getConfig(options = {}) {
                 test: /\.wasm$/i,
                 type: 'javascript/auto',
                 use: [{ loader: 'file-loader' }]
-            } ]
+            }, {
+                test: /\.ts?$/,
+                use: [{ loader: 'ts-loader' }],
+                // exclude: /node_modules/,
+            }, ]
         },
         node: {
             // Allow the use of the real filename of the module being executed. By
@@ -252,7 +256,7 @@ function getConfig(options = {}) {
             detectCircularDeps
                 && new CircularDependencyPlugin({
                     allowAsyncCycles: false,
-                    exclude: /node_modules/,
+                    // exclude: /node_modules/,
                     failOnError: false
                 })
         ].filter(Boolean),
@@ -268,8 +272,9 @@ function getConfig(options = {}) {
 
                 // Webpack defaults:
                 '.js',
-                '.json',
-                '.ts'
+                '.ts',
+                '.tsx',
+                '.json'
             ],
             fallback: {
                 // Provide some empty Node modules (required by AtlasKit, olm).
@@ -456,7 +461,18 @@ module.exports = (_env, argv) => {
                     libraryTarget: 'umd',
                     path: join(process.cwd(), 'lib-jitsi-meet', 'dist', 'umd')
                 })
-            })
+            }),
+
+            // Object.assign({}, config, {
+            //     entry: {
+            //         'kalidokit': './kalidokit/src/index.ts'
+            //     },
+            //     output: Object.assign({}, config.output, {
+            //         library: 'kalidokit',
+            //         libraryTarget: 'umd',
+            //         path: `${__dirname}/dist`,
+            //     })
+            // })
         ])
     ];
 };

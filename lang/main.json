@@ -288,6 +288,7 @@
         "contactSupport": "Contact support",
         "copied": "Copied",
         "copy": "Copy",
+        "customAvatars": "Custom Avatars",
         "destroyed_by_host": "Conference terminated by host.",
         "deviceAccessDisabled": "Device access is disabled",
         "deviceAccessReEnabled": "Device access is re-enabled",
@@ -428,6 +429,7 @@
         "screenSharingFailed": "Oops! Something went wrong, we weren’t able to start screen sharing!",
         "screenSharingFailedTitle": "Screen sharing failed!",
         "screenSharingPermissionDeniedError": "Oops! Something went wrong with your screen sharing permissions. Please reload and try again.",
+        "selectBackground": "Select background",
         "sendPrivateMessage": "You recently received a private message. Did you intend to reply to that privately, or you want to send your message to the group?",
         "sendPrivateMessageCancel": "Send to the group",
         "sendPrivateMessageOk": "Send privately",
@@ -535,7 +537,20 @@
         "desktopShareAudioWarningDesc": "Audio is not shared in Desktop-share background mode.",
         "webAssemblyWarning": "WebAssembly not supported",
         "webAssemblyWarningDescription": "WebAssembly disabled or not supported by this browser",
-        "backgroundEffectError": "Failed to apply background effect."
+        "backgroundEffectError": "Failed to apply background effect.",
+        "virtualAvatarEffectError": "Failed to apply virtual avatar effect."
+    },
+    "virtualAvatar": {
+        "apply": "Apply",
+        "title": "Virtual Avatar",
+        "removeVirtualAvatar": "Remove Avatar",
+        "pleaseWait": "Please wait...",
+        "none": "None",
+        "image1": "Cute Boy",
+        "image2": "Cute Girl",
+
+        "webAssemblyWarning": "WebAssembly not supported",
+        "webAssemblyWarningDescription": "WebAssembly disabled or not supported by this browser"
     },
     "faceDetect": {
         "failToLoadError": "Failed to apply face detect."
@@ -1200,6 +1215,7 @@
             "videomute": "Start / Stop camera",
             "videoblur": "Toggle video blur",
             "selectBackground": "Select Background",
+            "selectVirtualAvatar": "Select Virtual Avatar",
             "expand": "Expand",
             "collapse": "Collapse"
         },
@@ -1306,7 +1322,8 @@
         "whiteboardClose": "Close whiteboard",
         "whiteboardOpen": "Open whiteboard",
         "videoSettings": "Video settings",
-        "selectBackground": "Select background"
+        "selectBackground": "Select background",
+        "selectVirtualAvatar": "Select virtual avatar"
     },
     "transcribing": {
         "ccButtonTooltip": "Start / Stop subtitles",

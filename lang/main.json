@@ -1438,6 +1438,7 @@
         "mobileDownLoadLinkAndroid": "Download mobile app for Android",
         "mobileDownLoadLinkFDroid": "Download mobile app for F-Droid",
         "moderatedMessage": "Or <a href=\"{{url}}\" rel=\"noopener noreferrer\" target=\"_blank\">book a meeting URL</a> in advance where you are the only moderator.",
+        "notice": "Notice",
         "privacy": "Privacy",
         "recentList": "Recent",
         "recentListDelete": "Delete entry",

@@ -1436,6 +1436,7 @@
         "mobileDownLoadLinkAndroid": "Android용 모바일 앱 다운로드",
         "mobileDownLoadLinkFDroid": "F-Droid용 모바일 앱 다운로드",
         "moderatedMessage": "또는 본인이 방장인 경우 사전에 <a href=\"{{url}}\" rel=\"noopener noreferrer\" target=\"_blank\">회의 URL을 예약</a>하세요.",
+        "notice": "공지사항",
         "privacy": "개인정보",
         "recentList": "최근 이력",
         "recentListDelete": "삭제",

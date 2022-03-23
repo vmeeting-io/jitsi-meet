@@ -6,7 +6,7 @@ import Button, { ButtonGroup } from '@atlaskit/button';
 import DropdownMenu, { DropdownItem, DropdownItemGroup } from '@atlaskit/dropdown-menu';
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import axios from 'axios';
-import React, { Fragment } from 'react';
+import React from 'react';
 
 import tokenLocalStorage from '../../../api/tokenLocalStorage';
 import { translate, translateToHTML } from '../../base/i18n';

@@ -32,7 +32,9 @@ import VirtualBackgroundPreview from './VirtualBackgroundPreview';
 
 const COL_WIDTH = 105 + 9;
 const ROW_HEIGHT = 60 + 8;
-const images = [
+
+// export so that it can be used in virtual avatar
+export const images = [
     {
         tooltip: 'image1',
         id: '1',

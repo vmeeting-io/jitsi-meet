@@ -72,6 +72,7 @@ import {
 } from '../../../video-layout';
 import { VideoQualityDialog, VideoQualityButton } from '../../../video-quality/components';
 import { VideoBackgroundButton, toggleBackgroundEffect } from '../../../virtual-background';
+import { VirtualAvatarButton, toggleVirtualAvatarEffect } from '../../../virtual-avatar';
 import { VIRTUAL_BACKGROUND_TYPE } from '../../../virtual-background/constants';
 import {
     setFullScreen,
@@ -759,6 +760,12 @@ class Toolbox extends Component<Props> {
             group: 3
         };
 
+        const virtualAvatar = !_screenSharing && {
+            key: 'select-virtual-avatar',
+            Content: VirtualAvatarButton,
+            group: 3
+        };
+
         // const speakerStats = {
         //     key: 'stats',
         //     Content: SpeakerStatsButton,
@@ -831,6 +838,7 @@ class Toolbox extends Component<Props> {
             shareAudio,
             etherpad,
             virtualBackground,
+            virtualAvatar,
             // speakerStats,
             settings,
             shortcuts,
@@ -1433,7 +1441,7 @@ function _mapStateToProps(state, ownProps) {
         _isPrejoinPageVisible: isPrejoinPageVisible(state),
         _isProfileDisabled: Boolean(disableProfile),
         _isVideoSettingsVisible: !_screenSharing || !browser.isSafari(),
-        _isVpaasMeeting: isVpaasMeeting(state),        
+        _isVpaasMeeting: isVpaasMeeting(state),
         _localParticipantID: localParticipant?.id,
         _localVideo: localVideo,
         _overflowMenuVisible: overflowMenuVisible,

@@ -288,6 +288,7 @@
         "contactSupport": "문의하기",
         "copied": "복사됨",
         "copy": "복사",
+        "customAvatars": "커스텀 아바타",
         "destroyed_by_host": "호스트가 회의를 종료했습니다.",
         "dismiss": "닫기",
         "displayNameRequired": "이름을 입력하세요",
@@ -427,6 +428,7 @@
         "screenSharingFailed": "이런! 문제가 발생하여 화면 공유를 시작할 수 없습니다.",
         "screenSharingFailedTitle": "화면 공유에 실패했습니다!",
         "screenSharingPermissionDeniedError": "죄송합니다. 화면 공유 권한에 문제가 발생했습니다. 다시 로드하고 재시도하십시오.",
+        "selectBackground": "배경 선택",
         "sendPrivateMessage": "최근에 개인 메시지를 받았습니다. 비공개로 답장을 보내시겠습니까, 아니면 그룹에 메시지를 보내시겠습니까?",
         "sendPrivateMessageCancel": "그룹에 보내기",
         "sendPrivateMessageOk": "비공개로 보내기",
@@ -535,6 +537,17 @@
         "webAssemblyWarning": "WebAssembly가 지원되지 않습니다.",
         "webAssemblyWarningDescription": "WebAssembly가 사용 불가하거나 브라우저에서 지원되지 않습니다.",
         "backgroundEffectError": "배경 적용에 실패했습니다."
+    },
+    "virtualAvatar": {
+        "apply": "적용",
+        "title": "아바타 선택",
+        "removeVirtualAvatar": "아바타 삭제",
+        "pleaseWait": "로딩 중...",
+        "none": "없음",
+        "image1": "Cute Boy",
+        "image2": "Cute Girl",
+        "webAssemblyWarning": "WebAssembly가 지원되지 않습니다.",
+        "webAssemblyWarningDescription": "WebAssembly가 사용 불가하거나 브라우저에서 지원되지 않습니다."
     },
     "faceDetect": {
         "failToLoadError": "얼글 인식 적용에 실패했습니다."
@@ -1198,6 +1211,7 @@
             "videomute": "카메라 토글",
             "videoblur": "카메라 블러 토글",
             "selectBackground": "배경 선택",
+            "selectVirtualAvatar": "아바타 선택",
             "expand": "펼치기",
             "collapse": "접기"
         },
@@ -1304,7 +1318,8 @@
         "whiteboardClose": "판서 닫기",
         "whiteboardOpen": "판서 열기",
         "videoSettings": "비디오 설정",
-        "selectBackground": "배경 선택"
+        "selectBackground": "배경 선택",
+        "selectVirtualAvatar": "아바타 선택"
     },
     "transcribing": {
         "ccButtonTooltip": "자막 시작 / 중지",

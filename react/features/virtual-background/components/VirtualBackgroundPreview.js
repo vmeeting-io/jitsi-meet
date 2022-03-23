@@ -120,6 +120,7 @@ class VirtualBackgroundPreview extends PureComponent<Props, State> {
                 cameraDeviceId: this.props._currentCameraDeviceId,
                 devices: [ 'video' ]
             });
+            console.log("xxxxxx", this.props._currentCameraDeviceId);
 
             this.setState({ localTrackLoaded: true });
 

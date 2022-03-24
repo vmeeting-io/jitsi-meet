@@ -177,13 +177,17 @@ export const getGlobalStyles = (theme: Object) => {
             // notice dialog container
             '& div[data-autofocus-inside=true] > div:nth-child(2)': {
                 marginLeft: 24,
-                top: 60
+                top: 60,
+                width: 'auto'
             },
 
             '& div[role=dialog]': {
+                backgroundColor: 'transparent !important',
+                boxShadow: 'initial',
+
                 // override dialog background
                 '& > div': {
-                    background: 'white',
+                    background: 'transparent',
                     color: 'black',
 
                     '& > div': {

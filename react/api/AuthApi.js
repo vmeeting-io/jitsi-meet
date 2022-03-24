@@ -3,25 +3,24 @@
 import axios from 'axios';
 
 import { toState } from '../features/base/redux';
+import { API_BASE } from './constants';
 import { getAuthServerURL, getLocationURL } from './url';
-
-const AUTH_API = '/auth/api';
 
 function getAuthAPIURL(stateful) {
     const state = toState(stateful);
     const serverUrl = getAuthServerURL(state);
 
-    return AUTH_API.startsWith('http') ? AUTH_API : `${serverUrl}/${AUTH_API}`;
+    return API_BASE.startsWith('http') ? API_BASE : `${serverUrl}/${API_BASE}`;
 }
 
 export function loginWithLocationURL(form, stateful) {
-    if (AUTH_API.startsWith('http')) {
-        return axios.post(`${AUTH_API}/login`, form, 'login');
+    if (API_BASE.startsWith('http')) {
+        return axios.post(`${API_BASE}/login`, form, 'login');
     }
 
     const url = getLocationURL(stateful);
 
-    return axios.post(`${url}/${AUTH_API}/login`, form, 'login');
+    return axios.post(`${url}/${API_BASE}/login`, form, 'login');
 }
 
 export function login(form, stateful) {

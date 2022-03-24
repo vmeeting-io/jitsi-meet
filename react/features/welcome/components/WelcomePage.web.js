@@ -9,6 +9,7 @@ import axios from 'axios';
 import React from 'react';
 
 import tokenLocalStorage from '../../../api/tokenLocalStorage';
+import { getAvatarColor, getInitials } from '../../base/avatar';
 import { translate, translateToHTML } from '../../base/i18n';
 import { Icon, IconWarning } from '../../base/icons';
 import { setJWT } from '../../base/jwt';
@@ -16,6 +17,7 @@ import { Watermarks } from '../../base/react';
 import { connect } from '../../base/redux';
 import { openDialog } from '../../base/dialog';
 import { CalendarList } from '../../calendar-sync';
+import { NOTIFICATION_TYPE, showSweetAlert } from '../../notifications';
 import { NotificationsContainer } from '../../notifications/components';
 import { RecentList } from '../../recent-list';
 import { SETTINGS_TABS } from '../../settings';
@@ -24,10 +26,8 @@ import { checkBlurSupport, VirtualBackgroundDialog } from '../../virtual-backgro
 import { VirtualAvatarDialog } from '../../virtual-avatar';
 
 import { AbstractWelcomePage, _mapStateToProps } from './AbstractWelcomePage';
-import Tabs from './Tabs';
-import { NOTIFICATION_TYPE, showSweetAlert } from '../../notifications';
-import { getAvatarColor, getInitials } from '../../base/avatar';
 import NoticeDialog from './NoticeDialog';
+import Tabs from './Tabs';
 //import alarmImg from '../../../../resources/img/appstore-badge.png';
 
 /**
@@ -530,6 +530,13 @@ class WelcomePage extends AbstractWelcomePage {
                     </div>
                 </div>
                 <div className = 'welcome-content'>
+                    { config.noticeMessage && (
+                        <div className = 'banner'>
+                            <Banner appearance="announcement" isOpen>
+                                {decodeURIComponent(config.noticeMessage)}
+                            </Banner>
+                        </div>
+                    )}
                     <div className = 'bg-wrapper'>
                         <div className = 'content-wrapper'>
                             <div className = 'intro-wrapper'>

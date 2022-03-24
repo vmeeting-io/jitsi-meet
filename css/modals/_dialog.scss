@@ -154,6 +154,16 @@
         flex-direction: column;
     }
 
+    .notice-dialog-container {
+        display: flex;
+        gap: 10px;
+    }
+
+    .notice-dialog-wrapper {
+        background-color: white;
+        height: fit-content;
+    }
+
     .notice-dialog-content {
         display: flex;
         align-items: center;

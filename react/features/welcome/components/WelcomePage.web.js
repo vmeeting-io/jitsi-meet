@@ -27,6 +27,7 @@ import { AbstractWelcomePage, _mapStateToProps } from './AbstractWelcomePage';
 import Tabs from './Tabs';
 import { NOTIFICATION_TYPE, showSweetAlert } from '../../notifications';
 import { getAvatarColor, getInitials } from '../../base/avatar';
+import NoticeDialog from './NoticeDialog';
 //import alarmImg from '../../../../resources/img/appstore-badge.png';
 
 /**
@@ -529,13 +530,6 @@ class WelcomePage extends AbstractWelcomePage {
                     </div>
                 </div>
                 <div className = 'welcome-content'>
-                    { config.noticeMessage && (
-                        <div className = 'banner'>
-                            <Banner appearance="announcement" isOpen>
-                                {config.noticeMessage}
-                            </Banner>
-                        </div>
-                    )}
                     <div className = 'bg-wrapper'>
                         <div className = 'content-wrapper'>
                             <div className = 'intro-wrapper'>
@@ -649,6 +643,7 @@ class WelcomePage extends AbstractWelcomePage {
                         </div>
                     </div>
                 </div>
+                <NoticeDialog />
             </div>
         );
     }

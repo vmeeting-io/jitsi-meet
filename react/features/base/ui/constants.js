@@ -170,6 +170,27 @@ export const getGlobalStyles = (theme: Object) => {
                 background: theme.palette.ui02,
                 color: theme.palette.text01
             }
+        },
+
+        // @atlaskit/modal-dialog OVERRIDES
+        '.welcome-page .atlaskit-portal': {
+            // notice dialog container
+            '& div[data-autofocus-inside=true] > div:nth-child(2)': {
+                marginLeft: 24,
+                top: 60
+            },
+
+            '& div[role=dialog]': {
+                // override dialog background
+                '& > div': {
+                    background: 'white',
+                    color: 'black',
+
+                    '& > div': {
+                        padding: 0
+                    }
+                }
+            }
         }
     };
 };

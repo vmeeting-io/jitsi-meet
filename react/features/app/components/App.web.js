@@ -29,7 +29,7 @@ export class App extends AbstractApp {
     _createMainElement(component, props) {
         return (
             <JitsiThemeProvider>
-                <AtlasKitThemeProvider mode = 'dark'>
+                <AtlasKitThemeProvider mode = { location.pathname === '/' ? 'light' : 'dark' }>
                     <GlobalStyles />
                     <ChromeExtensionBanner />
                     { super._createMainElement(component, props) }

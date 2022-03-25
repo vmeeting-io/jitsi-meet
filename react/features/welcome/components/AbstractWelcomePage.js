@@ -288,6 +288,7 @@ export function _mapStateToProps(state: Object) {
         enableInsecureRoomNameWarning,
         logoUrl,
         moderatedRoomServiceUrl,
+        toolbarButtons = []
     } = state['features/base/config'];
 
     return {
@@ -299,6 +300,7 @@ export function _mapStateToProps(state: Object) {
         _room: state['features/base/conference'].room,
         _settings: state['features/base/settings'],
         _user: state['features/base/jwt'].user,
-        _jwt: state['features/base/jwt']
+        _jwt: state['features/base/jwt'],
+        _virtualAvatarSupport: toolbarButtons.includes('select-virtual-avatar')
     };
 }

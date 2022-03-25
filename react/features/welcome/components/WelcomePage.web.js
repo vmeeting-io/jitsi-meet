@@ -312,7 +312,13 @@ class WelcomePage extends AbstractWelcomePage {
      * @returns {ReactElement|null}
      */
     render() {
-        const { _defaultLogoUrl, _moderatedRoomServiceUrl, _user, t } = this.props;
+        const {
+            _defaultLogoUrl,
+            _moderatedRoomServiceUrl,
+            _user,
+            _virtualAvatarSupport,
+            t
+        } = this.props;
         const { submitting, currentTenant, inputTenant, room } = this.state;
         const { APP_NAME, DEFAULT_WELCOME_PAGE_LOGO_URL } = interfaceConfig;
         const showAdditionalContent = this._shouldShowAdditionalContent();
@@ -405,18 +411,19 @@ class WelcomePage extends AbstractWelcomePage {
                                     </div>
                                 )}
                             </DropdownItem>
-                            { checkBlurSupport() && (
+                            { _virtualAvatarSupport ? (
+                                <DropdownItem
+                                    className='menu-item'
+                                    onClick={this._onVirtualAvatar}>
+                                    {t('toolbar.selectVirtualAvatar')}
+                                </DropdownItem>
+                            ) : (checkBlurSupport() && (
                                 <DropdownItem
                                     className = 'menu-item'
                                     onClick = { this._onVirtualBackground }>
                                     { t('toolbar.selectBackground') }
                                 </DropdownItem>
-                            )}
-                            <DropdownItem
-                                className='menu-item'
-                                onClick={this._onVirtualAvatar}>
-                                {t('toolbar.selectVirtualAvatar')}
-                            </DropdownItem>
+                            ))}
                             <DropdownItem
                                 className = 'menu-item'
                                 onClick = { this._onLogout }>

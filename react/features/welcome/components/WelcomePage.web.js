@@ -75,7 +75,8 @@ class WelcomePage extends AbstractWelcomePage {
                 interfaceConfig.GENERATE_ROOMNAMES_ON_WELCOME_PAGE,
             selectedTab: 0,
             submitting: false,
-            currentTenant: props._jwt.tenant || DEFAULT_TENANT
+            siteName: props._jwt.siteName || DEFAULT_TENANT,
+            currentTenant: props._jwt.tenant || DEFAULT_TENANT,
         };
 
         /**
@@ -89,7 +90,6 @@ class WelcomePage extends AbstractWelcomePage {
 
         this._roomInputRef = null;
         this._virtualTenantRef = null;
-        this._tenantInputRef = null;
         this._redirectRoom = false;
 
         /**
@@ -137,12 +137,10 @@ class WelcomePage extends AbstractWelcomePage {
         this._onFormSubmit = this._onFormSubmit.bind(this);
         this._onRoomChange = this._onRoomChange.bind(this);
         this._onJoin = this._onJoin.bind(this);
-        this._onTenantChange = this._onTenantChange.bind(this);
         this._setAdditionalContentRef
             = this._setAdditionalContentRef.bind(this);
         this._setRoomInputRef = this._setRoomInputRef.bind(this);
         this._setVirtualTenantRef = this._setVirtualTenantRef.bind(this);
-        this._setTenantInputRef = this._setTenantInputRef.bind(this);
         this._setAdditionalToolbarContentRef
             = this._setAdditionalToolbarContentRef.bind(this);
         this._onTabSelected = this._onTabSelected.bind(this);
@@ -319,7 +317,7 @@ class WelcomePage extends AbstractWelcomePage {
             _virtualAvatarSupport,
             t
         } = this.props;
-        const { submitting, currentTenant, inputTenant, room } = this.state;
+        const { submitting, siteName, currentTenant, room } = this.state;
         const { APP_NAME, DEFAULT_WELCOME_PAGE_LOGO_URL } = interfaceConfig;
         const showAdditionalContent = this._shouldShowAdditionalContent();
         const showAdditionalToolbarContent = this._shouldShowAdditionalToolbarContent();
@@ -462,10 +460,6 @@ class WelcomePage extends AbstractWelcomePage {
             );
         }
 
-        if (this._tenantInputRef && this._virtualTenantRef) { // this adjusts the width of the tenant input tag
-            this._tenantInputRef.style=`width:${window.getComputedStyle(this._virtualTenantRef).width}`;
-        }
-
         return (
             <div
                 className = { `welcome ${showAdditionalContent
@@ -562,17 +556,8 @@ class WelcomePage extends AbstractWelcomePage {
                                             ref={this._setVirtualTenantRef}
                                             id='virtual_tenant'
                                             className='virtual-tenant'>
-                                            {inputTenant || currentTenant}
+                                            {siteName}
                                         </div>
-
-                                        <form onSubmit={this._onFormSubmit}>
-                                            <input
-                                                placeholder={currentTenant}
-                                                ref={this._setTenantInputRef}
-                                                defaultValue={currentTenant}
-                                                onChange={this._onTenantChange}
-                                                className='tenant-input'/>
-                                        </form>
                                         <span>/</span>
                                         <form
                                             className= 'room-form'
@@ -711,21 +696,7 @@ class WelcomePage extends AbstractWelcomePage {
         const replacedStr =  event.currentTarget.value.replaceAll(forbiddenChars, '');
         this._roomInputRef.value = replacedStr; // removes forbidden characters
 
-        super._onRoomChange(`${this.state.inputTenant || this.state.currentTenant}/${replacedStr}`);
-    }
-
-    _onTenantChange(event) {
-        event.stopPropagation();
-
-        const roomname = this._roomInputRef.value || this.state.generatedRoomname; // value at the roomname input tag
-        const forbiddenChars = /[^a-zA-Z0-9_]/ig; // alphabet, numbers and underscore is allowed for tenant
-        const replacedStr =  event.currentTarget.value.replaceAll(forbiddenChars, '');
-        this._tenantInputRef.value = replacedStr; //  removes forbidden characters
-
-        this.setState(() => ({inputTenant: replacedStr}), () => {
-            this._tenantInputRef.style=`width:${window.getComputedStyle(this._virtualTenantRef).width}`;
-            super._onRoomChange(`${replacedStr || this.state.currentTenant}/${roomname}`);
-        });
+        super._onRoomChange(`${this.state.currentTenant}/${replacedStr}`);
     }
 
     /**
@@ -740,15 +711,11 @@ class WelcomePage extends AbstractWelcomePage {
      */
     _onJoin() {
         const roomname = this._roomInputRef.value || this.state.generatedRoomname; // value at the roomname input tag
+        const { currentTenant } = this.state;
 
-        if(!this.state.inputTenant) {
-            this.setState(() => ({ room: `${this.state.currentTenant}/${roomname}` }), () => {
-                super._onJoin();
-            });
-        }
-        else {
+        this.setState(() => ({ room: `${currentTenant}/${roomname}` }), () => {
             super._onJoin();
-        }
+        });
     }
 
     /**
@@ -906,10 +873,6 @@ class WelcomePage extends AbstractWelcomePage {
 
     _setVirtualTenantRef(el) {
         this._virtualTenantRef = el;
-    }
-
-    _setTenantInputRef(el) {
-        this._tenantInputRef = el;
     }
 
     /**

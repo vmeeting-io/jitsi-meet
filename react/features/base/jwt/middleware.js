@@ -158,6 +158,7 @@ function _setJWT(store, next, action) {
                     action.group = context.group;
                     action.server = context.server;
                     action.tenant = context.tenant || sub || undefined;
+                    action.siteName = context.siteName;
                     action.user = user;
 
                     user && _overwriteLocalParticipant(

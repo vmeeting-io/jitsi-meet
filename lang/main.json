@@ -1216,7 +1216,7 @@
             "videomute": "Start / Stop camera",
             "videoblur": "Toggle video blur",
             "selectBackground": "Select Background",
-            "selectVirtualAvatar": "Select Virtual Avatar",
+            "selectVirtualAvatar": "Select Background/Avatar",
             "expand": "Expand",
             "collapse": "Collapse"
         },
@@ -1324,7 +1324,7 @@
         "whiteboardOpen": "Open whiteboard",
         "videoSettings": "Video settings",
         "selectBackground": "Select background",
-        "selectVirtualAvatar": "Select virtual avatar"
+        "selectVirtualAvatar": "Select background/avatar"
     },
     "transcribing": {
         "ccButtonTooltip": "Start / Stop subtitles",

@@ -1212,7 +1212,7 @@
             "videomute": "카메라 토글",
             "videoblur": "카메라 블러 토글",
             "selectBackground": "배경 선택",
-            "selectVirtualAvatar": "아바타 선택",
+            "selectVirtualAvatar": "배경/아바타 선택",
             "expand": "펼치기",
             "collapse": "접기"
         },
@@ -1320,7 +1320,7 @@
         "whiteboardOpen": "판서 열기",
         "videoSettings": "비디오 설정",
         "selectBackground": "배경 선택",
-        "selectVirtualAvatar": "아바타 선택"
+        "selectVirtualAvatar": "배경/아바타 선택"
     },
     "transcribing": {
         "ccButtonTooltip": "자막 시작 / 중지",

@@ -173,7 +173,7 @@ export const getGlobalStyles = (theme: Object) => {
         },
 
         // @atlaskit/modal-dialog OVERRIDES
-        '.welcome-page .atlaskit-portal': {
+        '.welcome-page.show-notice .atlaskit-portal': {
             // notice dialog container
             '& div[data-autofocus-inside=true] > div:nth-child(2)': {
                 marginLeft: 24,

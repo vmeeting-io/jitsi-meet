@@ -43,6 +43,17 @@ function NoticeDialog() {
         setData(newData);
     }, [data]);
 
+    const setModalState = useCallback(bool => {
+        if (showModal === bool) return;
+
+        if (bool) {
+            document.body.classList.add('show-notice');
+        } else {
+            document.body.classList.remove('show-notice');
+        }
+        setShowModal(bool);
+    }, [showModal]);
+
     useEffect(() => {
         const hasVisitedBefore = JSON.parse(jitsiLocalStorage.getItem(HAS_VISITED_BEFORE) || '{}');
         posts()
@@ -58,15 +69,15 @@ function NoticeDialog() {
 
     useEffect(() => {
         if (data.length === 0) {
-            setShowModal(false);
+            setModalState(false);
             return;
         }
 
         const hasVisitedBefore = JSON.parse(jitsiLocalStorage.getItem(HAS_VISITED_BEFORE) || '{}');
         const hiddens = filter(data, item => hasVisitedBefore[item._id] > now);
 
-        setShowModal(data.length > 0 && hiddens.length < data.length);
-    }, [data]);
+        setModalState(data.length > 0 && hiddens.length < data.length);
+    }, [data, setModalState]);
 
     if (!showModal) return null;
 

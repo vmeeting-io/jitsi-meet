@@ -56,7 +56,7 @@ function _mapStateToProps(state) {
         : state['features/base/config'].noticeMessage;
 
     return {
-        _message: decodeURIComponent(noticeMessage)
+        _message: noticeMessage ? decodeURIComponent(noticeMessage) : ''
     };
 }
 export default translate(connect(_mapStateToProps)(Notice));

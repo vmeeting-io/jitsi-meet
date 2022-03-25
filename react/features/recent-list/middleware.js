@@ -142,7 +142,7 @@ function _setRoom({ dispatch, getState }, next, action) {
 
             // remove search
             newURL.search = '';
-            dispatch(_storeCurrentConference(newURL));
+            dispatch(_storeCurrentConference(newURL, action.roomInfo?.site_name || tenant));
 
             // Whatever domain the feature recent-list knows about, the app as a
             // whole should know about.

@@ -19,7 +19,7 @@ export function toDisplayableList(recentList) {
                     date: item.date,
                     duration: item.duration,
                     time: [ item.date ],
-                    title: `${conf.tenant} / ${safeDecodeURIComponent(conf.room)}`,
+                    title: `${item.siteName || conf.tenant} / ${safeDecodeURIComponent(conf.room)}`,
                     url: item.conference
                 };
             }));

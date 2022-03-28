@@ -157,11 +157,13 @@
     .notice-dialog-container {
         display: flex;
         gap: 10px;
+        overflow-x: auto;
     }
 
     .notice-dialog-wrapper {
         background-color: white;
         height: fit-content;
+        width: 400px;
     }
 
     .notice-dialog-content {
@@ -172,6 +174,12 @@
         padding:  0 1rem;
         padding: 0;
         background: white;
+        width: 400px;
+
+        img {
+            width: 100%;
+            object-fit: contain;
+        }
     }
 
     .notice-dialog-footer {

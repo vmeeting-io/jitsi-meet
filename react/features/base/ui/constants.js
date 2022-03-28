@@ -178,7 +178,8 @@ export const getGlobalStyles = (theme: Object) => {
             '& div[data-autofocus-inside=true] > div:nth-child(2)': {
                 marginLeft: 24,
                 top: 60,
-                width: 'auto'
+                width: 'auto',
+                maxWidth: 'calc(100vh - 48px)'
             },
 
             '& div[role=dialog]': {

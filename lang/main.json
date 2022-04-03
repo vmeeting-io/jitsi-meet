@@ -538,13 +538,13 @@
 
     "virtualAvatar": {
         "apply": "Apply",
-        "title": "Virtual Avatar",
-        "removeVirtualAvatar": "Remove Avatar",
+        "title": " Avatar and Background",
+        "removeVirtualAvatar": "Remove avatar",
+        "customAvatar": "Custom avatar",
         "pleaseWait": "Please wait...",
         "none": "None",
-        "image1": "Cute Boy",
-        "image2": "Cute Girl",
-
+        "uploadImage": "Upload Image",
+        "readyplayerAvatar": "Customized avatar",
         "webAssemblyWarning": "WebAssembly not supported",
         "webAssemblyWarningDescription": "WebAssembly disabled or not supported by this browser"
     },
@@ -1200,7 +1200,7 @@
             "videomute": "Start / Stop camera",
             "videoblur": "Toggle video blur",
             "selectBackground": "Select Background",
-            "selectVirtualAvatar": "Select Virtual Avatar",
+            "selectVirtualAvatar": "Select Virtual Avatar and Background",
             "expand": "Expand",
             "collapse": "Collapse"
         },
@@ -1305,7 +1305,7 @@
         "whiteboardOpen": "Open whiteboard",
         "videoSettings": "Video settings",
         "selectBackground": "Select background",
-        "selectVirtualAvatar": "Select virtual avatar"
+        "selectVirtualAvatar": "Select avatar & background"
     },
     "transcribing": {
         "ccButtonTooltip": "Start / Stop subtitles",

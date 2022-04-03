@@ -10,10 +10,11 @@ import Video from '../../base/media/components/Video';
 import { connect, equals } from '../../base/redux';
 import { getCurrentCameraDeviceId } from '../../base/settings';
 import { createLocalTracksF } from '../../base/tracks/functions';
+import { toggleAvatarAndBackgroundEffects } from '../functions';
 import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications';
 import { showWarningNotification } from '../../notifications/actions';
 import { toggleVirtualAvatarEffect } from '../actions';
-import { localTrackStopped } from '../functions';
+import { toggleBackgroundEffect } from '../../virtual-background/actions';
 import logger from '../logger';
 
 const videoClassName = 'video-preview-video';
@@ -154,10 +155,10 @@ class VirtualAvatarPreview extends PureComponent<Props, State> {
      *
      * @returns {Promise}
      */
-    async _applyVirtualAvatarEffect() {
+    async _applyAvatarAndBackgroundEffect() {
         this.setState({ loading: true });
         this.props.loadedPreview(false);
-        await this.props.dispatch(toggleVirtualAvatarEffect(this.props.options, this.state.jitsiTrack));
+        await toggleAvatarAndBackgroundEffects(this.props.dispatch, this.props.options, this.state.jitsiTrack);
         this.props.loadedPreview(true);
         this.setState({ loading: false });
     }
@@ -243,10 +244,7 @@ class VirtualAvatarPreview extends PureComponent<Props, State> {
             this._setTracks();
         }
         if (!equals(this.props.options, prevProps.options) && this.state.localTrackLoaded) {
-            this._applyVirtualAvatarEffect();
-        }
-        if (this.props.options.url?.videoType === VIDEO_TYPE.DESKTOP) {
-            localTrackStopped(this.props.dispatch, this.props.options.url, this.state.jitsiTrack);
+            await this._applyAvatarAndBackgroundEffect();
         }
     }
 

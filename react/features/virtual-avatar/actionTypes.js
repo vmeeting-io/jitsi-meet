@@ -16,10 +16,10 @@ export const VIRTUAL_AVATAR_ENABLED = 'VIRTUAL_AVATAR_ENABLED';
  *
  * @returns {{
  *     type: SET_VIRTUAL_AVATAR,
- *     virtualSource: string,
  *     virtualAvatarType: string,
  *     selectedVirtualAvatarUrl: string,
- *     selectedAvatarBackgroundUrl: string
+ *     selectedBackgroundUrl: string,
+ *     selectedBackgroundId: string
  * }}
  */
 export const SET_VIRTUAL_AVATAR = 'SET_VIRTUAL_AVATAR';

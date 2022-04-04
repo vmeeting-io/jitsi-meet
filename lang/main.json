@@ -543,13 +543,13 @@
     },
     "virtualAvatar": {
         "apply": "Apply",
-        "title": "Virtual Avatar",
-        "removeVirtualAvatar": "Remove Avatar",
+        "title": " Avatar and Background",
+        "removeVirtualAvatar": "Remove avatar",
+        "customAvatar": "Custom avatar",
         "pleaseWait": "Please wait...",
         "none": "None",
-        "image1": "Cute Boy",
-        "image2": "Cute Girl",
-
+        "uploadImage": "Upload Image",
+        "readyplayerAvatar": "Customized avatar",
         "webAssemblyWarning": "WebAssembly not supported",
         "webAssemblyWarningDescription": "WebAssembly disabled or not supported by this browser"
     },

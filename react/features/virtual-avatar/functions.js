@@ -4,6 +4,7 @@ import { JitsiTrackEvents } from '../base/lib-jitsi-meet';
 import { updateSettings } from '../base/settings';
 
 import { toggleVirtualAvatarEffect } from './actions';
+import { toggleBackgroundEffect } from '../virtual-background/actions';
 let filterSupport;
 
 declare var APP: Object;
@@ -94,36 +95,6 @@ export function resizeImage(base64image: any, width: number = 1920, height: numb
 }
 
 /**
- * Check if the local desktop track was stopped and apply none option on virtual avatar.
- *
- * @param {Function} dispatch - The Redux dispatch function.
- * @param {Object} desktopTrack - The desktop track that needs to be checked if it was stopped.
- * @param {Object} currentLocalTrack - The current local track where we apply none virtual
- * avatar option if the desktop track was stopped.
- * @returns {Promise}
- */
-export function localTrackStopped(dispatch: Function, desktopTrack: Object, currentLocalTrack: Object) {
-    const noneOptions = {
-        enabled: false,
-        virtualAvatarType: 'none',
-        selectedVirtualAvatarUrl: 'none',
-        selectedAvatarBackgroundUrl: 'none',
-        virtualAvatarEffectEnabled: false
-    };
-
-    desktopTrack
-    && desktopTrack.on(JitsiTrackEvents.LOCAL_TRACK_STOPPED, () => {
-        dispatch(toggleVirtualAvatarEffect(noneOptions, currentLocalTrack));
-
-        // Set x scale to default value.
-        dispatch(updateSettings({
-            localFlipX: true
-        }));
-    });
-}
-
-
-/**
  * Creating a wrapper for promises on a specific time interval.
  *
  * @param {number} milliseconds - The number of milliseconds to wait the specified
@@ -143,4 +114,48 @@ export function timeout(milliseconds: number, promise: Promise<*>): Promise<Obje
 
         promise.then(resolve, reject);
     });
+}
+
+/**
+ * extract the compatible options for virtual background from avatar options.
+ * This function is used to integrate virtual background selection into virtual avatar
+ * without changing the original virtual background code
+ *
+ * @param {object} options - The virtual avatars options
+ * @returns {object} - the compatible option for virtual background
+ */
+export function optionsToBackgroundOptions(options: object) {
+    let bgOptions = {}
+    if (options.enabled === true || options.selectedBackgroundUrl === 'none') {
+        bgOptions = {
+            enabled: false,
+            selectedThumbnail: 'none'
+        };
+    } else {
+        bgOptions = {
+            enabled: true,
+            backgroundType: 'image',
+            selectedThumbnail: options.selectedBackgroundId,
+            url: options.selectedBackgroundUrl
+        }
+    }
+
+    return bgOptions;
+}
+
+/**
+ * handle toggle avatar and background effect from the avatar options
+ */
+export async function toggleAvatarAndBackgroundEffects(dispatch: function, options: object, jitsiTrack: object) {
+    const bgOptions = optionsToBackgroundOptions(options);
+    // we need to do this because the latter effect will override  the former.
+    // but the first one still need to run to disable its current effect if it is
+    // currently enabled.
+    if (options.enabled === true) {
+        await dispatch(toggleBackgroundEffect(bgOptions, jitsiTrack));
+        await dispatch(toggleVirtualAvatarEffect(options, jitsiTrack));
+    } else {
+        await dispatch(toggleVirtualAvatarEffect(options, jitsiTrack));
+        await dispatch(toggleBackgroundEffect(bgOptions, jitsiTrack));
+    }
 }

@@ -316,7 +316,7 @@ export default class JitsiStreamVirtualAvatarEffect {
     startEffect(stream: MediaStream) {
         const width = 1280;
         const height = 720;
-        const frameRate = 25;
+        const frameRate = 30;
 
         this.usedServices += 1;
 

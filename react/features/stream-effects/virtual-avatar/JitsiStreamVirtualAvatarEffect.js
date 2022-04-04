@@ -338,7 +338,7 @@ export default class JitsiStreamVirtualAvatarEffect {
             });
 
             this.renderer.setSize(width, height);
-            this.renderer.setPixelRatio(window.devicePixelRatio);
+            // this.renderer.setPixelRatio(window.devicePixelRatio);
 
             // camera
             this.orbitCamera = new THREE.PerspectiveCamera(35);

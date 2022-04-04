@@ -320,15 +320,8 @@ export default class JitsiStreamVirtualAvatarEffect {
 
         this.usedServices += 1;
 
-        // FIXME: when preview dialog is cancel, the stream is disposed, but no new stream is applied.
-        // therefore bellow is a hacky way that get and use the original stream instead of the stream
-        // provided with startEffect.
-        const tracks = APP.store.getState()['features/base/tracks'];
-        const localVideoStream = getLocalVideoTrack(tracks)?.jitsiTrack?._originalStream;
-        const inputStream = localVideoStream? localVideoStream : stream;
-
         if (! this._stream) {
-            this._stream = inputStream;
+            this._stream = stream;
 
             this._maskFrameTimerWorker = new Worker(timerWorkerScript, { name: 'virtual avatar effect worker' });
             this._maskFrameTimerWorker.onmessage = this._onMaskFrameTimer;
@@ -354,8 +347,8 @@ export default class JitsiStreamVirtualAvatarEffect {
 
             this.outputStream = this.renderer.domElement.captureStream(frameRate);
 
-        } else if (this._stream !== inputStream) {
-            this._stream = inputStream;
+        } else if (this._stream !== stream) {
+            this._stream = stream;
             this._inputVideoElement.srcObject = this._stream;
             this._inputVideoElement.load();
         }

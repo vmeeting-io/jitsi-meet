@@ -263,11 +263,11 @@ function VirtualAvatar({
         setOptions(originOptions);
 
         if (originAvatar.virtualAvatarEffectEnabled) {
-            await dispatch(toggleVirtualAvatarEffect(originOptions, _jitsiTrack));
+            await toggleAvatarAndBackgroundEffects(dispatch, originOptions, _jitsiTrack);
             dispatch(updateSettings({
                 localFlipX: originAvatar.virtualAvatarEffectEnabled? false : _localFlipX
             }));
-            await dispatch(virtualAvatarTrackChanged());
+            dispatch(virtualAvatarTrackChanged());
         }
     }, [dispatch, originAvatar, options, _localFlipX ]);
 

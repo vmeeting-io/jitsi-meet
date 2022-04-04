@@ -641,6 +641,12 @@ function mapStateToProps(state, ownProps): Object {
     const { premeetingBackground } = state['features/dynamic-branding'];
     const _attentionAnalysisEnabled = isAttentionAnalysisEnabled(state);
 
+    // check select-virtual-avatar
+    const found = premeetingButtons.indexOf('select-background');
+    if (found >= 0 && state['features/base/config'].toolbarButtons.includes('select-virtual-avatar')) {
+        premeetingButtons.splice(found, 1, 'select-virtual-avatar');
+    }
+
     return {
         _attentionAnalysisEnabled,
         _buttons: premeetingButtons.filter(b => !hideButtons.includes(b)),

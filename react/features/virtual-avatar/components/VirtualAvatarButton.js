@@ -1,8 +1,8 @@
 // @flow
-import PersonIcon from '@atlaskit/icon/glyph/person'
 
 import { openDialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
+import { IconVirtualBackground } from '../../base/icons';
 import { connect } from '../../base/redux';
 import { AbstractButton } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
@@ -31,7 +31,7 @@ type Props = AbstractButtonProps & {
  */
 class VirtualAvatarButton extends AbstractButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.selectVirtualAvatar';
-    icon = PersonIcon;
+    icon = IconVirtualBackground;
     label = 'toolbar.selectVirtualAvatar';
     tooltip = 'toolbar.selectVirtualAvatar';
 

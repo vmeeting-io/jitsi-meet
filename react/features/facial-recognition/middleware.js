@@ -89,6 +89,11 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
 
         return next(action);
     }
+    case VIRTUAL_AVATAR_TRACK_CHANGED: {
+        dispatch(resetTrack());
+
+        return next(action);
+    }
     case ADD_FACIAL_EXPRESSION: {
         const state = getState();
         const conference = getCurrentConference(state);

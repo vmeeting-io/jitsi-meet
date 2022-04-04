@@ -420,11 +420,11 @@ function VirtualAvatar({
     return (
         <Dialog
             className = 'virtual-background-dialog-content'
-            hideCancelButton = { false }
+            hideCancelButton={ createVirtualAvatar? true : false }
             okKey = { 'virtualAvatar.apply' }
             onCancel = { cancelVirtualAvatar }
             onSubmit = { applyVirtualAvatar }
-            submitDisabled = { !options || loading || !previewIsLoaded }
+            submitDisabled={ createVirtualAvatar? true : (!options || loading || !previewIsLoaded) }
             width={createVirtualAvatar? 960 : 600}
             titleKey = { 'virtualAvatar.title' } >
             {createVirtualAvatar ? (

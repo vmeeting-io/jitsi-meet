@@ -303,6 +303,7 @@ class Toolbox extends Component<Props> {
         super(props);
 
         // Bind event handlers so they are only bound once per instance.
+        this._closeOverflowMenuIfOpen = this._closeOverflowMenuIfOpen.bind(this);
         this._onMouseOut = this._onMouseOut.bind(this);
         this._onMouseOver = this._onMouseOver.bind(this);
         this._onSetOverflowVisible = this._onSetOverflowVisible.bind(this);
@@ -749,6 +750,7 @@ class Toolbox extends Component<Props> {
         };
 
         const etherpad = {
+            afterClick: this._closeOverflowMenuIfOpen,
             key: 'etherpad',
             Content: SharedDocumentButton,
             group: 3

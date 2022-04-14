@@ -194,7 +194,7 @@ class DBList extends AbstractDBList<Props, State> {
             baseURL
         } = this.props;
 
-        const AUTH_API_BASE = process.env.VMEETING_API_BASE;
+        const AUTH_API_BASE = window._env_.VMEETING_API_BASE;
         const apiBaseUrl = `${baseURL.origin}${AUTH_API_BASE}`;
         try {
             axios.post(`${apiBaseUrl}/conferences/get-conference-by-email`, {
@@ -217,7 +217,7 @@ class DBList extends AbstractDBList<Props, State> {
             baseURL
         } = this.props;
 
-        const AUTH_API_BASE = process.env.VMEETING_API_BASE;
+        const AUTH_API_BASE = window._env_.VMEETING_API_BASE;
         const apiBaseUrl = `${baseURL.origin}${AUTH_API_BASE}`;
         
         try {

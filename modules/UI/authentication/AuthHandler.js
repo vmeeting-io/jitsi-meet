@@ -23,7 +23,7 @@ let externalAuthWindow;
 declare var APP: Object;
 
 const logger = Logger.getLogger(__filename);
-const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
+const AUTH_PAGE_BASE = window._env_.VMEETING_FRONT_BASE;
 
 
 /**

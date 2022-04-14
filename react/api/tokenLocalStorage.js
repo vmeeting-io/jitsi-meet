@@ -8,7 +8,7 @@ import { getAuthServerURL } from './url';
 const DEFAULT_TOKEN_VERSION = "2";
 const JWT_TOKEN_VERSION = navigator.product === 'ReactNative'
     ? DEFAULT_TOKEN_VERSION
-    : process.env.JWT_TOKEN_VERSION;
+    : window._env_.JWT_TOKEN_VERSION;
 
 class TokenLocalStorage {
     validateToken(url, token) {

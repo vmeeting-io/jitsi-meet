@@ -23,7 +23,7 @@ import {
 } from '../../../../did-consent';
 import { isAttentionAnalysisEnabled } from '../../../../face-detect/functions';
 
-const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
+const AUTH_PAGE_BASE = window._env_.VMEETING_FRONT_BASE;
 
 /**
  * Wraps a specific React Component in order to enable translations in it.

@@ -23,7 +23,7 @@ import {
 } from './functions';
 import FaceDetect from './FaceDetect';
 
-const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
+const AUTH_PAGE_BASE = window._env_.VMEETING_FRONT_BASE;
 
 export function initFaceDetect() {
     return function(dispatch, getState) {

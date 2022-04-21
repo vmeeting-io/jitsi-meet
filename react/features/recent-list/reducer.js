@@ -143,7 +143,7 @@ function _getLegacyRecentRoomList(): Array<Object> {
  * @param {Object} action - The redux action.
  * @returns {Object}
  */
-function _storeCurrentConference(state, { locationURL }) {
+function _storeCurrentConference(state, { locationURL, siteName }) {
     const conference = locationURL.href;
 
     // If the current conference is already in the list, we remove it to re-add
@@ -155,7 +155,8 @@ function _storeCurrentConference(state, { locationURL }) {
     nextState.push({
         conference,
         date: Date.now(),
-        duration: 0 // We don't have the duration yet!
+        duration: 0, // We don't have the duration yet!
+        siteName
     });
 
     // Ensure the list doesn't exceed a/the maximum size.

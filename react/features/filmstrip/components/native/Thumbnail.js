@@ -14,7 +14,8 @@ import {
     isEveryoneModerator,
     pinParticipant,
     getParticipantByIdOrUndefined,
-    getLocalParticipant
+    getLocalParticipant,
+    hasRaisedHand
 } from '../../../base/participants';
 import { Container } from '../../../base/react';
 import { connect } from '../../../base/redux';
@@ -85,6 +86,11 @@ type Props = {
     _pinned: boolean,
 
     /**
+     * Whether or not the participant has the hand raised.
+     */
+    _raisedHand: boolean,
+
+    /**
      * Whether to show the dominant speaker indicator or not.
      */
     _renderDominantSpeakerIndicator: boolean,
@@ -132,7 +138,7 @@ type Props = {
     renderDisplayName: ?boolean,
 
     /**
-     * If true, it tells the thumbnail that it needs to behave differently. E.g. react differently to a single tap.
+     * If true, it tells the thumbnail that it needs to behave differently. E.g. React differently to a single tap.
      */
     tileView?: boolean
 };
@@ -217,7 +223,9 @@ class Thumbnail extends PureComponent<Props> {
         const indicators = [];
 
         if (renderModeratorIndicator) {
-            indicators.push(<View style = { styles.moderatorIndicatorContainer }>
+            indicators.push(<View
+                key = 'moderator-indicator'
+                style = { styles.moderatorIndicatorContainer }>
                 <ModeratorIndicator />
             </View>);
         }
@@ -265,6 +273,7 @@ class Thumbnail extends PureComponent<Props> {
             _participantId: participantId,
             _participantInLargeVideo: participantInLargeVideo,
             _pinned,
+            _raisedHand,
             _styles,
             disableTint,
             height,
@@ -287,7 +296,8 @@ class Thumbnail extends PureComponent<Props> {
                 style = { [
                     styles.thumbnail,
                     _pinned && !tileView ? _styles.thumbnailPinned : null,
-                    styleOverrides
+                    styleOverrides,
+                    _raisedHand ? styles.thumbnailRaisedHand : null
                 ] }
                 touchFeedback = { false }>
                 <ParticipantView
@@ -352,6 +362,7 @@ function _mapStateToProps(state, ownProps) {
         _participantInLargeVideo: participantInLargeVideo,
         _participantId: id,
         _pinned: participant?.pinned,
+        _raisedHand: hasRaisedHand(participant),
         _renderDominantSpeakerIndicator: renderDominantSpeakerIndicator,
         _renderModeratorIndicator: renderModeratorIndicator,
         _styles: ColorSchemeRegistry.get(state, 'Thumbnail'),

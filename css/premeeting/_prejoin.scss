@@ -18,10 +18,15 @@
     }
 }
 
+.prejoin-help {
+    color: white;
+    font-size: 14px;
+    line-height: 32px;
+}
+
 .prejoin-preview {
     &-dropdown-btns {
         padding: 8px 0;
-        width: calc(100% - 48px);
     }
   
     &-dropdown-btn {
@@ -59,8 +64,6 @@
             background: #fff;
             padding: 0;
             position: absolute !important;
-            top: 48px !important;
-            transform: none !important;
             width: 100%;
         }
     }

@@ -9,13 +9,12 @@ import { createWelcomePageEvent, sendAnalytics } from '../../analytics';
 import { appNavigate } from '../../app/actions';
 import isInsecureRoomName from '../../base/util/isInsecureRoomName';
 import { isCalendarEnabled } from '../../calendar-sync';
-import { showNotification } from '../../notifications';
 import { isRecentListEnabled } from '../../recent-list/functions';
 
 /**
  * {@code AbstractWelcomePage}'s React {@code Component} prop types.
  */
-type Props = {
+export type Props = {
 
     /**
      * Whether the calendar functionality is enabled or not.
@@ -33,7 +32,7 @@ type Props = {
     _moderatedRoomServiceUrl: ?string,
 
     /**
-     * Whether the recent list is enabled
+     * Whether the recent list is enabled.
      */
     _recentListEnabled: Boolean,
 
@@ -63,7 +62,7 @@ type Props = {
  *
  * @abstract
  */
-export class AbstractWelcomePage extends Component<Props, *> {
+export class AbstractWelcomePage<P: Props> extends Component<P, *> {
     _mounted: ?boolean;
 
     /**
@@ -71,7 +70,7 @@ export class AbstractWelcomePage extends Component<Props, *> {
      *
      * @inheritdoc
      */
-    static getDerivedStateFromProps(props: Props, state: Object) {
+    static getDerivedStateFromProps(props: P, state: Object) {
         return {
             room: state.room
         };
@@ -106,7 +105,7 @@ export class AbstractWelcomePage extends Component<Props, *> {
      * @param {Props} props - The React {@code Component} props to initialize
      * the new {@code AbstractWelcomePage} instance with.
      */
-    constructor(props: Props) {
+    constructor(props: P) {
         super(props);
 
         // Bind event handlers so they are only bound once per instance.
@@ -236,7 +235,7 @@ export class AbstractWelcomePage extends Component<Props, *> {
         });
     }
 
-    _renderInsecureRoomNameWarning: () => React$Component<any>;;
+    _renderInsecureRoomNameWarning: () => React$Component<any>;
 
     /**
      * Renders the insecure room name warning if needed.
@@ -285,14 +284,23 @@ export class AbstractWelcomePage extends Component<Props, *> {
  * @returns {Props}
  */
 export function _mapStateToProps(state: Object) {
+    const {
+        enableInsecureRoomNameWarning,
+        logoUrl,
+        moderatedRoomServiceUrl,
+        toolbarButtons = []
+    } = state['features/base/config'];
+
     return {
         _calendarEnabled: isCalendarEnabled(state),
-        _enableInsecureRoomNameWarning: state['features/base/config'].enableInsecureRoomNameWarning || false,
-        _moderatedRoomServiceUrl: state['features/base/config'].moderatedRoomServiceUrl,
+        _defaultLogoUrl: logoUrl,
+        _enableInsecureRoomNameWarning: enableInsecureRoomNameWarning || false,
+        _moderatedRoomServiceUrl: moderatedRoomServiceUrl,
         _recentListEnabled: isRecentListEnabled(),
         _room: state['features/base/conference'].room,
         _settings: state['features/base/settings'],
         _user: state['features/base/jwt'].user,
-        _jwt: state['features/base/jwt']
+        _jwt: state['features/base/jwt'],
+        _virtualAvatarSupport: toolbarButtons.includes('select-virtual-avatar')
     };
 }

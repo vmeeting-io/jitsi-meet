@@ -76,7 +76,7 @@ export default class AbstractTimerDialog<P:Props = Props>
         currentDateTime.setSeconds( currentDateTime.getSeconds() + duration.seconds + 1 ); 
         const endUNIXTime = currentDateTime.getTime();
 
-        notifyTimerStarted(initiator,endUNIXTime);
+        dispatch(notifyTimerStarted(initiator,endUNIXTime));
         return true;
     }
     
@@ -90,7 +90,7 @@ export default class AbstractTimerDialog<P:Props = Props>
      */
     _onStopped() {
         const { dispatch, initiator } = this.props;
-        notifyTimerStopped(initiator);
+        dispatch(notifyTimerStopped(initiator));
         return true;
     }
 }

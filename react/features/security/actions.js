@@ -28,7 +28,7 @@ export function toggleScope() {
         if (room) {
             const baseURL = getState()['features/base/connection'].locationURL;
 
-            const AUTH_API_BASE = process.env.VMEETING_API_BASE;
+            const AUTH_API_BASE = window._env_.VMEETING_API_BASE;
             const apiBaseUrl = `${baseURL.origin}${AUTH_API_BASE}`;
 
             try {

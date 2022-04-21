@@ -11,17 +11,6 @@ export const SCREEN_SHARE_REMOTE_PARTICIPANTS_UPDATED
     = 'SCREEN_SHARE_REMOTE_PARTICIPANTS_UPDATED';
 
 /**
- * The type of the action which set the current page info
- * to be displayed.
- *
- * @returns {{
- *     type: SET_PAGINATION,
- *     pagination: Object,
- * }}
- */
-export const SET_PAGINATION = 'SET_PAGINATION';
-
-/**
  * The type of the action which enables or disables the feature for showing
  * video thumbnails in a two-axis tile view.
  *

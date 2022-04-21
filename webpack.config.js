@@ -3,7 +3,6 @@
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const dotenv = require('dotenv');
 const fs = require('fs');
-const path = require('path');
 const { join } = require('path');
 const process = require('process');
 const webpack = require('webpack');
@@ -87,9 +86,8 @@ function devServerProxyBypass({ path }) {
         || path.startsWith('/lang/')
         || path.startsWith('/sounds/')
         || path.startsWith('/static/')
-        // || path.endsWith('.wasm')
+        || path.endsWith('.wasm')
     ) {
-
         return path;
     }
 
@@ -131,14 +129,9 @@ function getConfig(options = {}) {
                     // presets when lib-jitsi-meet, for example, is npm linked in
                     // jitsi-meet.
                     plugins: [
-                        require.resolve('@babel/plugin-transform-flow-strip-types'),
-                        require.resolve('@babel/plugin-proposal-class-properties'),
-                        require.resolve('@babel/plugin-proposal-export-default-from'),
-                        require.resolve('@babel/plugin-proposal-export-namespace-from'),
-                        require.resolve('@babel/plugin-proposal-nullish-coalescing-operator'),
-                        require.resolve('@babel/plugin-proposal-optional-chaining'),
-                        require.resolve('@babel/plugin-syntax-dynamic-import')
+                        require.resolve('@babel/plugin-proposal-export-default-from')
                     ],
+
                     presets: [
                         [
                             require.resolve('@babel/preset-env'),
@@ -152,19 +145,20 @@ function getConfig(options = {}) {
                                 // done unnecessarily. For browsers not specified
                                 // here, the ES2015+ profile will be used.
                                 targets: {
-                                    chrome: 58,
-                                    electron: 2,
-                                    firefox: 54,
-                                    safari: 11
+                                    chrome: 80,
+                                    electron: 10,
+                                    firefox: 68,
+                                    safari: 14
                                 }
 
                             }
                         ],
                         require.resolve('@babel/preset-flow'),
-                        require.resolve('@babel/preset-react')
+                        require.resolve('@babel/preset-typescript'),
+                        require.resolve('@babel/preset-react'),
                     ]
                 },
-                test: /\.jsx?$/
+                test: /\.(js|ts)x?$/
             }, {
                 // TODO: get rid of this.
                 // Expose jquery as the globals $ and jQuery because it is expected
@@ -231,7 +225,15 @@ function getConfig(options = {}) {
                         expandProps: 'start'
                     }
                 } ]
-            } ]
+            }, {
+                test: /\.wasm$/i,
+                type: 'javascript/auto',
+                use: [{ loader: 'file-loader' }]
+            }, {
+                test: /\.ts?$/,
+                use: [{ loader: 'ts-loader' }],
+                // exclude: /node_modules/,
+            }, ]
         },
         node: {
             // Allow the use of the real filename of the module being executed. By
@@ -245,7 +247,7 @@ function getConfig(options = {}) {
         },
         output: {
             filename: `[name]${minimize ? '.min' : ''}.js`,
-            path: path.resolve(__dirname, 'build'),
+            path: `${__dirname}/build`,
             publicPath: '/libs/',
             sourceMapFilename: '[file].map'
         },
@@ -254,7 +256,7 @@ function getConfig(options = {}) {
             detectCircularDeps
                 && new CircularDependencyPlugin({
                     allowAsyncCycles: false,
-                    exclude: /node_modules/,
+                    // exclude: /node_modules/,
                     failOnError: false
                 })
         ].filter(Boolean),
@@ -270,6 +272,8 @@ function getConfig(options = {}) {
 
                 // Webpack defaults:
                 '.js',
+                '.ts',
+                '.tsx',
                 '.json'
             ],
             fallback: {
@@ -436,6 +440,17 @@ module.exports = (_env, argv) => {
             performance: getPerformanceHints(perfHintOptions, 200 * 1024)
         }),
 
+        Object.assign({}, config, {
+            entry: {
+                'facial-expressions-worker': './react/features/facial-recognition/facialExpressionsWorker.js'
+            },
+            plugins: [
+                ...config.plugins,
+                ...getBundleAnalyzerPlugin(analyzeBundle, 'facial-expressions-worker')
+            ],
+            performance: getPerformanceHints(perfHintOptions, 1024 * 1024)
+        }),
+
         ...(isProduction ? [] : [
             Object.assign({}, config, {
                 entry: {
@@ -444,8 +459,20 @@ module.exports = (_env, argv) => {
                 output: Object.assign({}, config.output, {
                     library: 'JitsiMeetJS',
                     libraryTarget: 'umd',
+                    path: join(process.cwd(), 'lib-jitsi-meet', 'dist', 'umd')
                 })
-            })
+            }),
+
+            // Object.assign({}, config, {
+            //     entry: {
+            //         'kalidokit': './kalidokit/src/index.ts'
+            //     },
+            //     output: Object.assign({}, config.output, {
+            //         library: 'kalidokit',
+            //         libraryTarget: 'umd',
+            //         path: `${__dirname}/dist`,
+            //     })
+            // })
         ])
     ];
 };

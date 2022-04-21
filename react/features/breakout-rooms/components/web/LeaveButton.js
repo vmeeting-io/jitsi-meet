@@ -1,30 +1,39 @@
 // @flow
 
+import { makeStyles } from '@material-ui/styles';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
-import { Icon, IconHangup } from '../../../base/icons';
+import { createBreakoutRoomsEvent, sendAnalytics } from '../../../analytics';
+import ParticipantPaneBaseButton from '../../../participants-pane/components/web/ParticipantPaneBaseButton';
 import { moveToRoom } from '../../actions';
 
-import { RoomLeaveButton } from './styled';
+const useStyles = makeStyles(theme => {
+    return {
+        button: {
+            color: theme.palette.textError,
+            width: '100%',
+        }
+    };
+});
 
 export const LeaveButton = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
+    const styles = useStyles();
 
     const onLeave = useCallback(() => {
+        sendAnalytics(createBreakoutRoomsEvent('leave'));
         dispatch(moveToRoom());
     }, [ dispatch ]);
 
     return (
-        <RoomLeaveButton
-            aria-label = { t('breakoutRooms.actions.leaveBreakoutRoom') }
+        <ParticipantPaneBaseButton
+            accessibilityLabel = { t('breakoutRooms.actions.leaveBreakoutRoom') }
+            className = { styles.button }
             onClick = { onLeave }>
-            <Icon
-                size = { 20 }
-                src = { IconHangup } />
-            <span>{ t('breakoutRooms.actions.leaveBreakoutRoom') }</span>
-        </RoomLeaveButton>
+            {t('breakoutRooms.actions.leaveBreakoutRoom')}
+        </ParticipantPaneBaseButton>
     );
 };

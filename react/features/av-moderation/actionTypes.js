@@ -29,50 +29,42 @@ export const ENABLE_MODERATION = 'ENABLE_MODERATION';
 
 
 /**
- * The type of (redux) action which signals that Audio Moderation disable has been requested.
+ * The type of (redux) action which signals that moderation disable has been requested.
  *
  * {
- *     type: REQUEST_DISABLE_AUDIO_MODERATION
+ *     type: REQUEST_DISABLE_MODERATION
  * }
  */
-export const REQUEST_DISABLE_AUDIO_MODERATION = 'REQUEST_DISABLE_AUDIO_MODERATION';
+export const REQUEST_DISABLE_MODERATION = 'REQUEST_DISABLE_MODERATION';
 
 /**
- * The type of (redux) action which signals that Video Moderation disable has been requested.
+ * The type of (redux) action which signals that moderation enable has been requested.
  *
  * {
- *     type: REQUEST_DISABLE_VIDEO_MODERATION
+ *     type: REQUEST_ENABLE_MODERATION
  * }
  */
-export const REQUEST_DISABLE_VIDEO_MODERATION = 'REQUEST_DISABLE_VIDEO_MODERATION';
-
-/**
- * The type of (redux) action which signals that Audio Moderation enable has been requested.
- *
- * {
- *     type: REQUEST_ENABLE_AUDIO_MODERATION
- * }
- */
-export const REQUEST_ENABLE_AUDIO_MODERATION = 'REQUEST_ENABLE_AUDIO_MODERATION';
-
-/**
- * The type of (redux) action which signals that Video Moderation enable has been requested.
- *
- * {
- *     type: REQUEST_ENABLE_VIDEO_MODERATION
- * }
- */
-export const REQUEST_ENABLE_VIDEO_MODERATION = 'REQUEST_ENABLE_VIDEO_MODERATION';
+export const REQUEST_ENABLE_MODERATION = 'REQUEST_ENABLE_MODERATION';
 
 /**
  * The type of (redux) action which signals that the local participant had been approved.
  *
  * {
  *     type: LOCAL_PARTICIPANT_APPROVED,
- *     mediaType: MediaType
+ *     kind: string
  * }
  */
 export const LOCAL_PARTICIPANT_APPROVED = 'LOCAL_PARTICIPANT_APPROVED';
+
+/**
+ * The type of (redux) action which signals that the local participant had been blocked.
+ *
+ * {
+ *     type: LOCAL_PARTICIPANT_REJECTED,
+ *     kind: string
+ * }
+ */
+export const LOCAL_PARTICIPANT_REJECTED = 'LOCAL_PARTICIPANT_REJECTED';
 
 /**
  * The type of (redux) action which signals to show notification to the local participant.
@@ -84,15 +76,26 @@ export const LOCAL_PARTICIPANT_APPROVED = 'LOCAL_PARTICIPANT_APPROVED';
 export const LOCAL_PARTICIPANT_MODERATION_NOTIFICATION = 'LOCAL_PARTICIPANT_MODERATION_NOTIFICATION';
 
 /**
- * The type of (redux) action which signals that a participant was approved for a media type.
+ * The type of (redux) action which signals that a participant was approved for a kind.
  *
  * {
  *     type: PARTICIPANT_APPROVED,
- *     mediaType: MediaType
+ *     kind: string
  *     participantId: String
  * }
  */
 export const PARTICIPANT_APPROVED = 'PARTICIPANT_APPROVED';
+
+/**
+ * The type of (redux) action which signals that a participant was blocked for a kind.
+ *
+ * {
+ *     type: PARTICIPANT_REJECTED,
+ *     kind: string
+ *     participantId: String
+ * }
+ */
+export const PARTICIPANT_REJECTED = 'PARTICIPANT_REJECTED';
 
 
 /**
@@ -103,3 +106,5 @@ export const PARTICIPANT_APPROVED = 'PARTICIPANT_APPROVED';
  * }
  */
 export const PARTICIPANT_PENDING_AUDIO = 'PARTICIPANT_PENDING_AUDIO';
+
+export const _RESET_MODERATIONS = '_RESET_MODERATIONS';

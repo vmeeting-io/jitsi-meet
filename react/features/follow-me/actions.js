@@ -42,7 +42,7 @@ export function setFollowMeState(state: ?Object, value: ?string) {
     };
 }
 
-export function grantFollowMeModerator(id: ?string) {
+export function grantFollowMeModerator(id: ?string, right: ?boolean) {
     return function(dispatch, getState) {
         const state = getState();
         const conference = getCurrentConference(state);
@@ -60,16 +60,18 @@ export function grantFollowMeModerator(id: ?string) {
             dispatch(setFollowMe(false));
         }
 
-        setTimeout(() => {
-            if (id === localParticipant.id) {
-                dispatch(setFollowMe(true));
-            } else {
-                conference.sendMessage({
-                    type: GRANT_FOLLOW_ME_MODERATOR,
-                    id,
-                    enabled: true
-                }, id);
-            }
-        });
+        if (right) {
+            setTimeout(() => {
+                if (id === localParticipant.id) {
+                    dispatch(setFollowMe(true));
+                } else {
+                    conference.sendMessage({
+                        type: GRANT_FOLLOW_ME_MODERATOR,
+                        id,
+                        enabled: true
+                    }, id);
+                }
+            });
+        }
     };
 }

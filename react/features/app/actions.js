@@ -36,7 +36,7 @@ import {
     toURLString
 } from '../base/util';
 import { isVpaasMeeting } from '../jaas/functions';
-import { clearNotifications, saveErrorNotification, showNotification } from '../notifications';
+import { NOTIFICATION_TIMEOUT_TYPE, clearNotifications, saveErrorNotification, showNotification } from '../notifications';
 import { setFatalError } from '../overlay';
 
 import {
@@ -244,7 +244,6 @@ export function appNavigate(uri: ?string) {
         }
 
         // 방 접속 전에 한번 더 불리는 것을 방지하기 위해서 pathname 체크.
-        // host가 지정된 경우, host 값이 true인 경우만 방장으로 참석한다.
         if (room &&
             pathname !== '/' &&
             (browser.isReactNative() || window.location.pathname === pathname) &&
@@ -275,14 +274,14 @@ export function appNavigate(uri: ?string) {
             try {
                 const headers = jwt ? { Authorization: `Bearer ${jwt}` } : {};
                 resp = await axios.post(apiUrl, {
-                    name: room,
+                    name: getBackendSafeRoomName(room),
                     start_time: new Date(),
                 }, { headers });
-                roomInfo = resp.data;
-                roomInfo.isHost = true;
+                roomInfo = resp.data.conference;
+                roomInfo.isHost = roomInfo?.mail_owner === user?.email;
             } catch (err) {
                 console.log('Request is failed.', err.response);
-                const { error } = err.response?.data || {};
+                const { error, conference } = err.response?.data || {};
 
                 switch (error) {
                     case LICENSE_ERROR_INVALID_LICENSE:
@@ -298,6 +297,12 @@ export function appNavigate(uri: ?string) {
                         }));
                         dispatch(redirectWithStoredParams('/'));
                         return;
+                    }
+                    default: {
+                        roomInfo = conference;
+                        if (roomInfo) {
+                            roomInfo.isHost = roomInfo.mail_owner === user?.email;
+                        }
                     }
                 }
             }
@@ -326,6 +331,13 @@ export function redirectWithStoredParams(pathname: string) {
         const newLocationURL = new URL(locationURL.href);
 
         newLocationURL.pathname = pathname;
+
+        if (newLocationURL.search) {
+            let search = qs.parse(newLocationURL.search);
+            delete search.token;
+            newLocationURL.search = `?${qs.stringify(search)}`;
+        }
+
         window.location.assign(newLocationURL.toString());
     };
 }
@@ -494,7 +506,7 @@ export function maybeRedirectToWelcomePage(options: Object = {}) {
             dispatch(showNotification({
                 titleArguments: { appName: getName() },
                 titleKey: 'dialog.thankYou'
-            }));
+            }, NOTIFICATION_TIMEOUT_TYPE.STICKY));
         }
 
         // if Welcome page is enabled redirect to welcome page after 3 sec, if

@@ -18,15 +18,21 @@ class GrantFollowMeModeratorDialog extends AbstractGrantModeratorDialog {
      * @returns {ReactElement}
      */
     render() {
+        const { _isFollowMeModerator, t } = this.props;
+        const title = _isFollowMeModerator
+            ? 'dialog.cancelFollowMeModeratorTitle'
+            : 'dialog.grantFollowMeModeratorTitle';
+        const description = _isFollowMeModerator
+            ? 'dialog.cancelFollowMeModeratorDialog'
+            : 'dialog.grantFollowMeModeratorDialog';
+
         return (
             <Dialog
                 okKey = 'dialog.Yes'
                 onSubmit = { this._onSubmit }
-                titleKey = 'dialog.grantFollowMeModeratorTitle'
+                titleKey = { title }
                 width = 'small'>
-                <div>
-                    { this.props.t('dialog.grantFollowMeModeratorDialog') }
-                </div>
+                <div>{ t(description) }</div>
             </Dialog>
         );
     }

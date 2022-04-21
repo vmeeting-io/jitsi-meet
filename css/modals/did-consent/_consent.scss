@@ -1,17 +1,26 @@
 .consent-message{
     text-align: justify;
     min-height: 210px;
+    word-break: keep-all;
 }
 
 .consent-message-kr{
     text-align: justify;
     min-height: 187px;
+    word-break: keep-all;
 }
 
-.consent-message-login{
+.consent-message-login {
     text-align: justify;
     min-height: 100px;
+    word-break: keep-all;
 }
+
+
+.did-v2-font{
+    font-size: 14px;
+}
+
 
 
 // .consent-form-input-textbox{
@@ -218,11 +227,13 @@
 
 .consent-three-wrapper .barcode{
     flex: 2.2;
+    margin-right: 16px;
+    max-width: calc(50% - 16px);
 }
 
-.barcode > img{
-    width: 170px;
-    height: 170px;
+.barcode > img {
+    width: 100%;
+    height: 100%;
 }
 
 .consent-three-wrapper .consent-three-info{

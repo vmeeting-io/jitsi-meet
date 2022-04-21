@@ -43,10 +43,10 @@ class ChatButton extends AbstractButton<Props, *> {
     /**
      * Required by linter due to AbstractButton overwritten prop being writable.
      *
-     * @param {string} value - The value.
+     * @param {string} _value - The value.
      */
-    set tooltip(value) {
-        return value;
+    set tooltip(_value) {
+        // Unused.
     }
 
     /**
@@ -84,12 +84,13 @@ class ChatButton extends AbstractButton<Props, *> {
      * @returns {boReact$Nodeolean}
      */
     render(): React$Node {
+        const { showLabel } = this.props;
+
         return (
             <div
-                className = 'toolbar-button-with-badge'
+                className = {`toolbar-button-with-badge${showLabel ? ' show-label' : ''}`}
                 key = 'chatcontainer'>
                 {super.render()}
-                <ChatCounter />
             </div>
         );
     }

@@ -37,7 +37,6 @@
      */
     position: fixed;
     top: 0;
-    transition: height .3s ease-in;
     right: 0;
     z-index: $filmstripVideosZ;
 
@@ -52,11 +51,6 @@
         right: 0;
         width: auto;
 
-        &.hidden {
-            bottom: auto;
-            right: -196px;
-        }
-
         /**
         * An id selector is used to match id specificity with existing
         * filmstrip styles.
@@ -64,26 +58,7 @@
         &#remoteVideos {
             border: $thumbnailsBorder solid transparent;
             padding-left: 0;
-            transition: right 2s;
             width: 100%;
-
-            .page-button {
-                position: relative;
-                top: initial;
-                left: initial;
-                right: initial;
-                bottom: initial;
-                box-sizing: border-box;
-                width: 120px;
-                padding: 0;
-
-                &.prev {
-                    margin: 2px;
-                }
-                &.next {
-                    margin: 2px;
-                }
-            }
         }
     }
 
@@ -133,6 +108,7 @@
     .remote-videos {
         display: flex;
         transition: height .3s ease-in;
+        overscroll-behavior: contain;
 
         & > div {
             position: absolute;

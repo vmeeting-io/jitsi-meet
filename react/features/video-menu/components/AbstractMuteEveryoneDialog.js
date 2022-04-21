@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { requestDisableAudioModeration, requestEnableAudioModeration } from '../../av-moderation/actions';
+import { requestDisableModeration, requestEnableModeration } from '../../av-moderation/actions';
 import { isEnabledFromState, isSupported } from '../../av-moderation/functions';
 import { Dialog } from '../../base/dialog';
 import { MEDIA_TYPE } from '../../base/media';
@@ -37,7 +37,7 @@ type State = {
  * An abstract Component with the contents for a dialog that asks for confirmation
  * from the user before muting all remote participants.
  *
- * @extends AbstractMuteRemoteParticipantDialog
+ * @augments AbstractMuteRemoteParticipantDialog
  */
 export default class AbstractMuteEveryoneDialog<P: Props> extends AbstractMuteRemoteParticipantDialog<P, State> {
     static defaultProps = {
@@ -105,9 +105,9 @@ export default class AbstractMuteEveryoneDialog<P: Props> extends AbstractMuteRe
 
         dispatch(muteAllParticipants(exclude, MEDIA_TYPE.AUDIO));
         if (this.state.audioModerationEnabled) {
-            dispatch(requestEnableAudioModeration());
+            dispatch(requestEnableModeration(MEDIA_TYPE.AUDIO));
         } else if (this.state.audioModerationEnabled !== undefined) {
-            dispatch(requestDisableAudioModeration());
+            dispatch(requestDisableModeration(MEDIA_TYPE.AUDIO));
         }
 
         return true;

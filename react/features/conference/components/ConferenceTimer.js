@@ -1,6 +1,6 @@
 // @flow
 
-import React, { Component } from 'react';
+import { Component } from 'react';
 
 import { renderConferenceTimer } from '../';
 import { getConferenceTimestamp, getConferenceTimeRemained } from '../../base/conference/functions';
@@ -43,7 +43,7 @@ type State = {
  * ConferenceTimer react component.
  *
  * @class ConferenceTimer
- * @extends Component
+ * @augments Component
  */
 class ConferenceTimer extends Component<Props, State> {
 

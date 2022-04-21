@@ -4,7 +4,7 @@ import type { Dispatch } from 'redux';
 
 import { getParticipantDisplayName } from '../base/participants';
 import {
-    NOTIFICATION_TIMEOUT,
+    NOTIFICATION_TIMEOUT_TYPE,
     NOTIFICATION_TYPE,
     showNotification
 } from '../notifications';
@@ -35,7 +35,7 @@ export function notifyKickedOut(participant: Object, _: ?Function) { // eslint-d
             descriptionArguments: args,
             titleKey: 'dialog.kickTitle',
             titleArguments: args
-        }));
+        }, NOTIFICATION_TIMEOUT_TYPE.STICKY));
     };
 }
 
@@ -54,7 +54,7 @@ export function notifyChatDisabled(participant: Object, _: ?Function) { // eslin
         dispatch(showNotification({
             titleKey: 'dialog.chatDisabledMessage',
             titleArguments: args,
-        }, NOTIFICATION_TIMEOUT * 10));
+        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
     };
 }
 
@@ -73,6 +73,6 @@ export function notifyChatEnabled(participant: Object, _: ?Function) { // eslint
         dispatch(showNotification({
             titleKey: 'dialog.chatEnabledMessage',
             titleArguments: args
-        }, NOTIFICATION_TIMEOUT * 10));
+        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
     };
 }

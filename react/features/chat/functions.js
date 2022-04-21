@@ -3,7 +3,7 @@
 import aliases from 'react-emoji-render/data/aliases';
 import emojiAsciiAliases from 'react-emoji-render/data/asciiAliases';
 import { getAuthUrl } from '../../api/url';
-import { showToast } from '../../features/notifications';
+import { NOTIFICATION_TIMEOUT, showToast } from '../../features/notifications';
 import { i18next } from '../base/i18n';
 import { getConferenceName } from '../base/conference';
 import moment from 'moment';
@@ -13,39 +13,56 @@ import { sendMessage, setFileUploadedPercentageValue } from './actions.any';
 
 /**
  * An ASCII emoticon regexp array to find and replace old-style ASCII
- * emoticons (such as :O) to new Unicode representation, so then devices
- * and browsers that support them can render these natively without
- * a 3rd party component.
+ * emoticons (such as :O) with the new Unicode representation, so that
+ * devices and browsers that support them can render these natively
+ * without a 3rd party component.
  *
  * NOTE: this is currently only used on mobile, but it can be used
  * on web too once we drop support for browsers that don't support
  * unicode emoji rendering.
  */
-const EMOTICON_REGEXP_ARRAY: Array<Array<Object>> = [];
+const ASCII_EMOTICON_REGEXP_ARRAY: Array<Array<Object>> = [];
+
+/**
+ * An emoji regexp array to find and replace alias emoticons
+ * (such as :smiley:) with the new Unicode representation, so that
+ * devices and browsers that support them can render these natively
+ * without a 3rd party component.
+ *
+ * NOTE: this is currently only used on mobile, but it can be used
+ * on web too once we drop support for browsers that don't support
+ * unicode emoji rendering.
+ */
+const SLACK_EMOJI_REGEXP_ARRAY: Array<Array<Object>> = [];
 
 (function() {
     for (const [ key, value ] of Object.entries(aliases)) {
-        let escapedValues;
-        const asciiEmojies = emojiAsciiAliases[key];
 
-        // Adding ascii emoticons
-        if (asciiEmojies) {
-            escapedValues = asciiEmojies.map(v => escapeRegexp(v));
-        } else {
-            escapedValues = [];
+        // Add ASCII emoticons
+        const asciiEmoticons = emojiAsciiAliases[key];
+
+        if (asciiEmoticons) {
+            const asciiEscapedValues = asciiEmoticons.map(v => escapeRegexp(v));
+
+            const asciiRegexp = `(${asciiEscapedValues.join('|')})`;
+
+            // Escape urls
+            const formattedAsciiRegexp = key === 'confused'
+                ? `(?=(${asciiRegexp}))(:(?!//).)`
+                : asciiRegexp;
+
+            ASCII_EMOTICON_REGEXP_ARRAY.push([ new RegExp(formattedAsciiRegexp, 'g'), value ]);
         }
 
-        // Adding slack-type emoji format
-        escapedValues.push(escapeRegexp(`:${key}:`));
+        // Add slack-type emojis
+        const emojiRegexp = `\\B(${escapeRegexp(`:${key}:`)})\\B`;
 
-        const regexp = `\\B(${escapedValues.join('|')})\\B`;
-
-        EMOTICON_REGEXP_ARRAY.push([ new RegExp(regexp, 'g'), value ]);
+        SLACK_EMOJI_REGEXP_ARRAY.push([ new RegExp(emojiRegexp, 'g'), value ]);
     }
 })();
 
 /**
- * Replaces ascii and other non-unicode emoticons with unicode emojis to let the emojis be rendered
+ * Replaces ASCII and other non-unicode emoticons with unicode emojis to let the emojis be rendered
  * by the platform native renderer.
  *
  * @param {string} message - The message to parse and replace.
@@ -54,7 +71,11 @@ const EMOTICON_REGEXP_ARRAY: Array<Array<Object>> = [];
 export function replaceNonUnicodeEmojis(message: string) {
     let replacedMessage = message;
 
-    for (const [ regexp, replaceValue ] of EMOTICON_REGEXP_ARRAY) {
+    for (const [ regexp, replaceValue ] of SLACK_EMOJI_REGEXP_ARRAY) {
+        replacedMessage = replacedMessage.replace(regexp, replaceValue);
+    }
+
+    for (const [ regexp, replaceValue ] of ASCII_EMOTICON_REGEXP_ARRAY) {
         replacedMessage = replacedMessage.replace(regexp, replaceValue);
     }
 
@@ -75,14 +96,30 @@ export function getUnreadCount(state: Object) {
         return 0;
     }
 
+    let reactionMessages = 0;
+
     if (navigator.product === 'ReactNative') {
         // React native stores the messages in a reversed order.
-        return messages.indexOf(lastReadMessage);
+        const lastReadIndex = messages.indexOf(lastReadMessage);
+
+        for (let i = 0; i < lastReadIndex; i++) {
+            if (messages[i].isReaction) {
+                reactionMessages++;
+            }
+        }
+
+        return lastReadIndex - reactionMessages;
     }
 
     const lastReadIndex = messages.lastIndexOf(lastReadMessage);
 
-    return messagesCount - (lastReadIndex + 1);
+    for (let i = lastReadIndex + 1; i < messagesCount; i++) {
+        if (messages[i].isReaction) {
+            reactionMessages++;
+        }
+    }
+
+    return messagesCount - (lastReadIndex + 1) - reactionMessages;
 }
 
 /**
@@ -115,7 +152,6 @@ export async function uploadFile(file, store, fileUploadInProgress) {
     }
 
     const MAX_FILE_SIZE_FOR_UPLOAD = 314572800; // 300 MB = 300 X 1024 X 1024 bytes
-    const NOTIFICATION_TIMEOUT = 3000;
 
     // use the option fileUploadInProgress if we wish to allow only one file upload at a time
     // and unless the file is completely uploaded, new files cannot be uploaded
@@ -173,7 +209,7 @@ export async function uploadFile(file, store, fileUploadInProgress) {
             // the URL of the server should be adjusted accordingly
 
             // we use encodeURIComponent to ensure that spaces and special characters in filename is well-replaced to represent a URL
-            const newFileUrl = `${serverURL}download/files/${roomName}/${encodeURIComponent(resp.data.fileName)}`;
+            const newFileUrl = `${serverURL}download/files/${encodeURIComponent(roomName)}/${encodeURIComponent(resp.data.fileName)}`;
 
             // dispatch sendMessage action to display the URL of the uploaded file as a message
             dispatch(sendMessage(newFileUrl));
@@ -188,7 +224,7 @@ export async function uploadFile(file, store, fileUploadInProgress) {
         console.log("Error is: ", err);
         showToast({
             title: i18next.t('fileupload.error'), // need to use translated strings here
-            timeout: NOTIFICATION_TIMEOUT,
+            timeout: NOTIFICATION_TIMEOUT.MEDIUM,
             icon: 'error',
             animation: false });
     }

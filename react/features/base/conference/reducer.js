@@ -11,12 +11,12 @@ import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
     CONFERENCE_LEFT,
+    CONFERENCE_LOCAL_SUBJECT_CHANGED,
     CONFERENCE_SUBJECT_CHANGED,
     CONFERENCE_TIMESTAMP_CHANGED,
     CONFERENCE_TIME_REMAINED,
     CONFERENCE_WILL_JOIN,
     CONFERENCE_WILL_LEAVE,
-    DEVICE_ACCESS_DISABLED,
     LOCK_STATE_CHANGED,
     P2P_STATUS_CHANGED,
     SET_FOLLOW_ME,
@@ -26,7 +26,8 @@ import {
     SET_ROOM,
     SET_START_MUTED_POLICY,
     START_RANDOM_SELECTION_COUNTDOWN,
-    START_TIMER
+    START_TIMER,
+    SET_START_REACTIONS_MUTED
 } from './actionTypes';
 import { isRoomValid } from './functions';
 
@@ -65,6 +66,9 @@ ReducerRegistry.register(
         case CONFERENCE_TIME_REMAINED:
             return set(state, 'conferenceTimeRemained', action.timeRemained);
 
+        case CONFERENCE_LOCAL_SUBJECT_CHANGED:
+            return set(state, 'localSubject', action.localSubject);
+
         case CONFERENCE_TIMESTAMP_CHANGED:
             return set(state, 'conferenceTimestamp', action.conferenceTimestamp);
 
@@ -87,6 +91,9 @@ ReducerRegistry.register(
         case SET_FOLLOW_ME:
             return set(state, 'followMeEnabled', action.enabled);
 
+        case SET_START_REACTIONS_MUTED:
+            return set(state, 'startReactionsMuted', action.muted);
+
         case SET_LOCATION_URL:
             return set(state, 'room', undefined);
 
@@ -106,15 +113,6 @@ ReducerRegistry.register(
                 startVideoMutedPolicy: action.startVideoMutedPolicy
             };
         
-        case DEVICE_ACCESS_DISABLED:
-            return  {
-                ...state, 
-                roomInfo : { 
-                    ...state.roomInfo, 
-                    userDeviceAccessDisabled: action.userDeviceAccessDisabled },
-                userDeviceAccessDisabled: action.userDeviceAccessDisabled
-            };
-
         case START_TIMER:
             return {
                 ...state,
@@ -415,13 +413,15 @@ function _setPassword(state, { conference, method, password }) {
              *
              * @type {string}
              */
-            password
+            password,
+            roomInfo: { ...state.roomInfo, password }
         });
 
     case conference.lock:
         return assign(state, {
             locked: password ? LOCKED_LOCALLY : undefined,
-            password
+            password,
+            roomInfo: { ...state.roomInfo, password }
         });
     }
 

@@ -138,7 +138,6 @@
 
                 .toolbox-content-items {
                     background: transparent;
-                    border-radius: 0;
                     box-shadow: none;
                     display: flex;
                     justify-content: space-evenly;
@@ -151,6 +150,26 @@
                     box-sizing: border-box;
                     width: 100%;
                 }
+            }
+        }
+
+        .prejoin-did {
+            .consent-message-title {
+                margin-bottom: 32px;
+            }
+
+            button {
+                border-radius: 6px;
+                box-sizing: border-box;
+                cursor: pointer;
+                display: inline-block;
+                font-size: 14px;
+                font-weight: 600;
+                line-height: 24px;
+                padding: 7px 16px;
+                position: relative;
+                text-align: center;
+                height: auto;
             }
         }
     }
@@ -168,6 +187,19 @@
             position: fixed;
             top: 0;
             width: $prejoinDefaultContentWidth;
+        }
+    }
+
+    // mobile phone landscape
+    @media (max-height: 420px) {
+        flex-direction: row;
+
+        div.content {
+            padding: 16px 16px 0 16px;
+        }
+
+        .con-status {
+            display: none;
         }
     }
 
@@ -226,8 +258,6 @@
     .avatar {
         text {
             fill: white;
-            font-size: 26px;
-            font-weight: 400;
         }
     }
 

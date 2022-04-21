@@ -12,12 +12,12 @@ type Props = {
     askUnmuteText: string,
 
     /**
-     * Callback for the mouse leaving this item
+     * Callback for the mouse leaving this item.
      */
     lowerMenu: Function,
 
     /**
-     * Callback for the activation of this item's context menu
+     * Callback for the activation of this item's context menu.
      */
     toggleMenu: Function,
 
@@ -27,14 +27,9 @@ type Props = {
     muteAudio: Function,
 
     /**
-     * The translated text for the mute participant button.
-     */
-    muteParticipantButtonText: string,
-
-    /**
      * The meeting participants.
      */
-     participantIds: Array<string>,
+    participantIds: Array<string>,
 
     /**
      * Callback used to open an actions drawer for a participant.
@@ -57,6 +52,11 @@ type Props = {
     participantActionEllipsisLabel: string,
 
     /**
+     * Current search string.
+     */
+    searchString?: string,
+
+    /**
      * The translated "you" text.
      */
     youText: string
@@ -72,27 +72,27 @@ function MeetingParticipantItems({
     lowerMenu,
     toggleMenu,
     muteAudio,
-    muteParticipantButtonText,
     participantIds,
     openDrawerForParticipant,
     overflowDrawer,
     raiseContextId,
     participantActionEllipsisLabel,
+    searchString,
     youText
-}) {
+}: Props) {
     const renderParticipant = id => (
         <MeetingParticipantItem
             askUnmuteText = { askUnmuteText }
             isHighlighted = { raiseContextId === id }
             key = { id }
             muteAudio = { muteAudio }
-            muteParticipantButtonText = { muteParticipantButtonText }
             onContextMenu = { toggleMenu(id) }
             onLeave = { lowerMenu }
             openDrawerForParticipant = { openDrawerForParticipant }
             overflowDrawer = { overflowDrawer }
             participantActionEllipsisLabel = { participantActionEllipsisLabel }
             participantID = { id }
+            searchString = { searchString }
             youText = { youText } />
     );
 

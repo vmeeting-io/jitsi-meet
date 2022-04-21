@@ -10,6 +10,7 @@ import {
     getParticipantByIdOrUndefined,
     getParticipantDisplayName,
     getPinnedParticipant,
+    hasRaisedHand,
     isParticipantModerator
 } from '../../../base/participants';
 import { connect } from '../../../base/redux';
@@ -19,20 +20,27 @@ import {
     isParticipantAudioMuted,
     isParticipantVideoMuted
 } from '../../../base/tracks';
-import { isFollowMeEnabled } from '../../../follow-me';
+import { getFollowMeModerator } from '../../../follow-me';
 import { ACTION_TRIGGER, type MediaState, MEDIA_STATE } from '../../constants';
 import {
     getParticipantAudioMediaState,
+    getParticipantPresenterMediaState,
     getParticipantVideoMediaState,
     getQuickActionButtonType,
-    isTodayParticipantBirthday
+    isTodayParticipantBirthday,
+    participantMatchesSearch
 } from '../../functions';
-import ParticipantQuickAction from '../ParticipantQuickAction';
 
+import ParticipantActionEllipsis from './ParticipantActionEllipsis';
 import ParticipantItem from './ParticipantItem';
-import { ParticipantActionEllipsis } from './styled';
+import ParticipantQuickAction from './ParticipantQuickAction';
 
 type Props = {
+
+    /**
+     *  Whether or not to enable the ai attention analysis
+     */
+    _aiAttentionAnalysisEnabled: Boolean,
 
     /**
      * Media state for audio.
@@ -50,17 +58,6 @@ type Props = {
     _disableModeratorIndicator: boolean,
 
     /**
-     * Boolean value that denotes whether or not today is participant's birthday
-     */
-    _isParticipantBirthday: Boolean,
-
-    /**
-     * Media state for video.
-     */
-    _videoMediaState: MediaState,
-
-
-    /**
      * The display name of the participant.
      */
     _displayName: string,
@@ -71,9 +68,19 @@ type Props = {
     _isModerationSupported: boolean,
 
     /**
+     * Boolean value that denotes whether or not today is participant's birthday
+     */
+    _isParticipantBirthday: Boolean,
+
+    /**
      * True if the participant is the local participant.
      */
-    _local: Boolean,
+    _local: boolean,
+
+    /**
+     * Whether or not the local participant is moderator.
+     */
+    _localModerator: boolean,
 
     /**
      * Whether or not the local participant is moderator.
@@ -84,6 +91,11 @@ type Props = {
      * Shared video local participant owner.
      */
     _localVideoOwner: boolean,
+
+    /**
+     * Whether or not the participant name matches the search string.
+     */
+    _matchesSearch: boolean,
 
     /**
      * The participant.
@@ -109,12 +121,17 @@ type Props = {
     _raisedHand: boolean,
 
     /**
+     * Media state for video.
+     */
+    _videoMediaState: MediaState,
+
+    /**
      * The translated ask unmute text for the qiuck action buttons.
      */
     askUnmuteText: string,
 
     /**
-     * Is this item highlighted
+     * Is this item highlighted.
      */
     isHighlighted: boolean,
 
@@ -124,17 +141,12 @@ type Props = {
     muteAudio: Function,
 
     /**
-     * The translated text for the mute participant button.
-     */
-    muteParticipantButtonText: string,
-
-    /**
-     * Callback for the activation of this item's context menu
+     * Callback for the activation of this item's context menu.
      */
     onContextMenu: Function,
 
     /**
-     * Callback for the mouse leaving this item
+     * Callback for the mouse leaving this item.
      */
     onLeave: Function,
 
@@ -148,7 +160,6 @@ type Props = {
      */
     overflowDrawer: boolean,
 
-
     /**
      * The aria-label for the ellipsis action.
      */
@@ -158,6 +169,11 @@ type Props = {
      * The ID of the participant.
      */
     participantID: ?string,
+
+    /**
+     * The translate function.
+     */
+    t: Function,
 
     /**
      * The translated "you" text.
@@ -173,30 +189,32 @@ type Props = {
  */
 function MeetingParticipantItem({
     _aiAttentionAnalysisEnabled,
+    _askToUnmuteText,
     _audioMediaState,
     _audioTrack,
     _disableModeratorIndicator,
     _displayName,
     _followMeModerator,
     _isParticipantBirthday,
-    _isVideoMuted,
     _local,
     _localVideoOwner,
+    _matchesSearch,
+    _muteParticipantButtonText,
     _participant,
     _participantID,
+    _presenterMediaState,
     _isPinned,
     _quickActionButtonType,
     _raisedHand,
     _videoMediaState,
-    askUnmuteText,
     isHighlighted,
     muteAudio,
-    muteParticipantButtonText,
     onContextMenu,
     onLeave,
     openDrawerForParticipant,
     overflowDrawer,
     participantActionEllipsisLabel,
+    t,
     youText
 }: Props) {
 
@@ -229,20 +247,17 @@ function MeetingParticipantItem({
         };
     }, [ _audioTrack ]);
 
+    if (!_matchesSearch) {
+        return null;
+    }
+
     const audioMediaState = _audioMediaState === MEDIA_STATE.UNMUTED && hasAudioLevels
         ? MEDIA_STATE.DOMINANT_SPEAKER : _audioMediaState;
-
-    let askToUnmuteText = askUnmuteText;
-
-    if (_audioMediaState !== MEDIA_STATE.FORCE_MUTED && _videoMediaState === MEDIA_STATE.FORCE_MUTED) {
-        askToUnmuteText = t('participantsPane.actions.allowVideo');
-    }
 
     return (
         <ParticipantItem
             actionsTrigger = { ACTION_TRIGGER.HOVER }
             aiAttentionFlag = { _aiAttentionAnalysisEnabled }
-            isVideoMuted = { _isVideoMuted }
             audioMediaState = { audioMediaState }
             disableModeratorIndicator = { _disableModeratorIndicator }
             displayName = { _displayName }
@@ -256,34 +271,37 @@ function MeetingParticipantItem({
             openDrawerForParticipant = { openDrawerForParticipant }
             overflowDrawer = { overflowDrawer }
             participantID = { _participantID }
-            participantStatus = { _participant.presence }
+            participantStatus = { _participant?.presence }
+            pinEnabled = { true }
+            presenterMediaState = { _presenterMediaState }
             raisedHand = { _raisedHand }
             videoMediaState = { _videoMediaState }
             youText = { youText }>
 
-            {!overflowDrawer && (_isParticipantBirthday || !_local) && !_participant?.isFakeParticipant
+            {!overflowDrawer && !_local && !_participant?.isFakeParticipant
                 && <>
                     <ParticipantQuickAction
-                        askUnmuteText = { askToUnmuteText }
+                        askUnmuteText = { _askToUnmuteText }
                         buttonType = { _quickActionButtonType }
                         muteAudio = { muteAudio }
-                        muteParticipantButtonText = { muteParticipantButtonText }
-                        participantID = { _participantID } />
+                        muteParticipantButtonText = { _muteParticipantButtonText }
+                        participantID = { _participantID }
+                        participantName = { _displayName } />
                     <ParticipantActionEllipsis
-                        aria-label = { participantActionEllipsisLabel }
+                        accessibilityLabel = { participantActionEllipsisLabel }
                         onClick = { onContextMenu } />
                 </>
             }
 
-            {!overflowDrawer && _local && !_participant?.isFakeParticipant &&
+            {!overflowDrawer && _local && (_isParticipantBirthday || isParticipantModerator(_participant)) && !_participant?.isFakeParticipant && (
                 <ParticipantActionEllipsis
                     aria-label = { participantActionEllipsisLabel }
                     onClick = { onContextMenu } />
-            }
+            )}
 
             {!overflowDrawer && _localVideoOwner && _participant?.isFakeParticipant && (
                 <ParticipantActionEllipsis
-                    aria-label = { participantActionEllipsisLabel }
+                    accessibilityLabel = { participantActionEllipsisLabel }
                     onClick = { onContextMenu } />
             )}
         </ParticipantItem>
@@ -300,47 +318,53 @@ function MeetingParticipantItem({
  */
 function _mapStateToProps(state, ownProps): Object {
     const { aiAttentionAnalysisEnabled } = state['features/base/settings'];
-    const { participantID } = ownProps;
+    const { askUnmuteText, participantID, searchString, t } = ownProps;
     const { ownerId } = state['features/shared-video'];
     const localParticipantId = getLocalParticipant(state).id;
 
     const participant = getParticipantByIdOrUndefined(state, participantID);
     const pinnedParticipant = getPinnedParticipant(state);
 
+    const _displayName = getParticipantDisplayName(state, participant?.id);
+    const _matchesSearch = participantMatchesSearch(participant, searchString);
+
     const _isAudioMuted = isParticipantAudioMuted(participant, state);
     const _isVideoMuted = isParticipantVideoMuted(participant, state);
     const _audioMediaState = getParticipantAudioMediaState(participant, _isAudioMuted, state);
     const _videoMediaState = getParticipantVideoMediaState(participant, _isVideoMuted, state);
+    const _presenterMediaState = getParticipantPresenterMediaState(participant, state);
     const _quickActionButtonType = getQuickActionButtonType(participant, _isAudioMuted, state);
 
-    const isParticipantBirthday = isTodayParticipantBirthday(participant);
+    const isParticipantBirthday = isTodayParticipantBirthday(participant)(state);
     const tracks = state['features/base/tracks'];
     const _audioTrack = participantID === localParticipantId
         ? getLocalAudioTrack(tracks) : getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.AUDIO, participantID);
 
     const { disableModeratorIndicator } = state['features/base/config'];
-    let _followMeModerator = state['features/follow-me'].moderator;
 
-    if (!_followMeModerator && isFollowMeEnabled(state)) {
-        _followMeModerator = getLocalParticipant(state).id;
-    }
+    const askToUnmuteText = askUnmuteText;
+
+    const _muteParticipantButtonText = _isAudioMuted ? t('dialog.muteParticipantsVideoButton') : t('dialog.muteParticipantButton');
 
     return {
         _aiAttentionAnalysisEnabled: aiAttentionAnalysisEnabled,
+        _askToUnmuteText: askToUnmuteText,
         _audioMediaState,
         _audioTrack,
         _disableModeratorIndicator: disableModeratorIndicator,
-        _displayName: getParticipantDisplayName(state, participant?.id),
-        _followMeModerator,
+        _displayName,
+        _followMeModerator: getFollowMeModerator(state),
         _isParticipantBirthday: isParticipantBirthday,
         _isPinned: participant === pinnedParticipant,
-        _isVideoMuted,
         _local: Boolean(participant?.local),
         _localVideoOwner: Boolean(ownerId === localParticipantId),
+        _matchesSearch,
+        _muteParticipantButtonText,
         _participant: participant,
         _participantID: participant?.id,
+        _presenterMediaState,
         _quickActionButtonType,
-        _raisedHand: Boolean(participant?.raisedHand),
+        _raisedHand: hasRaisedHand(participant),
         _videoMediaState
     };
 }

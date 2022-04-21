@@ -19,7 +19,6 @@ import { SS_DEFAULT_FRAME_RATE } from '../../constants';
 export type Props = {
     ...$Exact<AbstractDialogTabProps>,
 
-    aiAttentionFlag: boolean,
     /**
      * The currently selected desktop share frame rate in the frame rate select dropdown.
      */
@@ -37,19 +36,24 @@ export type Props = {
     desktopShareFramerates: Array<number>,
 
     /**
+     * Whether to show hide self view setting.
+     */
+    disableHideSelfView: boolean,
+
+    /**
      * Whether or not follow me is currently active (enabled by some other participant).
      */
     followMeActive: boolean,
 
     /**
-     * Whether or not the user has selected the Follow Me feature to be enabled.
-     */
-    followMeEnabled: boolean,
-
-    /**
      * All available languages to display in the language select dropdown.
      */
     languages: Array<string>,
+
+    /**
+     * The types of enabled notifications that can be configured and their specific visibility.
+     */
+    enabledNotifications: Object,
 
     /**
      * Whether or not to display the language select dropdown.
@@ -62,6 +66,11 @@ export type Props = {
     showModeratorSettings: boolean,
 
     /**
+     * Whether or not to display notifications settings.
+     */
+    showNotificationsSettings: boolean,
+
+    /**
      * Whether or not to display the prejoin settings section.
      */
     showPrejoinSettings: boolean,
@@ -72,26 +81,9 @@ export type Props = {
     showPrejoinPage: boolean,
 
     /**
-     * Whether or not the user has selected the Start Audio Muted feature to be
-     * enabled.
+     * Whether or not to hide self-view screen.
      */
-    startAudioMuted: boolean,
-
-    /**
-     * Whether or not the user has selected the Start Video Muted feature to be
-     * enabled.
-     */
-    startVideoMuted: boolean,
-
-    /**
-     * Whether or not the user's access to their device (camera and microphone) is disabled
-     */
-    userDeviceAccessDisabled: boolean,
-
-    /**
-     * Whether or not to enable the option for userDeviceAccessDisabled in moderator tab
-     */
-    enableUserDeviceAccessDisabledOption: Boolean,
+    hideSelfView: boolean,
 
     /**
      * Invoked to obtain translated strings.
@@ -113,17 +105,12 @@ type State = {
      * Whether or not the language select dropdown is open.
      */
     isLanguageSelectOpen: boolean,
-
-    /**
-     * Whether or not the attention analysis select dropdown is open.
-     */
-    isAIAttentionSelectOpen: boolean
 };
 
 /**
  * React {@code Component} for modifying language and moderator settings.
  *
- * @extends Component
+ * @augments Component
  */
 class MoreTab extends AbstractDialogTab<Props, State> {
     /**
@@ -138,22 +125,17 @@ class MoreTab extends AbstractDialogTab<Props, State> {
         this.state = {
             isFramerateSelectOpen: false,
             isLanguageSelectOpen: false,
-            isAIAttentionSelectOpen: false,
-            aiAttentionEnabled: this.props.aiAttentionFlag, // default value is true
         };
 
         // Bind event handler so it is only bound once for every instance.
-        this._onAIAttentionDropdownOpenChange = this._onAIAttentionDropdownOpenChange.bind(this);
-        this._onAIAttentionItemSelect = this._onAIAttentionItemSelect.bind(this);
         this._onFramerateDropdownOpenChange = this._onFramerateDropdownOpenChange.bind(this);
         this._onFramerateItemSelect = this._onFramerateItemSelect.bind(this);
         this._onLanguageDropdownOpenChange = this._onLanguageDropdownOpenChange.bind(this);
         this._onLanguageItemSelect = this._onLanguageItemSelect.bind(this);
-        this._onStartAudioMutedChanged = this._onStartAudioMutedChanged.bind(this);
-        this._onStartVideoMutedChanged = this._onStartVideoMutedChanged.bind(this);
-        this._onFollowMeEnabledChanged = this._onFollowMeEnabledChanged.bind(this);
+        this._onEnabledNotificationsChanged = this._onEnabledNotificationsChanged.bind(this);
         this._onShowPrejoinPageChanged = this._onShowPrejoinPageChanged.bind(this);
         this._onKeyboardShortcutEnableChanged = this._onKeyboardShortcutEnableChanged.bind(this);
+        this._onHideSelfViewChanged = this._onHideSelfViewChanged.bind(this);
     }
 
     /**
@@ -168,30 +150,13 @@ class MoreTab extends AbstractDialogTab<Props, State> {
         content.push(this._renderSettingsLeft());
         content.push(this._renderSettingsRight());
 
-        return <div className = 'more-tab box'>{ content }</div>;
-    }
-
-    _onAIAttentionDropdownOpenChange: (Object) => void;
-
-    /**
-     * Callback invoked to toggle display of the AI attention analysis selection dropdown.
-     *
-     * @param {Object} event - The event for opening or closing the dropdown.
-     * @private
-     * @returns {void}
-     */
-    _onAIAttentionDropdownOpenChange({ isOpen}) {
-        this.setState({ isAIAttentionSelectOpen: isOpen });
-    }
-
-    _onAIAttentionItemSelect: (Object) => void;
-
-    _onAIAttentionItemSelect(e) {
-        const dataAttentionAttr = e.currentTarget.getAttribute('data-attention');
-        const aiAttentionFlagVal = (dataAttentionAttr === "enabled") ? true : false;
-        this.setState({ aiAttentionEnabled: aiAttentionFlagVal });      
-        super._onChange({ aiAttentionFlag: aiAttentionFlagVal });
-
+        return (
+            <div
+                className = 'more-tab box'
+                key = 'more'>
+                { content }
+            </div>
+        );
     }
 
     _onFramerateDropdownOpenChange: (Object) => void;
@@ -250,48 +215,6 @@ class MoreTab extends AbstractDialogTab<Props, State> {
         super._onChange({ currentLanguage: language });
     }
 
-    _onStartAudioMutedChanged: (Object) => void;
-
-    /**
-     * Callback invoked to select if conferences should start
-     * with audio muted.
-     *
-     * @param {Object} e - The key event to handle.
-     *
-     * @returns {void}
-     */
-    _onStartAudioMutedChanged({ target: { checked } }) {
-        super._onChange({ startAudioMuted: checked });
-    }
-
-    _onStartVideoMutedChanged: (Object) => void;
-
-    /**
-     * Callback invoked to select if conferences should start
-     * with video disabled.
-     *
-     * @param {Object} e - The key event to handle.
-     *
-     * @returns {void}
-     */
-    _onStartVideoMutedChanged({ target: { checked } }) {
-        super._onChange({ startVideoMuted: checked });
-    }
-
-    _onFollowMeEnabledChanged: (Object) => void;
-
-    /**
-     * Callback invoked to select if follow-me mode
-     * should be activated.
-     *
-     * @param {Object} e - The key event to handle.
-     *
-     * @returns {void}
-     */
-    _onFollowMeEnabledChanged({ target: { checked } }) {
-        super._onChange({ followMeEnabled: checked });
-    }
-
     _onShowPrejoinPageChanged: (Object) => void;
 
     /**
@@ -304,6 +227,26 @@ class MoreTab extends AbstractDialogTab<Props, State> {
      */
     _onShowPrejoinPageChanged({ target: { checked } }) {
         super._onChange({ showPrejoinPage: checked });
+    }
+
+    _onEnabledNotificationsChanged: (Object, string) => void;
+
+    /**
+     * Callback invoked to select if the given type of
+     * notifications should be shown.
+     *
+     * @param {Object} e - The key event to handle.
+     * @param {string} type - The type of the notification.
+     *
+     * @returns {void}
+     */
+    _onEnabledNotificationsChanged({ target: { checked } }, type) {
+        super._onChange({
+            enabledNotifications: {
+                ...this.props.enabledNotifications,
+                [type]: checked
+            }
+        });
     }
 
     _onKeyboardShortcutEnableChanged: (Object) => void;
@@ -321,58 +264,17 @@ class MoreTab extends AbstractDialogTab<Props, State> {
         super._onChange({ keyboardShortcutEnable: checked });
     }
 
-    _renderAIAttentionFeatureSelect() {
-        const {
-            aiAttentionFlag,
-            t
-        } = this.props;
-        if (config.useAIAttentionAnalysis) {
-            return (
-                <div
-                    className = 'settings-sub-pane-element'
-                    key = 'ai-attention'>
-                    <h2 className = 'mock-atlaskit-label'>
-                        { t('settings.aiAttention') }
-                    </h2>
-                    <div className = 'dropdown-menu'>
-                        <TouchmoveHack isModal = { true }>
-                            <DropdownMenu
-                                isOpen = { this.state.isAIAttentionSelectOpen }
-                                onOpenChange = { this._onAIAttentionDropdownOpenChange }
-                                
-                                shouldFitContainer = { true }
-                                trigger = { this.state.aiAttentionEnabled
-                                    ? t('settings.turnOnAIAttentionAnalysis')
-                                    : t('settings.turnOffAIAttentionAnalysis') }
-                                triggerButtonProps = {{
-                                    shouldFitContainer: true
-                                }}
-                                triggerType = 'button'>
-                                <DropdownItemGroup>
-                                    <DropdownItem
-                                        isCompact
-                                        data-attention = { "enabled" }
-                                        key = { 'enable' }
-                                        onClick = { this._onAIAttentionItemSelect }>
-                                        { t('settings.turnOnAIAttentionAnalysis') }
-                                    </DropdownItem>
-                                    <DropdownItem
-                                        isCompact
-                                        data-attention = { "disabled" }
-                                        key = { 'disable' }
-                                        onClick = { this._onAIAttentionItemSelect }>
-                                        { t('settings.turnOffAIAttentionAnalysis') }
-                                    </DropdownItem>
-                                </DropdownItemGroup>
-                            </DropdownMenu>
-                        </TouchmoveHack>
-                    </div>
-                </div>
-            );
-        }
-        else {
-            return <></>;
-        }
+    _onHideSelfViewChanged: (Object) => void;
+
+    /**
+     * Callback invoked to select if hide self view should be enabled.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onHideSelfViewChanged({ target: { checked } }) {
+        super._onChange({ hideSelfView: checked });
     }
 
     /**
@@ -398,7 +300,9 @@ class MoreTab extends AbstractDialogTab<Props, State> {
                     { t('settings.desktopShareFramerate') }
                 </h2>
                 <div className = 'dropdown-menu'>
-                    <TouchmoveHack isModal = { true }>
+                    <TouchmoveHack
+                        flex = { true }
+                        isModal = { true }>
                         <DropdownMenu
                             isOpen = { this.state.isFramerateSelectOpen }
                             onOpenChange = { this._onFramerateDropdownOpenChange }
@@ -452,6 +356,31 @@ class MoreTab extends AbstractDialogTab<Props, State> {
     }
 
     /**
+     * Returns the React Element for self view setting.
+     *
+     * @private
+     * @returns {ReactElement}
+     */
+    _renderSelfViewCheckbox() {
+        const { hideSelfView, t } = this.props;
+
+        return (
+            <div
+                className = 'settings-sub-pane-element'
+                key = 'selfview'>
+                <h2 className = 'mock-atlaskit-label'>
+                    { t('settings.selfView') }
+                </h2>
+                <Checkbox
+                    isChecked = { hideSelfView }
+                    label = { t('videothumbnail.hideSelfView') }
+                    name = 'hide-self-view'
+                    onChange = { this._onHideSelfViewChanged } />
+            </div>
+        );
+    }
+
+    /**
      * Returns the menu item for changing displayed language.
      *
      * @private
@@ -481,7 +410,9 @@ class MoreTab extends AbstractDialogTab<Props, State> {
                     { t('settings.language') }
                 </h2>
                 <div className = 'dropdown-menu'>
-                    <TouchmoveHack isModal = { true }>
+                    <TouchmoveHack
+                        flex = { true }
+                        isModal = { true }>
                         <DropdownMenu
                             isOpen = { this.state.isLanguageSelectOpen }
                             onOpenChange = { this._onLanguageDropdownOpenChange }
@@ -499,64 +430,6 @@ class MoreTab extends AbstractDialogTab<Props, State> {
                         </DropdownMenu>
                     </TouchmoveHack>
                 </div>
-            </div>
-        );
-    }
-
-    /**
-     * Returns the React Element for modifying conference-wide settings.
-     *
-     * @private
-     * @returns {ReactElement}
-     */
-    _renderModeratorSettings() {
-        const {
-            followMeActive,
-            followMeEnabled,
-            startAudioMuted,
-            startVideoMuted,
-            userDeviceAccessDisabled,
-            enableUserDeviceAccessDisabledOption,
-            t
-        } = this.props;
-
-        return (
-            <div
-                className = 'settings-sub-pane-element'
-                key = 'moderator'>
-                <h2 className = 'mock-atlaskit-label'>
-                    { t('settings.moderator') }
-                </h2>
-                <Checkbox
-                    isChecked = { startAudioMuted }
-                    label = { t('settings.startAudioMuted') }
-                    name = 'start-audio-muted'
-                    onChange = { this._onStartAudioMutedChanged } />
-                <Checkbox
-                    isChecked = { startVideoMuted }
-                    label = { t('settings.startVideoMuted') }
-                    name = 'start-video-muted'
-                    onChange = { this._onStartVideoMutedChanged } />
-                <Checkbox
-                    isChecked = { followMeEnabled }
-                    isDisabled = { followMeActive }
-                    label = { t('settings.followMe') }
-                    name = 'follow-me'
-                    onChange = { this._onFollowMeEnabledChanged } />
-                { enableUserDeviceAccessDisabledOption && (
-                    <Checkbox 
-                        // isChecked = { conferenceUserDeviceAccessDisabled }
-                        isChecked = { userDeviceAccessDisabled }
-                        // isDisabled = { !enableUserDeviceAccessDisabledOption }
-                        label = { t('settings.disableDeviceAccess') }
-                        name = 'disable-device-access'
-                        // eslint-disable-next-line react/jsx-no-bind
-                        onChange = {
-                            ({ target: { checked } }) => 
-                                // super._onChange({ conferenceUserDeviceAccessDisabled : checked })
-                                super._onChange({ userDeviceAccessDisabled : checked })
-                        } />
-                )}
             </div>
         );
     }
@@ -587,20 +460,51 @@ class MoreTab extends AbstractDialogTab<Props, State> {
     }
 
     /**
+     * Returns the React Element for modifying the enabled notifications settings.
+     *
+     * @private
+     * @returns {ReactElement}
+     */
+    _renderNotificationsSettings() {
+        const { t, enabledNotifications } = this.props;
+
+        return (
+            <div
+                className = 'settings-sub-pane-element'
+                key = 'notifications'>
+                <h2 className = 'mock-atlaskit-label'>
+                    { t('notify.displayNotifications') }
+                </h2>
+                {
+                    Object.keys(enabledNotifications).map(key => (
+                        <Checkbox
+                            isChecked = { enabledNotifications[key] }
+                            key = { key }
+                            label = { t(key) }
+                            name = { `show-${key}` }
+                            /* eslint-disable-next-line react/jsx-no-bind */
+                            onChange = { e => this._onEnabledNotificationsChanged(e, key) } />
+                    ))
+                }
+            </div>
+        );
+    }
+
+    /**
      * Returns the React element that needs to be displayed on the right half of the more tabs.
      *
      * @private
      * @returns {ReactElement}
      */
     _renderSettingsRight() {
-        const { showLanguageSettings } = this.props;
+        const { showFramerateSelect, showLanguageSettings } = this.props;
 
         return (
             <div
-                key = 'more-tab-right'
-                className = 'settings-sub-pane right'>
+                className = 'settings-sub-pane right'
+                key = 'settings-sub-pane-right'>
                 { showLanguageSettings && this._renderLanguageSelect() }
-                { this._renderFramerateSelect() }
+                { showFramerateSelect && this._renderFramerateSelect() }
             </div>
         );
     }
@@ -611,19 +515,21 @@ class MoreTab extends AbstractDialogTab<Props, State> {
      * @returns {ReactElement}
      */
     _renderSettingsLeft() {
-        const { showPrejoinSettings, showModeratorSettings, showShortcutSettings } = this.props;
-
-        if (!showPrejoinSettings && !showModeratorSettings && !showShortcutSettings)
-            return null;
+        const {
+            disableHideSelfView,
+            disableShortcuts,
+            showNotificationsSettings,
+            showPrejoinSettings
+        } = this.props;
 
         return (
             <div
-                key = 'more-tab-left'
-                className = 'settings-sub-pane left'>
+                className = 'settings-sub-pane left'
+                key = 'settings-sub-pane-left'>
                 { showPrejoinSettings && this._renderPrejoinScreenSettings() }
-                { showShortcutSettings && this._renderKeyboardShortcutCheckbox() }
-                { showModeratorSettings && this._renderModeratorSettings() }
-                { this._renderAIAttentionFeatureSelect() }
+                { showNotificationsSettings && this._renderNotificationsSettings() }
+                { !disableShortcuts && this._renderKeyboardShortcutCheckbox() }
+                { !disableHideSelfView && this._renderSelfViewCheckbox() }
             </div>
         );
     }

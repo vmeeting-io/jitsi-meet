@@ -27,6 +27,7 @@ import {
     showPendingRecordingNotification,
     showRecordingError,
     showRecordingLimitNotification,
+    showRecordingWarning,
     showStartedRecordingNotification,
     showStoppedRecordingNotification,
     updateRecordingSessionData
@@ -133,6 +134,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         // or extra sounds are also not desired
         // but we want to indicate those in case of sip gateway
         const {
+            disableRecordAudioNotification,
             iAmRecorder,
             iAmSipGateway,
             recordingLimit
@@ -163,6 +165,10 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                 }
 
                 sendAnalytics(createRecordingEvent('start', mode));
+
+                if (disableRecordAudioNotification) {
+                    break;
+                }
 
                 let soundID;
 
@@ -259,6 +265,14 @@ function _showRecordingErrorNotification(recorderSession, dispatch) {
             titleKey: isStreamMode
                 ? 'liveStreaming.busyTitle'
                 : 'recording.busyTitle'
+        }));
+        break;
+    case JitsiMeetJS.constants.recording.error.UNEXPECTED_REQUEST:
+        dispatch(showRecordingWarning({
+            descriptionKey: isStreamMode
+                ? 'liveStreaming.sessionAlreadyActive'
+                : 'recording.sessionAlreadyActive',
+            titleKey: isStreamMode ? 'liveStreaming.inProgress' : 'recording.inProgress'
         }));
         break;
     default:

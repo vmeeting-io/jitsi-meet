@@ -1,5 +1,7 @@
 // @flow
 
+declare var APP: Object;
+
 import COUNTRIES_RESOURCES from 'i18n-iso-countries/langs/en.json';
 import i18next from 'i18next';
 import I18nextXHRBackend from 'i18next-xhr-backend';
@@ -8,6 +10,7 @@ import { initReactI18next } from 'react-i18next';
 import LANGUAGES_RESOURCES from '../../../../lang/languages.json';
 import MAIN_RESOURCES from '../../../../lang/main.json';
 
+import { I18NEXT_INITIALIZED, LANGUAGE_CHANGED } from './actionTypes';
 import languageDetector from './languageDetector';
 
 /**
@@ -37,7 +40,7 @@ export const DEFAULT_LANGUAGE = LANGUAGES[0];
  */
 const options = {
     backend: {
-        loadPath: 'lang/{{ns}}-{{lng}}.json?v=1'
+        loadPath: 'lang/{{ns}}-{{lng}}.json?v=3'
     },
     defaultNS: 'main',
     fallbackLng: DEFAULT_LANGUAGE,
@@ -47,6 +50,8 @@ const options = {
     load: 'languageOnly',
     ns: [ 'main', 'languages', 'countries', 'vmeeting' ],
     react: {
+        // re-render when a new resource bundle is added
+        bindI18nStore: 'added',
         useSuspense: false
     },
     returnEmptyString: false,
@@ -94,5 +99,16 @@ i18next.addResourceBundle(
 // import, but imports can only be placed at the top, and it would be too early,
 // since i18next is not yet initialized at that point.
 require('./BuiltinLanguages');
+
+// Label change through dynamic branding is available only for web
+if (typeof APP !== 'undefined') {
+    i18next.on('initialized', () => {
+        APP.store.dispatch({ type: I18NEXT_INITIALIZED });
+    });
+
+    i18next.on('languageChanged', () => {
+        APP.store.dispatch({ type: LANGUAGE_CHANGED });
+    });
+}
 
 export default i18next;

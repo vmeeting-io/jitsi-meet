@@ -3,8 +3,9 @@
 import Spinner from '@atlaskit/spinner';
 import axios from 'axios';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { getAuthUrl } from '../../../api/url';
+import { useSelector } from 'react-redux';
 
+import { getAuthUrl } from '../../../api/url';
 import { Dialog, hideDialog, openDialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
 import { Icon, IconCancelSelection, IconPlusCircle, IconShareDesktop } from '../../base/icons';
@@ -17,7 +18,12 @@ import { Tooltip } from '../../base/tooltip';
 import { getLocalVideoTrack } from '../../base/tracks';
 import TouchmoveHack from '../../chat/components/web/TouchmoveHack';
 import { showErrorNotification, showWarningNotification } from '../../notifications';
-import { backgroundEnabled, setVirtualBackground, toggleBackgroundEffect } from '../actions';
+import {
+    backgroundEnabled,
+    setVirtualBackground,
+    toggleBackgroundEffect,
+    virtualBackgroundTrackChanged
+} from '../actions';
 import { VIRTUAL_BACKGROUND_TYPE } from '../constants';
 import { getRemoteImageUrl, toDataURL } from '../functions';
 import logger from '../logger';
@@ -26,7 +32,9 @@ import VirtualBackgroundPreview from './VirtualBackgroundPreview';
 
 const COL_WIDTH = 105 + 9;
 const ROW_HEIGHT = 60 + 8;
-const images = [
+
+// export so that it can be used in virtual avatar
+export const images = [
     {
         tooltip: 'image1',
         id: '1',
@@ -126,6 +134,7 @@ function VirtualBackground({
     const [ remoteImages, setRemoteImages ] = useState([]);
     const [ loading, setLoading ] = useState(false);
     const [ activeDesktopVideo ] = useState(_virtualSource?.videoType === VIDEO_TYPE.DESKTOP ? _virtualSource : null);
+    const { disableScreensharingVirtualBackground } = useSelector(state => state['features/base/config']);
     const uploadImageButton: Object = useRef(null);
 
     /**
@@ -184,6 +193,10 @@ function VirtualBackground({
 
 
     const shareDesktop = useCallback(async () => {
+        if (disableScreensharingVirtualBackground) {
+            return;
+        }
+
         let isCancelled = false, url;
 
         try {
@@ -202,7 +215,7 @@ function VirtualBackground({
             if (!isCancelled) {
                 dispatch(showErrorNotification({
                     titleKey: 'virtualBackground.desktopShareError'
-                }));
+                }, NOTIFICATION_TIMEOUT_TYPE.LONG));
                 logger.error('Could not create desktop share as a virtual background!');
             }
 
@@ -380,6 +393,7 @@ function VirtualBackground({
         dispatch(hideDialog());
         logger.info(`Virtual background type: '${typeof options.backgroundType === 'undefined'
             ? 'none' : options.backgroundType}' applied!`);
+        dispatch(virtualBackgroundTrackChanged());
     }, [ dispatch, options, _localFlipX ]);
 
     const cancelVirtualBackground = useCallback(async () => {

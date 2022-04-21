@@ -1,7 +1,7 @@
 // @flow
 
 import { setFollowMe } from '../base/conference';
-import { CONFERENCE_WILL_JOIN } from '../base/conference/actionTypes';
+import { CONFERENCE_WILL_JOIN } from '../base/conference';
 import { JitsiConferenceEvents, JitsiRecordingConstants } from '../base/lib-jitsi-meet';
 import {
     getLocalParticipant,
@@ -150,6 +150,9 @@ function _onFollowMeCommand(attributes = {}, id, store) {
     }
 
     const participantSendingCommand = getParticipantById(state, id);
+    if (!participantSendingCommand) {
+        return;
+    }
 
     // The Command(s) API will send us our own commands and we don't want
     // to act upon them.

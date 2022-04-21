@@ -10,7 +10,7 @@ import { Icon, IconAddPeople } from '../../../base/icons';
 import { getParticipantCountWithFake } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
-import { isInBreakoutRoom } from '../../../breakout-rooms/functions';
+import { isInBreakoutRoom } from '../../../breakout-rooms';
 import { doInvitePeople } from '../../../invite/actions.native';
 
 import styles from './styles';

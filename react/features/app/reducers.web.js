@@ -1,9 +1,9 @@
 // @flow
 
 import '../ar-effect/reducer';
-import '../av-moderation/reducer';
 import '../base/devices/reducer';
 import '../e2ee/reducer';
+import '../facial-recognition/reducer';
 import '../feedback/reducer';
 import '../local-recording/reducer';
 import '../no-audio-signal/reducer';
@@ -17,4 +17,5 @@ import '../screenshot-capture/reducer';
 import '../shared-video/reducer';
 import '../talk-while-muted/reducer';
 import '../virtual-background/reducer';
+import '../virtual-avatar/reducer';
 import './reducers.any';

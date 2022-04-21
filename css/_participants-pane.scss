@@ -42,6 +42,8 @@
 
 .participant-avatar-container {
     position: relative;
+    display: flex;
+    height: 40px;
 
     .pin-icon {
         position: absolute;
@@ -83,5 +85,11 @@
     &-dominant-speaker {
         background-color: #1EC26A;
         border-radius: 3px;
+    }
+}
+
+.mobile-browser.shift-right {
+    .participants_pane {
+        z-index: -1;
     }
 }

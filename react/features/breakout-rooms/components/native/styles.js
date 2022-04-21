@@ -1,46 +1,69 @@
-// @flow
+import BaseTheme from '../../../base/ui/components/BaseTheme.native';
 
-import { MD_ITEM_HEIGHT } from '../../../base/dialog';
-import { ColorPalette, createStyleSheet } from '../../../base/styles';
+const baseButton = {
+    height: BaseTheme.spacing[6],
+    marginTop: BaseTheme.spacing[2],
+    marginLeft: BaseTheme.spacing[3],
+    marginRight: BaseTheme.spacing[3]
+};
+
+const baseLabel = {
+    fontSize: 15,
+    lineHeight: 24,
+    textTransform: 'capitalize'
+};
 
 /**
- * The React {@code Component} styles of {@code BreakoutRoomPickerDialog}.
- *
- * It uses a {@code BottomSheet} and these have been implemented as per the
- * Material Design guidelines:
- * {@link https://material.io/guidelines/components/bottom-sheets.html}.
+ * The styles of the native components of the feature {@code breakout rooms}.
  */
-export default createStyleSheet({
-    /**
-     * Base style for each row.
-     */
-    breakoutRoomRow: {
-        alignItems: 'center',
+export default {
+
+    addButtonLabel: {
+        ...baseLabel,
+        color: BaseTheme.palette.text01
+    },
+
+    addButton: {
+        ...baseButton,
+        backgroundColor: BaseTheme.palette.ui03
+    },
+
+    collapsibleRoom: {
+        ...baseButton,
+        display: 'flex',
         flexDirection: 'row',
-        height: MD_ITEM_HEIGHT
+        alignItems: 'center'
     },
 
-    /**
-     * Style for the {@code Icon} element in a row.
-     */
-    breakoutRoomIcon: {
-        color: ColorPalette.white,
-        fontSize: 24
+    arrowIcon: {
+        backgroundColor: BaseTheme.palette.ui03,
+        height: BaseTheme.spacing[5],
+        width: BaseTheme.spacing[5],
+        borderRadius: 6,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
     },
 
-    /**
-     * Style for the {@code Text} element in a row.
-     */
-    breakoutRoomText: {
-        color: ColorPalette.white,
-        fontSize: 16,
-        marginLeft: 32
+    roomName: {
+        fontSize: 15,
+        color: BaseTheme.palette.text01,
+        fontWeight: 'bold',
+        marginLeft: BaseTheme.spacing[2]
     },
 
-    /**
-     * Style for a row which is marked as selected.
-     */
-    selectedText: {
-        color: ColorPalette.blue
+    transparentButton: {
+        ...baseButton,
+        backgroundColor: 'transparent'
+    },
+
+    leaveButtonLabel: {
+        ...baseLabel,
+        color: BaseTheme.palette.textError
+    },
+
+    autoAssignLabel: {
+        ...baseLabel,
+        color: BaseTheme.palette.link01
     }
-});
+};

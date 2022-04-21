@@ -7,7 +7,6 @@ export { default as Image } from './Image';
 export { default as Linkify } from './Linkify';
 export { default as LoadingIndicator } from './LoadingIndicator';
 export { default as MeetingsList } from './MeetingsList';
-export { default as MeetingsListFromDB } from './MeetingsListFromDB';
 export { default as MultiSelectAutocomplete } from './MultiSelectAutocomplete';
 export { default as NavigateSectionListEmptyComponent } from
     './NavigateSectionListEmptyComponent';

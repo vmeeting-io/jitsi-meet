@@ -1,12 +1,13 @@
 // @flow
 
+import Tooltip from '@atlaskit/tooltip';
 import React from 'react';
 
 import { translate } from '../../../base/i18n';
 import { IconWarning } from '../../../base/icons';
 import { Label } from '../../../base/label';
+import { COLORS } from '../../../base/label/constants';
 import { connect } from '../../../base/redux';
-import { Tooltip } from '../../../base/tooltip';
 import AbstractInsecureRoomNameLabel, { _mapStateToProps } from '../AbstractInsecureRoomNameLabel';
 
 /**
@@ -24,7 +25,7 @@ class InsecureRoomNameLabel extends AbstractInsecureRoomNameLabel {
                 content = { this.props.t('security.insecureRoomNameWarning') }
                 position = 'bottom'>
                 <Label
-                    className = 'label--red'
+                    color = { COLORS.red }
                     icon = { IconWarning } />
             </Tooltip>
         );

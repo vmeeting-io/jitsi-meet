@@ -33,7 +33,7 @@ class VideoBackgroundButton extends AbstractButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.selectBackground';
     icon = IconVirtualBackground;
     label = 'toolbar.selectBackground';
-    // tooltip = 'toolbar.selectBackground';
+    tooltip = 'toolbar.selectBackground';
 
     /**
      * Handles clicking / pressing the button, and toggles the virtual background dialog

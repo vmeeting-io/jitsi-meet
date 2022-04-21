@@ -53,7 +53,7 @@ MiddlewareRegistry.register(store => next => action => {
  */
 function _overwriteLocalParticipant(
         { dispatch, getState },
-        { avatarURL, email, name, features, birthDate }) {
+        { avatarURL, email, id: jwtId, name, features, birthDate }) {
         // added additional variable birthDate in the second object
     let localParticipant;
 
@@ -70,6 +70,9 @@ function _overwriteLocalParticipant(
         }
         if (email) {
             newProperties.email = email;
+        }
+        if (jwtId) {
+            newProperties.jwtId = jwtId;
         }
         if (name) {
             newProperties.name = name;
@@ -155,6 +158,7 @@ function _setJWT(store, next, action) {
                     action.group = context.group;
                     action.server = context.server;
                     action.tenant = context.tenant || sub || undefined;
+                    action.siteName = context.siteName;
                     action.user = user;
 
                     user && _overwriteLocalParticipant(
@@ -240,7 +244,7 @@ function _undoOverwriteLocalParticipant(
  *     birthDate: ?string
  * }}
  */
-function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, background, birthDate }) { 
+function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, background, birthDate, phoneNumber }) { 
     // we added additional functional parameter birthDate which is received from context object in _setJWT function
     const participant = {};
 
@@ -274,6 +278,10 @@ function _user2participant({ avatar, avatarUrl, email, email_verified, id, name,
     // adding the birthDate property received from the JWT data exports
     if (typeof birthDate === 'string') {
         participant.birthDate = birthDate;
+    }
+
+    if (typeof phoneNumber === 'string') {
+        participant.phoneNumber = phoneNumber;
     }
 
     return Object.keys(participant).length ? participant : undefined;

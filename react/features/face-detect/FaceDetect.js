@@ -1,13 +1,25 @@
+import { uniq } from 'lodash';
+
 import { getCurrentConference, STATUS_COMMAND } from '../base/conference';
 import { getLocalParticipant, participantPresenceChanged } from '../base/participants';
 import { isParticipantVideoMuted } from '../base/tracks';
+import { isPrejoinPageVisible } from '../prejoin/functions';
+import { setAttentionAnalysisReady } from './actions';
 import { STATUS_TABLE } from './constants';
-import {
-    CLEAR_TIMEOUT,
-    TIMEOUT_TICK,
-    SET_TIMEOUT,
-    timerWorkerScript
-} from './TimerWorker';
+import { getAttentionAnalysisReady, isAttentionAnalysisEnabled } from './functions';
+
+const threshold = 3;
+
+/* state diagram
+ *
+ * INITIALIZE -> REFERENCE -> RECORDING -> STARTED
+ */
+const STEP = {
+    INITIALIZE: 'INITIALIZE',
+    REFERENCE: 'REFERENCE',
+    RECORDING: 'RECORDING',
+    STARTED: 'STARTED',
+};
 
 /**
  * Represents a modified MediaStream that detect effects from video.
@@ -19,22 +31,28 @@ export default class FaceDetect {
      * Represents a modified video MediaStream track.
      */
     constructor(dispatch, getState) {
+        const state = getState();
+        const { faceDetect = {} } = state['features/base/config'].testing || {};
         const {
-            referenceInterval = (1000 / 10),
-            patience = 1000,
+            referenceInterval = (1000 / 5),
+            frameInterval = 1000,
+            patience,
             showResult = false
-        } = config.testing.faceDetect || {};
-        const { aiAttentionAnalysisEnabled } = getState()['features/base/settings'];
+        } = faceDetect;
 
         // Bind event handler so it is only bound once for every instance.
         this._dispatch = dispatch;
         this._getState = getState;
         this._frameInterval = referenceInterval;
-        this._initialized = false;
-        this._isWaiting = false;
+        this._isWaiting = true;
         this._showResult = showResult;
-        this._enabled = !Boolean(aiAttentionAnalysisEnabled);
-        this._prevStatus = -1;
+        this._enabled = false;
+        this._prevStatus = null;
+        this._timerId = null;
+        this._timestamp = 0;
+        this._frames = [];
+        this._patience = patience;
+        this._statusList = [];
 
         this._inputVideo = document.getElementById('localVideo_container');
 
@@ -43,24 +61,16 @@ export default class FaceDetect {
             { name: 'worker', type: 'module' }
         );
 
-        this._onFrameTimer = this._onFrameTimer.bind(this);
         this._onMessage = this._onMessage.bind(this);
         this._worker.onmessage = this._onMessage;
-        this._worker.postMessage({ command: 'initialize', data: { patience } });
-    }
-
-    /**
-     * EventHandler onmessage for the faceDetectTimerWorker WebWorker.
-     *
-     * @private
-     * @param {EventHandler} response - The onmessage EventHandler parameter.
-     * @returns {void}
-     */
-    _onFrameTimer(response: Object) {
-        // console.log('_onFrameTimer:', response);
-        if (response.data.id === TIMEOUT_TICK) {
-            this._loop();
-        }
+        this._step = STEP.INITIALIZE;
+        this._worker.postMessage({
+            command: 'initialize',
+            nms: 0.4,
+            patience,
+            next: STEP.REFERENCE
+        });
+        this._loop = this._loop.bind(this);
     }
 
     /**
@@ -69,16 +79,22 @@ export default class FaceDetect {
      * @returns {void}
      */
     async runInference() {
-        if (!this._initialized) {
-            console.log('face-detect worker is not initialized.');
-            return;
-        }
-
         if (this._isWaiting) {
             return;
         }
 
+        if (this._step === STEP.INITIALIZE) {
+            // console.log('face-detect worker is not initialized.');
+            return;
+        }
+
         this._inputVideo = document.getElementById('localVideo_container');
+        if (!this._inputVideo) {
+            this._frameInterval = 1000;
+            // console.warn('localVideo_container not found!');
+            return;
+        }
+
         const { videoWidth, videoHeight } = this._inputVideo;
         if (!this._videoCanvas && videoWidth > 0 && videoHeight > 0) {
             this._videoCanvas = document.createElement('canvas');
@@ -95,57 +111,78 @@ export default class FaceDetect {
 
             if (videoMuted) {
                 this._updateParticipantStatus(2);
-            } else {
+            } else if (this._videoCanvas) {
                 try {
                     // Get face detect output
                     // console.time('inferenceImage');
                     this._videoContext.drawImage(this._inputVideo, 0, 0, videoWidth, videoHeight);
                     const frame = this._videoContext.getImageData(0, 0, videoWidth, videoHeight);
-                    this._worker.postMessage({ command: 'frame', data: frame });
-                    this._isWaiting = true;
+                    if (this._step === STEP.STARTED) {
+                        this._worker.postMessage({
+                            command: 'frame',
+                            data: frame
+                        });
+                        this._isWaiting = true;
+                    } else if (this._step === STEP.REFERENCE) {
+                        this._worker.postMessage({
+                            command: 'reference',
+                            data: frame,
+                            next: STEP.RECORDING
+                        });
+                        this._isWaiting = true;
+                    } else if (this._step === STEP.RECORDING) {
+                        this._frames.push(frame);
+                        if (this._frames.length > this._patience) {
+                            this._frames.shift();
+                        }
+                        if (this._frames.length === this._patience
+                            && !getAttentionAnalysisReady(state)) {
+                            this._dispatch(setAttentionAnalysisReady(true));
+                        }
+                    }
                     // console.timeEnd('inferenceImage');
                 } catch (e) {
                     // ignore
+                    // console.error(e);
                 }
             }
         }
     }
 
     _onMessage(event) {
-        const result = event.data;
+        const { done, data, next } = event.data;
 
-        if (!result.done) {
+        if (!done) {
             console.error('onMessage is failed!', result);
             return;
         }
 
-        if (!this._initialized) {
-            if (result.data === 'initialized') {
-                this._initialized = true;
-                console.log('face-detect worker is initialized!');
-                return;
-            }
-            console.error('face-detect worker is not initialized.');
-            return;
-        };
-
         this._isWaiting = false;
 
-        if (!result.data) {
+        if (next) {
+            this._step = next;
+        }
+
+        if (!data) {
             return;
         }
 
-        const { status, eyeClose, box, landmarks } = result.data;
+        let { status, eyeClose, box, landmarks = [] } = data;
         // console.log(`status=${status}, eyeClose=${eyeClose}`);
-
-        this._frameInterval = config.testing.faceDetect?.frameInterval || 1000;
 
         const largeVideo = document.getElementById('largeVideo');
         const rc = largeVideo.getClientRects()[0];
-        const { videoWidth, videoHeight } = this._inputVideo;
+        const { videoWidth, videoHeight } = this._inputVideo || {};
+
         if (rc && videoWidth > 0 && videoHeight > 0 && this._showResult) {
             // console.log('video: clientRect', rc);
             
+            // transform 640x640 to 1280x720
+            box = box.map((p, i) => i % 2 == 0 ? p * videoWidth / 640 : p * videoHeight / 640);
+            if (landmarks.length) {
+                landmarks = landmarks.map(m => m.map((p, i) => i % 2 == 0 ? p * videoWidth / 640 : p * videoHeight / 640));
+            }
+        
             if (!this._canvas) {
                 console.log('largeVideo.canvas:', videoWidth, videoHeight);
                 this._canvas = document.createElement('canvas');
@@ -171,54 +208,44 @@ export default class FaceDetect {
             this._ctx.font = `normal 18px 맑은 고딕`;
             this._ctx.fillStyle = '#00ff00';
             this._ctx.mlFillText(`${status}`, box[0] + 5, box[1] + 5, 100, 50, 'top', 'left', 20);
+            // eyeClose
+            this._ctx.mlFillText(`eyeClose: ${Boolean(eyeClose)}`, box[0] + 5, box[1] + 30, 200, 50, 'top', 'left', 20);
       
             if (landmarks.length) {
                 // landmark5
-                for (let i = 0; i < landmarks[0].length; i++) {
-                    const [x, y] = landmarks[0][i];
+                for (let i = 0; i < landmarks.length; i++) {
+                    const [x, y] = landmarks[i];
                     this._ctx.beginPath();
                     this._ctx.strokeStyle = '#00ff00';
                     this._ctx.arc(x, y, 2, 0, 2 * Math.PI);
                     this._ctx.fill();
                 }
-      
-                // face_landmarks
-                let marks = landmarks[1]['left_eye'];
-                for (let i = 0; i < marks.length; i++) {
-                    const [x, y] = marks[i];
-                    const scaled_x = (box[2] - box[0]) / 112 * x;
-                    const scaled_y = (box[3] - box[1]) / 112 * y;
-                    this._ctx.beginPath();
-                    this._ctx.strokeStyle = '#00ff00';
-                    this._ctx.arc(scaled_x + box[0], scaled_y + box[1], 2, 0, 2 * Math.PI);
-                    this._ctx.fill();
-                }
-                marks = landmarks[1]['right_eye'];
-                for (let i = 0; i < marks.length; i++) {
-                    const [x, y] = marks[i];
-                    const scaled_x = (box[2] - box[0]) / 112 * x;
-                    const scaled_y = (box[3] - box[1]) / 112 * y;
-                    this._ctx.beginPath();
-                    this._ctx.strokeStyle = '#00ff00';
-                    this._ctx.arc(scaled_x + box[0], scaled_y + box[1], 2, 0, 2 * Math.PI);
-                    this._ctx.fill();
-                }
             }
         }
 
-        this._updateParticipantStatus(status);
+        if (this._step !== STEP.STARTED) {
+            return;
+        }
+
+        this._statusList.push(status);
+        if (this._statusList.length > threshold) {
+            this._statusList.shift();
+        }
+
+        // 튀는 값을 정리하기 위해서...
+        // threshold 동안 모든 값이 동일한 경우만 상태 업데이트를 진행
+        const unique = uniq(this._statusList);
+        if (unique.length === 1) {
+            this._updateParticipantStatus(status);
+        }
     }
 
     _updateParticipantStatus(status) {
-        const state = this._getState();
-        const conference = getCurrentConference(state);
-        const participant = getLocalParticipant(state);
         const statusValue = STATUS_TABLE[status];
 
-        if (conference && statusValue && statusValue !== this._prevStatus) {
-            conference.sendCommand(STATUS_COMMAND, { value: statusValue });
-            this._dispatch(participantPresenceChanged(participant.id, statusValue));
+        if (statusValue && statusValue !== this._prevStatus) {
             this._prevStatus = statusValue;
+            this.sendPresence();
         }
     }
 
@@ -228,17 +255,18 @@ export default class FaceDetect {
      * @private
      * @returns {void}
      */
-    _loop() {
-        this.runInference();
-
-        const state = this._getState();
-        const { aiAttentionAnalysisEnabled } = state['features/base/settings'];
-        this._enabled = Boolean(aiAttentionAnalysisEnabled);
-
-        this._frameTimerWorker.postMessage({
-            id: SET_TIMEOUT,
-            timeMs: this._frameInterval
-        });
+    async _loop(timestamp) {
+        try {
+            if ((timestamp - this._timestamp) > this._frameInterval) {
+                this._timestamp = timestamp;
+                await this.runInference();
+                
+                this._enabled = isAttentionAnalysisEnabled(this._getState());
+            }
+        } finally {
+            this._timerId = requestAnimationFrame(this._loop);
+        }
+        
     }
 
     /**
@@ -247,15 +275,89 @@ export default class FaceDetect {
      * @param {MediaStream} stream - Stream to be used for processing.
      * @returns {MediaStream} - The stream with the applied effect.
      */
-    startEffect(granted) {
-        if (granted) {
-            this._frameTimerWorker = new Worker(timerWorkerScript, { name: 'face effect worker' });
-            this._frameTimerWorker.onmessage = this._onFrameTimer;
-    
-            this._frameTimerWorker.postMessage({
-                id: SET_TIMEOUT,
-                timeMs: this._frameInterval
+    init() {
+        this._step = STEP.REFERENCE;
+        this._timerId = requestAnimationFrame(this._loop);
+    }
+
+    /**
+     * Start the inference.
+     *
+     * @returns {void}
+     */
+    start() {
+        if (this._step !== STEP.STARTED) {
+            const { faceDetect = {} } = this._getState()['features/base/config'].testing || {};
+            const { frameInterval = 1000 } = faceDetect;
+
+            this._frameInterval = frameInterval;
+            this._worker.postMessage({
+                command: 'inference',
+                data: this._frames.slice(1),
+                next: STEP.STARTED,
             });
+            this._frames = [];
+            this._isWaiting = true;
+        }
+    }
+
+    /**
+     * Pause the inference
+     * 
+     * @return {void}
+     */
+    pause() {
+        console.log('==> faceDetect.pause()');
+        if (this._timerId) {
+            cancelAnimationFrame(this._timerId);
+            this._timerId = null;
+        }
+    }
+
+    /**
+     * Resume the inference
+     * 
+     * @return {void}
+     */
+    resume() {
+        console.log('==> faceDetect.resume()');
+        if (!this._timerId) {
+            this._timestamp = 0;
+            this._timerId = requestAnimationFrame(this._loop);
+        }
+    }
+
+    /**
+     * Check whether the inference is running or not
+     */
+    isRunning() {
+        return this._timerId && this._step === STEP.STARTED;
+    }
+
+    /**
+     * Check whether the inference is paused or not
+     */
+    isPaused() {
+        return !this._timerId && this._step === STEP.STARTED;
+    }
+
+    /**
+     * Send presence status to other participants
+     */
+    sendPresence(newPresence) {
+        if (newPresence) {
+            this._prevStatus = newPresence;
+        }
+
+        const state = this._getState();
+        const conference = getCurrentConference(state);
+        const participant = getLocalParticipant(state);
+        const statusValue = this._prevStatus || STATUS_TABLE[0];
+
+        console.log(`==> faceDetect.sendPresence('${this._prevStatus}')`);
+        if (conference && participant && statusValue) {
+            conference.sendCommand(STATUS_COMMAND, { value: statusValue });
+            this._dispatch(participantPresenceChanged(participant.id, statusValue));
         }
     }
 
@@ -264,11 +366,11 @@ export default class FaceDetect {
      *
      * @returns {void}
      */
-    stopEffect() {
-        this._frameTimerWorker.postMessage({
-            id: CLEAR_TIMEOUT
-        });
-
-        this._frameTimerWorker.terminate();
+    stop() {
+        if (this._timerId) {
+            cancelAnimationFrame(this._timerId);
+            this._timerId = null;
+        }
+        this._frames = [];
     }
 };

@@ -22,5 +22,5 @@ export function getAuthUrl(stateful) {
         return `${baseUrl}/auth/api`;
     }
 
-    return process.env.VMEETING_API_BASE;
+    return window._env_.VMEETING_API_BASE;
 }

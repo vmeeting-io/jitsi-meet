@@ -1,16 +1,33 @@
-import { filter } from 'lodash';
-import { START_FACE_DETECT, STOP_FACE_DETECT, ATTENTION_ANALYSIS_OPENED } from './actionTypes';
-import { grantFaceDetect } from './functions';
-import FaceDetect from './FaceDetect';
+import { difference, filter, flattenDeep, isEmpty, last, map } from 'lodash';
+
 import { getCurrentConference } from '../base/conference';
-import { getAttentionAnalysisWindow } from '.';
-import { getLocalParticipant, getRemoteParticipants, getRemoteParticipantsSorted } from '../base/participants';
+import {
+    getLocalParticipant,
+    getRemoteParticipants,
+} from '../base/participants';
+import { getBreakoutRooms } from '../breakout-rooms/functions';
 
-let faceDetector;
-const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
+import {
+    INIT_FACE_DETECT,
+    STOP_FACE_DETECT,
+    ATTENTION_ANALYSIS_OPENED,
+    START_FACE_DETECT,
+    SET_ATTENTION_ANALYSIS_READY,
+    SET_ATTENTION_ANALYSIS_COUNT,
+    SET_ATTENTION_ANALYSIS_TOTAL,
+    SET_STATUS_MAP,
+} from './actionTypes';
+import {
+    getAttentionAnalysisWindow,
+    getFaceDetector,
+    getStatusMap,
+} from './functions';
+import FaceDetect from './FaceDetect';
 
-export function startFaceDetect() {
-    return async function(dispatch, getState) {
+const AUTH_PAGE_BASE = window._env_.VMEETING_FRONT_BASE;
+
+export function initFaceDetect() {
+    return function(dispatch, getState) {
         if (!MediaStreamTrack.prototype.getSettings && !MediaStreamTrack.prototype.getConstraints) {
             throw new Error('FaceDetect not supported!');
         }
@@ -18,24 +35,45 @@ export function startFaceDetect() {
         const state = getState();
         // const granted = await grantFaceDetect(state);
         
-        faceDetector = new FaceDetect(dispatch, getState);
-        faceDetector.startEffect(true /* granted */);
+        console.log('==> initFaceDetect');
+        let instance = getFaceDetector(state);
+        if (!instance) {
+            instance = new FaceDetect(dispatch, getState);
+        }
+        instance.init();
+
         dispatch({
-            type: START_FACE_DETECT,
-            started: true
+            type: INIT_FACE_DETECT,
+            instance
         });
     };
 }
 
+export function startFaceDetect() {
+    return function(dispatch, getState) {
+        console.log('==> startFaceDetect');
+        const state = getState();
+
+        if (state['features/did-consent'].permit) {
+            const instance = getFaceDetector(state);
+            instance?.start();
+    
+            dispatch({
+                type: START_FACE_DETECT,
+                instance
+            });
+        }
+    };
+}
+
 export function stopFaceDetect() {
-    console.log('==> stopFaceDetect');
+    return function(dispatch, getState) {
+        console.log('==> stopFaceDetect');
+        const state = getState();
+        const instance = getFaceDetector(state);
+        instance?.stop();
 
-    faceDetector?.stopEffect()
-    faceDetector = null;
-
-    return {
-        type: STOP_FACE_DETECT,
-        started: false
+        dispatch({ type: STOP_FACE_DETECT });
     };
 }
 
@@ -45,11 +83,10 @@ export function openAttentionAnalysis() {
         let childWindow = getAttentionAnalysisWindow(state);
         
         if (!childWindow) {
-            const conference = getCurrentConference(state);
-            const meetingId = conference.room.meetingId;
+            const { roomInfo } = state['features/base/conference'];
 
             childWindow = window.open(
-                `${AUTH_PAGE_BASE}/learnersattention?meetingId=${meetingId}`,
+                `${AUTH_PAGE_BASE}/learnersattention?roomId=${roomInfo._id}`,
                 '_blank',
                 'status=no,location=no,titlebar=no,directories=no,toolbar=no,menubar=no,width=1024,height=700,left=100,top=100'
             );
@@ -61,6 +98,9 @@ export function openAttentionAnalysis() {
 
             childWindow.onload = () => {
                 dispatch(updateAttentionAnalysis());
+                window.addEventListener('beforeunload', () => {
+                    dispatch(closeAttentionAnalysis());
+                });
             };
         } else {
             childWindow.focus();
@@ -83,21 +123,89 @@ export function updateAttentionAnalysis() {
     return function(dispatch, getState) {
         const state = getState();
         const childWindow = getAttentionAnalysisWindow(state);
+        const conference = getCurrentConference(state);
 
-        if (childWindow) {
-            const remote = getRemoteParticipants(state);
-            const participants = filter(getRemoteParticipantsSorted(state).map(pid => {
-                const { id, avatarURL, name, presence } = remote.get(pid) || {};
-                return id ? { id, avatarURL, name, status: presence } : null;
-            }));
+        if (childWindow && conference) {
+            const rooms = { ...getBreakoutRooms(state) };
+            const statusMap = getStatusMap(state);
 
-            const { id, avatarURL, name, presence } = getLocalParticipant(state);
-            participants.unshift({ id, avatarURL, name, status: presence });
+            if (isEmpty(rooms)) {
+                const remote = getRemoteParticipants(state);
+                const participants = {};
+                for (const [id, { role, name: displayName }] of remote) {
+                    const jid = conference.getParticipantById(id)?.getJid();
+                    participants[id] = { displayName, id, jid, role };
+                }
 
+                const { id, role, name: displayName } = getLocalParticipant(state);
+                const jid = state['features/base/connection'].connection?.getJid();
+                participants[id] = { displayName, id, jid, role };
+
+                const name = conference.getName();
+                rooms[name] = {
+                    id: name,
+                    isMainRoom: true,
+                    jid: conference.room.roomjid,
+                    name,
+                    participants
+                };
+            } else {
+                const participantIDs = flattenDeep(
+                    map(rooms, r => map(r.participants, 'id'))
+                );
+                // delete left participant
+                difference([...statusMap.keys()], participantIDs).forEach(id => {
+                    statusMap.delete(id);
+                });
+                // insert joined participant
+                filter(participantIDs, id => !statusMap.has(id)).forEach(id => {
+                    statusMap.set(id, undefined);
+                });
+                dispatch({ type: SET_STATUS_MAP, statusMap });
+            }
+
+            console.log('updateAttentionAnalysis:', rooms);
             childWindow.postMessage({
                 type: 'update-attentions',
-                participants
+                rooms,
+                statusMap
             });
         }
     }
+}
+
+export function updateAttentionStatus({ id, status }) {
+    return function(dispatch, getState) {
+        const state = getState();
+        const statusMap = getStatusMap(state);
+
+        statusMap.set(id, status);
+        dispatch({ type: SET_STATUS_MAP, statusMap });
+        
+        const childWindow = getAttentionAnalysisWindow(state);
+        if (childWindow) {
+            childWindow.postMessage({ type: 'update-status', statusMap });
+        }
+    }
+}
+
+export function setAttentionAnalysisReady(ready) {
+    return {
+        type: SET_ATTENTION_ANALYSIS_READY,
+        ready
+    };
+}
+
+export function setAttentionAnalysisCount(count) {
+    return {
+        type: SET_ATTENTION_ANALYSIS_COUNT,
+        count
+    };
+}
+
+export function setAttentionAnalysisTotal(total) {
+    return {
+        type: SET_ATTENTION_ANALYSIS_TOTAL,
+        total
+    };
 }

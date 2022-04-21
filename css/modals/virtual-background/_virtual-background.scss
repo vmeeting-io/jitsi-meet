@@ -131,12 +131,24 @@
         .virtual-background-content {
             flex-grow: 1;
         }
-    }    
-}    
+    }
+}
 
 .file-upload-btn {
     display: none;
 }
+
+.dialog-text-label {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    margin-left: -10px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    color: #669aec;
+    display: inline-flex;
+}
+
 .file-upload-label {
     font-size: 14px;
     font-weight: 600;

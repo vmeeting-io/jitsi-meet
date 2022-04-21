@@ -5,26 +5,34 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    left: -$sidebarWidth;
-    overflow: hidden;
     position: absolute;
     top: 0;
     width: $sidebarWidth;
     z-index: $sideToolbarContainerZ;
 
-    /**
-     * The sidebar (chat) is off-screen when hidden. Move it flush to the left
-     * side of the window when it should be visible.
-     */
-    &.slideInExt {
-        left: 0;
+    @media (max-width: 580px) {
+        width: 100%;
     }
+}
+
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+    // extract header + tabs height
+    height: calc(100% - 105);
+}
+
+.chat-panel-no-tabs {
+    // extract header height
+    height: calc(100% - 70px);
 }
 
 #chatconversation {
     box-sizing: border-box;
     flex: 1;
     font-size: 10pt;
+    // extract message input height
+    height: calc(100% - 68px);
     line-height: 20px;
     overflow: auto;
     padding: 16px;
@@ -348,6 +356,7 @@
 }
 
 #usermsg {
+    -ms-overflow-style: none;
     border: 0px none;
     border-radius:0;
     box-shadow: none;
@@ -356,9 +365,14 @@
     padding: 10px;
     overflow-y: auto;
     resize: none;
+    scrollbar-width: none;
     width: 100%;
     word-break: break-word;
-    background-color: transparent;
+    background: transparent;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 #usermsg:hover {
@@ -882,11 +896,6 @@
     }
 }
 
-.touchmove-hack {
-    display: flex;
-    flex: 1;
-    overflow: auto;
-}
 
 /**
  * Make header close button more easily tappable on mobile.

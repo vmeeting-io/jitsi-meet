@@ -3,15 +3,16 @@
 import React, { Component } from 'react';
 
 import { MEDIA_TYPE } from '../../../base/media';
-import { getParticipantByIdOrUndefined, PARTICIPANT_ROLE } from '../../../base/participants';
+import { getParticipantByIdOrUndefined, getPinnedTiles, PARTICIPANT_ROLE } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { getTrackByMediaTypeAndParticipant, isLocalTrackMuted, isRemoteTrackMuted } from '../../../base/tracks';
-import { getCurrentLayout, LAYOUTS } from '../../../video-layout';
+import { getCurrentLayout } from '../../../video-layout';
+import { getIndicatorsTooltipPosition } from '../../functions.web';
 
 import AudioMutedIndicator from './AudioMutedIndicator';
 import ModeratorIndicator from './ModeratorIndicator';
+import PinnedIndicator from './PinnedIndicator';
 import ScreenShareIndicator from './ScreenShareIndicator';
-import VideoMutedIndicator from './VideoMutedIndicator';
 
 declare var interfaceConfig: Object;
 
@@ -41,11 +42,6 @@ type Props = {
     _showScreenShareIndicator: Boolean,
 
     /**
-     * Indicates if the video muted indicator should be visible or not.
-     */
-    _showVideoMutedIndicator: Boolean,
-
-    /**
      * The ID of the participant for which the status bar is rendered.
      */
     participantID: String
@@ -54,7 +50,7 @@ type Props = {
 /**
  * React {@code Component} for showing the status bar in a thumbnail.
  *
- * @extends Component
+ * @augments Component
  */
 class StatusIndicators extends Component<Props> {
     /**
@@ -68,47 +64,18 @@ class StatusIndicators extends Component<Props> {
             _currentLayout,
             _showAudioMutedIndicator,
             _showModeratorIndicator,
-            _showScreenShareIndicator,
-            _showVideoMutedIndicator
+            _showPinnedIndicator,
+            _showScreenShareIndicator
         } = this.props;
-        const isTileView = _currentLayout === LAYOUTS.TILE_VIEW;
-        let tooltipPosition;
-
-        switch (_currentLayout) {
-        case LAYOUTS.TILE_VIEW:
-            tooltipPosition = 'right';
-            break;
-        case LAYOUTS.VERTICAL_FILMSTRIP_VIEW:
-            tooltipPosition = 'left';
-            break;
-        default:
-            tooltipPosition = 'top';
-        }
-
-        const INDICATOR_LAYOUT = {
-            position: 'absolute',
-            right: 0,
-            zIndex: 2,
-        };
+        const tooltipPosition = getIndicatorsTooltipPosition(_currentLayout);
 
         return (
-            isTileView ? 
-                <div>
-                    { _showAudioMutedIndicator ? <AudioMutedIndicator tooltipPosition = { tooltipPosition } /> : null }
-                    { _showScreenShareIndicator ? <ScreenShareIndicator tooltipPosition = { tooltipPosition } /> : null }
-                    { _showVideoMutedIndicator ? <VideoMutedIndicator tooltipPosition = { tooltipPosition } /> : null }
-                    { _showModeratorIndicator ? 
-                        <div className = 'moderator-icon right'>
-                            <ModeratorIndicator tooltipPosition = { tooltipPosition } />
-                        </div> : null
-                    }
-                </div> :
-                <div style = { INDICATOR_LAYOUT }>
-                    { _showModeratorIndicator ? <ModeratorIndicator tooltipPosition = { tooltipPosition } /> : null }
-                    { _showAudioMutedIndicator ? <AudioMutedIndicator tooltipPosition = { tooltipPosition } /> : null }
-                    { _showScreenShareIndicator ? <ScreenShareIndicator tooltipPosition = { tooltipPosition } /> : null }
-                    { _showVideoMutedIndicator ? <VideoMutedIndicator tooltipPosition = { tooltipPosition } /> : null }
-                </div>
+            <>
+                { _showAudioMutedIndicator && <AudioMutedIndicator tooltipPosition = { tooltipPosition } /> }
+                { _showModeratorIndicator && <ModeratorIndicator tooltipPosition = { tooltipPosition } />}
+                { _showPinnedIndicator && <PinnedIndicator tooltipPosition = { tooltipPosition } /> }
+                { _showScreenShareIndicator && <ScreenShareIndicator tooltipPosition = { tooltipPosition } /> }
+            </>
         );
     }
 }
@@ -126,34 +93,33 @@ class StatusIndicators extends Component<Props> {
  * }}
 */
 function _mapStateToProps(state, ownProps) {
-    const { participantID } = ownProps;
+    const { participantID, audio, moderator, screenshare, pinned } = ownProps;
 
     // Only the local participant won't have id for the time when the conference is not yet joined.
     const participant = getParticipantByIdOrUndefined(state, participantID);
-
+    const pinnedTiles = getPinnedTiles(state);
     const tracks = state['features/base/tracks'];
-    let isVideoMuted = true;
     let isAudioMuted = true;
     let isScreenSharing = false;
 
     if (participant?.local) {
-        isVideoMuted = isLocalTrackMuted(tracks, MEDIA_TYPE.VIDEO);
         isAudioMuted = isLocalTrackMuted(tracks, MEDIA_TYPE.AUDIO);
     } else if (!participant?.isFakeParticipant) { // remote participants excluding shared video
         const track = getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.VIDEO, participantID);
 
         isScreenSharing = track?.videoType === 'desktop';
-        isVideoMuted = isRemoteTrackMuted(tracks, MEDIA_TYPE.VIDEO, participantID);
         isAudioMuted = isRemoteTrackMuted(tracks, MEDIA_TYPE.AUDIO, participantID);
     }
 
+    const { disableModeratorIndicator } = state['features/base/config'];
+
     return {
         _currentLayout: getCurrentLayout(state),
-        _showAudioMutedIndicator: isAudioMuted,
+        _showAudioMutedIndicator: isAudioMuted && audio,
         _showModeratorIndicator:
-            !interfaceConfig.DISABLE_FOCUS_INDICATOR && participant && participant.role === PARTICIPANT_ROLE.MODERATOR,
-        _showScreenShareIndicator: isScreenSharing,
-        _showVideoMutedIndicator: isVideoMuted
+            !disableModeratorIndicator && participant && participant.role === PARTICIPANT_ROLE.MODERATOR && moderator,
+        _showPinnedIndicator: pinned && pinnedTiles.indexOf(participantID) >= 0,
+        _showScreenShareIndicator: isScreenSharing && screenshare
     };
 }
 

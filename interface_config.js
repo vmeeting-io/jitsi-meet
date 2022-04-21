@@ -25,7 +25,10 @@ var interfaceConfig = {
     AUTO_PIN_LATEST_SCREEN_SHARE: 'all',
     BRAND_WATERMARK_LINK: '',
 
-    CLOSE_PAGE_GUEST_HINT: false, // A html text to be shown to guests on the close page, false disables it
+    CLOSE_PAGE_GUEST_HINT: ' ', // A html text to be shown to guests on the close page, false disables it
+    THANK_YOU_MESSAGE: 'Conference terminated by host',
+
+    // -----------------DEPRECATED CONFIGS BELOW THIS LINE-----------------------------
 
     // Connection indicators (
     // CONNECTION_INDICATOR_AUTO_HIDE_ENABLED,
@@ -37,6 +40,8 @@ var interfaceConfig = {
     DEFAULT_LOGO_URL: '/images/watermark2.png?v=2',
     DEFAULT_REMOTE_DISPLAY_NAME: 'Vmeeter',
     DEFAULT_WELCOME_PAGE_LOGO_URL: '/images/watermark.png?v=2',
+
+    DISABLE_LAYOUT_HEADER: true,
 
     // improve the end user experience
     // with lower CPU usage and better audio quality
@@ -153,7 +158,7 @@ var interfaceConfig = {
     SHOW_CHROME_EXTENSION_BANNER: false,
 
     SHOW_DEEP_LINKING_IMAGE: false,
-    SHOW_JITSI_WATERMARK: true,
+    SHOW_JITSI_WATERMARK: false,
     SHOW_POWERED_BY: false,
     SHOW_PROMOTIONAL_CLOSE_PAGE: false,
 
@@ -164,16 +169,6 @@ var interfaceConfig = {
     SUPPORT_URL: 'mailto:vmeeting-info@kedutech.kr',
 
     THIRD_PARTY_AUTH_ENABLED: false,
-
-    TOOLBAR_ALWAYS_VISIBLE: false,
-
-    /**
-     * DEPRECATED!
-     * This config was moved to config.js as `toolbarButtons`.
-     */
-    // TOOLBAR_BUTTONS: [],
-
-    TOOLBAR_TIMEOUT: 4000,
 
     // Browsers, in addition to those which do not fully support WebRTC, that
     // are not supported and should show the unsupported browser page.
@@ -236,13 +231,6 @@ var interfaceConfig = {
      */
     ANDROID_APP_PACKAGE: 'org.postech.vmeeting',
 
-    /**
-     * Override the behavior of some notifications to remain displayed until
-     * explicitly dismissed through a user action. The value is how long, in
-     * milliseconds, those notifications should remain displayed.
-     */
-    // ENFORCE_NOTIFICATION_AUTO_DISMISS_TIMEOUT: 15000,
-
     // List of undocumented settings
     /**
      INDICATOR_FONT_SIZES
@@ -251,7 +239,7 @@ var interfaceConfig = {
      REGISTRATION_BLACKLIST // 정의된 경우, 목록에 포함된 도메인이나 이메일만 등록 불가능하도록
     */
 
-    // SSO_AUTH_KEYS: ['otp'],
+    // SSO_AUTH_KEYS: ['user_id'],
 
     // Allow all above example options to include a trailing comma and
     // prevent fear when commenting out the last value.

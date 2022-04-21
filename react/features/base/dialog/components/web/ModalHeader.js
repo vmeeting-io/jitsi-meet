@@ -8,10 +8,12 @@ import {
     titleIconWrapperStyles,
     TitleText
 } from '@atlaskit/modal-dialog/dist/es2019/styled/Content';
+import { withStyles } from '@material-ui/core/styles';
 import React from 'react';
 
 import { translate } from '../../../i18n';
 import { Icon, IconClose } from '../../../icons';
+import { withPixelLineHeight } from '../../../styles/functions';
 
 const TitleIcon = ({ appearance }: { appearance?: 'danger' | 'warning' }) => {
     if (!appearance) {
@@ -30,6 +32,7 @@ const TitleIcon = ({ appearance }: { appearance?: 'danger' | 'warning' }) => {
 type Props = {
     id: string,
     appearance?: 'danger' | 'warning',
+    classes: Object,
     heading: string,
     hideCloseIconButton: boolean,
     onClose: Function,
@@ -40,11 +43,44 @@ type Props = {
 }
 
 /**
- * A default header for modal-dialog components
+ * Creates the styles for the component.
  *
- * @export
+ * @param {Object} theme - The current UI theme.
+ *
+ * @returns {Object}
+ */
+const styles = theme => {
+    return {
+        closeButton: {
+            borderRadius: theme.shape.borderRadius,
+            cursor: 'pointer',
+            padding: 13,
+
+            [theme.breakpoints.down('480')]: {
+                background: theme.palette.action02
+            },
+
+            '&:hover': {
+                background: theme.palette.action02
+            }
+        },
+        header: {
+            boxShadow: 'none',
+
+            '& h4': {
+                ...withPixelLineHeight(theme.typography.heading5),
+                color: theme.palette.text01
+            }
+        }
+    };
+};
+
+
+/**
+ * A default header for modal-dialog components.
+ *
  * @class ModalHeader
- * @extends {React.Component<Props>}
+ * @augments {React.Component<Props>}
  */
 class ModalHeader extends React.Component<Props> {
     static defaultProps = {
@@ -91,6 +127,7 @@ class ModalHeader extends React.Component<Props> {
             id,
             appearance,
             consentDialog,
+            classes,
             heading,
             hideCloseIconButton,
             onClose,
@@ -105,7 +142,9 @@ class ModalHeader extends React.Component<Props> {
             return null;
         }
         return (
-            <Header showKeyline = { showKeyline }>
+            <Header
+                className = { classes.header }
+                showKeyline = { showKeyline }>
                 <Title>
                     <TitleIcon appearance = { appearance } />
                     <TitleText
@@ -118,16 +157,21 @@ class ModalHeader extends React.Component<Props> {
                 </Title>
 
                 {
-                    !hideCloseIconButton && <Icon
-                        ariaLabel = { t('dialog.close') }
-                        onClick = { consentDialog ? onX : onClose }
-                        onKeyPress = { this._onKeyPress }
-                        role = 'button'
-                        src = { IconClose }
-                        tabIndex = { 0 } />
+                    !hideCloseIconButton
+                        && <div
+                            className = { classes.closeButton }
+                            id = 'modal-header-close-button'
+                            onClick = { consentDialog ? onX : onClose }>
+                            <Icon
+                                ariaLabel = { t('dialog.close') }
+                                onKeyPress = { this._onKeyPress }
+                                role = 'button'
+                                src = { IconClose }
+                                tabIndex = { 0 } />
+                        </div>
                 }
             </Header>
         );
     }
 }
-export default translate(ModalHeader);
+export default translate(withStyles(styles)(ModalHeader));

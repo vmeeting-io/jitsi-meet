@@ -95,12 +95,12 @@ function _conferenceWillLeave({ dispatch, getState }, next, action) {
          * FIXME:
          * It is better to use action.conference[JITSI_CONFERENCE_URL_KEY]
          * in order to make sure we get the url the conference is leaving
-         * from (i.e. the room we are leaving from) because if the order of events
+         * from (i.e. The room we are leaving from) because if the order of events
          * is different, we cannot be guaranteed that the location URL in base
-         * connection is the url we are leaving from... not the one we are going to
+         * connection is the url we are leaving from... Not the one we are going to
          * (the latter happens on mobile -- if we use the web implementation);
          * however, the conference object on web does not have
-         * JITSI_CONFERENCE_URL_KEY so we cannot call it and must use the other way
+         * JITSI_CONFERENCE_URL_KEY so we cannot call it and must use the other way.
          */
         if (typeof APP === 'undefined') {
             locationURL = action.conference[JITSI_CONFERENCE_URL_KEY];
@@ -133,14 +133,16 @@ function _setRoom({ dispatch, getState }, next, action) {
         const pattern = /(?<tenant>\/[^\/]+)?(?<room>\/.+)$/;
         const { groups } = locationURL.pathname.match(pattern);
         const { user = {} } = getState()['features/base/jwt'];
-        const tenant = groups.tenant || user.tenant || process.env.DEFAULT_SITE_ID;
+        const tenant = groups.tenant || user.tenant || window._env_.DEFAULT_SITE_ID;
 
         if (locationURL && tenant) {
             const pathname = `${tenant}${groups.room}`;
             const newURL = new URL(locationURL.toString());
             newURL.pathname = pathname[0] !== '/' ? `/${pathname}` : pathname;
 
-            dispatch(_storeCurrentConference(newURL));
+            // remove search
+            newURL.search = '';
+            dispatch(_storeCurrentConference(newURL, action.roomInfo?.site_name || tenant));
 
             // Whatever domain the feature recent-list knows about, the app as a
             // whole should know about.

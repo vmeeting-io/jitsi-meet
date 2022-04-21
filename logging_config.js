@@ -12,7 +12,7 @@ var loggingConfig = {
     // {@link #defaultLogLevel}:
     'modules/RTC/TraceablePeerConnection.js': 'info',
     'modules/statistics/CallStats.js': 'info',
-    'modules/xmpp/strophe.util.js': 'log'
+    // 'modules/xmpp/strophe.util.js': 'log'
 };
 
 /* eslint-enable no-unused-vars, no-var */

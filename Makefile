@@ -1,13 +1,14 @@
 BUILD_DIR = build
 CLEANCSS = ./node_modules/.bin/cleancss
 DEPLOY_DIR = libs
-LIBJITSIMEET_DIR = node_modules/lib-jitsi-meet/
-LIBFLAC_DIR = node_modules/libflacjs/dist/min/
+LIBJITSIMEET_DIR = node_modules/lib-jitsi-meet
+LIBFLAC_DIR = node_modules/libflacjs/dist/min
 OLM_DIR = node_modules/@matrix-org/olm
-RNNOISE_WASM_DIR = node_modules/rnnoise-wasm/dist/
+RNNOISE_WASM_DIR = node_modules/rnnoise-wasm/dist
 TFLITE_WASM = react/features/stream-effects/virtual-background/vendor/tflite
 MEET_MODELS_DIR  = react/features/stream-effects/virtual-background/vendor/models
 FACE_DETECT_MODELS_DIR = react/features/face-detect/models
+FACIAL_MODELS_DIR = react/features/facial-recognition/resources
 NODE_SASS = ./node_modules/.bin/sass
 NPM = npm
 OUTPUT_DIR = .
@@ -32,7 +33,7 @@ clean:
 	rm -fr $(BUILD_DIR)
 
 .NOTPARALLEL:
-deploy: deploy-init deploy-appbundle deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-css deploy-local $(LANGUAGES)
+deploy: deploy-init deploy-appbundle deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-css deploy-local deploy-facial-expressions $(LANGUAGES)
 
 deploy-init:
 	rm -fr $(DEPLOY_DIR)
@@ -46,9 +47,9 @@ deploy-appbundle:
 
 deploy-lib-jitsi-meet:
 	cp \
-		$(LIBJITSIMEET_DIR)/lib-jitsi-meet.min.js \
-		$(LIBJITSIMEET_DIR)/lib-jitsi-meet.min.map \
-		$(LIBJITSIMEET_DIR)/lib-jitsi-meet.e2ee-worker.js \
+		$(LIBJITSIMEET_DIR)/dist/umd/lib-jitsi-meet.min.js \
+		$(LIBJITSIMEET_DIR)/dist/umd/lib-jitsi-meet.min.map \
+		$(LIBJITSIMEET_DIR)/dist/umd/lib-jitsi-meet.e2ee-worker.js \
 		$(LIBJITSIMEET_DIR)/connection_optimization/external_connect.js \
 		$(LIBJITSIMEET_DIR)/modules/browser/capabilities.json \
 		$(DEPLOY_DIR)
@@ -72,15 +73,20 @@ deploy-rnnoise-binary:
 deploy-tflite:
 	cp \
 		$(TFLITE_WASM)/*.wasm \
-		$(DEPLOY_DIR)		
+		$(DEPLOY_DIR)
 
 deploy-meet-models:
 	cp \
 		$(MEET_MODELS_DIR)/*.tflite \
-		$(DEPLOY_DIR)	
+		$(DEPLOY_DIR)
+
+deploy-facial-expressions:
+	cp \
+		$(FACIAL_MODELS_DIR)/* \
+		$(DEPLOY_DIR)
 
 deploy-face-detect-models:
-	cp \
+	cp -rf \
 		$(FACE_DETECT_MODELS_DIR)/* \
 		$(DEPLOY_DIR)
 
@@ -105,7 +111,7 @@ $(LANGUAGES):
 	fi;
 
 .NOTPARALLEL:
-dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-lib-jitsi-meet deploy-libflac deploy-olm $(LANGUAGES)
+dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-libflac deploy-olm deploy-facial-expressions $(LANGUAGES)
 	if [ ! -d $(DEV_COUNTRIES_DIR) ] ; \
 	then \
 		mkdir $(DEV_COUNTRIES_DIR); \

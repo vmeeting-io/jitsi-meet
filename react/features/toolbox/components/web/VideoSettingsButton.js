@@ -6,7 +6,7 @@ import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { IconArrowUp } from '../../../base/icons';
 import { connect } from '../../../base/redux';
-import { ToolboxButtonWithIcon } from '../../../base/toolbox/components';
+import { ToolboxButtonWithIcon } from '../../../base/toolbox/components/web';
 import { getLocalJitsiVideoTrack } from '../../../base/tracks';
 import { toggleVideoSettings, VideoSettingsPopup } from '../../../settings';
 import { getVideoSettingsVisibility } from '../../../settings/functions';
@@ -37,7 +37,7 @@ type Props = {
     hasVideoTrack: boolean,
 
     /**
-     * If the button should be disabled
+     * If the button should be disabled.
      */
     isDisabled: boolean,
 
@@ -50,12 +50,12 @@ type Props = {
     visible: boolean,
 
     /**
-     * Used for translation
+     * Used for translation.
      */
     t: Function,
 
     /**
-     * Defines is popup is open
+     * Defines is popup is open.
      */
     isOpen: boolean
 };
@@ -67,7 +67,7 @@ type Props = {
  */
 class VideoSettingsButton extends Component<Props> {
     /**
-     * Initializes a new {@code VideoSettingsButton} instance.
+     * Initializes a new {@code AudioSettingsButton} instance.
      *
      * @inheritdoc
      */
@@ -88,6 +88,7 @@ class VideoSettingsButton extends Component<Props> {
 
         return (!hasPermissions || isDisabled) && !hasVideoTrack;
     }
+
     _onEscClick: (KeyboardEvent) => void;
 
     /**
@@ -174,5 +175,5 @@ const mapDispatchToProps = {
 
 export default translate(connect(
     mapStateToProps,
-    mapDispatchToProps,
+    mapDispatchToProps
 )(VideoSettingsButton));

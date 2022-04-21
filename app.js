@@ -2,7 +2,6 @@
 
 import 'jquery';
 import 'jquery-ui-bundle';
-import '@andxor/jquery-ui-touch-punch-fix';
 
 import '@matrix-org/olm';
 

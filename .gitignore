@@ -6,6 +6,7 @@ libs/
 .remote-sync.json
 .sync-config.cson
 .env
+env-config.js
 config/
 lang/countries-*.json
 

@@ -15,9 +15,6 @@ $maxContentWidth: 1280px;
  */
 
 // Video layout.
-$thumbnailToolbarHeight: 22px;
-$thumbnailIndicatorBorder: 2px;
-$thumbnailIndicatorSize: $thumbnailToolbarHeight;
 $thumbnailVideoMargin: 2px;
 $thumbnailsBorder: 2px;
 $thumbnailVideoBorder: 2px;
@@ -60,19 +57,12 @@ $overflowMenuItemBackground: #36383C;
 /**
  * Video layout
  */
-$videoThumbnailHovered: rgba(22, 94, 204, .4);
-$videoThumbnailSelected: #165ECC;
 $participantNameColor: #fff;
-$thumbnailPictogramColor: #fff;
-$dominantSpeakerBg: #165ecc;
-$raiseHandBg: #D6D61E;
 $audioLevelBg: #44A5FF;
-$connectionIndicatorBg: #165ecc;
 $audioLevelShadow: rgba(9, 36, 77, 0.9);
 $videoStateIndicatorColor: $defaultColor;
 $videoStateIndicatorBackground: $toolbarBackground;
 $videoStateIndicatorSize: 40px;
-$remoteVideoMenuIconMargin: initial;
 
 /**
  * Feedback Modal
@@ -106,7 +96,6 @@ $sidebarWidth: 315px;
  * Misc.
  */
 $borderRadius: 4px;
-$popoverMenuPadding: 13px;
 $happySoftwareBackground: transparent;
 $desktopAppDragBarHeight: 25px;
 $scrollHeight: 7px;
@@ -123,11 +112,10 @@ $labelsZ: 5;
 $filmstripVideosZ: 6;
 $subtitlesZ: 7;
 $popoverZ: 8;
-$zindex10: 10;
 $reloadZ: 20;
 $poweredByZ: 100;
 $ringingZ: 300;
-$sideToolbarContainerZ: 200;
+$sideToolbarContainerZ: 300;
 $toolbarZ: 250;
 $drawerZ: 351;
 $tooltipsZ: 401;
@@ -137,7 +125,7 @@ $centeredVideoLabelZ: 1010;
 $overlayZ: 1016;
 // Place filmstrip videos over toolbar in order
 // to make connection info visible.
-$filmstripVideosZ: $toolbarZ + 1;
+$filmstripVideosZ: $toolbarZ - 1;
 
 
 /**

@@ -184,13 +184,15 @@ export function getConferenceName(stateful: Function | Object): string {
     const state = toState(stateful);
     const { callee } = state['features/base/jwt'];
     const { callDisplayName } = state['features/base/config'];
-    const { pendingSubjectChange, room, subject } = getConferenceState(state);
+    const { localSubject, room, subject } = getConferenceState(state);
 
-    return pendingSubjectChange
+    const name = localSubject
         || subject
         || callDisplayName
         || (callee && callee.name)
-        || safeStartCase(safeDecodeURIComponent(room));
+        || room;
+
+    return safeStartCase(safeDecodeURIComponent(name));
 }
 
 /**
@@ -216,7 +218,7 @@ export function getConferenceOptions(stateful: Function | Object) {
     const config = state['features/base/config'];
     const { locationURL } = state['features/base/connection'];
     const { tenant } = state['features/base/jwt'];
-    const { email, name: nick } = getLocalParticipant(state);
+    const { email, name: nick, presence } = getLocalParticipant(state);
     const options = { ...config };
 
     if (tenant) {
@@ -233,6 +235,10 @@ export function getConferenceOptions(stateful: Function | Object) {
 
     if (locationURL) {
         options.confID = `${locationURL.host}${getBackendSafePath(locationURL.pathname)}`;
+    }
+
+    if (presence) {
+        options.presenceStatus = presence;
     }
 
     options.applicationName = getName();
@@ -397,7 +403,7 @@ function _reportError(msg, err) {
 
 /**
  * Sends a representation of the local participant such as her avatar (URL),
- * e-mail address, and display name to (the remote participants of) a specific
+ * email address, and display name to (the remote participants of) a specific
  * conference.
  *
  * @param {Function|Object} stateful - The redux store, state, or
@@ -475,11 +481,14 @@ export function getRoomInfo(store) {
         room: store.getState()['features/base/conference'].roomInfo,
 
         // update conference database information to set 
-        // 1. userDeviceAccessDisabled fieldroom: store.getState()['features/base/conference'].roomInfo,
-        // 2. timerEndTime: End time of timerclock.
+        // 1. timerEndTime: End time of timerclock.
         config:{
-            headers: { Authorization: `Bearer ${process.env.VMEETING_API_TOKEN}`}
+            headers: { Authorization: `Bearer ${window._env_.VMEETING_API_TOKEN}`}
         },
-        apiBaseUrl : `${store.getState()['features/base/connection'].locationURL.origin}${process.env.VMEETING_API_BASE}`,
+        apiBaseUrl : `${store.getState()['features/base/connection'].locationURL.origin}${window._env_.VMEETING_API_BASE}`,
     };
+}
+
+export function isStartCountDown(state) {
+    return state['features/base/conference'].startCountDown;
 }

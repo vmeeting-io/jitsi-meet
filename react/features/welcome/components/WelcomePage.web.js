@@ -9,6 +9,7 @@ import axios from 'axios';
 import React from 'react';
 
 import tokenLocalStorage from '../../../api/tokenLocalStorage';
+import { getAvatarColor, getInitials } from '../../base/avatar';
 import { translate, translateToHTML } from '../../base/i18n';
 import { Icon, IconWarning } from '../../base/icons';
 import { setJWT } from '../../base/jwt';
@@ -16,16 +17,17 @@ import { Watermarks } from '../../base/react';
 import { connect } from '../../base/redux';
 import { openDialog } from '../../base/dialog';
 import { CalendarList } from '../../calendar-sync';
+import { NOTIFICATION_TYPE, showSweetAlert } from '../../notifications';
 import { NotificationsContainer } from '../../notifications/components';
 import { RecentList } from '../../recent-list';
 import { SETTINGS_TABS } from '../../settings';
 import { openSettingsDialog } from '../../settings/actions';
 import { checkBlurSupport, VirtualBackgroundDialog } from '../../virtual-background';
+import { VirtualAvatarDialog } from '../../virtual-avatar';
 
 import { AbstractWelcomePage, _mapStateToProps } from './AbstractWelcomePage';
+import NoticeDialog from './NoticeDialog';
 import Tabs from './Tabs';
-import { NOTIFICATION_TYPE, showSweetAlert } from '../../notifications';
-import { getAvatarColor, getInitials } from '../../base/avatar';
 //import alarmImg from '../../../../resources/img/appstore-badge.png';
 
 /**
@@ -37,15 +39,15 @@ export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣_
 // export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[a-zA-Z0-9가-힣_]+$'; // this allows alphabet, numbers, underscore and completed korean
 // export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[a-zA-Z0-9_]+$'; // this allows alphabet, numbers and underscore only
 
-const AUTH_PAGE_BASE = process.env.VMEETING_FRONT_BASE;
-const AUTH_API_BASE = process.env.VMEETING_API_BASE;
-const DEFAULT_TENANT = process.env.DEFAULT_SITE_ID;
+const AUTH_PAGE_BASE = window._env_.VMEETING_FRONT_BASE;
+const AUTH_API_BASE = window._env_.VMEETING_API_BASE;
+const DEFAULT_TENANT = window._env_.DEFAULT_SITE_ID;
 
 
 /**
  * The Web container rendering the welcome page.
  *
- * @extends AbstractWelcomePage
+ * @augments AbstractWelcomePage
  */
 class WelcomePage extends AbstractWelcomePage {
     /**
@@ -73,7 +75,8 @@ class WelcomePage extends AbstractWelcomePage {
                 interfaceConfig.GENERATE_ROOMNAMES_ON_WELCOME_PAGE,
             selectedTab: 0,
             submitting: false,
-            currentTenant: props._jwt.tenant || DEFAULT_TENANT
+            siteName: props._jwt.siteName || DEFAULT_TENANT,
+            currentTenant: props._jwt.tenant || DEFAULT_TENANT,
         };
 
         /**
@@ -87,7 +90,6 @@ class WelcomePage extends AbstractWelcomePage {
 
         this._roomInputRef = null;
         this._virtualTenantRef = null;
-        this._tenantInputRef = null;
         this._redirectRoom = false;
 
         /**
@@ -135,16 +137,15 @@ class WelcomePage extends AbstractWelcomePage {
         this._onFormSubmit = this._onFormSubmit.bind(this);
         this._onRoomChange = this._onRoomChange.bind(this);
         this._onJoin = this._onJoin.bind(this);
-        this._onTenantChange = this._onTenantChange.bind(this);
         this._setAdditionalContentRef
             = this._setAdditionalContentRef.bind(this);
         this._setRoomInputRef = this._setRoomInputRef.bind(this);
         this._setVirtualTenantRef = this._setVirtualTenantRef.bind(this);
-        this._setTenantInputRef = this._setTenantInputRef.bind(this);
         this._setAdditionalToolbarContentRef
             = this._setAdditionalToolbarContentRef.bind(this);
         this._onTabSelected = this._onTabSelected.bind(this);
         this._onVirtualBackground = this._onVirtualBackground.bind(this);
+        this._onVirtualAvatar = this._onVirtualAvatar.bind(this);
         this._onLogout = this._onLogout.bind(this);
         this._onOpenChange = this._onOpenChange.bind(this);
         this._onOpenSettings = this._onOpenSettings.bind(this);
@@ -222,17 +223,17 @@ class WelcomePage extends AbstractWelcomePage {
             }
         }
     }
-    
+
     /***
      * Navigate to Vmeeting User pdf link
-     * 
-     * @returns None 
-     *  */    
+     *
+     * @returns None
+     *  */
     _getManualDownloadLink(){
         const krLink = window.config.features.download.krLink;
         const enLink = window.config.features.download.enLink;
         const selectedLang =  localStorage.language == "ko" ? krLink:enLink;
-        
+
         var a = document.createElement('A');
         a.href = selectedLang;
         a.download = selectedLang.substr(selectedLang.lastIndexOf('/') + 1);
@@ -243,9 +244,9 @@ class WelcomePage extends AbstractWelcomePage {
 
     /***
      * Navigate to Vmeeting User Guide site link
-     * 
-     * @returns None 
-     *  */    
+     *
+     * @returns None
+     *  */
     _getSiteLink(){
         const krLink = window.config.features.learnMore.krLink;
         const enLink = window.config.features.learnMore.enLink;
@@ -259,23 +260,30 @@ class WelcomePage extends AbstractWelcomePage {
      * @inheritdoc
      * @returns {void}
      */
-    _onLogout() {
+    async _onLogout() {
         const { dispatch } = this.props;
 
         this.setState({ submitting: true });
 
-        return axios.get(`${AUTH_API_BASE}/logout`).then(() => {
+        await axios.get(`${AUTH_API_BASE}/logout`).then(() => {
             // dispatch(setCurrentUser());
             tokenLocalStorage.removeItem(APP.store.getState());
             dispatch(setJWT());
             this.setState({ submitting: false });
         });
+        window.location="/";
     }
 
     _onVirtualBackground(){
         const { dispatch } = this.props;
-        
+
         dispatch(openDialog(VirtualBackgroundDialog));
+    }
+
+    _onVirtualAvatar() {
+        const { dispatch } = this.props;
+
+        dispatch(openDialog(VirtualAvatarDialog));
     }
 
     _onOpenChange() {
@@ -291,7 +299,7 @@ class WelcomePage extends AbstractWelcomePage {
     _onOpenSettings() {
         const { dispatch } = this.props;
         const defaultTab = SETTINGS_TABS.DEVICES;
-       
+
         dispatch(openSettingsDialog(defaultTab));
     }
 
@@ -302,8 +310,14 @@ class WelcomePage extends AbstractWelcomePage {
      * @returns {ReactElement|null}
      */
     render() {
-        const { _moderatedRoomServiceUrl, _user, t } = this.props;
-        const { submitting, currentTenant, inputTenant, room } = this.state;
+        const {
+            _defaultLogoUrl,
+            _moderatedRoomServiceUrl,
+            _user,
+            _virtualAvatarSupport,
+            t
+        } = this.props;
+        const { submitting, siteName, currentTenant, room } = this.state;
         const { APP_NAME, DEFAULT_WELCOME_PAGE_LOGO_URL } = interfaceConfig;
         const showAdditionalContent = this._shouldShowAdditionalContent();
         const showAdditionalToolbarContent = this._shouldShowAdditionalToolbarContent();
@@ -351,28 +365,28 @@ class WelcomePage extends AbstractWelcomePage {
                         }
                         triggerType = 'button'>
                         <DropdownItemGroup className = 'menu-container'>
-                            <DropdownItem 
+                            <DropdownItem
                                 className = 'menu-item mobile'
                                 onClick = { this._getSiteLink }>
-                                { t('toolbar.features.learnMore') } 
+                                { t('toolbar.features.learnMore') }
                             </DropdownItem>
-                            
-                            <DropdownItem 
+
+                            <DropdownItem
                                 className = 'menu-item mobile'
                                 onClick = { this._getManualDownloadLink }>
                                 { t('toolbar.features.downloadManual') }
                             </DropdownItem>
-                        
+
                             <DropdownItem
                                 className = 'menu-item mobile'
                                 href = { "mailto:vmeeting-info@kedutech.kr"} >
-                                {t('toolbar.features.support')} 
+                                {t('toolbar.features.support')}
                             </DropdownItem>
                             <hr className = 'divider mobile' />
                         </DropdownItemGroup>
-                        { _user.isAdmin && 
+                        { _user.isAdmin &&
                             <DropdownItemGroup className = 'menu-container'>
-                                <DropdownItem 
+                                <DropdownItem
                                     className = 'menu-item mobile'
                                     href = { `${AUTH_PAGE_BASE}/admin/rooms` }>
                                     {t('welcomepage.adminConsole')}
@@ -380,10 +394,10 @@ class WelcomePage extends AbstractWelcomePage {
                                 <hr className = 'divider mobile' />
                             </DropdownItemGroup> }
                         <DropdownItemGroup className = 'menu-container'>
-                             <DropdownItem
+                            <DropdownItem
                                 className = 'menu-item'
-                                href = { `${AUTH_PAGE_BASE}/meetingdetails` }>
-                                { t('welcomepage.meetingDetails') }
+                                href = { `${AUTH_PAGE_BASE}/meetingmanage` }>
+                                { t('welcomepage.meetingManage') }
                             </DropdownItem>
                             <DropdownItem
                                 className = 'menu-item'
@@ -395,13 +409,19 @@ class WelcomePage extends AbstractWelcomePage {
                                     </div>
                                 )}
                             </DropdownItem>
-                            { checkBlurSupport() && (
+                            { _virtualAvatarSupport ? (
+                                <DropdownItem
+                                    className='menu-item'
+                                    onClick={this._onVirtualAvatar}>
+                                    {t('toolbar.selectVirtualAvatar')}
+                                </DropdownItem>
+                            ) : (checkBlurSupport() && (
                                 <DropdownItem
                                     className = 'menu-item'
                                     onClick = { this._onVirtualBackground }>
                                     { t('toolbar.selectBackground') }
                                 </DropdownItem>
-                            )}
+                            ))}
                             <DropdownItem
                                 className = 'menu-item'
                                 onClick = { this._onLogout }>
@@ -418,15 +438,17 @@ class WelcomePage extends AbstractWelcomePage {
                 </div>
             );
         } else {
-            buttons.push(
-                <Button
-                    appearance = 'subtle'
-                    className = 'button'
-                    href = { `${AUTH_PAGE_BASE}/register` }
-                    key = 'register'>
-                    { t('toolbar.Register') }
-                </Button>
-            );
+            if (!config.disableUserRegistration) {
+                buttons.push(
+                    <Button
+                        appearance = 'subtle'
+                        className = 'button'
+                        href = { `${AUTH_PAGE_BASE}/register` }
+                        key = 'register'>
+                        { t('toolbar.Register') }
+                    </Button>
+                );
+            }
             buttons.push(
                 <Button
                     appearance = 'subtle'
@@ -436,10 +458,6 @@ class WelcomePage extends AbstractWelcomePage {
                     {t('toolbar.login')}
                 </Button>
             );
-        }
-
-        if (this._tenantInputRef && this._virtualTenantRef) { // this adjusts the width of the tenant input tag
-            this._tenantInputRef.style=`width:${window.getComputedStyle(this._virtualTenantRef).width}`;
         }
 
         return (
@@ -452,7 +470,7 @@ class WelcomePage extends AbstractWelcomePage {
                     <div className = 'container'>
                         <Watermarks
                             className = 'watermark'
-                            defaultJitsiLogoURL = { DEFAULT_WELCOME_PAGE_LOGO_URL } />
+                            defaultJitsiLogoURL = { _defaultLogoUrl || DEFAULT_WELCOME_PAGE_LOGO_URL } />
                         <div className = 'toolbars'>
                             <div className = 'button desktop'>
                                 <DropdownMenu
@@ -466,28 +484,28 @@ class WelcomePage extends AbstractWelcomePage {
                                     }
                                     triggerType = 'button'>
                                     <DropdownItemGroup className = 'menu-container'>
-                                        <DropdownItem 
+                                        <DropdownItem
                                             className = 'menu-item'
                                             onClick = { this._getSiteLink }>
-                                            { t('toolbar.features.learnMore') } 
+                                            { t('toolbar.features.learnMore') }
                                         </DropdownItem>
-                                        
-                                        <DropdownItem 
+
+                                        <DropdownItem
                                             className = 'menu-item'
                                             onClick = { this._getManualDownloadLink }>
                                             { t('toolbar.features.downloadManual') }
                                         </DropdownItem>
-                                    
-                                    
+
+
                                         <DropdownItem
                                             className = 'menu-item'
                                             href = { "mailto:vmeeting-info@kedutech.kr"} >
-                                            {t('toolbar.features.support')} 
+                                            {t('toolbar.features.support')}
                                         </DropdownItem>
                                     </DropdownItemGroup>
                                 </DropdownMenu>
                             </div>
-                            
+
                             <ButtonGroup>
                                 {/* <Button
                                     appearance = 'subtle'
@@ -516,7 +534,7 @@ class WelcomePage extends AbstractWelcomePage {
                     { config.noticeMessage && (
                         <div className = 'banner'>
                             <Banner appearance="announcement" isOpen>
-                                {config.noticeMessage}
+                                {decodeURIComponent(config.noticeMessage)}
                             </Banner>
                         </div>
                     )}
@@ -533,24 +551,15 @@ class WelcomePage extends AbstractWelcomePage {
                                     </p>
                                 </div>
                                 <div className = 'enter-room'>
-                                    <div className = 'enter-room-input-container'>   
+                                    <div className = 'enter-room-input-container'>
                                         <div // virtual input tag to calculate the width of tenant input tag
                                             ref={this._setVirtualTenantRef}
                                             id='virtual_tenant'
                                             className='virtual-tenant'>
-                                            {inputTenant || currentTenant}
-                                        </div>                                    
-                                        
-                                        <form onSubmit={this._onFormSubmit}>
-                                            <input 
-                                                placeholder={currentTenant}
-                                                ref={this._setTenantInputRef}
-                                                defaultValue={currentTenant}
-                                                onChange={this._onTenantChange}
-                                                className='tenant-input'/>
-                                        </form>
+                                            {siteName}
+                                        </div>
                                         <span>/</span>
-                                        <form 
+                                        <form
                                             className= 'room-form'
                                             onSubmit = { this._onFormSubmit }>
                                             <input
@@ -558,14 +567,14 @@ class WelcomePage extends AbstractWelcomePage {
                                                 className = 'enter-room-input'
                                                 id = 'enter_room_field'
                                                 onChange = { this._onRoomChange }
-                                                onClick = { e => e.stopPropagation() }                                                
+                                                onClick = { e => e.stopPropagation() }
                                                 pattern = { ROOM_NAME_VALIDATE_PATTERN_STR }
                                                 placeholder = { this.state.roomPlaceholder }
                                                 ref = { this._setRoomInputRef }
                                                 title = { t('welcomepage.roomNameAllowedChars') }
                                                 type = 'text' />
                                             { this._renderInsecureRoomNameWarning() }
-                                        </form>    
+                                        </form>
                                     </div>
                                     { tenant && tenant !== currentTenant ? (
                                         <div
@@ -579,7 +588,7 @@ class WelcomePage extends AbstractWelcomePage {
                                             className = 'welcome-page-button'
                                             id = 'enter_room_button'
                                             onClick = { this._onFormSubmit }>
-                                            { t('welcomepage.go') }
+                                            { _user ? t('welcomepage.go') : t('welcomepage.join') }
                                         </div>
                                     )}
                                     { _moderatedRoomServiceUrl && (
@@ -633,8 +642,8 @@ class WelcomePage extends AbstractWelcomePage {
                         </div>
                     </div>
                 </div>
+                <NoticeDialog />
             </div>
-
         );
     }
 
@@ -682,31 +691,17 @@ class WelcomePage extends AbstractWelcomePage {
      */
     _onRoomChange(event) {
         event.stopPropagation();
-        
+
         const forbiddenChars = /[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣_]/ig;
         const replacedStr =  event.currentTarget.value.replaceAll(forbiddenChars, '');
         this._roomInputRef.value = replacedStr; // removes forbidden characters
 
-        super._onRoomChange(`${this.state.inputTenant || this.state.currentTenant}/${replacedStr}`);
-    }
-
-    _onTenantChange(event) {
-        event.stopPropagation();
-
-        const roomname = this._roomInputRef.value || this.state.generatedRoomname; // value at the roomname input tag
-        const forbiddenChars = /[^a-zA-Z0-9_]/ig; // alphabet, numbers and underscore is allowed for tenant
-        const replacedStr =  event.currentTarget.value.replaceAll(forbiddenChars, '');
-        this._tenantInputRef.value = replacedStr; //  removes forbidden characters
-        
-        this.setState(() => ({inputTenant: replacedStr}), () => {
-            this._tenantInputRef.style=`width:${window.getComputedStyle(this._virtualTenantRef).width}`;
-            super._onRoomChange(`${replacedStr || this.state.currentTenant}/${roomname}`);
-        });
+        super._onRoomChange(`${this.state.currentTenant}/${replacedStr}`);
     }
 
     /**
      * Overrides the super to implement the tenant(site or license) feature
-     * 
+     *
      * Handles joining. Either by clicking on 'Join' button
      * or by pressing 'Enter' in room name input field.
      * @inheritdoc
@@ -716,15 +711,11 @@ class WelcomePage extends AbstractWelcomePage {
      */
     _onJoin() {
         const roomname = this._roomInputRef.value || this.state.generatedRoomname; // value at the roomname input tag
-        
-        if(!this.state.inputTenant) {
-            this.setState(() => ({ room: `${this.state.currentTenant}/${roomname}` }), () => {
-                super._onJoin();
-            });
-        }
-        else {
+        const { currentTenant } = this.state;
+
+        this.setState(() => ({ room: `${currentTenant}/${roomname}` }), () => {
             super._onJoin();
-        }
+        });
     }
 
     /**
@@ -882,10 +873,6 @@ class WelcomePage extends AbstractWelcomePage {
 
     _setVirtualTenantRef(el) {
         this._virtualTenantRef = el;
-    }
-
-    _setTenantInputRef(el) {
-        this._tenantInputRef = el;
     }
 
     /**

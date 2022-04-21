@@ -10,8 +10,6 @@ import { connect } from '../../../base/redux';
 import { getLocalParticipant, getParticipantById } from '../../../base/participants';
 import KickRemoteParticipantDialog from '../../../video-menu/components/web/KickRemoteParticipantDialog';
 
-import EnableChatForRemoteParticipantDialog from '../../../video-menu/components/web/EnableChatForRemoteParticipantDialog';
-import DisableChatForRemoteParticipantDialog from '../../../video-menu/components/web/DisableChatForRemoteParticipantDialog';
 import { setPrivateMessageRecipient } from '../../actions';
 
 import ChatMessage from './ChatMessage';
@@ -33,7 +31,7 @@ type Props = {
  * Displays a list of chat messages. Will show only the display name for the
  * first chat message and the timestamp for the last chat message.
  *
- * @extends React.Component
+ * @augments React.Component
  */
 class ChatMessageGroup extends Component<Props> {
     static defaultProps = {
@@ -43,7 +41,6 @@ class ChatMessageGroup extends Component<Props> {
     constructor(props) {
         super(props);
 
-        this._onToggleChatState = this._onToggleChatState.bind(this);
         this._onKickUser = this._onKickUser.bind(this);
         this._onPrivateMessage = this._onPrivateMessage.bind(this);
     }
@@ -61,28 +58,6 @@ class ChatMessageGroup extends Component<Props> {
         const { dispatch, _participant } = this.props;
         if (_participant) {
             dispatch(setPrivateMessageRecipient(_participant));
-        }
-    }
-
-    _onToggleChatState: () => void;
-
-    _onToggleChatState() {
-        const { _isChatMessageDisabled, _participant, dispatch } = this.props;
-        
-        // get the participantID for whom the action is to be dispatched
-        const participantID = _participant?.id;
-
-        // based on what role the current participant is occupying, we can identify whether chat is enabled or disabled
-        // when the role of participant is a visitor, he has 'no voice', so when the the popup menu item is clicked
-        // it should open the enable chat dialog
-        if(_isChatMessageDisabled) {
-            // dispatch necessary actions via a dialog box for the participant
-            dispatch(openDialog(EnableChatForRemoteParticipantDialog, { participantID }));
-        }
-        // otherwise, it should open the disable chat dialog
-        else {   
-            // dispatch necessary actions via a dialog box for the participant
-            dispatch(openDialog(DisableChatForRemoteParticipantDialog, { participantID }));
         }
     }
 
@@ -107,7 +82,7 @@ class ChatMessageGroup extends Component<Props> {
      * @returns {Icon} 
      */
     _renderAvatar = () => {
-        const { _isChatMessageDisabled, _isLocalParticipantAModerator, messages, t } = this.props;
+        const { _isLocalParticipantAModerator, messages, t } = this.props;
         const avatar = (
             <Avatar 
                 className = 'chat-avatar'
@@ -123,9 +98,6 @@ class ChatMessageGroup extends Component<Props> {
                     <DropdownItem onClick = { this._onPrivateMessage }>
                         { t('dialog.privateMessage') }
                     </DropdownItem>
-                    { _isLocalParticipantAModerator && <DropdownItem onClick = { this._onToggleChatState }>
-                        { _isChatMessageDisabled ? t('dialog.enableChat') : t('dialog.disableChat') }
-                    </DropdownItem>}
                     { _isLocalParticipantAModerator && <DropdownItem onClick = { this._onKickUser }>
                         { t('dialog.kickOut') }
                     </DropdownItem>}
@@ -189,7 +161,6 @@ function _mapStateToProps(state, ownProps) {
     const localParticipant = getLocalParticipant(state);
 
     return {
-        _isChatMessageDisabled: Boolean(participant?.role === 'visitor'),
         _isLocalParticipantAModerator: Boolean(localParticipant.role === 'moderator'),
         _isLocal: localParticipant.id === participantID,
         _participant: participant,

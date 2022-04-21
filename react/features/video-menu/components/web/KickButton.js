@@ -2,15 +2,14 @@
 
 import React from 'react';
 
+import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
 import { translate } from '../../../base/i18n';
-import { IconKick } from '../../../base/icons';
+import { IconCloseCircle } from '../../../base/icons';
 import { isHost } from '../../../base/jwt';
 import { connect } from '../../../base/redux';
 import AbstractKickButton, {
     type Props
 } from '../AbstractKickButton';
-
-import VideoMenuButton from './VideoMenuButton';
 
 /**
  * Implements a React {@link Component} which displays a button for kicking out
@@ -44,17 +43,18 @@ class KickButton extends AbstractKickButton {
         const { participantID, t } = this.props;
 
         return (
-            <VideoMenuButton
-                buttonText = { t('videothumbnail.kick') }
-                displayClass = 'kicklink'
-                icon = { IconKick }
+            <ContextMenuItem
+                accessibilityLabel = { t('videothumbnail.kick') }
+                className = 'kicklink'
+                icon = { IconCloseCircle }
                 id = { `ejectlink_${participantID}` }
                 // eslint-disable-next-line react/jsx-handler-names
-                onClick = { this._handleClick } />
+                onClick = { this._handleClick }
+                text = { t('videothumbnail.kick') } />
         );
     }
 
-    _handleClick: () => void
+    _handleClick: () => void;
 }
 
 /**

@@ -319,23 +319,12 @@ body.welcome-page {
             }
 
             .virtual-tenant {
-                display: inline-block;
-                position: absolute;
-                font-weight: bold;
-                visibility: hidden;
-            }
-            
-            .tenant-input {
                 margin-left: 16px;
                 font-weight: bold;
                 border: none;
                 padding: 0px;
                 border-radius: 4px;
                 background-color: transparent !important;
-            }
-
-            .tenant-input:focus {
-                outline: none;
             }
 
             .room-form {

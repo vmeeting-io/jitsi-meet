@@ -1,15 +1,20 @@
 // @flow
 
+import { isNameReadOnly } from '../base/config';
 import { SERVER_URL_CHANGE_ENABLED, getFeatureFlag } from '../base/flags';
 import { i18next, DEFAULT_LANGUAGE, LANGUAGES } from '../base/i18n';
-import { createLocalTrack } from '../base/lib-jitsi-meet/functions';
+import { browser, createLocalTrack } from '../base/lib-jitsi-meet';
 import {
     getLocalParticipant,
     isLocalParticipantModerator
 } from '../base/participants';
 import { toState } from '../base/redux';
+import { ASPECT_RATIO_NARROW } from '../base/responsive-ui/constants';
+import { getHideSelfView } from '../base/settings';
 import { parseStandardURIString } from '../base/util';
-import { isFollowMeActive, isFollowMeEnabled } from '../follow-me';
+import { DEFAULT_MAX_COLUMNS } from '../filmstrip/constants';
+import { isFollowMeActive } from '../follow-me';
+import { isReactionsEnabled } from '../reactions/functions.any';
 
 import { SS_DEFAULT_FRAME_RATE, SS_SUPPORTED_FRAMERATES } from './constants';
 
@@ -77,14 +82,25 @@ export function normalizeUserInputURL(url: string) {
 }
 
 /**
- * Used for web. Returns whether or not only Device Selection is configured to
- * display as a setting.
+ * Returns the notification types and their user selected configuration.
  *
- * @returns {boolean}
+ * @param {(Function|Object)} stateful -The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state.
+ * @returns {Object} - The section of notifications to be configured.
  */
-export function shouldShowOnlyDeviceSelection() {
-    return interfaceConfig.SETTINGS_SECTIONS.length === 1
-        && isSettingEnabled('devices');
+export function getNotificationsMap(stateful: Object | Function) {
+    const state = toState(stateful);
+    const { notifications } = state['features/base/config'];
+    const { userSelectedNotifications } = state['features/base/settings'];
+
+    return Object.keys(userSelectedNotifications)
+        .filter(key => !notifications || notifications.includes(key))
+        .reduce((notificationsMap, key) => {
+            return {
+                ...notificationsMap,
+                [key]: userSelectedNotifications[key]
+            };
+        }, {});
 }
 
 /**
@@ -99,42 +115,71 @@ export function getMoreTabProps(stateful: Object | Function) {
     const state = toState(stateful);
     const framerate = state['features/screen-share'].captureFrameRate ?? SS_DEFAULT_FRAME_RATE;
     const language = i18next.language || DEFAULT_LANGUAGE;
-    const {
-        conference,
-        startAudioMutedPolicy,
-        startVideoMutedPolicy,
-        // add a new state variable to the global state features/base/conference
-        userDeviceAccessDisabled,
-    } = state['features/base/conference'];
-    const followMeActive = isFollowMeActive(state) ||
-        typeof state['features/base/config'].followMeEnabled !== 'undefined';
-    const followMeEnabled = isFollowMeEnabled(state);
     const configuredTabs = interfaceConfig.SETTINGS_SECTIONS || [];
-    const _aiAttentionFlag = state['features/base/settings'].aiAttentionAnalysisEnabled;
+    const enabledNotifications = getNotificationsMap(stateful);
 
-    // The settings sections to display.
-    const showModeratorSettings = Boolean(
-        conference
-            && configuredTabs.includes('moderator')
-            && isLocalParticipantModerator(state));
+    // when self view is controlled by the config we hide the settings
+    const {
+        disableSelfView,
+        disableSelfViewSettings,
+        disableShortcuts,
+        prejoinConfig,
+        showFramerateSelect
+    } = state['features/base/config'];
+    const { aiAttentionAnalysisEnabled, userSelectedSkipPrejoin } = state['features/base/settings'];
 
     return {
         currentFramerate: framerate,
         currentLanguage: language,
         desktopShareFramerates: SS_SUPPORTED_FRAMERATES,
-        enableUserDeviceAccessDisabledOption: state['features/base/config'].enableUserDeviceAccessDisabledOption,
+        disableHideSelfView: disableSelfViewSettings || disableSelfView || aiAttentionAnalysisEnabled,
+        disableShortcuts,
+        hideSelfView: getHideSelfView(state),
+        languages: LANGUAGES,
+        showLanguageSettings: configuredTabs.includes('language'),
+        enabledNotifications,
+        showNotificationsSettings: Object.keys(enabledNotifications).length > 0,
+        showPrejoinPage: !userSelectedSkipPrejoin,
+        showPrejoinSettings: prejoinConfig?.enabled,
+        showFramerateSelect: showFramerateSelect
+    };
+}
+
+/**
+ * Returns the properties for the "More" tab from settings dialog from Redux
+ * state.
+ *
+ * @param {(Function|Object)} stateful -The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state.
+ * @returns {Object} - The properties for the "More" tab from settings dialog.
+ */
+export function getModeratorTabProps(stateful: Object | Function) {
+    const state = toState(stateful);
+    const {
+        conference,
+        followMeEnabled,
+        startAudioMutedPolicy,
+        startVideoMutedPolicy,
+        startReactionsMuted
+    } = state['features/base/conference'];
+    const { disableReactionsModeration } = state['features/base/config'];
+    const followMeActive = isFollowMeActive(state);
+    const configuredTabs = interfaceConfig.SETTINGS_SECTIONS || [];
+
+    const showModeratorSettings = Boolean(
+        conference
+        && configuredTabs.includes('moderator')
+        && isLocalParticipantModerator(state));
+
+    // The settings sections to display.
+    return {
+        showModeratorSettings,
+        disableReactionsModeration: Boolean(disableReactionsModeration),
         followMeActive: Boolean(conference && followMeActive),
         followMeEnabled: Boolean(conference && followMeEnabled),
-        languages: LANGUAGES,
-        aiAttentionFlag: _aiAttentionFlag,
-        showLanguageSettings: configuredTabs.includes('language'),
-        showModeratorSettings,
-        showPrejoinSettings: state['features/base/config'].prejoinPageEnabled,
-        showShortcutSettings: !Boolean(state['features/base/config'].disableShortcuts),
-        showPrejoinPage: !state['features/base/settings'].userSelectedSkipPrejoin,
+        startReactionsMuted: Boolean(conference && startReactionsMuted),
         startAudioMuted: Boolean(conference && startAudioMutedPolicy),
         startVideoMuted: Boolean(conference && startVideoMutedPolicy),
-        userDeviceAccessDisabled: Boolean(conference && userDeviceAccessDisabled),
     };
 }
 
@@ -154,6 +199,7 @@ export function getProfileTabProps(stateful: Object | Function) {
         authLogin,
         conference
     } = state['features/base/conference'];
+    const { hideEmailInSettings } = state['features/base/config'];
     const localParticipant = getLocalParticipant(state);
     const language = i18next.language || DEFAULT_LANGUAGE;
 
@@ -163,7 +209,9 @@ export function getProfileTabProps(stateful: Object | Function) {
         currentLanguage: language,
         displayName: localParticipant.name,
         email: localParticipant.email,
-        birthDate: localParticipant.birthDate
+        birthDate: localParticipant.birthDate,
+        readOnlyName: isNameReadOnly(state),
+        hideEmailInSettings
     };
 }
 
@@ -185,7 +233,8 @@ export function getSoundsTabProps(stateful: Object | Function) {
         soundsTalkWhileMuted,
         soundsReactions
     } = state['features/base/settings'];
-    const { enableReactions } = state['features/base/config'];
+    const enableReactions = isReactionsEnabled(state);
+    const moderatorMutedSoundsReactions = state['features/base/conference'].startReactionsMuted ?? false;
 
     return {
         soundsIncomingMessage,
@@ -193,7 +242,8 @@ export function getSoundsTabProps(stateful: Object | Function) {
         soundsParticipantLeft,
         soundsTalkWhileMuted,
         soundsReactions,
-        enableReactions
+        enableReactions,
+        moderatorMutedSoundsReactions
     };
 }
 
@@ -278,3 +328,33 @@ export function getVideoSettingsVisibility(state: Object) {
     return state['features/settings'].videoSettingsVisible;
 }
 
+/**
+ * Returns the visibility state of the tile view settings.
+ *
+ * @param {Object} state - The state of the application.
+ * @returns {boolean}
+ */
+export function getTileViewSettingsVisibility(state: Object) {
+    return state['features/settings'].tileViewSettingsVisible;
+}
+
+/**
+ * Returns the max columns of the tile view settings.
+ *
+ * @param {Object} state - The state of the application.
+ * @returns {number}
+ */
+export function getTileViewMaxColumns(state: Object) {
+    const { aspectRatio } = state['features/base/responsive-ui'];
+    let configuredMax;
+
+    if (browser.isReactNative()) {
+        configuredMax = aspectRatio === ASPECT_RATIO_NARROW ? 2 : 3;
+    } else {
+        configuredMax = state['features/settings'].tileViewMaxColumns
+            || interfaceConfig.TILE_VIEW_MAX_COLUMNS
+            || DEFAULT_MAX_COLUMNS;
+    }
+
+    return configuredMax;
+}

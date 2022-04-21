@@ -6,6 +6,10 @@
 * {
     -webkit-user-select: none;
     user-select: none;
+
+    // Firefox only
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, .5) transparent;
 }
 
 input,
@@ -24,7 +28,7 @@ body {
     margin: 0px;
     width: 100%;
     height: 100%;
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 400;
     overflow: hidden;
     color: $defaultColor;

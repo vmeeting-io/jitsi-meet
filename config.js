@@ -2,8 +2,6 @@
 /* eslint-disable no-unused-vars, no-var */
 
 var config = {
-    // Connection
-    //
 
     //Download Links
     features:{
@@ -15,6 +13,10 @@ var config = {
             krLink : "/static/doc/manual/Vmeeting_Manual_KO_v2.pdf",
             enLink : "/static/doc/manual/Vmeeting_Manual_EN_v2.pdf"
         }
+    },
+    DID:{
+        enLink : "https://sites.google.com/kedutech.kr/dataflagship-notice-en",
+        krLink : "https://sites.google.com/kedutech.kr/dataflagship-notice-kr"
     },
     //Capatcha Configs
     captcha: {
@@ -29,17 +31,11 @@ var config = {
         noOfFailedLoginAttemptsAllowed: 5  //no of failed login attempt allowed with captcha disabled.
     },
 
-    // enable DID Consent for flagship
-    // enableDIDConsent: true,
-
     // whether or not we want to use the birthday AR hat feature
     // enableBirthdayARHat: true,
 
-    // whether or not to allow moderator to disable other participant's device
-    enableUserDeviceAccessDisabledOption: false,
-
-    // whether or not we want to use AI attention analysis
-    // useAIAttentionAnalysis: true, // default value is true for flagship project
+    // Connection
+    //
 
     hosts: {
         // XMPP domain.
@@ -117,17 +113,35 @@ var config = {
 
         faceDetect: {
             referenceInterval: 1000 / 10,
-            frameInterval: 1000,
-            patience: 100,
+            frameInterval: 1500,
+            patience: 5,
             showResult: false
         }
     },
 
-    // Enables reactions feature.
-    enableReactions: true,
+    // Feature Flags.
+    flags: {
+        // Enables source names in the signaling.
+        // sourceNameSignaling: false,
+    },
+
+    // Disables moderator indicators.
+    // disableModeratorIndicator: false,
+
+    // Disables the reactions feature.
+    // disableReactions: true,
+
+    // Disables the reactions moderation feature.
+    // disableReactionsModeration: false,
 
     // Disables polls feature.
-    // disablePolls: false,
+    // disablePolls: true,
+
+    // Disables self-view tile. (hides it from tile view and from filmstrip)
+    // disableSelfView: false,
+
+    // Disables self-view settings in UI
+    disableSelfViewSettings: true,
 
     // Disables ICE/UDP by filtering out local and remote UDP candidates in
     // signalling.
@@ -142,7 +156,7 @@ var config = {
     //
 
     // Enable unified plan implementation support on Chromium based browsers.
-    // enableUnifiedOnChrome: false,
+    enableUnifiedOnChrome: true,
 
     // Audio
 
@@ -279,7 +293,7 @@ var config = {
     // Recording
 
     // Whether to enable file recording or not.
-    // fileRecordingsEnabled: false,
+    fileRecordingsEnabled: true,
     // Enable the dropbox integration.
     // dropbox: {
     //     appKey: '<APP_KEY>' // Specify your app key here.
@@ -300,7 +314,7 @@ var config = {
     // fileRecordingsServiceSharingEnabled: false,
 
     // Whether to enable live streaming or not.
-    // liveStreamingEnabled: false,
+    liveStreamingEnabled: true,
 
     // Transcription (in interface_config,
     // subtitles and buttons can be configured)
@@ -331,6 +345,7 @@ var config = {
     //     autoHide: true,
     //     autoHideTimeout: 5000,
     //     disabled: false,
+    //     disableDetails: false,
     //     inactiveDisabled: false
     // },
 
@@ -421,8 +436,15 @@ var config = {
            720: 'high'
        },
 
-       resizeDesktopForPresenter: true,
+       // resizeDesktopForPresenter: true,
     },
+
+    // Notification timeouts
+    // notificationTimeouts: {
+    //     short: 2500,
+    //     medium: 5000,
+    //     long: 10000
+    // },
 
     // // Options for the recording limit notification.
     // recordingLimit: {
@@ -441,6 +463,9 @@ var config = {
 
     // Disables or enables RTX (RFC 4588) (defaults to false).
     // disableRtx: false,
+
+    // Moves all Jitsi Meet 'beforeunload' logic (cleanup, leaving, disconnecting, etc) to the 'unload' event.
+    // disableBeforeUnloadHandlers: true,
 
     // Disables or enables TCC support in this client (default: enabled).
     // enableTcc: true,
@@ -479,18 +504,21 @@ var config = {
     // Hides lobby button
     // hideLobbyButton: false,
 
+    // If Lobby is enabled starts knocking automatically.
+    // autoKnockLobby: false,
+
     // Hides add breakout room button
     // hideAddRoomButton: false,
 
     // Require users to always specify a display name.
-    // requireDisplayName: true,
+    requireDisplayName: true,
 
     // Whether to use a welcome page or not. In case it's false a random room
     // will be joined when no room is specified.
     enableWelcomePage: true,
 
     // Disable app shortcuts that are registered upon joining a conference
-    // disableShortcuts: false,
+    disableShortcuts: true,
 
     // Disable initial browser getUserMedia requests.
     // This is useful for scenarios where users might want to start a conference for screensharing only
@@ -498,18 +526,31 @@ var config = {
 
     // Enabling the close page will ignore the welcome page redirection when
     // a call is hangup.
-    // enableClosePage: false,
+    // enableClosePage: true,
 
     // Disable hiding of remote thumbnails when in a 1-on-1 conference call.
     // Setting this to null, will also disable showing the remote videos
     // when the toolbar is shown on mouse movements
     // disable1On1Mode: null | false | true,
 
+    // Default local name to be displayed
+    // defaultLocalDisplayName: 'me',
+
+    // Default remote name to be displayed
+    // defaultRemoteDisplayName: 'Fellow Jitster',
+
+    // Hides the display name from the participant thumbnail
+    // hideDisplayName: false
+
     // Default language for the user interface.
     // defaultLanguage: 'en',
 
     // Disables profile and the edit of all fields from the profile settings (display name and email)
     // disableProfile: false,
+
+    // Hides the email section under profile settings.
+    // hideEmailInSettings: false,
+
     // Whether or not some features are checked based on token.
     // enableFeaturesBasedOnToken: true,
 
@@ -525,15 +566,18 @@ var config = {
     // and microsoftApiApplicationClientID
     // enableCalendarIntegration: false,
 
-    // When 'true', it shows an intermediate page before joining, where the user can configure their devices.
-    prejoinPageEnabled: false,
+    // Configs for prejoin page.
+    // prejoinConfig: {
+    //     // When 'true', it shows an intermediate page before joining, where the user can configure their devices.
+    //     // This replaces `prejoinPageEnabled`.
+    //     enabled: true,
+    //     // List of buttons to hide from the extra join options dropdown.
+    //     hideExtraJoinButtons: ['no-audio', 'by-phone']
+    // },
 
-    // If etherpad integration is enabled, setting this to true will
-    // automatically open the etherpad when a participant joins.  This
-    // does not affect the mobile app since opening an etherpad
-    // obscures the conference controls -- it's better to let users
-    // choose to open the pad on their own in that case.
-    // openSharedDocumentOnJoin: false,
+    // When 'true', the user cannot edit the display name.
+    // (Mainly useful when used in conjuction with the JWT so the JWT name becomes read only.)
+    // readOnlyName: false,
 
     // If etherpad integration is enabled, setting this to true will
     // automatically open the etherpad when a participant joins.  This
@@ -550,6 +594,9 @@ var config = {
     // Whether to automatically copy invitation URL after creating a room.
     // Document should be focused for this option to work
     // enableAutomaticUrlCopy: false,
+
+    // Array with avatar URL prefixes that need to use CORS.
+    // corsAvatarURLs: [ 'https://www.gravatar.com/avatar/' ],
 
     // Base URL for a Gravatar-compatible service. Defaults to libravatar.
     // gravatarBaseURL: 'https://seccdn.libravatar.org/avatar/',
@@ -570,7 +617,7 @@ var config = {
     // - 'desktop' controls the "Share your screen" button
     // - if `toolbarButtons` is undefined, we fallback to enabling all buttons on the UI
     toolbarButtons: [
-       'ar-effect',
+       // 'ar-effect',
        'camera',
        'chat',
        'closedcaptions',
@@ -588,12 +635,13 @@ var config = {
        'microphone',
        'mute-everyone',
        'mute-video-everyone',
-       'participants-pane',
+       'participants',
        'profile',
        'raisehand',
        'recording',
        'security',
        'select-background',
+       'select-virtual-avatar',
        'settings',
        'shareaudio',
        'sharedvideo',
@@ -604,6 +652,19 @@ var config = {
        'videoquality',
        '__end'
     ],
+
+    // Holds values related to toolbar visibility control.
+    // toolbarConfig: {
+    //     // Moved from interfaceConfig.INITIAL_TOOLBAR_TIMEOUT
+    //     // The initial numer of miliseconds for the toolbar buttons to be visible on screen.
+    //     initialTimeout: 20000,
+    //     // Moved from interfaceConfig.TOOLBAR_TIMEOUT
+    //     // Number of miliseconds for the toolbar buttons to be visible on screen.
+    //     timeout: 4000,
+    //     // Moved from interfaceConfig.TOOLBAR_ALWAYS_VISIBLE
+    //     // Whether toolbar should be always visible or should hide after x miliseconds.
+    //     alwaysVisible: false
+    // },
 
     // Toolbar buttons which have their click event exposed through the API on
     // `toolbarButtonClicked` event instead of executing the normal click routine.
@@ -691,6 +752,9 @@ var config = {
     // Enables sending participants' emails (if available) to callstats and other analytics
     // enableEmailInStats: false,
 
+    // Enables detecting faces of participants and get their expression and send it to other participants
+    // enableFacialRecognition: true,
+
     // Controls the percentage of automatic feedback shown to participants when callstats is enabled.
     // The default value is 100%. If set to 0, no automatic feedback will be requested
     // feedbackPercentage: 100,
@@ -717,7 +781,7 @@ var config = {
         enabled: true,
 
         // Enable unified plan implementation support on Chromium for p2p connection.
-        // enableUnifiedOnChrome: false,
+        enableUnifiedOnChrome: true,
 
         // Sets the ICE transport policy for the p2p connection. At the time
         // of this writing the list of possible values are 'all' and 'relay',
@@ -774,7 +838,7 @@ var config = {
         // module connects to the provided rtcstatsEndpoint and sends statistics regarding
         // PeerConnection states along with getStats metrics polled at the specified
         // interval.
-        // rtcstatsEnabled: true,
+        // rtcstatsEnabled: false,
 
         // In order to enable rtcstats one needs to provide a endpoint url.
         // rtcstatsEndpoint: wss://rtcstats-server-pilot.jitsi.net/,
@@ -820,6 +884,7 @@ var config = {
     // - 'PARTICIPANT_JOINED_SOUND'
     // - 'PARTICIPANT_LEFT_SOUND'
     // - 'RAISE_HAND_SOUND'
+    // - 'REACTION_SOUND'
     // - 'RECORDING_OFF_SOUND'
     // - 'RECORDING_ON_SOUND'
     // - 'TALK_WHILE_MUTED_SOUND'
@@ -868,6 +933,10 @@ var config = {
     //     format: 'flac'
     //
 
+    // },
+    // e2ee: {
+    //   labels,
+    //   externallyManagedKey: false
     // },
 
     // Options related to end-to-end (participant to participant) ping.
@@ -941,24 +1010,64 @@ var config = {
      If there is no url set or there are missing fields, the defaults are applied.
      The config file should be in JSON.
      None of the fields are mandatory and the response must have the shape:
-     {
-         // The domain url to apply (will replace the domain in the sharing conference link/embed section)
-         inviteDomain: 'example-company.org,
-         // The hex value for the colour used as background
-         backgroundColor: '#fff',
-         // The url for the image used as background
-         backgroundImageUrl: 'https://example.com/background-img.png',
-         // The anchor url used when clicking the logo image
-         logoClickUrl: 'https://example-company.org',
-         // The url used for the image used as logo
-         logoImageUrl: 'https://example.com/logo-img.png',
-         // Overwrite for pool of background images for avatars
-         avatarBackgrounds: ['url(https://example.com/avatar-background-1.png)', '#FFF'],
-         // The lobby/prejoin screen background
-         premeetingBackground: 'url(https://example.com/premeeting-background.png)'
-     }
+    {
+        // The domain url to apply (will replace the domain in the sharing conference link/embed section)
+        inviteDomain: 'example-company.org,
+        // The hex value for the colour used as background
+        backgroundColor: '#fff',
+        // The url for the image used as background
+        backgroundImageUrl: 'https://example.com/background-img.png',
+        // The anchor url used when clicking the logo image
+        logoClickUrl: 'https://example-company.org',
+        // The url used for the image used as logo
+        logoImageUrl: 'https://example.com/logo-img.png',
+        // Overwrite for pool of background images for avatars
+        avatarBackgrounds: ['url(https://example.com/avatar-background-1.png)', '#FFF'],
+        // The lobby/prejoin screen background
+        premeetingBackground: 'url(https://example.com/premeeting-background.png)',
+        // A list of images that can be used as video backgrounds.
+        // When this field is present, the default images will be replaced with those provided.
+        virtualBackgrounds: ['https://example.com/img.jpg'],
+        // Object containing a theme's properties. It also supports partial overwrites of the main theme.
+        // For a list of all possible theme tokens and their current defaults, please check:
+        // https://github.com/jitsi/jitsi-meet/tree/master/resources/custom-theme/custom-theme.json
+        // For a short explanations on each of the tokens, please check:
+        // https://github.com/jitsi/jitsi-meet/blob/master/react/features/base/ui/Tokens.js
+        // IMPORTANT!: This is work in progress so many of the various tokens are not yet applied in code
+        // or they are partially applied.
+        customTheme: {
+            palette: {
+                ui01: "orange !important",
+                ui02: "maroon",
+                surface02: 'darkgreen',
+                ui03: "violet",
+                ui04: "magenta",
+                ui05: "blueviolet",
+                field02Hover: 'red',
+                action01: 'green',
+                action01Hover: 'lightgreen',
+                action02Disabled: 'beige',
+                success02: 'cadetblue',
+                action02Hover: 'aliceblue'
+            },
+            typography: {
+                labelRegular: {
+                    fontSize: 25,
+                    lineHeight: 30,
+                    fontWeight: 500
+                }
+            }
+        }
+    }
     */
     // dynamicBrandingUrl: '',
+
+    // When true the user cannot add more images to be used as virtual background.
+    // Only the default ones from will be available.
+    // disableAddingBackgroundImages: false,
+
+    // Disables using screensharing as virtual background.
+    // disableScreensharingVirtualBackground: false,
 
     // Sets the background transparency level. '0' is fully transparent, '1' is opaque.
     // backgroundAlpha: 1,
@@ -971,20 +1080,43 @@ var config = {
     // If true, tile view will not be enabled automatically when the participants count threshold is reached.
     // disableTileView: true,
 
+    // If true, the tiles will be displayed contained within the available space rather than enlarged to cover it.
+    // disableTileEnlargement: true,
+
+    // Controls the visibility and behavior of the top header conference info labels.
+    // If a label's id is not in any of the 2 arrays, it will not be visible at all on the header.
+    // conferenceInfo: {
+    //     // those labels will not be hidden in tandem with the toolbox.
+    //     alwaysVisible: ['recording', 'local-recording', 'raised-hands-count'],
+    //     // those labels will be auto-hidden in tandem with the toolbox buttons.
+    //     autoHide: [
+    //         'subject',
+    //         'conference-timer',
+    //         'participants-count',
+    //         'e2ee',
+    //         'transcribing',
+    //         'video-quality',
+    //         'insecure-room'
+    //     ]
+    // },
+
     // Hides the conference subject
-    // hideConferenceSubject: true,
+    // hideConferenceSubject: false,
+
+    // Hides the conference timer.
+    // hideConferenceTimer: false,
 
     // Hides the recording label
     // hideRecordingLabel: false,
-
-    // Hides the conference timer.
-    // hideConferenceTimer: true,
 
     // Hides the participants stats
     // hideParticipantsStats: true,
 
     // Sets the conference subject
     // subject: 'Conference Subject',
+
+    // Sets the conference local subject
+    // localSubject: 'Conference Local Subject',
 
     // This property is related to the use case when jitsi-meet is used via the IFrame API. When the property is true
     // jitsi-meet will use the local storage of the host page instead of its own. This option is useful if the browser
@@ -997,11 +1129,6 @@ var config = {
     // If set, add a "Open shared document" link to the bottom right menu that
     // will open an etherpad document.
     // etherpad_base: 'https://your-etherpad-installati.on/p/',
-
-    // If etherpad_base is set, and useRoomAsSharedDocumentName is set to true,
-    // open a pad with the name of the room (lowercased) instead of a pad with a
-    // random UUID.
-    // useRoomAsSharedDocumentName: true,
 
     // List of undocumented settings used in jitsi-meet
     /**
@@ -1058,17 +1185,28 @@ var config = {
      websocketKeepAliveUrl
      */
 
-    // thirdPartyAuth: {
-    //     // vmeeting.kr
+    thirdPartyAuth: {
     //     postech: {
+    //         label: false,
     //         url: 'https://login.postech.ac.kr/SSOService.do?targetAppId=postech-vmeetingKr-web',
-    //     }
-
-    //     // vmeeting.postech.ac.kr
-    //     postech: {
-    //         url: 'https://login.postech.ac.kr/SSOService.do?targetAppId=postech-vmeeting-web',
-    //     }
-    // },
+    //     },
+        google:{
+            label: false,
+            url: '/auth/api/complete/google/login',
+        },
+        facebook:{
+            label: false,
+            url: '/auth/api/complete/facebook/login',
+        },
+        naver:{
+            label: false,
+            url: '/auth/api/complete/naver/login',
+        },
+        kakao:{
+            label: false,
+            url: '/auth/api/complete/kakao/login',
+        },
+    },
 
     presenter: {
         startEnabled: true, // default: true
@@ -1102,27 +1240,19 @@ var config = {
     // autoRecord: true,
     // followMeEnabled: false,
     // disableGrantModerator: false,
-    // disableDesktopSharing: false,    // true, false, 'guest'
+    // disablePrivateMessage: true,
+    // disableDesktopSharing: 'guest',    // true, false, 'guest'
 
     // If true, tile view will not be enabled automatically when the participants count threshold is reached.
     // disableTileView: true,           // true, false, 'guest'
 
-    // Hides the conference subject
-    // hideConferenceSubject: true,
-
-    // Hides the conference timer.
-    // hideConferenceTimer: true,
-
-    // Hides the participants stats
-    // hideParticipantsStats: true,     // true, false, 'guest'
-
-    // Sets the conference subject
-    // subject: 'Conference Subject',
-
-    // enableChatControl: true,
-
     // disableRemoteMute: true,
     // disableSortable: false,
+    // disableUserRegistration: true,
+    // hideSelectBackground: 'guest',     // true, false, 'guest'
+
+    // showFramerateSelect: true,
+
     /**
      * Default interval (milliseconds) for triggering mouseMoved iframe API event
      */
@@ -1160,10 +1290,14 @@ var config = {
     //     'lobby.joinRejectedMessage', // shown when while in a lobby, user's request to join is rejected
     //     'lobby.notificationTitle', // shown when lobby is toggled and when join requests are allowed / denied
     //     'localRecording.localRecording', // shown when a local recording is started
+    //     'notify.chatMessages', // shown when receiving chat messages while the chat window is closed
     //     'notify.disconnected', // shown when a participant has left
     //     'notify.connectedOneMember', // show when a participant joined
     //     'notify.connectedTwoMembers', // show when two participants joined simultaneously
     //     'notify.connectedThreePlusMembers', // show when more than 2 participants joined simultaneously
+    //     'notify.leftOneMember', // show when a participant left
+    //     'notify.leftTwoMembers', // show when two participants left simultaneously
+    //     'notify.leftThreePlusMembers', // show when more than 2 participants left simultaneously
     //     'notify.grantedTo', // shown when moderator rights were granted to a participant
     //     'notify.invitedOneMember', // shown when 1 participant has been invited
     //     'notify.invitedThreePlusMembers', // shown when 3+ participants have been invited
@@ -1212,3 +1346,24 @@ var config = {
 };
 
 /* eslint-enable no-unused-vars, no-var */
+
+// with selective on viewport forwarding, participant will stop sending video if its out of the viewport in all
+// other viewports. This delay and possibly cause unstable video transmission when the participant appear in one
+// of the viewports again. We set to always send minSendFrameHeight to fix that. minSendFrameHeight also needed
+// for Individual recording to work
+config.minSendFrameHeight = Math.max(180, config.constraints.video.height.min);
+
+// directly set focus full JID with resource
+// https://community.jitsi.org/t/add-back-the-option-to-set-jicofo-as-xmpp-server-component/101029
+config.hosts.focus = 'focus@auth.jitsi-meet.example.com/focus';
+
+// force VP9
+// config.videoQuality.preferredCodec = 'VP9';
+// config.videoQuality.enforcePreferredCodec = true;
+
+config.enableReactions = true;
+
+config.etherpad_base = 'https://jitsi-meet.example.com/boards/';
+
+config.disableJoinLeaveSounds = true;
+config.disableShortcuts = true;

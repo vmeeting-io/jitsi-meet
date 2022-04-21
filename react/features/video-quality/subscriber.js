@@ -1,10 +1,14 @@
 // @flow
 
+import { difference } from 'lodash';
 import debounce from 'lodash/debounce';
 
 import { _handleParticipantError } from '../base/conference';
-import { getParticipantCount } from '../base/participants';
+import { getSourceNameSignalingFeatureFlag } from '../base/config';
+import { MEDIA_TYPE } from '../base/media';
+import { getLocalParticipant, getParticipantCount } from '../base/participants';
 import { StateListenerRegistry } from '../base/redux';
+import { getTrackSourceNameByMediaTypeAndParticipant } from '../base/tracks';
 import { reportError } from '../base/util';
 import { shouldDisplayTileView } from '../video-layout';
 
@@ -26,6 +30,12 @@ StateListenerRegistry.register(
     /* listener */ debounce((visibleRemoteParticipants, store) => {
         _updateReceiverVideoConstraints(store);
     }, 100));
+
+StateListenerRegistry.register(
+    /* selector */ state => state['features/base/tracks'],
+    /* listener */(remoteTracks, store) => {
+        _updateReceiverVideoConstraints(store);
+    });
 
 /**
  * Handles the use case when the on-stage participant has changed.
@@ -58,28 +68,6 @@ StateListenerRegistry.register(
         _updateReceiverVideoConstraints(store);
     }
 );
-
-
-/**
-* StateListenerRegistry provides a reliable way of detecting changes to selected
-* endpoints state and dispatching additional actions. The listener is debounced
-* so that the client doesn't end up sending too many bridge messages when the user is
-* scrolling through the thumbnails prompting updates to the selected endpoints.
-*/
-StateListenerRegistry.register(
-    /* selector */ state => {
-        const pagination = state['features/video-layout'].pagination;
-        const currentPage = pagination.current;
-        const pageSize = pagination.pageSize;
-
-        return {
-            currentPage,
-            pageSize
-        };
-    },
-    /* listener */ debounce((_, store) => {
-        _updateReceiverVideoConstraints(store);
-    }, 100));
 
 /**
  * StateListenerRegistry provides a reliable way of detecting changes to
@@ -213,45 +201,134 @@ function _updateReceiverVideoConstraints({ getState }) {
     const { maxReceiverVideoQuality, preferredVideoQuality } = state['features/video-quality'];
     const { participantId: largeVideoParticipantId } = state['features/large-video'];
     const maxFrameHeight = Math.min(maxReceiverVideoQuality, preferredVideoQuality);
-    const { visibleRemoteParticipants } = state['features/filmstrip'];
+    const { remoteScreenShares } = state['features/video-layout'];
+    let {
+        remoteParticipants,
+        visibleRemoteParticipants,
+        visibleParticipantsStartIndex: startIndex,
+        visibleParticipantsEndIndex: endIndex
+    } = state['features/filmstrip'];
+    const { pinnedTiles } = state['features/base/participants'];
+    const { iAmRecorder } = state['features/base/config'];
+    const tracks = state['features/base/tracks'];
+    const sourceNameSignaling = getSourceNameSignalingFeatureFlag(state);
+    const localParticipantId = getLocalParticipant(state).id;
 
     const receiverConstraints = {
         constraints: {},
         defaultConstraints: { 'maxHeight': VIDEO_QUALITY_LEVELS.NONE },
         lastN,
-        onStageEndpoints: [],
-        selectedEndpoints: []
+        ...sourceNameSignaling ? { onStageSources: [] } : { onStageEndpoints: [] },
+        ...sourceNameSignaling ? { selectedSources: [] } : { selectedEndpoints: [] }
     };
 
-    // Tile view.
-    if (shouldDisplayTileView(state)) {
-        if (!visibleRemoteParticipants?.size) {
-            return;
-        }
+    if (sourceNameSignaling) {
+        const visibleRemoteTrackSourceNames = [];
+        let largeVideoSourceName;
 
-        visibleRemoteParticipants.forEach(participantId => {
-            receiverConstraints.constraints[participantId] = { 'maxHeight': maxFrameHeight };
-        });
-
-    // Stage view.
-    } else {
-        if (!visibleRemoteParticipants?.size && !largeVideoParticipantId) {
-            return;
-        }
-
-        if (visibleRemoteParticipants?.size > 0) {
+        if (visibleRemoteParticipants?.size) {
             visibleRemoteParticipants.forEach(participantId => {
-                receiverConstraints.constraints[participantId] = { 'maxHeight': VIDEO_QUALITY_LEVELS.LOW };
+                const sourceName = getTrackSourceNameByMediaTypeAndParticipant(tracks, MEDIA_TYPE.VIDEO, participantId);
+
+                if (sourceName) {
+                    visibleRemoteTrackSourceNames.push(sourceName);
+                }
             });
         }
 
-        if (largeVideoParticipantId) {
-            receiverConstraints.constraints[largeVideoParticipantId] = { 'maxHeight': maxFrameHeight };
-            receiverConstraints.onStageEndpoints = [ largeVideoParticipantId ];
+        if (localParticipantId !== largeVideoParticipantId) {
+            largeVideoSourceName = getTrackSourceNameByMediaTypeAndParticipant(
+                tracks, MEDIA_TYPE.VIDEO,
+                largeVideoParticipantId
+            );
+        }
+
+        // Tile view.
+        if (shouldDisplayTileView(state)) {
+            if (!visibleRemoteTrackSourceNames?.length) {
+                return;
+            }
+
+            visibleRemoteTrackSourceNames.forEach(sourceName => {
+                receiverConstraints.constraints[sourceName] = { 'maxHeight': maxFrameHeight };
+            });
+
+            // Prioritize screenshare in tile view.
+            if (remoteScreenShares?.length) {
+                const remoteScreenShareSourceNames = remoteScreenShares.map(remoteScreenShare =>
+                    getTrackSourceNameByMediaTypeAndParticipant(tracks, MEDIA_TYPE.VIDEO, remoteScreenShare)
+                );
+
+                receiverConstraints.selectedSources = remoteScreenShareSourceNames;
+            }
+
+        // Stage view.
+        } else {
+            if (!visibleRemoteTrackSourceNames?.length && !largeVideoSourceName) {
+                return;
+            }
+
+            if (visibleRemoteTrackSourceNames?.length) {
+                visibleRemoteTrackSourceNames.forEach(sourceName => {
+                    receiverConstraints.constraints[sourceName] = { 'maxHeight': VIDEO_QUALITY_LEVELS.LOW };
+                });
+            }
+
+            if (largeVideoSourceName) {
+                receiverConstraints.constraints[largeVideoSourceName] = { 'maxHeight': maxFrameHeight };
+                receiverConstraints.onStageSources = [ largeVideoSourceName ];
+            }
+        }
+
+    } else {
+        // Tile view.
+        // eslint-disable-next-line no-lonely-if
+        if (shouldDisplayTileView(state)) {
+            if (!visibleRemoteParticipants?.size) {
+                return;
+            }
+
+            remoteParticipants = difference(remoteParticipants, pinnedTiles);
+            visibleRemoteParticipants = [...pinnedTiles, ...remoteParticipants]
+                .slice(0, endIndex + 1);
+            if (!iAmRecorder && !pinnedTiles.includes(localParticipantId)) {
+                visibleRemoteParticipants = visibleRemoteParticipants.slice(Math.max(startIndex-1, 0), endIndex);
+            } else {
+                visibleRemoteParticipants = visibleRemoteParticipants.slice(startIndex, endIndex + 1);
+            }
+
+            visibleRemoteParticipants = visibleRemoteParticipants
+                .filter(id => id !== localParticipantId);
+
+            visibleRemoteParticipants = new Set(visibleRemoteParticipants);
+
+            visibleRemoteParticipants.forEach(participantId => {
+                receiverConstraints.constraints[participantId] = { 'maxHeight': maxFrameHeight };
+            });
+
+            // Prioritize screenshare in tile view.
+            remoteScreenShares?.length && (receiverConstraints.selectedEndpoints = remoteScreenShares);
+
+        // Stage view.
+        } else {
+            if (!visibleRemoteParticipants?.size && !largeVideoParticipantId) {
+                return;
+            }
+
+            if (visibleRemoteParticipants?.size > 0) {
+                visibleRemoteParticipants.forEach(participantId => {
+                    receiverConstraints.constraints[participantId] = { 'maxHeight': VIDEO_QUALITY_LEVELS.LOW };
+                });
+            }
+
+            if (largeVideoParticipantId) {
+                receiverConstraints.constraints[largeVideoParticipantId] = { 'maxHeight': maxFrameHeight };
+                receiverConstraints.onStageEndpoints = [ largeVideoParticipantId ];
+            }
         }
     }
 
-    // logger.debug(`Setting receiver video constraints to ${JSON.stringify(receiverConstraints)}`);
+    logger.debug(`Setting receiver video constraints to ${JSON.stringify(receiverConstraints)}`);
     try {
         conference.setReceiverConstraints(receiverConstraints);
     } catch (error) {

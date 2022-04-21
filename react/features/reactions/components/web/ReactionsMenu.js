@@ -1,5 +1,8 @@
 // @flow
 
+/* eslint-disable react/jsx-no-bind */
+
+import { withStyles } from '@material-ui/styles';
 import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 
@@ -8,27 +11,28 @@ import {
     createToolbarEvent,
     sendAnalytics
 } from '../../../analytics';
+import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
-import { getLocalParticipant, participantUpdated } from '../../../base/participants';
+import { getLocalParticipant, hasRaisedHand, raiseHand } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { dockToolbox } from '../../../toolbox/actions.web';
 import { addReactionToBuffer } from '../../actions.any';
 import { toggleReactionsMenuVisibility } from '../../actions.web';
-import { REACTIONS } from '../../constants';
+import { REACTIONS, REACTIONS_MENU_HEIGHT } from '../../constants';
 
 import ReactionButton from './ReactionButton';
 
 type Props = {
 
     /**
-     * Used for translation.
+     * Docks the toolbox.
      */
-    t: Function,
+    _dockToolbox: Function,
 
     /**
-     * Whether or not the local participant's hand is raised.
+     * Whether or not it's a mobile browser.
      */
-    _raisedHand: boolean,
+    _isMobile: boolean,
 
     /**
      * The ID of the local participant.
@@ -36,22 +40,47 @@ type Props = {
     _localParticipantID: String,
 
     /**
+     * Whether or not the local participant's hand is raised.
+     */
+    _raisedHand: boolean,
+
+    /**
+     * An object containing the CSS classes.
+     */
+    classes: Object,
+
+    /**
      * The Redux Dispatch function.
      */
     dispatch: Function,
 
     /**
-     * Docks the toolbox
-     */
-    _dockToolbox: Function,
-
-    /**
      * Whether or not it's displayed in the overflow menu.
      */
-    overflowMenu: boolean
+    overflowMenu: boolean,
+
+    /**
+     * Used for translation.
+     */
+    t: Function
 };
 
 declare var APP: Object;
+
+const styles = theme => {
+    return {
+        overflow: {
+            width: 'auto',
+            paddingBottom: 'max(env(safe-area-inset-bottom, 0), 16px)',
+            backgroundColor: theme.palette.ui01,
+            boxShadow: 'none',
+            borderRadius: 0,
+            position: 'relative',
+            boxSizing: 'border-box',
+            height: `${REACTIONS_MENU_HEIGHT}px`
+        }
+    };
+};
 
 /**
  * Implements the reactions menu.
@@ -117,22 +146,9 @@ class ReactionsMenu extends Component<Props> {
      * @returns {void}
      */
     _doToggleRaiseHand() {
-        const { _localParticipantID, _raisedHand } = this.props;
-        const newRaisedStatus = !_raisedHand;
+        const { _raisedHand } = this.props;
 
-        this.props.dispatch(participantUpdated({
-            // XXX Only the local participant is allowed to update without
-            // stating the JitsiConference instance (i.e. participant property
-            // `conference` for a remote participant) because the local
-            // participant is uniquely identified by the very fact that there is
-            // only one local participant.
-
-            id: _localParticipantID,
-            local: true,
-            raisedHand: newRaisedStatus
-        }));
-
-        APP.API.notifyRaiseHandUpdated(_localParticipantID, newRaisedStatus);
+        this.props.dispatch(raiseHand(!_raisedHand));
     }
 
     /**
@@ -182,25 +198,27 @@ class ReactionsMenu extends Component<Props> {
      * @inheritdoc
      */
     render() {
-        const { _raisedHand, t, overflowMenu } = this.props;
+        const { _raisedHand, t, overflowMenu, _isMobile, classes } = this.props;
 
         return (
-            <div className = { `reactions-menu ${overflowMenu ? 'overflow' : ''}` }>
+            <div className = { `reactions-menu ${overflowMenu ? `overflow ${classes.overflow}` : ''}` }>
                 <div className = 'reactions-row'>
                     { this._getReactionButtons() }
                 </div>
-                <div className = 'raise-hand-row'>
-                    <ReactionButton
-                        accessibilityLabel = { t('toolbar.accessibilityLabel.raiseHand') }
-                        icon = '✋'
-                        key = 'raisehand'
-                        label = {
-                            `${t(`toolbar.${_raisedHand ? 'lowerYourHand' : 'raiseYourHand'}`)}
-                            ${overflowMenu ? '' : ' (R)'}`
-                        }
-                        onClick = { this._onToolbarToggleRaiseHand }
-                        toggled = { true } />
-                </div>
+                {_isMobile && (
+                    <div className = 'raise-hand-row'>
+                        <ReactionButton
+                            accessibilityLabel = { t('toolbar.accessibilityLabel.raiseHand') }
+                            icon = '✋'
+                            key = 'raisehand'
+                            label = {
+                                `${t(`toolbar.${_raisedHand ? 'lowerYourHand' : 'raiseYourHand'}`)}
+                                ${overflowMenu ? '' : ' (R)'}`
+                            }
+                            onClick = { this._onToolbarToggleRaiseHand }
+                            toggled = { true } />
+                    </div>
+                )}
             </div>
         );
     }
@@ -217,7 +235,8 @@ function mapStateToProps(state) {
 
     return {
         _localParticipantID: localParticipant.id,
-        _raisedHand: localParticipant.raisedHand
+        _isMobile: isMobileBrowser(),
+        _raisedHand: hasRaisedHand(localParticipant)
     };
 }
 
@@ -239,5 +258,5 @@ function mapDispatchToProps(dispatch) {
 
 export default translate(connect(
     mapStateToProps,
-    mapDispatchToProps,
-)(ReactionsMenu));
+    mapDispatchToProps
+)(withStyles(styles)(ReactionsMenu)));

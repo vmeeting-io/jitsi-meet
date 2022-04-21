@@ -67,6 +67,31 @@ export function isParticipantVideoMuted(participant, state) {
 }
 
 /**
+ * Checks if the remote video track is of type DESKTOP for the participant.
+ *
+ * @param {Object} state - The redux state.
+ * @returns {boolean}
+ */
+export function isParticipantVideoTrackDesktop(participant, state) {
+    if (!participant) {
+        return false;
+    }
+
+    const tracks = getTrackState(state);
+
+    if (participant?.local) {
+        return isLocalVideoTrackDesktop(state);
+    } else if (!participant?.isFakeParticipant) {
+        const videoTrack = getTrackByMediaTypeAndParticipant(
+            tracks, MEDIA_TYPE.VIDEO, participant.id);
+
+        return videoTrack && videoTrack.videoType === VIDEO_TYPE.DESKTOP;
+    }
+
+    return false;
+}
+
+/**
  * Creates a local video track for presenter. The constraints are computed based
  * on the height of the desktop that is being shared.
  *
@@ -199,7 +224,7 @@ export function createLocalTracksF(options = {}, store) {
  *
  * @returns {Promise<JitsiLocalTrack>}
  *
- * @todo Refactor to not use APP
+ * @todo Refactor to not use APP.
  */
 export function createPrejoinTracks() {
     const errors = {};
@@ -397,6 +422,26 @@ export function getTrackByMediaTypeAndParticipant(
     return tracks.find(
         t => Boolean(t.jitsiTrack) && t.participantId === participantId && t.mediaType === mediaType
     );
+}
+
+/**
+ * Returns track source name of specified media type for specified participant id.
+ *
+ * @param {Track[]} tracks - List of all tracks.
+ * @param {MEDIA_TYPE} mediaType - Media type.
+ * @param {string} participantId - Participant ID.
+ * @returns {(string|undefined)}
+ */
+export function getTrackSourceNameByMediaTypeAndParticipant(
+        tracks,
+        mediaType,
+        participantId) {
+    const track = getTrackByMediaTypeAndParticipant(
+        tracks,
+        mediaType,
+        participantId);
+
+    return track?.jitsiTrack?.getSourceName();
 }
 
 /**

@@ -6,10 +6,10 @@ import type { Dispatch } from 'redux';
 import { openDialog } from '../../../base/dialog';
 import { IconUserGroups } from '../../../base/icons';
 import { Label } from '../../../base/label';
+import { COLORS } from '../../../base/label/constants';
 import { getParticipantCount } from '../../../base/participants';
 import { connect } from '../../../base/redux';
 import { SpeakerStats } from '../../../speaker-stats';
-
 
 /**
  * The type of the React {@code Component} props of {@link ParticipantsCount}.
@@ -19,7 +19,7 @@ type Props = {
     /**
      * Number of the conference participants.
      */
-    count: string,
+    count: number,
 
     /**
      * Conference data.
@@ -72,14 +72,17 @@ class ParticipantsCount extends PureComponent<Props> {
      * @returns {ReactElement}
      */
     render() {
+        const { _hideParticipantsStats, count } = this.props;
+        const className = _hideParticipantsStats ? 'readonly' : '';
+
         return (
             <div
-                className = 'participants-count'
-                onClick = { this._onClick }>
+                className = { `participants-count ${className}` }
+                onClick = { _hideParticipantsStats ? undefined : this._onClick }>
                 <Label
-                    className = 'label--white'
+                    color = { COLORS.white }
                     icon = { IconUserGroups }
-                    text = { this.props.count } />
+                    text = { count } />
             </div>
         );
     }
@@ -96,6 +99,7 @@ class ParticipantsCount extends PureComponent<Props> {
  */
 function mapStateToProps(state) {
     return {
+        _hideParticipantsStats: state['features/base/config'].hideParticipantsStats,
         conference: state['features/base/conference'].conference,
         count: getParticipantCount(state)
     };

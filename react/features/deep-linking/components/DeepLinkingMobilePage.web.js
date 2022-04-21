@@ -10,13 +10,20 @@ import { isSupportedMobileBrowser } from '../../base/environment';
 import { translate } from '../../base/i18n';
 import { Platform } from '../../base/react';
 import { connect } from '../../base/redux';
-import { DialInSummary } from '../../invite';
 import { openWebApp } from '../actions';
 import { _TNS } from '../constants';
 import { generateDeepLinkingURL } from '../functions';
 import { renderPromotionalFooter } from '../renderPromotionalFooter';
 
 declare var interfaceConfig: Object;
+
+/**
+ * The namespace of the CSS styles of DeepLinkingMobilePage.
+ *
+ * @private
+ * @type {string}
+ */
+const _SNS = 'deep-linking-mobile';
 
 /**
  * The type of the React {@code Component} props of
@@ -86,6 +93,8 @@ class DeepLinkingMobilePage extends Component<Props> {
     render() {
         const { _downloadUrl, _room, t } = this.props;
         const { HIDE_DEEP_LINKING_LOGO, NATIVE_APP_NAME, SHOW_DEEP_LINKING_IMAGE } = interfaceConfig;
+        const downloadButtonClassName
+            = `${_SNS}__button ${_SNS}__button_primary`;
 
 
         const onOpenLinkProperties = _downloadUrl

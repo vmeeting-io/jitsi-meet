@@ -1,59 +1,90 @@
 // @flow
 
-import { NON_PARTICIPANT_MESSAGE_RECEIVED } from '../base/conference';
-import { MiddlewareRegistry } from '../base/redux';
+import { jitsiLocalStorage } from '@jitsi/js-utils';
+import { find } from 'lodash';
+
+import { conferenceSubjectChanged } from '../base/conference';
+import { CONNECTION_DISCONNECTED } from '../base/connection';
+import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
+import { getParticipantById } from '../base/participants';
+import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
+import { editMessage, MESSAGE_TYPE_REMOTE } from '../chat';
+import { UPDATE_ATTENTION_STATUS } from '../face-detect';
 
 import { UPDATE_BREAKOUT_ROOMS } from './actionTypes';
 import { moveToRoom } from './actions';
-import {
-    JSON_TYPE_MOVE_TO_ROOM_REQUEST,
-    JSON_TYPE_UPDATE_BREAKOUT_ROOMS
-} from './constants';
-
+import { getBreakoutRooms } from './functions';
+import logger from './logger';
 
 /**
- * Middleware that catches actions related to the breakout-rooms feature.
- *
- * @param {Store} store - The redux store.
- * @returns {Function}
+ * Registers a change handler for state['features/base/conference'].conference to
+ * set the event listeners needed for the breakout rooms feature to operate.
  */
-MiddlewareRegistry.register(store => next => action => {
-    switch (action.type) {
-    case NON_PARTICIPANT_MESSAGE_RECEIVED:
-        _handleEndpointMessage(store, action);
+StateListenerRegistry.register(
+    state => state['features/base/conference'].conference,
+    (conference, { dispatch, getState }, previousConference) => {
+        if (conference && !previousConference) {
+            conference.on(JitsiConferenceEvents.BREAKOUT_ROOMS_MOVE_TO_ROOM, roomId => {
+                logger.debug(`Moving to room: ${roomId}`);
+                dispatch(moveToRoom(roomId));
+            });
+
+            conference.on(JitsiConferenceEvents.BREAKOUT_ROOMS_UPDATED, ({ rooms, roomCounter }) => {
+                logger.debug('Room list updated');
+                dispatch({
+                    type: UPDATE_BREAKOUT_ROOMS,
+                    rooms,
+                    roomCounter
+                });
+
+                // if current subject of conference is changed, notify it.
+                const currentSubject = getState()['features/base/conference'].subject;
+                const found = find(rooms, room => room.jid === conference?.room?.roomjid);
+                if (found?.name && found.name !== currentSubject) {
+                    dispatch(conferenceSubjectChanged(found.name));
+                }
+            });
+
+            conference.on(JitsiConferenceEvents.BREAKOUT_ROOMS_ATTENTION_UPDATED, ({ id, status }) => {
+                logger.debug('Attention is updated:', id, status);
+                dispatch({ type: UPDATE_ATTENTION_STATUS, id, status });
+            });
+        }
+    });
+
+MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
+    const { type } = action;
+    const result = next(action);
+
+    switch (type) {
+    case UPDATE_BREAKOUT_ROOMS: {
+        const { messages } = getState()['features/chat'];
+
+        // edit the chat history to match names for participants in breakout rooms
+        messages && messages.forEach(m => {
+            if (m.messageType === MESSAGE_TYPE_REMOTE && !getParticipantById(getState(), m.id)) {
+                const rooms = getBreakoutRooms(getState);
+
+                for (const room of Object.values(rooms)) {
+                    // $FlowExpectedError
+                    const participants = room.participants || {};
+                    const matchedJid = Object.keys(participants).find(jid => jid.endsWith(m.id));
+
+                    if (matchedJid) {
+                        m.displayName = participants[matchedJid].displayName;
+
+                        dispatch(editMessage(m));
+                    }
+                }
+            }
+        });
+
+        break;
+    }
+    case CONNECTION_DISCONNECTED:
+        jitsiLocalStorage.removeItem('xmpp_conference_password_override');
         break;
     }
 
-    return next(action);
+    return result;
 });
-
-/**
- * Handles {@code NON_PARTICIPANT_MESSAGE_RECEIVED} actions for the breakout-rooms feature.
- *
- * @param {Store} store - The redux store in which the specified {@code action}
- * is being dispatched.
- * @param {Action} action - The redux action {@code NON_PARTICIPANT_MESSAGE_RECEIVED}
- * which is being dispatched in the specified {@code store}.
- * @returns {void}
- */
-function _handleEndpointMessage(store, action) {
-    const { json } = action;
-
-    if (json) {
-        switch (json.type) {
-        case JSON_TYPE_UPDATE_BREAKOUT_ROOMS: {
-            const { nextIndex, rooms } = json;
-
-            store.dispatch({
-                type: UPDATE_BREAKOUT_ROOMS,
-                nextIndex: parseInt(nextIndex, 10) || 1,
-                rooms
-            });
-            break;
-        }
-        case JSON_TYPE_MOVE_TO_ROOM_REQUEST:
-            store.dispatch(moveToRoom(json.roomId));
-            break;
-        }
-    }
-}

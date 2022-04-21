@@ -3,6 +3,7 @@
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import axios from 'axios';
 
+import { conferences } from '../../../api/conferences';
 import { readyToClose } from '../../../features/mobile/external-api/actions';
 import {
     ACTION_PINNED,
@@ -35,6 +36,7 @@ import {
     CONFERENCE_JOINED,
     CONFERENCE_SUBJECT_CHANGED,
     CONFERENCE_WILL_LEAVE,
+    CONFERENCE_UNIQUE_ID_SET,
     SEND_TONES,
     SET_PASSWORD,
     SET_PENDING_SUBJECT_CHANGE,
@@ -54,7 +56,6 @@ import {
     _removeLocalTracksFromConference,
     forEachConference,
     getCurrentConference,
-    getRoomInfo
 } from './functions';
 import logger from './logger';
 import { appNavigate } from '../../app/actions';
@@ -90,6 +91,9 @@ MiddlewareRegistry.register(store => next => action => {
 
     case CONFERENCE_SUBJECT_CHANGED:
         return _conferenceSubjectChanged(store, next, action);
+
+    case CONFERENCE_UNIQUE_ID_SET:
+        return _conferenceUniqueIdSet(store, next, action);
 
     case CONFERENCE_WILL_LEAVE:
         _conferenceWillLeave(store);
@@ -428,6 +432,22 @@ function _conferenceSubjectChanged({ dispatch, getState }, next, action) {
  */
 function _conferenceWillLeave({ getState }: { getState: Function }) {
     _removeUnloadHandler(getState);
+}
+
+function _conferenceUniqueIdSet(store, next, action) {
+    const result = next(action);
+
+    const { roomInfo } = store.getState()['features/base/conference'];
+    if (roomInfo.isHost && !roomInfo.meetingId) {
+        conferences()
+            .id(roomInfo._id)
+            .update({ meeting_id: action.meetingId })
+            .then(resp => {
+                // console.log('conference updated:', resp.data);
+            });
+    }
+
+    return result;
 }
 
 /**

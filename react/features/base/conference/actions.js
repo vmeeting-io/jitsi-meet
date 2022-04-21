@@ -411,10 +411,11 @@ export function conferenceTimestampChanged(conferenceTimestamp: number) {
 *   conference: JitsiConference,
 * }}
 */
-export function conferenceUniqueIdSet(conference: Object) {
+export function conferenceUniqueIdSet(conference: Object, meetingId) {
     return {
         type: CONFERENCE_UNIQUE_ID_SET,
-        conference
+        conference,
+        meetingId
     };
 }
 

@@ -107,6 +107,7 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
     const isRandomSelectionRunning = useSelector(isStartCountDown);
     const randomselectionClass = isRandomSelectionRunning ? classes.menudisabled : '';
     const randomParticipantID = useSelector(randomlySelectFromAllParticipants);
+    const conference = useSelector(state => state['features/base/conference'].conference);
 
     // randomly selects a participant from allParticipants and get its display name
     const selectedParticipantDisplayName = useSelector(selectParticipantDisplayName(randomParticipantID));
@@ -259,6 +260,18 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
         }
     ];
 
+    if (conference?.getBreakoutRooms()?.isSupported()) {
+        moderationActions.push({
+            accessibilityLabel: t('participantsPane.actions.breakoutModeration'),
+            className: isBreakoutModerationEnabled ? classes.indentedLabel : '',
+            id: isBreakoutModerationEnabled
+                ? 'participants-pane-context-menu-stop-breakout-moderation'
+                : 'participants-pane-context-menu-start-breakout-moderation',
+            icon: !isBreakoutModerationEnabled && IconCheck,
+            onClick: isBreakoutModerationEnabled ? disableBreakoutModeration : enableBreakoutModeration,
+            text: t('participantsPane.actions.breakoutModeration')
+        });
+    }
 
     return (
         <ContextMenu

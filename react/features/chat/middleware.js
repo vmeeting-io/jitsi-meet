@@ -1,5 +1,6 @@
 // @flow
 
+import { last } from 'lodash';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app';
 import {
     CONFERENCE_JOINED,
@@ -313,6 +314,7 @@ function _handleReceivedMessage({ dispatch, getState },
     const { isOpen: isChatOpen } = state['features/chat'];
     const { iAmRecorder } = state['features/base/config'];
     const { soundsIncomingMessage: soundEnabled, userSelectedNotifications } = state['features/base/settings'];
+    const { locationURL } = state['features/base/connection'];
 
     if (soundEnabled && shouldPlaySound && !isChatOpen) {
         dispatch(playSound(INCOMING_MSG_SOUND_ID));
@@ -345,9 +347,14 @@ function _handleReceivedMessage({ dispatch, getState },
     }));
 
     if (shouldShowNotification) {
+        let description = decodeURIComponent(message);
+        if (typeof message === 'string' && message.startsWith(locationURL.origin)) {
+            description = last(description.split('/'));
+        }
+
         dispatch(showMessageNotification({
             title: displayName,
-            description: message
+            description
         }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
     }
 

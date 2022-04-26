@@ -221,6 +221,7 @@ class Conference extends AbstractConference<Props, *> {
      */
     render() {
         const {
+            _isChatOpen,
             _isParticipantsPaneVisible,
             _layoutClassName,
             _reactionsQueue,
@@ -249,7 +250,7 @@ class Conference extends AbstractConference<Props, *> {
                         onTouchStart = { this._onVideospaceTouchStart }>
                         <LargeVideo />
                         {!_isParticipantsPaneVisible
-                        && <div id = 'notification-participant-list'>
+                        && <div id = 'notification-participant-list' className = {_isChatOpen ? 'shift-right' : ''}>
                             <KnockingParticipantList />
                         </div>}
                         <Filmstrip />
@@ -429,9 +430,12 @@ function _mapStateToProps(state) {
     // variable that identifies the countdown before random selection is finalized
     const startCountdownFrom = state['features/base/conference'].countdownRemained;
 
+    const { isOpen: _isChatOpen } = state['features/chat'];
+
     return {
         ...abstractMapStateToProps(state),
         _backgroundAlpha: backgroundAlpha,
+        _isChatOpen,
         _isParticipantsPaneVisible: getParticipantsPaneOpen(state),
         _layoutClassName: LAYOUT_CLASSNAMES[getCurrentLayout(state)],
         _mouseMoveCallbackInterval: mouseMoveCallbackInterval,

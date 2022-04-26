@@ -114,6 +114,14 @@
     }
 }
 
+@media (min-width: 581px) {
+    .shift-right {
+        &#notification-participant-list {
+            margin-left: $sidebarWidth;
+        }
+    }
+}
+
 .knocking-participants-container {
     list-style-type: none;
     padding: 0 15px 15px 15px;

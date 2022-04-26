@@ -31,6 +31,7 @@ const parsePollData = (pollData): Poll | null => {
         const voters = new Map();
 
         for (const [ voterId, voter ] of Object.entries(answer.voters)) {
+            if (voter === null) continue;
             if (typeof voter !== 'string') {
                 return null;
             }

@@ -210,21 +210,32 @@ export default class JitsiStreamPresenterEffect {
         } else {
             this._canvas.width = parseInt(width, 10);
             this._canvas.height = parseInt(height, 10);
+            // we need draw video in exact ratio wanted, so if the video is wider, we need to cut at the center
+            const ratio = 4/3;
+            const drawWidth = Math.min(this._videoElement.width, this._videoElement.height*ratio);
+            const offset = (this._videoElement.width - drawWidth) / 2;
+            const videoWidth = drawWidth / 3;
+            const videoHeight = this._videoElement.height / 3;
+
 
             this._ctx.drawImage(this._desktopElement, 0, 0, this._canvas.width, this._canvas.height);
             this._ctx.drawImage(
                 this._videoElement,
-                this._canvas.width - this._videoElement.width,
+                offset,
                 0,
-                this._videoElement.width,
-                this._videoElement.height);
+                drawWidth,
+                this._videoElement.height,
+                this._canvas.width - videoWidth,
+                0,
+                videoWidth,
+                videoHeight);
 
             // draw a border around the video element.
             this._ctx.beginPath();
             this._ctx.lineWidth = 2;
             this._ctx.strokeStyle = '#A9A9A9'; // dark grey
-            this._ctx.rect(this._canvas.width - this._videoElement.width, 0,
-                this._videoElement.width, this._videoElement.height);
+            this._ctx.rect(this._canvas.width - videoWidth, 0,
+                videoWidth, videoHeight);
             this._ctx.stroke();
         }
     }

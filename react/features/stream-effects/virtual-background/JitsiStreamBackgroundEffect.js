@@ -232,7 +232,7 @@ export default class JitsiStreamBackgroundEffect {
      * false otherwise.
      */
     isEnabled(jitsiLocalTrack: Object) {
-        return jitsiLocalTrack.isVideoTrack() && jitsiLocalTrack.videoType === 'camera';
+        return jitsiLocalTrack.videoType === 'camera';
     }
 
     /**

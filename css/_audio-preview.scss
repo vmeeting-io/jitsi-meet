@@ -108,7 +108,7 @@
     &-microphone {
         position: relative;
 
-        &:hover {
+        &:hover, &:focus-within, &:focus {
             .audio-preview-entry {
                 background: #36383C;
                 margin-left: 0;
@@ -118,6 +118,10 @@
                     background: $newToolbarBackgroundColor;
                     padding-left: 18px;
                 }
+            }
+
+             .audio-preview-test-button {
+                display: inline-block;
             }
         }
 

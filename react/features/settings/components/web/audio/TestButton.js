@@ -20,7 +20,7 @@ type Props = {
  *
  * @returns { ReactElement}
  */
-export default function TestButton({ onClick, onKeyPress }: Props) {
+export default function TestButton({ onClick, onKeyPress, buttonText = "Test" }: Props) {
     return (
         <div
             className = 'audio-preview-test-button'
@@ -28,7 +28,7 @@ export default function TestButton({ onClick, onKeyPress }: Props) {
             onKeyPress = { onKeyPress }
             role = 'button'
             tabIndex = { 0 }>
-            Test
+            { buttonText }
         </div>
     );
 }

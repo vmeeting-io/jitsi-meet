@@ -13,6 +13,7 @@ const JitsiTrackEvents = JitsiMeetJS.events.track;
 const TEST = "Test";
 const RECORDING = "Recording...";
 const PLAYING = "Playing...";
+const ERROR = "Error";
 
 type Props = AudioSettingsEntryProps & {
 
@@ -158,11 +159,13 @@ export default class MicrophoneEntry extends Component<Props, State> {
                 this.setState({
                     testButtonText: PLAYING
                 });
-
             }, 3000);
 
         } catch (err) {
-            logger.log('Could not set sink id', err);
+            APP.UI.messageHandler.showWarning({
+                descriptionKey: "deviceError.microphoneError",
+                titleKey: "notify.warning"
+            });
         }
     }
 

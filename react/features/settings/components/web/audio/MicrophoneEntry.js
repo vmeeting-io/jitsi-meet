@@ -141,11 +141,16 @@ export default class MicrophoneEntry extends Component<Props, State> {
     async _onTestButtonClick(e) {
         e.stopPropagation();
 
+        if (this.state.testButtonText !== TEST) {
+            return;
+        }
+
         try {
             await this.recorder.start();
             this.setState({
                 testButtonText: RECORDING
             });
+
             this.micTestTimer = setTimeout(async () => {
                 clearTimeout(this.micTestTimer);
 

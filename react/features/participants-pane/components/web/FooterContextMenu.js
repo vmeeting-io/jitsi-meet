@@ -248,15 +248,6 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
             icon: !isNameModerationEnabled && IconCheck,
             onClick: isNameModerationEnabled ? disableNameModeration : enableNameModeration,
             text: t('participantsPane.actions.nameModeration')
-        }, {
-            accessibilityLabel: t('participantsPane.actions.breakoutModeration'),
-            className: isBreakoutModerationEnabled ? classes.indentedLabel : '',
-            id: isBreakoutModerationEnabled
-                ? 'participants-pane-context-menu-stop-breakout-moderation'
-                : 'participants-pane-context-menu-start-breakout-moderation',
-            icon: !isBreakoutModerationEnabled && IconCheck,
-            onClick: isBreakoutModerationEnabled ? disableBreakoutModeration : enableBreakoutModeration,
-            text: t('participantsPane.actions.breakoutModeration')
         }
     ];
 

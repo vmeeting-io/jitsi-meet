@@ -1,6 +1,10 @@
+import { showModeratedNotification } from '../av-moderation/actions';
+import { shouldShowModeratedNotification } from '../av-moderation/functions';
 import { getCurrentConference } from '../base/conference';
 import { openDialog } from '../base/dialog/actions';
+import { MEDIA_TYPE } from '../base/media';
 import { getLocalParticipant } from '../base/participants';
+import { isModerationNotificationDisplayed } from '../notifications/functions.any';
 import { SharedVideoDialog } from '../shared-video/components';
 
 import { RESET_SHARED_VIDEO_STATUS, SET_SHARED_VIDEO_STATUS } from './actionTypes';
@@ -115,6 +119,14 @@ export function toggleSharedVideo() {
         if ([ 'playing', 'start', 'pause' ].includes(status)) {
             dispatch(stopSharedVideo());
         } else {
+            if (shouldShowModeratedNotification(MEDIA_TYPE.PRESENTER, state)) {
+                if (!isModerationNotificationDisplayed(MEDIA_TYPE.PRESENTER, state)) {
+                    dispatch(showModeratedNotification(MEDIA_TYPE.PRESENTER));
+                }
+    
+                return;
+            }
+    
             dispatch(showSharedVideoDialog(id => dispatch(playSharedVideo(id))));
         }
     };

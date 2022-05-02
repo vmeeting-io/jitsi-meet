@@ -83,7 +83,7 @@ export default class MicrophoneEntry extends Component<Props, State> {
         super(props);
 
         this.audioRef = React.createRef();
-        this.recorder = new OggAdapter(this.deviceId);
+        this.recorder = new OggAdapter(this.props.deviceId);
         this._onTestButtonClick = this._onTestButtonClick.bind(this);
         this._onTestAudioEnded = this._onTestAudioEnded.bind(this);
         this.state = {

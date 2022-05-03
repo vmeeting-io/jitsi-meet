@@ -7,13 +7,10 @@ import JitsiMeetJS from '../../../../base/lib-jitsi-meet/_';
 import AudioSettingsEntry, { type Props as AudioSettingsEntryProps } from './AudioSettingsEntry';
 import Meter from './Meter';
 import TestButton from './TestButton';
+import {TEST, RECORDING, PLAYING} from './TestButton';
 import { OggAdapter } from '../../../../local-recording/recording/OggAdapter';
 
 const JitsiTrackEvents = JitsiMeetJS.events.track;
-const TEST = "Test";
-const RECORDING = "Recording...";
-const PLAYING = "Playing...";
-const ERROR = "Error";
 
 type Props = AudioSettingsEntryProps & {
 
@@ -296,7 +293,6 @@ export default class MicrophoneEntry extends Component<Props, State> {
                         isDisabled = { hasError }
                         level = { this.state.level } />
                     <TestButton
-                        className='audio-preview-meter-mic'
                         onClick={this._onTestButtonClick}
                         onKeyPress={this._onTestButtonClick}
                         buttonText={this.state.testButtonText} />

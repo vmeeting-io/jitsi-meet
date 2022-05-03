@@ -171,6 +171,16 @@
         position: absolute;
         right: 16px;
         top: 5px;
+
+        &--recording {
+            @extend .audio-preview-test-button;
+            color: red;
+        }
+
+        &--playing {
+            @extend .audio-preview-test-button;
+            color: #0056E0;
+        }
     }
 
     &-meter-mic {

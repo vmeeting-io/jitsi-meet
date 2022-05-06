@@ -3,7 +3,7 @@
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app';
 
 import { MiddlewareRegistry } from '../base/redux';
-import { registerSound, unregisterSound } from '../base/sounds';
+import { playSound,registerSound, unregisterSound } from '../base/sounds';
 
 import { TIMER_OFF_SOUND_ID } from './constants';
 import { TIMER_OFF_SOUND_FILE } from './sounds';

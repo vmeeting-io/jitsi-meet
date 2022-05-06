@@ -23,16 +23,15 @@ export type Prop = {
  * @param {Object} state - The Redux state.
  * @private
  * @returns {{
- *     _timerEndTime: Number
+ *     _endTime: Number
  *     _timerStarted: boolean
  * }}
  */
 export function _abstractMapStateToProps(state: Object) {
-    const { timerStarted, timerEndTime } = state['features/base/conference'];
 
     return {
-        _timerEndTime: timerEndTime,
-        _timerStarted: timerStarted,
+        timerStarted: state['features/base/conference'].timerStarted,
+        timerEndTime: state['features/base/conference'].timerEndTime
     };
 }
 

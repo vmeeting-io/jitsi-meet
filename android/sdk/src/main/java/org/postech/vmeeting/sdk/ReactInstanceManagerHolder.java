@@ -175,25 +175,28 @@ class ReactInstanceManagerHolder {
             return;
         }
 
-        SoLoader.init(activity, /* native exopackage */ false);
-
         List<ReactPackage> packages
             = new ArrayList<>(Arrays.asList(
+                new com.reactnativecommunity.asyncstorage.AsyncStoragePackage(),
+                new com.ocetnik.timer.BackgroundTimerPackage(),
                 new com.calendarevents.CalendarEventsPackage(),
                 new com.corbt.keepawake.KCKeepAwakePackage(),
                 new com.facebook.react.shell.MainReactPackage(),
-                new com.horcrux.svg.SvgPackage(),
-                new com.kevinresol.react_native_default_preference.RNDefaultPreferencePackage(),
-                new com.learnium.RNDeviceInfo.RNDeviceInfo(),
-                new com.ocetnik.timer.BackgroundTimerPackage(),
-                new com.reactnativecommunity.asyncstorage.AsyncStoragePackage(),
+                new com.reactnativecommunity.clipboard.ClipboardPackage(),
                 new com.reactnativecommunity.netinfo.NetInfoPackage(),
+                new com.oblador.performance.PerformancePackage(),
                 new com.reactnativecommunity.slider.ReactSliderPackage(),
+                new com.brentvatne.react.ReactVideoPackage(),
+                new com.swmansion.reanimated.ReanimatedPackage(),
+                new org.reactnative.maskedview.RNCMaskedViewPackage(),
                 new com.reactnativecommunity.webview.RNCWebViewPackage(),
                 new OrientationPackage(),
+                new com.learnium.RNDeviceInfo.RNDeviceInfo(),
+                new org.linusu.RNGetRandomValuesPackage(),
                 new com.rnimmersive.RNImmersivePackage(),
-                new com.zmxv.RNSound.RNSoundPackage(),
-                new com.brentvatne.react.ReactVideoPackage(),
+                new com.swmansion.rnscreens.RNScreensPackage(),
+                new com.th3rdwave.safeareacontext.SafeAreaContextPackage(),
+                new com.horcrux.svg.SvgPackage(),
                 new ReactPackageAdapter() {
                     @Override
                     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
@@ -205,6 +208,16 @@ class ReactInstanceManagerHolder {
                     }
                 }));
 
+        // AmplitudeReactNativePackage
+        try {
+            Class<?> amplitudePackageClass = Class.forName("com.amplitude.reactnative.AmplitudeReactNativePackage");
+            Constructor constructor = amplitudePackageClass.getConstructor();
+            packages.add((ReactPackage)constructor.newInstance());
+        } catch (Exception e) {
+            // Ignore any error, the module is not compiled when LIBRE_BUILD is enabled.
+        }
+
+        // RNGoogleSigninPackage
         try {
             Class<?> googlePackageClass = Class.forName("co.apptailor.googlesignin.RNGoogleSigninPackage");
             Constructor constructor = googlePackageClass.getConstructor();

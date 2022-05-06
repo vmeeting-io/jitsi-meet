@@ -6,6 +6,7 @@ import { IconVirtualBackground } from '../../base/icons';
 import { connect } from '../../base/redux';
 import { AbstractButton } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
+import { checkBlurSupport } from '../functions';
 
 import { VirtualBackgroundDialog } from './index';
 
@@ -32,7 +33,7 @@ class VideoBackgroundButton extends AbstractButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.selectBackground';
     icon = IconVirtualBackground;
     label = 'toolbar.selectBackground';
-    // tooltip = 'toolbar.selectBackground';
+    tooltip = 'toolbar.selectBackground';
 
     /**
      * Handles clicking / pressing the button, and toggles the virtual background dialog
@@ -42,7 +43,13 @@ class VideoBackgroundButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { dispatch } = this.props;
+        const { dispatch, handleClick } = this.props;
+
+        if (handleClick) {
+            handleClick();
+
+            return;
+        }
 
         dispatch(openDialog(VirtualBackgroundDialog));
     }
@@ -72,7 +79,8 @@ class VideoBackgroundButton extends AbstractButton<Props, *> {
 function _mapStateToProps(state): Object {
 
     return {
-        _isBackgroundEnabled: Boolean(state['features/virtual-background'].backgroundEffectEnabled)
+        _isBackgroundEnabled: Boolean(state['features/virtual-background'].backgroundEffectEnabled),
+        visible: checkBlurSupport()
     };
 }
 

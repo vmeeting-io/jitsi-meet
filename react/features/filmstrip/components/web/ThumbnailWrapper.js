@@ -1,6 +1,8 @@
 /* @flow */
+import { difference } from 'lodash';
 import React, { Component } from 'react';
 import { shouldComponentUpdate } from 'react-window';
+import { getPinnedTiles } from '../../../base/participants';
 
 import { connect } from '../../../base/redux';
 import { getCurrentLayout, LAYOUTS } from '../../../video-layout';
@@ -15,7 +17,12 @@ type Props = {
     /**
      * The horizontal offset in px for the thumbnail. Used to center the thumbnails in the last row in tile view.
      */
-     _horizontalOffset: number,
+    _horizontalOffset: number,
+
+    /**
+     * Whether or not there is a pinned participant.
+     */
+    _isAnyParticipantPinned: boolean,
 
     /**
      * The ID of the participant associated with the Thumbnail.
@@ -69,22 +76,22 @@ class ThumbnailWrapper extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { _participantID, style, _horizontalOffset = 0 } = this.props;
+        const { _participantID, style, _horizontalOffset = 0, _isAnyParticipantPinned } = this.props;
 
         if (typeof _participantID !== 'string') {
             return null;
         }
 
         if (_participantID === 'local') {
-            return (
-                <Thumbnail
-                    horizontalOffset = { _horizontalOffset }
-                    key = 'local'
-                    style = { style } />);
+            return (<Thumbnail
+                horizontalOffset = { _horizontalOffset }
+                key = 'local'
+                style = { style } />);
         }
 
         return (
             <Thumbnail
+                _isAnyParticipantPinned = { _isAnyParticipantPinned }
                 horizontalOffset = { _horizontalOffset }
                 key = { `remote_${_participantID}` }
                 participantID = { _participantID }
@@ -103,38 +110,52 @@ class ThumbnailWrapper extends Component<Props> {
 function _mapStateToProps(state, ownProps) {
     const _currentLayout = getCurrentLayout(state);
     const { remoteParticipants } = state['features/filmstrip'];
+    const { remote, local } = state['features/base/participants'];
     const remoteParticipantsLength = remoteParticipants.length;
 
     if (_currentLayout === LAYOUTS.TILE_VIEW) {
         const { columnIndex, rowIndex } = ownProps;
         const { gridDimensions = {}, thumbnailSize } = state['features/filmstrip'].tileViewDimensions;
+        const pinnedTiles = getPinnedTiles(state);
         const { columns, rows } = gridDimensions;
         const index = (rowIndex * columns) + columnIndex;
         let horizontalOffset;
+        const { iAmRecorder } = state['features/base/config'];
+        const participantsLenght = remoteParticipantsLength + (iAmRecorder ? 0 : 1);
 
         if (rowIndex === rows - 1) { // center the last row
             const { width: thumbnailWidth } = thumbnailSize;
-            const { iAmRecorder } = state['features/base/config'];
-            const partialLastRowParticipantsNumber = (remoteParticipantsLength + (iAmRecorder ? 0 : 1)) % columns;
+            const partialLastRowParticipantsNumber = participantsLenght % columns;
 
             if (partialLastRowParticipantsNumber > 0) {
                 horizontalOffset = Math.floor((columns - partialLastRowParticipantsNumber) * (thumbnailWidth + 4) / 2);
             }
         }
 
-        if (index > remoteParticipantsLength) {
+        if (index > participantsLenght - 1) {
             return {};
         }
 
-        if (index === remoteParticipantsLength) {
+        // When the thumbnails are reordered, local participant is inserted at index 0.
+        let localIndex = pinnedTiles.indexOf(local?.id);
+        if (!iAmRecorder && localIndex < 0) {
+            localIndex = pinnedTiles.length;
+        }
+
+        if (!iAmRecorder && index === localIndex) {
             return {
                 _participantID: 'local',
                 _horizontalOffset: horizontalOffset
             };
         }
 
+        let newRemoteParticipants = [ ...pinnedTiles ];
+        if (local && localIndex >= pinnedTiles.length) {
+            newRemoteParticipants.push(local?.id);
+        }
+        newRemoteParticipants.push(...difference(remoteParticipants, pinnedTiles));
         return {
-            _participantID: remoteParticipants[index],
+            _participantID: newRemoteParticipants[index],
             _horizontalOffset: horizontalOffset
         };
     }
@@ -145,8 +166,11 @@ function _mapStateToProps(state, ownProps) {
         return {};
     }
 
+    const _isAnyParticipantPinned = Boolean([ ...remote ].find(([ , value ]) => value?.pinned) || local?.pinned);
+
     return {
-        _participantID: remoteParticipants[index]
+        _participantID: remoteParticipants[index],
+        _isAnyParticipantPinned
     };
 }
 

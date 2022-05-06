@@ -3,20 +3,24 @@
 // import { getGravatarURL } from '@jitsi/js-utils/avatar';
 import type { Store } from 'redux';
 
+import { GRAVATAR_BASE_URL, isCORSAvatarURL } from '../avatar';
 import { JitsiParticipantConnectionStatus } from '../lib-jitsi-meet';
 import { MEDIA_TYPE, shouldRenderVideoTrack } from '../media';
 import { toState } from '../redux';
 import { getTrackByMediaTypeAndParticipant } from '../tracks';
 import { createDeferred } from '../util';
+import axios from 'axios';
 
 import {
     JIGASI_PARTICIPANT_ICON,
     MAX_DISPLAY_NAME_LENGTH,
-    PARTICIPANT_ROLE
+    PARTICIPANT_ROLE,
+    PIC_CONSENT
 } from './constants';
 import { preloadImage } from './preloadImage';
+import tokenLocalStorage from '../../../api/tokenLocalStorage';
+import { getAuthUrl } from '../../../api/url';
 
-declare var interfaceConfig: Object;
 
 /**
  * Temp structures for avatar urls to be checked/preloaded.
@@ -45,6 +49,43 @@ const AVATAR_CHECKER_FUNCTIONS = [
 ];
 /* eslint-enable arrow-body-style, no-unused-vars */
 
+export function openOnNewTab(url){
+    window.open(url, "_blank");
+}
+
+
+export function askForConsent(email: String){
+
+    const state = APP.store.getState();
+    const config = {
+        headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(state)}`}
+    };
+
+    const _apiBase = getAuthUrl(state);
+
+    try {
+        axios.get(`${_apiBase}/verifyConsent`, config).then((resp) => {
+            switch(resp.data.consent){
+                case PIC_CONSENT.UNAPPROVED:
+                    //Open a new tab with verification.
+                    openOnNewTab('/auth/page/consent')
+                    break;
+                case PIC_CONSENT.APPROVED:
+                    //Continue without any action.
+                    console.log("vmchg: PIC_CONSENT ",PIC_CONSENT.APPROVED ) 
+                    break;
+                case PIC_CONSENT.DENIED:
+                    console.log("vmchg: PIC_CONSENT ",PIC_CONSENT.DENIED ) 
+                    break;
+            }
+        });
+    } catch(err) {
+        console.log("vmchg: ", err);
+    }
+
+    //make an axios call and get the user status.
+}
+
 /**
  * Resolves the first loadable avatar URL for a participant.
  *
@@ -56,7 +97,7 @@ export function getFirstLoadableAvatarUrl(participant: Object, store: Store<any,
     const deferred = createDeferred();
     const fullPromise = deferred.promise
         .then(() => _getFirstLoadableAvatarUrl(participant, store))
-        .then(src => {
+        .then(result => {
 
             if (AVATAR_QUEUE.length) {
                 const next = AVATAR_QUEUE.shift();
@@ -64,7 +105,7 @@ export function getFirstLoadableAvatarUrl(participant: Object, store: Store<any,
                 next.resolve();
             }
 
-            return src;
+            return result;
         });
 
     if (AVATAR_QUEUE.length) {
@@ -198,9 +239,6 @@ export function getParticipantCountWithFake(stateful: Object | Function) {
 /**
  * Returns participant's display name.
  *
- * FIXME: Remove the hardcoded strings once interfaceConfig is stored in redux
- * and merge with a similarly named method in {@code conference.js}.
- *
  * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
  * {@code getState} function to be used to retrieve the state.
  * @param {string} id - The ID of the participant's display name to retrieve.
@@ -210,6 +248,10 @@ export function getParticipantDisplayName(
         stateful: Object | Function,
         id: string) {
     const participant = getParticipantById(stateful, id);
+    const {
+        defaultLocalDisplayName,
+        defaultRemoteDisplayName
+    } = toState(stateful)['features/base/config'];
 
     if (participant) {
         if (participant.name) {
@@ -217,15 +259,11 @@ export function getParticipantDisplayName(
         }
 
         if (participant.local) {
-            return typeof interfaceConfig === 'object'
-                ? interfaceConfig.DEFAULT_LOCAL_DISPLAY_NAME
-                : 'me';
+            return defaultLocalDisplayName;
         }
     }
 
-    return typeof interfaceConfig === 'object'
-        ? interfaceConfig.DEFAULT_REMOTE_DISPLAY_NAME
-        : 'Fellow Jitster';
+    return defaultRemoteDisplayName;
 }
 
 /**
@@ -271,6 +309,17 @@ export function haveParticipantWithScreenSharingFeature(stateful: Object | Funct
  */
 export function getRemoteParticipants(stateful: Object | Function) {
     return toState(stateful)['features/base/participants'].remote;
+}
+
+/**
+ * Selectors for the getting the remote participants in the order that they are displayed in the filmstrip.
+ *
+@param {(Function|Object)} stateful - The (whole) redux state, or redux's {@code getState} function to be used to
+ * retrieve the state features/filmstrip.
+ * @returns {Array<string>}
+ */
+export function getRemoteParticipantsSorted(stateful: Object | Function) {
+    return toState(stateful)['features/filmstrip'].remoteParticipants;
 }
 
 /**
@@ -424,22 +473,75 @@ async function _getFirstLoadableAvatarUrl(participant, store) {
 
         if (url !== null) {
             if (AVATAR_CHECKED_URLS.has(url)) {
-                if (AVATAR_CHECKED_URLS.get(url)) {
-                    return url;
+                const { isLoadable, isUsingCORS } = AVATAR_CHECKED_URLS.get(url) || {};
+
+                if (isLoadable) {
+                    return {
+                        isUsingCORS,
+                        src: url
+                    };
                 }
             } else {
                 try {
-                    const finalUrl = await preloadImage(url);
+                    const { corsAvatarURLs } = store.getState()['features/base/config'];
+                    const { isUsingCORS, src } = await preloadImage(url, isCORSAvatarURL(url, corsAvatarURLs));
 
-                    AVATAR_CHECKED_URLS.set(finalUrl, true);
+                    AVATAR_CHECKED_URLS.set(src, {
+                        isLoadable: true,
+                        isUsingCORS
+                    });
 
-                    return finalUrl;
+                    return {
+                        isUsingCORS,
+                        src
+                    };
                 } catch (e) {
-                    AVATAR_CHECKED_URLS.set(url, false);
+                    AVATAR_CHECKED_URLS.set(url, {
+                        isLoadable: false,
+                        isUsingCORS: false
+                    });
                 }
             }
         }
     }
 
     return undefined;
+}
+
+/**
+ * Get the participants queue with raised hands.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state
+ * features/base/participants.
+ * @returns {Array<Object>}
+ */
+export function getRaiseHandsQueue(stateful: Object | Function): Array<Object> {
+    const { raisedHandsQueue } = toState(stateful)['features/base/participants'];
+
+    return raisedHandsQueue;
+}
+
+/**
+ * Returns whether the given participant has his hand raised or not.
+ *
+ * @param {Object} participant - The participant.
+ * @returns {boolean} - Whether participant has raise hand or not.
+ */
+export function hasRaisedHand(participant: Object): boolean {
+    return Boolean(participant && participant.raisedHandTimestamp);
+}
+
+/**
+ * Get the participants pinned tiles.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state
+ * features/base/participants.
+ * @returns {Array<Object>}
+ */
+export function getPinnedTiles(stateful: Object | Function): Array<Object> {
+    const { pinnedTiles } = toState(stateful)['features/base/participants'];
+
+    return pinnedTiles;
 }

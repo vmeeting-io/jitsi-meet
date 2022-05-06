@@ -1,8 +1,10 @@
 // @flow
 
+import { jitsiLocalStorage } from '@jitsi/js-utils';
 import axios from 'axios';
 
 import { conferences } from '../../../api/conferences';
+import { readyToClose } from '../../../features/mobile/external-api/actions';
 import {
     ACTION_PINNED,
     ACTION_UNPINNED,
@@ -11,9 +13,9 @@ import {
     createToolbarEvent,
     sendAnalytics
 } from '../../analytics';
-import { reloadNow } from '../../app/actions';
+import { redirectWithStoredParams, reloadNow } from '../../app/actions';
 import { openDisplayNamePrompt } from '../../display-name';
-import { saveErrorNotification, showErrorNotification } from '../../notifications';
+import { NOTIFICATION_TIMEOUT_TYPE, saveErrorNotification, showErrorNotification } from '../../notifications';
 import { CONNECTION_ESTABLISHED, CONNECTION_FAILED, connectionDisconnected } from '../connection';
 import { validateJwt } from '../jwt';
 import { browser, JitsiConferenceErrors } from '../lib-jitsi-meet';
@@ -35,27 +37,31 @@ import {
     CONFERENCE_SUBJECT_CHANGED,
     CONFERENCE_UNIQUE_ID_SET,
     CONFERENCE_WILL_LEAVE,
+    CONFERENCE_UNIQUE_ID_SET,
     SEND_TONES,
     SET_PASSWORD,
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
-    SET_USER_DEVICE_ACCESS_DISABLED,
+    START_TIMER
 } from './actionTypes';
 import {
     conferenceFailed,
     conferenceWillLeave,
     createConference,
+    setLocalSubject,
     setSubject
 } from './actions';
+import { TRIGGER_READY_TO_CLOSE_REASONS } from './constants';
 import {
     _addLocalTracksToConference,
     _removeLocalTracksFromConference,
     forEachConference,
-    getCurrentConference
+    getCurrentConference,
 } from './functions';
 import logger from './logger';
 import { appNavigate } from '../../app/actions';
 import { disconnect } from '../connection';
+import { LEAVING_TIMESTAMP } from './constants';
 
 declare var APP: Object;
 
@@ -91,7 +97,7 @@ MiddlewareRegistry.register(store => next => action => {
         return _conferenceUniqueIdSet(store, next, action);
 
     case CONFERENCE_WILL_LEAVE:
-        _conferenceWillLeave();
+        _conferenceWillLeave(store);
         break;
 
     case PARTICIPANT_UPDATED:
@@ -109,32 +115,19 @@ MiddlewareRegistry.register(store => next => action => {
     case SET_ROOM:
         return _setRoom(store, next, action);
 
-    case SET_USER_DEVICE_ACCESS_DISABLED:
-        // retrieve JitsiConference object
-        const { conference } = store.getState()['features/base/conference'];
+    // case START_TIMER:
+    //     const info = getRoomInfo(store);
+        
+    //     try {
+    //         axios.patch(`${info.apiBaseUrl}/conferences/${info.room._id}`, { timerEndTime: String(action.endTime) }, info.config).then((resp) => {
+    //             console.log("Response data is: ", resp.data);
+    //         });
+    //     } catch(err) {
+    //         console.log(err);
+    //     }
+    //     break;
 
-        // update conference database information to set userDeviceAccessDisabled field
-        const room = store.getState()['features/base/conference'].roomInfo;
-        const baseURL = store.getState()['features/base/connection'].locationURL;
-        const config = {
-            headers: { Authorization: `Bearer ${process.env.VMEETING_API_TOKEN}`}
-          };
-        const AUTH_API_BASE = process.env.VMEETING_API_BASE;
-        const apiBaseUrl = `${baseURL.origin}${AUTH_API_BASE}`;
-        let data;
-        try {
-            axios.patch(`${apiBaseUrl}/conferences/${room._id}`, { userDeviceAccessDisabled: String(action.userDeviceAccessDisabled) }, config).then((resp) => {
-                console.log("Response data is: ", resp.data);
-                data = resp.data;
-            });
-        } catch(err) {
-            console.log(err);
-        }
-
-        // call a function from JitsiConference that sends userDeviceAccessConfiguration as a message
-        conference.sendUserDeviceAccessConfiguration(action.userDeviceAccessDisabled);
-        break;
-
+    
     case TRACK_ADDED:
     case TRACK_REMOVED:
         return _trackAddedOrRemoved(store, next, action);
@@ -142,7 +135,6 @@ MiddlewareRegistry.register(store => next => action => {
 
     return next(action);
 });
-
 
 /**
  * Makes sure to leave a failed conference in order to release any allocated
@@ -181,7 +173,15 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
         dispatch(saveErrorNotification({
             descriptionKey: `dialog.${reason || error.name}`,
             titleKey: 'dialog.sessTerminated'
-        }));
+        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+
+        if (TRIGGER_READY_TO_CLOSE_REASONS.includes(reason)) {
+            if (typeof APP === undefined) {
+                dispatch(readyToClose());
+            } else {
+                APP.API.notifyReadyToClose();
+            }
+        }
 
         break;
     }
@@ -190,7 +190,7 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
             dispatch(showErrorNotification({
                 description: 'Restart initiated because of a bridge failure',
                 titleKey: 'dialog.sessionRestarted'
-            }));
+            }, NOTIFICATION_TIMEOUT_TYPE.LONG));
         }
 
         break;
@@ -203,12 +203,24 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
             descriptionArguments: { msg },
             descriptionKey: msg ? 'dialog.connectErrorWithMsg' : 'dialog.connectError',
             titleKey: 'connection.CONNFAIL'
-        }));
+        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
 
         break;
     }
     case JitsiConferenceErrors.OFFER_ANSWER_FAILED:
         sendAnalytics(createOfferAnswerFailedEvent());
+        break;
+    case JitsiConferenceErrors.CONFERENCE_MAX_USERS:
+        if (browser.isReactNative()) {
+            dispatch(appNavigate(undefined));
+        } else {
+            dispatch(disconnect(false));
+        }
+        dispatch(saveErrorNotification({
+            titleKey: 'dialog.maxUsersLimitReachedTitle',
+            descriptionKey: 'dialog.maxUsersLimitReached',
+        }));
+        dispatch(redirectWithStoredParams('/'));
         break;
     }
 
@@ -220,12 +232,11 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
             // good to know that it happen, so log it (on the info level).
             logger.info('JitsiConference.leave() rejected with:', reason);
         });
-    } else if (typeof beforeUnloadHandler !== 'undefined') {
+    } else {
         // FIXME: Workaround for the web version. Currently, the creation of the
         // conference is handled by /conference.js and appropriate failure handlers
         // are set there.
-        window.removeEventListener('beforeunload', beforeUnloadHandler);
-        beforeUnloadHandler = undefined;
+        _removeUnloadHandler(getState);
     }
 
     if (enableForcedReload && error?.name === JitsiConferenceErrors.CONFERENCE_RESTARTED) {
@@ -253,7 +264,7 @@ function _conferenceJoined({ dispatch, getState }, next, action) {
     const result = next(action);
     const { conference } = action;
     const { pendingSubjectChange } = getState()['features/base/conference'];
-    const { requireDisplayName } = getState()['features/base/config'];
+    const { requireDisplayName, disableBeforeUnloadHandlers = false } = getState()['features/base/config'];
 
     pendingSubjectChange && dispatch(setSubject(pendingSubjectChange));
 
@@ -264,8 +275,9 @@ function _conferenceJoined({ dispatch, getState }, next, action) {
     // implement the conferenceWillLeave action for web.
     beforeUnloadHandler = () => {
         dispatch(conferenceWillLeave(conference));
+        jitsiLocalStorage.setItem(LEAVING_TIMESTAMP, Date.now());
     };
-    window.addEventListener('beforeunload', beforeUnloadHandler);
+    window.addEventListener(disableBeforeUnloadHandlers ? 'unload' : 'beforeunload', beforeUnloadHandler);
 
     if (requireDisplayName
         && !getLocalParticipant(getState)?.name
@@ -339,10 +351,7 @@ function _connectionFailed({ dispatch, getState }, next, action) {
 
     const result = next(action);
 
-    if (typeof beforeUnloadHandler !== 'undefined') {
-        window.removeEventListener('beforeunload', beforeUnloadHandler);
-        beforeUnloadHandler = undefined;
-    }
+    _removeUnloadHandler(getState);
 
     // FIXME: Workaround for the web version. Currently, the creation of the
     // conference is handled by /conference.js and appropriate failure handlers
@@ -437,13 +446,27 @@ function _conferenceUniqueIdSet({ getState }, next, action) {
  * store.
  *
  * @private
+ * @param {Object} store - The redux store.
  * @returns {void}
  */
-function _conferenceWillLeave() {
-    if (typeof beforeUnloadHandler !== 'undefined') {
-        window.removeEventListener('beforeunload', beforeUnloadHandler);
-        beforeUnloadHandler = undefined;
+function _conferenceWillLeave({ getState }: { getState: Function }) {
+    _removeUnloadHandler(getState);
+}
+
+function _conferenceUniqueIdSet(store, next, action) {
+    const result = next(action);
+
+    const { roomInfo } = store.getState()['features/base/conference'];
+    if (roomInfo.isHost && !roomInfo.meetingId) {
+        conferences()
+            .id(roomInfo._id)
+            .update({ meeting_id: action.meetingId })
+            .then(resp => {
+                // console.log('conference updated:', resp.data);
+            });
     }
+
+    return result;
 }
 
 /**
@@ -496,6 +519,21 @@ function _pinParticipant({ getState }, next, action) {
 }
 
 /**
+ * Removes the unload handler.
+ *
+ * @param {Function} getState - The redux getState function.
+ * @returns {void}
+ */
+function _removeUnloadHandler(getState) {
+    if (typeof beforeUnloadHandler !== 'undefined') {
+        const { disableBeforeUnloadHandlers = false } = getState()['features/base/config'];
+
+        window.removeEventListener(disableBeforeUnloadHandlers ? 'unload' : 'beforeunload', beforeUnloadHandler);
+        beforeUnloadHandler = undefined;
+    }
+}
+
+/**
  * Requests the specified tones to be played.
  *
  * @param {Store} store - The redux store in which the specified {@code action}
@@ -540,7 +578,7 @@ function _setPassword({ getState }, next, action) {
         if (room && password) {
             const baseURL = getState()['features/base/connection'].locationURL;
 
-            const AUTH_API_BASE = process.env.VMEETING_API_BASE;
+            const AUTH_API_BASE = window._env_.VMEETING_API_BASE;
             const apiBaseUrl = `${baseURL.origin}${AUTH_API_BASE}`;
 
             try {
@@ -571,11 +609,12 @@ function _setPassword({ getState }, next, action) {
  */
 function _setRoom({ dispatch, getState }, next, action) {
     const state = getState();
-    const { subject } = state['features/base/config'];
+    const { localSubject, subject } = state['features/base/config'];
     const { room } = action;
 
     if (room) {
         // Set the stored subject.
+        dispatch(setLocalSubject(localSubject));
         dispatch(setSubject(subject));
     }
 
@@ -656,7 +695,7 @@ function _updateLocalParticipantInConference({ dispatch, getState }, next, actio
 
     const localParticipant = getLocalParticipant(getState);
 
-    if (conference && localParticipant && participant.id === localParticipant.id) {
+    if (conference && participant.id === localParticipant?.id) {
         if ('name' in participant) {
             conference.setDisplayName(participant.name);
         }

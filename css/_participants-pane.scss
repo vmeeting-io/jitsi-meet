@@ -25,11 +25,42 @@
     }
 }
 
-.participant-avatar {
-    margin: 8px 16px 8px 0;
+.concentrated {
+    background-color: #95F681 !important;
+    opacity: 50%;
 }
 
-@media (max-width: 375px) {
+.lapsed {
+    background-color: #FFd400 !important;
+    opacity: 50%;
+}
+
+.absent {
+    background-color: #D33A21 !important;
+    opacity: 50%;
+}
+
+.participant-avatar-container {
+    position: relative;
+    display: flex;
+    height: 40px;
+
+    .pin-icon {
+        position: absolute;
+        right: -6px;
+        top: -6px;
+        transform: rotate(45deg);
+        padding: 5px;
+        background: rgba(0,0,0,0.8);
+        border-radius: 50%;
+    }
+}
+
+.participant-avatar {
+    margin: 4px 4px 4px 4px;
+}
+
+@media (max-width: 580px) {
     .participants_pane {
         height: 100vh;
         height: -webkit-fill-available;
@@ -47,5 +78,18 @@
 
     .participants_pane-content {
         width: 100%;
+    }
+}
+
+.jitsi-icon {
+    &-dominant-speaker {
+        background-color: #1EC26A;
+        border-radius: 3px;
+    }
+}
+
+.mobile-browser.shift-right {
+    .participants_pane {
+        z-index: -1;
     }
 }

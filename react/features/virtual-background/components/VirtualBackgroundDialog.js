@@ -3,11 +3,13 @@
 import Spinner from '@atlaskit/spinner';
 import axios from 'axios';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { getAuthUrl } from '../../../api/url';
+import { useSelector } from 'react-redux';
 
+import { getAuthUrl } from '../../../api/url';
 import { Dialog, hideDialog, openDialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
 import { Icon, IconCancelSelection, IconPlusCircle, IconShareDesktop } from '../../base/icons';
+import { browser } from '../../base/lib-jitsi-meet';
 import { createLocalTrack } from '../../base/lib-jitsi-meet/functions';
 import { VIDEO_TYPE } from '../../base/media';
 import { connect } from '../../base/redux';
@@ -16,7 +18,12 @@ import { Tooltip } from '../../base/tooltip';
 import { getLocalVideoTrack } from '../../base/tracks';
 import TouchmoveHack from '../../chat/components/web/TouchmoveHack';
 import { showErrorNotification, showWarningNotification } from '../../notifications';
-import { backgroundEnabled, setVirtualBackground, toggleBackgroundEffect } from '../actions';
+import {
+    backgroundEnabled,
+    setVirtualBackground,
+    toggleBackgroundEffect,
+    virtualBackgroundTrackChanged
+} from '../actions';
 import { VIRTUAL_BACKGROUND_TYPE } from '../constants';
 import { getRemoteImageUrl, toDataURL } from '../functions';
 import logger from '../logger';
@@ -25,7 +32,9 @@ import VirtualBackgroundPreview from './VirtualBackgroundPreview';
 
 const COL_WIDTH = 105 + 9;
 const ROW_HEIGHT = 60 + 8;
-const images = [
+
+// export so that it can be used in virtual avatar
+export const images = [
     {
         tooltip: 'image1',
         id: '1',
@@ -119,12 +128,13 @@ function VirtualBackground({
     dispatch,
     t
 }: Props) {
+    const [ previewIsLoaded, setPreviewIsLoaded ] = useState(false);
     const [ origin ] = useState(_virtualBackground);
     const [ options, setOptions ] = useState(_virtualBackground);
     const [ remoteImages, setRemoteImages ] = useState([]);
     const [ loading, setLoading ] = useState(false);
-    const [ dialogElement, setDialogElement ] = useState();
     const [ activeDesktopVideo ] = useState(_virtualSource?.videoType === VIDEO_TYPE.DESKTOP ? _virtualSource : null);
+    const { disableScreensharingVirtualBackground } = useSelector(state => state['features/base/config']);
     const uploadImageButton: Object = useRef(null);
 
     /**
@@ -144,7 +154,6 @@ function VirtualBackground({
 
         loadRemoteImages();
     }, []);
-
 
     const enableBlur = useCallback(async () => {
         setOptions({
@@ -184,6 +193,10 @@ function VirtualBackground({
 
 
     const shareDesktop = useCallback(async () => {
+        if (disableScreensharingVirtualBackground) {
+            return;
+        }
+
         let isCancelled = false, url;
 
         try {
@@ -196,11 +209,13 @@ function VirtualBackground({
             }
         }
 
+
+
         if (!url) {
             if (!isCancelled) {
                 dispatch(showErrorNotification({
                     titleKey: 'virtualBackground.desktopShareError'
-                }));
+                }, NOTIFICATION_TIMEOUT_TYPE.LONG));
                 logger.error('Could not create desktop share as a virtual background!');
             }
 
@@ -214,6 +229,14 @@ function VirtualBackground({
             }
 
             return;
+        }
+
+        if (Array.isArray(url)){ //if createLocalTrack returns both audio and video track
+            url = url[1]; //url[0] is audio track
+            dispatch(showWarningNotification({
+                titleKey: 'virtualBackground.desktopShareAudioWarning',
+                descriptionKey: 'virtualBackground.desktopShareAudioWarningDesc'
+            }));
         }
 
         const newOptions = {
@@ -370,6 +393,7 @@ function VirtualBackground({
         dispatch(hideDialog());
         logger.info(`Virtual background type: '${typeof options.backgroundType === 'undefined'
             ? 'none' : options.backgroundType}' applied!`);
+        dispatch(virtualBackgroundTrackChanged());
     }, [ dispatch, options, _localFlipX ]);
 
     const cancelVirtualBackground = useCallback(async () => {
@@ -381,9 +405,9 @@ function VirtualBackground({
         await dispatch(setVirtualBackground(origin_fixed));
     }, [ dispatch, origin ]);
 
-    const onDialogRef = useCallback(el => {
-        setDialogElement(el);
-    }, [setDialogElement]);
+    const loadedPreviewState = useCallback(async loaded => {
+        await setPreviewIsLoaded(loaded);
+    });
 
     return (
         <Dialog
@@ -392,10 +416,10 @@ function VirtualBackground({
             okKey = { 'virtualBackground.apply' }
             onCancel = { cancelVirtualBackground }
             onSubmit = { applyVirtualBackground }
-            onRef = { onDialogRef }
-            submitDisabled = { !options || loading }
+            submitDisabled = { !options || loading || !previewIsLoaded }
             titleKey = { 'virtualBackground.title' } >
             <VirtualBackgroundPreview
+                loadedPreview = { loadedPreviewState }
                 options = { options } />
             <div className = 'virtual-background-content'>
                 {loading ? (
@@ -405,148 +429,150 @@ function VirtualBackground({
                             size = 'small' />
                     </div>
                 ) : (
-                    <label
-                        aria-label = { t('virtualBackground.uploadImage') }
-                        className = 'file-upload-label'
-                        htmlFor = 'file-upload'
-                        onKeyPress = { uploadImageKeyPress }
-                        tabIndex = { 0 } >
-                        <Icon
-                            className = { 'add-background' }
-                            size = { 20 }
-                            src = { IconPlusCircle } />
-                        {t('virtualBackground.addBackground')}
-                    </label>
-                )}
-                <input
-                    accept = 'image/*'
-                    className = 'file-upload-btn'
-                    id = 'file-upload'
-                    onChange = { uploadImage }
-                    ref = { uploadImageButton }
-                    type = 'file' />
-                <TouchmoveHack isModal = { true } style = {{ overflow: 'visible' }}>
-                    <div
-                        className = 'virtual-background-dialog'
-                        role = 'radiogroup'
-                        tabIndex = '-1'>
-                        <Tooltip
-                            content = { t('virtualBackground.removeBackground') }
-                            position = { 'top' }>
+                    <div>
+                        { previewIsLoaded && <label
+                            aria-label = { t('virtualBackground.uploadImage') }
+                            className = 'file-upload-label'
+                            htmlFor = 'file-upload'
+                            onKeyPress = { uploadImageKeyPress }
+                            tabIndex = { 0 } >
+                            <Icon
+                                className = { 'add-background' }
+                                size = { 20 }
+                                src = { IconPlusCircle } />
+                            {t('virtualBackground.addBackground')}
+                        </label> }
+                        <input
+                            accept = 'image/*'
+                            className = 'file-upload-btn'
+                            id = 'file-upload'
+                            onChange = { uploadImage }
+                            ref = { uploadImageButton }
+                            type = 'file' />
+                        <TouchmoveHack isModal = { true } style = {{ overflow: 'visible' }}>
                             <div
-                                aria-checked = { options.selectedThumbnail === 'none' }
-                                aria-label = { t('virtualBackground.removeBackground') }
-                                className = { options.selectedThumbnail === 'none' ? 'background-option none-selected'
-                                    : 'background-option virtual-background-none' }
-                                onClick = { removeBackground }
-                                onKeyPress = { removeBackgroundKeyPress }
-                                role = 'radio'
-                                tabIndex = { 0 } >
-                                {t('virtualBackground.none')}
-                            </div>
-                        </Tooltip>
-                        <Tooltip
-                            content = { t('virtualBackground.slightBlur') }
-                            position = { 'top' }>
-                            <div
-                                aria-checked = { options.selectedThumbnail === 'slight-blur' }
-                                aria-label = { t('virtualBackground.slightBlur') }
-                                className = { options.selectedThumbnail === 'slight-blur'
-                                    ? 'background-option slight-blur-selected' : 'background-option slight-blur' }
-                                onClick = { enableSlideBlur }
-                                onKeyPress = { enableSlideBlurKeyPress }
-                                role = 'radio'
-                                tabIndex = { 0 }>
-                                {t('virtualBackground.slightBlur')}
-                            </div>
-                        </Tooltip>
-                        <Tooltip
-                            content = { t('virtualBackground.blur') }
-                            position = { 'top' }>
-                            <div
-                                aria-checked = { options.selectedThumbnail === 'blur' }
-                                aria-label = { t('virtualBackground.blur') }
-                                className = { options.selectedThumbnail === 'blur' ? 'background-option blur-selected'
-                                    : 'background-option blur' }
-                                onClick = { enableBlur }
-                                onKeyPress = { enableBlurKeyPress }
-                                role = 'radio'
-                                tabIndex = { 0 }>
-                                {t('virtualBackground.blur')}
-                            </div>
-                        </Tooltip>
-                        <Tooltip
-                            content = { t('virtualBackground.desktopShare') }
-                            position = { 'top' }>
-                            <div
-                                aria-checked = { options.selectedThumbnail === 'desktop-share' }
-                                aria-label = { t('virtualBackground.desktopShare') }
-                                className = { options.selectedThumbnail === 'desktop-share'
-                                    ? 'background-option desktop-share-selected'
-                                    : 'background-option desktop-share' }
-                                onClick = { shareDesktop }
-                                onKeyPress = { shareDesktopKeyPress }
-                                role = 'radio'
-                                tabIndex = { 0 }>
-                                <Icon
-                                    className = 'share-desktop-icon'
-                                    size = { 30 }
-                                    src = { IconShareDesktop } />
-                            </div>
-                        </Tooltip>
-                        {images.map((image, index) => (
-                            <Tooltip
-                                content = { image.tooltip && t(`virtualBackground.${image.tooltip}`) }
-                                key = { image.id }
-                                position = { 'top' }>
-                                <img
-                                    alt = { image.tooltip && t(`virtualBackground.${image.tooltip}`) }
-                                    aria-checked = { options.selectedThumbnail === image.id
-                                        || options.selectedThumbnail === image.id }
-                                    className = {
-                                        options.selectedThumbnail === image.id
-                                            ? 'background-option thumbnail-selected' : 'background-option thumbnail' }
-                                    data-imageid = { image.id }
-                                    onClick = { setImageBackground }
-                                    onError = { onError }
-                                    onKeyPress = { setImageBackgroundKeyPress }
-                                    role = 'radio'
-                                    src = { image.src }
-                                    tabIndex = { 0 } />
-                            </Tooltip>
-                        ))}
-                        {remoteImages.map((image, index) => (
-                            <div
-                                className = { 'thumbnail-container' }
-                                key = { image._id }>
-                                <img
-                                    alt = { t('virtualBackground.uploadedImage', { index: index + 1 }) }
-                                    aria-checked = { options.selectedThumbnail === image.id }
-                                    className = { options.selectedThumbnail === image._id
-                                        ? 'background-option thumbnail-selected' : 'background-option thumbnail' }
-                                    data-imageid = { image._id }
-                                    onClick = { setUploadedImageBackground }
-                                    onError = { onError }
-                                    onKeyPress = { setUploadedImageBackgroundKeyPress }
-                                    role = 'radio'
-                                    src = { getRemoteImageUrl(image, 'ld') }
-                                    tabIndex = { 0 } />
-                                { !image.isPublic && (
-                                    <Icon
-                                        ariaLabel = { t('virtualBackground.deleteImage') }
-                                        className = { 'delete-image-icon' }
-                                        data-imageid = { image._id }
+                                className = 'virtual-background-dialog'
+                                role = 'radiogroup'
+                                tabIndex = '-1'>
+                                <Tooltip
+                                    content = { t('virtualBackground.removeBackground') }
+                                    position = { 'top' }>
+                                    <div
+                                        aria-checked = { options.selectedThumbnail === 'none' }
+                                        aria-label = { t('virtualBackground.removeBackground') }
+                                        className = { options.selectedThumbnail === 'none' ? 'background-option none-selected'
+                                            : 'background-option virtual-background-none' }
                                         onClick = { removeBackground }
                                         onKeyPress = { removeBackgroundKeyPress }
-                                        role = 'button'
-                                        size = { 15 }
-                                        src = { IconCancelSelection }
-                                        tabIndex = { 0 } />
-                                )}
+                                        role = 'radio'
+                                        tabIndex = { 0 } >
+                                        {t('virtualBackground.none')}
+                                    </div>
+                                </Tooltip>
+                                <Tooltip
+                                    content = { t('virtualBackground.slightBlur') }
+                                    position = { 'top' }>
+                                    <div
+                                        aria-checked = { options.selectedThumbnail === 'slight-blur' }
+                                        aria-label = { t('virtualBackground.slightBlur') }
+                                        className = { options.selectedThumbnail === 'slight-blur'
+                                            ? 'background-option slight-blur-selected' : 'background-option slight-blur' }
+                                        onClick = { enableSlideBlur }
+                                        onKeyPress = { enableSlideBlurKeyPress }
+                                        role = 'radio'
+                                        tabIndex = { 0 }>
+                                        {t('virtualBackground.slightBlur')}
+                                    </div>
+                                </Tooltip>
+                                <Tooltip
+                                    content = { t('virtualBackground.blur') }
+                                    position = { 'top' }>
+                                    <div
+                                        aria-checked = { options.selectedThumbnail === 'blur' }
+                                        aria-label = { t('virtualBackground.blur') }
+                                        className = { options.selectedThumbnail === 'blur' ? 'background-option blur-selected'
+                                            : 'background-option blur' }
+                                        onClick = { enableBlur }
+                                        onKeyPress = { enableBlurKeyPress }
+                                        role = 'radio'
+                                        tabIndex = { 0 }>
+                                        {t('virtualBackground.blur')}
+                                    </div>
+                                </Tooltip>
+                                <Tooltip
+                                    content = { t('virtualBackground.desktopShare') }
+                                    position = { 'top' }>
+                                    <div
+                                        aria-checked = { options.selectedThumbnail === 'desktop-share' }
+                                        aria-label = { t('virtualBackground.desktopShare') }
+                                        className = { options.selectedThumbnail === 'desktop-share'
+                                            ? 'background-option desktop-share-selected'
+                                            : 'background-option desktop-share' }
+                                        onClick = { shareDesktop }
+                                        onKeyPress = { shareDesktopKeyPress }
+                                        role = 'radio'
+                                        tabIndex = { 0 }>
+                                        <Icon
+                                            className = 'share-desktop-icon'
+                                            size = { 30 }
+                                            src = { IconShareDesktop } />
+                                    </div>
+                                </Tooltip>
+                                {images.map((image, index) => (
+                                    <Tooltip
+                                        content = { image.tooltip && t(`virtualBackground.${image.tooltip}`) }
+                                        key = { image.id }
+                                        position = { 'top' }>
+                                        <img
+                                            alt = { image.tooltip && t(`virtualBackground.${image.tooltip}`) }
+                                            aria-checked = { options.selectedThumbnail === image.id
+                                                || options.selectedThumbnail === image.id }
+                                            className = {
+                                                options.selectedThumbnail === image.id
+                                                    ? 'background-option thumbnail-selected' : 'background-option thumbnail' }
+                                            data-imageid = { image.id }
+                                            onClick = { setImageBackground }
+                                            onError = { onError }
+                                            onKeyPress = { setImageBackgroundKeyPress }
+                                            role = 'radio'
+                                            src = { image.src }
+                                            tabIndex = { 0 } />
+                                    </Tooltip>
+                                ))}
+                                {remoteImages.map((image, index) => (
+                                    <div
+                                        className = { 'thumbnail-container' }
+                                        key = { image._id }>
+                                        <img
+                                            alt = { t('virtualBackground.uploadedImage', { index: index + 1 }) }
+                                            aria-checked = { options.selectedThumbnail === image.id }
+                                            className = { options.selectedThumbnail === image._id
+                                                ? 'background-option thumbnail-selected' : 'background-option thumbnail' }
+                                            data-imageid = { image._id }
+                                            onClick = { setUploadedImageBackground }
+                                            onError = { onError }
+                                            onKeyPress = { setUploadedImageBackgroundKeyPress }
+                                            role = 'radio'
+                                            src = { getRemoteImageUrl(image, 'ld') }
+                                            tabIndex = { 0 } />
+                                        { !image.isPublic && (
+                                            <Icon
+                                                ariaLabel = { t('virtualBackground.deleteImage') }
+                                                className = { 'delete-image-icon' }
+                                                data-imageid = { image._id }
+                                                onClick = { removeBackground }
+                                                onKeyPress = { removeBackgroundKeyPress }
+                                                role = 'button'
+                                                size = { 15 }
+                                                src = { IconCancelSelection }
+                                                tabIndex = { 0 } />
+                                        )}
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        </TouchmoveHack>
                     </div>
-                </TouchmoveHack>
+                )}
             </div>
         </Dialog>
     );

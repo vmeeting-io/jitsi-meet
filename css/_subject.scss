@@ -1,96 +1,87 @@
 .subject {
-    box-sizing: border-box;
     color: #fff;
-    margin-top: 20px;
-    position: absolute;
-    top: -120px;
-    transition: top .3s ease-in;
-    width: 100%;
+    transition: opacity .6s ease-in-out;
     z-index: $zindex3;
+    margin-top: 20px;
+    opacity: 0;
 
     &.visible {
-        top: 0;
+        opacity: 1;
     }
 
-    &.recording {
-        top: 0;
+    &#autoHide.with-always-on {
+        overflow: hidden;
+        animation: hideSubject forwards .6s ease-out;
 
-        .subject-details-container {
-            opacity: 0;
-            transition: opacity .3s ease-in;
-        }
-
-        .subject-info-container .show-always {
-            transition: margin-left .3s ease-in;
+        & > .subject-info-container {
+            justify-content: flex-start;
         }
 
         &.visible {
-            .subject-details-container {
-                opacity: 1;
-            }
+            animation: showSubject forwards .6s ease-out;
         }
     }
-}
-
-.subject-details-container {
-    display: flex;
 }
 
 .subject-info-container {
     display: flex;
     justify-content: center;
-    max-width: calc(100% - 280px);
     margin: 0 auto;
+    height: 28px;
 
-    &--full-width {
-        max-width: 100%;
+    @media (max-width: 500px) {
+        flex-wrap: wrap;
     }
 }
 
 .subject-info {
     align-items: center;
     display: flex;
-    // max-width: 80%;
     margin-bottom: 4px;
+    max-width: 80%;
     height: 28px;
 }
 
 .subject-text {
-    display: flex;
     background: rgba(0, 0, 0, 0.6);
     border-radius: 3px 0px 0px 3px;
+    box-sizing: border-box;
     font-size: 14px;
-    line-height: 24px;
-    padding: 2px 16px;
-    height: 24px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 28px;
+    padding: 0 16px;
+    height: 28px;
+    max-width: 324px;
     position: relative;
+
+    @media (max-width: 300px) {
+        display: none;
+    }
+
+    &--content {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
 
     &.editable {
         pointer-events: auto;
         cursor: pointer;
 
         &:hover {
-            padding-right: 34px;
-    
+            padding-right: 32px;
+
             .button {
                 visibility: visible;
             }
         }
     }
 
-    @media (max-width: 500px) {
-        flex-wrap: wrap;
-        max-width: 100%;
-    }
-    
     .button {
         padding: 4px;
         border-radius: 5px;
         position: absolute;
-        right: 4;
+        right: 6px;
+        top: 2px;
         visibility: hidden;
     }
 }
@@ -98,20 +89,61 @@
 .subject-timer {
     background: rgba(0, 0, 0, 0.8);
     border-radius: 0px 3px 3px 0px;
-    display: inline-block;
+    box-sizing: border-box;
     font-size: 12px;
-    line-height: 16px;
+    line-height: 28px;
     min-width: 34px;
-    padding: 6px 8px;
+    padding: 0 8px;
+    height: 28px;
+
+    @media (max-width: 300px) {
+        display: none;
+    }
+}
+
+.details-container {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    height: 48px;
+    max-width: calc(100% - 24px);
+}
+
+.shift-right .details-container {
+    margin-left: calc(#{$sidebarWidth} / 2);
+}
+
+@keyframes hideSubject {
+    0% {
+        max-width: 100%;
+    }
+
+    100% {
+        max-width: 0;
+    }
+}
+
+@keyframes showSubject {
+    0% {
+        max-width: 0%;
+    }
+
+    100% {
+        max-width: 100%;
+    }
 }
 
 .time-remained-container {
     display: inline-block;
-    background: darkgreen;
+    background: #1b5e20;
     color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 14px;
+    padding: 6px 8px;
+    border-radius: 0 3px 3px 0;
+    font-size: 12px;
+    line-height: 16px;
 }
 
 .time-remained-container {

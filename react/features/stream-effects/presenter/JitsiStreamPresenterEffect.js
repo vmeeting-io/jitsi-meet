@@ -75,7 +75,7 @@ export default class JitsiStreamPresenterEffect {
         const maxHeight = h;
 
         // Set the video element properties
-        this._frameRate = parseInt(frameRate, 10);
+        this._frameRate = parseInt(config.frameRateVideoSharingWithCamera ? config.frameRateVideoSharingWithCamera : 5);
         this._videoElement.width = pipMode ? parseInt(width, 10) : Math.min(parseInt(width, 10), maxWidth);
         this._videoElement.height = pipMode ? parseInt(height, 10) : Math.min(parseInt(height, 10), maxHeight);
         this._videoElement.autoplay = true;
@@ -149,7 +149,7 @@ export default class JitsiStreamPresenterEffect {
         if (!this._config.pipMode) {
             this._canvas.width = CANVAS_WIDTH;
             this._canvas.height = CANVAS_HEIGHT;
-    
+
             let rc = this._config.layout.desktop.rect;
             let { w, h } = rc;
 
@@ -210,21 +210,32 @@ export default class JitsiStreamPresenterEffect {
         } else {
             this._canvas.width = parseInt(width, 10);
             this._canvas.height = parseInt(height, 10);
+            // we need draw video in exact ratio wanted, so if the video is wider, we need to cut at the center
+            const ratio = 4/3;
+            const drawWidth = Math.min(this._videoElement.width, this._videoElement.height*ratio);
+            const offset = (this._videoElement.width - drawWidth) / 2;
+            const videoWidth = drawWidth / 3;
+            const videoHeight = this._videoElement.height / 3;
+
 
             this._ctx.drawImage(this._desktopElement, 0, 0, this._canvas.width, this._canvas.height);
             this._ctx.drawImage(
                 this._videoElement,
-                this._canvas.width - this._videoElement.width,
-                this._canvas.height - this._videoElement.height,
-                this._videoElement.width,
-                this._videoElement.height);
+                offset,
+                0,
+                drawWidth,
+                this._videoElement.height,
+                this._canvas.width - videoWidth,
+                0,
+                videoWidth,
+                videoHeight);
 
             // draw a border around the video element.
             this._ctx.beginPath();
             this._ctx.lineWidth = 2;
             this._ctx.strokeStyle = '#A9A9A9'; // dark grey
-            this._ctx.rect(this._canvas.width - this._videoElement.width, this._canvas.height - this._videoElement.height,
-                this._videoElement.width, this._videoElement.height);
+            this._ctx.rect(this._canvas.width - videoWidth, 0,
+                videoWidth, videoHeight);
             this._ctx.stroke();
         }
     }
@@ -238,7 +249,7 @@ export default class JitsiStreamPresenterEffect {
     _loadConfig() {
         const layout = merge({
             background: { w: 1280, h: 720 },
-            desktop: { 
+            desktop: {
                 rect: { x: 40, y: 142, w: 910, h: 512 },
             },
             presenter: {
@@ -248,11 +259,11 @@ export default class JitsiStreamPresenterEffect {
                 title: { color: 'white', fontSize: 14, fontWeight: 'lighter', fontFamily: '맑은 고딕', lineHeight: 1.5, x: 978, y: 395 },
             }
         }, config.presenter?.layout);
-        
+
         // map position from background to canvas
         const mapX = x => parseInt(CANVAS_WIDTH * x / layout.background.w, 10);
         const mapY = y => parseInt(CANVAS_HEIGHT * y / layout.background.h, 10);
-        
+
         const _config = {
             backgroundImageUrl: config.presenter?.backgroundImageUrl || '',
             pipMode: config.presenter?.pipMode ?? true,

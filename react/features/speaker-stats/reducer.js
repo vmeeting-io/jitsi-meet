@@ -39,7 +39,7 @@ function makeStats(type, data) {
 }
 
 function _speakerStatsLoaded(state, { type, data }) {
-    return makeStats(type, [...data]);
+    return makeStats(type, data.filter(log => !log.jid.startsWith('recorder@recorder')));
 }
 
 function _speakerStatsAdded(state, { type, item }) {

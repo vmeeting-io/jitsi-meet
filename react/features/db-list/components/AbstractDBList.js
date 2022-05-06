@@ -12,7 +12,6 @@ import {
 } from '../../base/react';
 
 import styles from './styles';
-import s from './AbstractDBList.module.scss';
 
 /**
  * The type of the React {@code Component} props of {@link AbstractRecentList}
@@ -71,10 +70,10 @@ export default class AbstractDBList<P: Props, S: State> extends AbstractPageWith
 
         return (
             <Container
-                className = {s.meetingsListEmpty}
+                className = 'meetings-list-empty'
                 style = { styles.emptyListContainer }>
                 <Text
-                    className = {s.description}
+                    className = 'description'
                     style = { styles.emptyListText }>
                     { t('welcomepage.recentListEmpty') }
                 </Text>
@@ -89,10 +88,10 @@ export default class AbstractDBList<P: Props, S: State> extends AbstractPageWith
 
         return (
             <Container
-                className = {s.meetingsListEmpty}
+                className = 'meetings-list-empty'
                 style = { styles.emptyListContainer }>
                 <Text
-                    className = {s.description}
+                    className = 'description'
                     style = { styles.emptyListText }>
                     { t('welcomepage.dbListLoading') }
                 </Text>

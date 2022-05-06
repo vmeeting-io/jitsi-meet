@@ -10,14 +10,20 @@ import { isSupportedMobileBrowser } from '../../base/environment';
 import { translate } from '../../base/i18n';
 import { Platform } from '../../base/react';
 import { connect } from '../../base/redux';
-import { DialInSummary } from '../../invite';
 import { openWebApp } from '../actions';
 import { _TNS } from '../constants';
 import { generateDeepLinkingURL } from '../functions';
 import { renderPromotionalFooter } from '../renderPromotionalFooter';
-import s from './DeepLinkingMobilePage.module.scss';
 
 declare var interfaceConfig: Object;
+
+/**
+ * The namespace of the CSS styles of DeepLinkingMobilePage.
+ *
+ * @private
+ * @type {string}
+ */
+const _SNS = 'deep-linking-mobile';
 
 /**
  * The type of the React {@code Component} props of
@@ -87,7 +93,8 @@ class DeepLinkingMobilePage extends Component<Props> {
     render() {
         const { _downloadUrl, _room, t } = this.props;
         const { HIDE_DEEP_LINKING_LOGO, NATIVE_APP_NAME, SHOW_DEEP_LINKING_IMAGE } = interfaceConfig;
-        const downloadButtonClassName = `${s.button} ${s.primary}`;
+        const downloadButtonClassName
+            = `${_SNS}__button ${_SNS}__button_primary`;
 
 
         const onOpenLinkProperties = _downloadUrl
@@ -111,29 +118,29 @@ class DeepLinkingMobilePage extends Component<Props> {
             : '/images/appstore.png';
 
         return (
-            <Div100vh className = { s.wrapper }>
+            <Div100vh className = 'deep-linking-mobile-page'>
                 <Helmet>
                     <meta name='viewport' content='initial-scale=1, maximum-scale=1' />
                 </Helmet>
-                <div className = { s.deepLinkingMobile }>
-                    <div className = { s.header }>
+                <div className = 'deep-linking-mobile'>
+                    <div className = 'header'>
                         {
                             HIDE_DEEP_LINKING_LOGO
                                 ? null
                                 : <img
-                                    className = {s.logo}
+                                    className = 'logo'
                                     src = '/images/header-image.png' />
                         }
                     </div>
-                    <div className = { s.body }>
+                    <div className = 'body'>
                         {
                             SHOW_DEEP_LINKING_IMAGE
                                 ? <img
-                                    className = {s.image}
+                                    className = 'image'
                                     src = 'images/deep-linking-image.png' />
                                 : null
                         }
-                        <p className = {s.text}>
+                        <p className = 'text'>
                             { t(`${_TNS}.appNotInstalled`) }
                         </p>
                         <a
@@ -142,26 +149,26 @@ class DeepLinkingMobilePage extends Component<Props> {
                             onClick = { this._onDownloadApp }
                             target = '_top'>
                             <img
-                                className = { `${s.image} ${s.block}` }
+                                className = 'image block'
                                 src = {downloadImage} />
                         </a>
-                        <div className = { s.line }>
+                        <div className = 'line'>
                             <span>{ t('prejoin.or') }</span>
                         </div>
                         <a
                             { ...onOpenLinkProperties }
-                            className = { s.href }
+                            className = 'href'
                             href = { generateDeepLinkingURL() }
                             onClick = { this._onOpenApp }
                             target = '_top'>
-                            <button className = { `${s.button} ${s.primary} ${s.block} ${s.large}` }>
+                            <button className = 'button primary block large'>
                                 { t(`${_TNS}.joinInApp`, { app: NATIVE_APP_NAME }) }
                             </button>
                         </a>
                         {
                             isSupportedMobileBrowser()
                                 && <a
-                                    className = { s.link }
+                                    className = 'link'
                                     onClick = { this._onLaunchWeb }
                                     target = '_top'>
                                     { t(`${_TNS}.launchWebButton`) }

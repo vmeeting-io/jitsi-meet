@@ -1,7 +1,9 @@
 // @flow
 
 import Button from '@atlaskit/button/standard-button';
+import { Label } from '@atlaskit/field-base';
 import { FieldTextStateless } from '@atlaskit/field-text';
+import moment from 'moment';
 import React from 'react';
 
 import UIEvents from '../../../../../service/UI/UIEvents';
@@ -13,8 +15,20 @@ import { AbstractDialogTab } from '../../../base/dialog';
 import type { Props as AbstractDialogTabProps } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
 import { openLogoutDialog } from '../../actions';
+import { getLocalParticipant} from '../../../base/participants';
+import tokenLocalStorage from '../../../../api/tokenLocalStorage';
+import DatePicker from '../../../../components/DatePicker';
+import ko from '../../../../components/DatePicker/locale/ko_KR';
+
+import { DEFAULT_BIRTHDATE } from '../../../base/participants/constants';
 
 declare var APP: Object;
+declare var config: Object;
+
+const DATE_FORMAT = "YYYY-MM-DD";
+const locales = {
+    ko,
+};
 
 /**
  * The type of the React {@code Component} props of {@link ProfileTab}.
@@ -43,6 +57,21 @@ export type Props = {
     email: string,
 
     /**
+     * The birthdate of the local participant;
+     */
+    birthDate: string,
+
+    /**
+     * If the display name is read only.
+     */
+    readOnlyName: boolean,
+
+    /**
+     * Whether to hide the email input in the profile settings.
+     */
+    hideEmailInSettings?: boolean,
+
+    /**
      * Invoked to obtain translated strings.
      */
     t: Function
@@ -51,12 +80,13 @@ export type Props = {
 /**
  * React {@code Component} for modifying the local user's profile.
  *
- * @extends Component
+ * @augments Component
  */
 class ProfileTab extends AbstractDialogTab<Props> {
     static defaultProps = {
         displayName: '',
-        email: ''
+        email: '',
+        birthDate: DEFAULT_BIRTHDATE
     };
 
     /**
@@ -67,11 +97,16 @@ class ProfileTab extends AbstractDialogTab<Props> {
      */
     constructor(props: Props) {
         super(props);
+        this.state = {
+            birthdate: moment(props.birthDate, DATE_FORMAT), //should get the birthdate from JWT token
+            locale: locales[props.currentLanguage] || undefined,
+        };
 
         // Bind event handlers so they are only bound once for every instance.
         this._onAuthToggle = this._onAuthToggle.bind(this);
         this._onDisplayNameChange = this._onDisplayNameChange.bind(this);
         this._onEmailChange = this._onEmailChange.bind(this);
+        this._onBirthDateChange = this._onBirthDateChange.bind(this);
     }
 
     _onDisplayNameChange: (Object) => void;
@@ -100,6 +135,13 @@ class ProfileTab extends AbstractDialogTab<Props> {
         super._onChange({ email: value });
     }
 
+    _onBirthDateChange: (Object) => void;
+
+    _onBirthDateChange(newBirthDate, newBirthString) {
+        this.setState({ birthdate: newBirthDate });
+        super._onChange({ birthdate: newBirthString });
+    }
+
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -111,8 +153,17 @@ class ProfileTab extends AbstractDialogTab<Props> {
             authEnabled,
             displayName,
             email,
+            hideEmailInSettings,
+            readOnlyName,
             t
         } = this.props;
+
+        let showFootNote = false;
+        let userLoggedIn = tokenLocalStorage.getItem(APP.store.getState());
+
+        if(this.state.birthdate === DEFAULT_BIRTHDATE) {
+            showFootNote = true;
+        }
 
         return (
             <div>
@@ -122,6 +173,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
                             autoComplete = 'name'
                             compact = { true }
                             id = 'setDisplayName'
+                            isReadOnly = { readOnlyName }
                             label = { t('profile.setDisplayNameLabel') }
                             onChange = { this._onDisplayNameChange }
                             placeholder = { t('settings.name') }
@@ -129,7 +181,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
                             type = 'text'
                             value = { displayName } />
                     </div>
-                    <div className = 'profile-edit-field'>
+                    {!hideEmailInSettings && <div className = 'profile-edit-field'>
                         <FieldTextStateless
                             compact = { true }
                             id = 'setEmail'
@@ -139,8 +191,23 @@ class ProfileTab extends AbstractDialogTab<Props> {
                             shouldFitContainer = { true }
                             type = 'text'
                             value = { email } />
-                    </div>
+                    </div>}
                 </div>
+
+                {/* display the date picker field and corresponding footnote only if the user has logged in */}
+                { userLoggedIn && <div className = 'birthday-edit'>
+                    <div className = 'birthday-edit-field'>
+                        <Label label = "Birthday" />
+                        <DatePicker
+                            format = { DATE_FORMAT }
+                            defaultValue = { this.state.birthdate }
+                            id = 'birthdatepicker'
+                            locale = { this.state.locale }
+                            onChange = { this._onBirthDateChange }
+                        />
+                    </div>
+                </div> }
+                { userLoggedIn && showFootNote && this._renderFootNote() }
                 { authEnabled && this._renderAuth() }
             </div>
         );
@@ -169,6 +236,15 @@ class ProfileTab extends AbstractDialogTab<Props> {
         }
     }
 
+    _renderFootNote() {
+        const { t } = this.props;
+        return(
+            <span className='birthday-footnote'>
+                { t('profile.birthDayFootNote') } 
+            </span>
+        );
+    }
+
     /**
      * Returns a React Element for interacting with server-side authentication.
      *
@@ -181,22 +257,25 @@ class ProfileTab extends AbstractDialogTab<Props> {
             t
         } = this.props;
 
+        const loggedIn = tokenLocalStorage.getItem(APP.store.getState());
+        const localParticipant = getLocalParticipant(APP.store.getState());
+        const loggedInName = localParticipant.name;
         return (
             <div>
                 <h2 className = 'mock-atlaskit-label'>
                     { t('toolbar.authenticate') }
                 </h2>
-                { authLogin
+                { loggedIn
                     && <div className = 'auth-name'>
-                        { t('settings.loggedIn', { name: authLogin }) }
+                        { t('settings.loggedIn', { name: loggedInName }) }
                     </div> }
-                <Button
+                { !loggedIn && <Button
                     appearance = 'primary'
                     id = 'login_button'
                     onClick = { this._onAuthToggle }
                     type = 'button'>
-                    { authLogin ? t('toolbar.logout') : t('toolbar.login') }
-                </Button>
+                    { t('toolbar.login') }
+                </Button>}
             </div>
         );
     }

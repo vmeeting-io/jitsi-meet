@@ -70,8 +70,8 @@ class WaitForOwnerDialog extends PureComponent<Props> {
      */
     _onCancelWaitForOwner() {
         const { dispatch } = this.props;
-        dispatch(cancelWaitForOwner);
-        dispatch(disconnect());
+
+        dispatch(cancelWaitForOwner());
     }
 
     _onSubmit: () => void;
@@ -114,6 +114,8 @@ class WaitForOwnerDialog extends PureComponent<Props> {
             <Dialog
                 okKey = { 'dialog.login' }
                 cancelKey = { 'dialog.goHome' }
+                disableBlanketClickDismiss = { true }
+                hideCloseIconButton = { true }
                 onCancel = { this._onCancelWaitForOwner }
                 onSubmit = { this._onSubmit }
                 titleKey = { 'dialog.WaitingForHost' }

@@ -2,15 +2,14 @@
 
 import InlineDialog from '@atlaskit/inline-dialog';
 import axios from 'axios';
-import { once } from 'lodash';
+import { each, once } from 'lodash';
 import React from 'react';
 
 import { getAuthUrl } from '../../../../api/url';
-import { createToolbarEvent, sendAnalytics } from '../../../analytics';
+import { createBreakoutRoomsEvent, createToolbarEvent, sendAnalytics } from '../../../analytics';
 import { appNavigate } from '../../../app/actions';
 import { disconnect } from '../../../base/connection';
 import { translate } from '../../../base/i18n';
-import { IconOpenInNew, IconPresentation } from '../../../base/icons';
 import { browser } from '../../../base/lib-jitsi-meet';
 import {
     grantModerator,
@@ -19,6 +18,13 @@ import {
 import { connect } from '../../../base/redux';
 import { AbstractHangupButton, HangupMenuItem } from '../../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../../base/toolbox/components';
+import {
+    getBreakoutRooms,
+    getParticipantCountInBreakoutRooms,
+    isInBreakoutRoom,
+    moveToRoom,
+    removeBreakoutRoom
+} from '../../../breakout-rooms';
 
 import ParticipantItem from './ParticipantItem';
 
@@ -63,20 +69,25 @@ class HangupButton extends AbstractHangupButton<Props, *> {
         this._hangup = once(() => {
             sendAnalytics(createToolbarEvent('hangup'));
 
+            this.setState({ isOpen: false, busy: true });
             // FIXME: these should be unified.
             if (browser.isReactNative()) {
                 this.props.dispatch(appNavigate(undefined));
             } else {
                 this.props.dispatch(disconnect(true));
             }
-        });
+        }).bind(this);
         this._onCloseDialog = this._onCloseDialog.bind(this);
+        this._doHangup = this._doHangup.bind(this);
         this._onHangupAll = this._onHangupAll.bind(this);
         this._onHangupMe = this._onHangupMe.bind(this);
+        this._onLeaveBreakoutRoom = this._onLeaveBreakoutRoom.bind(this);
         this._onModeratorSelection = this._onModeratorSelection.bind(this);
         this._onSubmitModeratorSelection = this._onSubmitModeratorSelection.bind(this);
     }
     
+    _doHangup: () => void;
+
     /**
      * Helper function to perform the actual hangup action.
      *
@@ -85,6 +96,10 @@ class HangupButton extends AbstractHangupButton<Props, *> {
      * @returns {void}
      */
     _doHangup() {
+        if (this.state.busy) {
+            return;
+        }
+
         const { _showHangupMenu, _timer } = this.props;
         if (_showHangupMenu) {
             this.setState({ isOpen: true });
@@ -95,28 +110,53 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     }
 
     _renderHangupOptionsMenuContent() {
-        const { t } = this.props;
+        const { _isInBreakoutRoom, _participants, t } = this.props;
+        const menus = [];
+
+        if (_isInBreakoutRoom) {
+            menus.push(
+                <HangupMenuItem
+                    accessibilityLabel = { t('breakoutRooms.actions.leaveBreakoutRoom')}
+                    key = 'leave-breakout-room'
+                    className = 'menu-item-warning'
+                    onClick = { this._onLeaveBreakoutRoom }
+                    text = { t('breakoutRooms.actions.leaveBreakoutRoom') } />,
+            );
+            menus.push(
+                <HangupMenuItem
+                    accessibilityLabel = { t('toolbar.accessibilityLabel.hangup') }
+                    key = 'hangup'
+                    className = 'menu-item'
+                    onClick = { this._hangup }
+                    text = { t('toolbar.hangup') } />
+            )
+            return menus;
+        }
 
         if (this.state.showSelectModerator) {
             return this._renderModeratorSelectionContent();
         }
 
-        return [
+        menus.push(
             <HangupMenuItem
                 accessibilityLabel = { t('toolbar.accessibilityLabel.hangupAll') }
-                icon = { IconPresentation }
                 key = 'hangupAll'
                 className = 'menu-item-warning'
                 onClick = { this._onHangupAll }
-                text = { t('toolbar.hangupAll') } />,
-            <HangupMenuItem
+                text = { t('toolbar.hangupAll') } />
+        );
+
+        if (_participants.length > 0) {
+            menus.push(<HangupMenuItem
                 accessibilityLabel = { t('toolbar.accessibilityLabel.hangup') }
-                icon = { IconOpenInNew }
                 key = 'hangup'
                 className = 'menu-item'
                 onClick = { this._onHangupMe }
                 text = { t('toolbar.hangup') } />
-        ];
+            );
+        }
+
+        return menus;
     }
 
     _renderModeratorSelectionContent() {
@@ -127,7 +167,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
 
         const selected = this.state.selected || this.props._selected;
         return [
-            <ul className = 'participant-list'>
+            <ul className = 'participant-list' key = 'remotes'>
                 { _participants.map(id => (
                     <ParticipantItem
                         key = { id }
@@ -152,10 +192,12 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     _onHangupMe: () => void;
 
     _onHangupMe(e) {
-        const { _participants } = this.props;
+        const { _participants, _moderators } = this.props;
 
-        if (_participants.length === 1) {
-            this.props.dispatch(grantModerator(_participants[0]));
+        if (_participants.length === 1 || _moderators > 1) {
+            if (_moderators === 1) {
+                this.props.dispatch(grantModerator(_participants[0]));
+            }
             this._hangup();
         } else {
             this.setState({ showSelectModerator: true });
@@ -165,7 +207,17 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     _onHangupAll: () => void;
 
     async _onHangupAll() {
-        const { _apiBase, _roomInfo, _meetingId } = this.props;
+        const { _apiBase, _roomInfo, _rooms, _meetingId, dispatch } = this.props;
+
+        this.setState({ isOpen: false });
+
+        // destroy breakout rooms
+        each(_rooms, room => {
+            if (!room.isMainRoom) {
+                dispatch(removeBreakoutRoom(room.jid));
+            }
+        });
+
         if (_roomInfo) {
             const apiUrl = `${_apiBase}/conferences/${_roomInfo._id}`;
             axios.delete(apiUrl);
@@ -181,6 +233,14 @@ class HangupButton extends AbstractHangupButton<Props, *> {
                 console.error('_onHangupAll: failed!', err);
             }
         }
+    }
+
+    _onLeaveBreakoutRoom: () => void;
+
+    _onLeaveBreakoutRoom() {
+        sendAnalytics(createBreakoutRoomsEvent('leave'));
+        this.props.dispatch(moveToRoom());
+        this.setState({ isOpen: false });
     }
 
     _onModeratorSelection: () => void;
@@ -203,7 +263,11 @@ class HangupButton extends AbstractHangupButton<Props, *> {
      * @inheritdoc
      * @returns {ReactElement}
      */
-     render() {
+    render() {
+        if (!this.props.visible) {
+            return null;
+        }
+
         const { isOpen, showSelectModerator } = this.state;
         const children = (
             <ul
@@ -218,7 +282,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
                     content = { children }
                     isOpen = { isOpen }
                     onClose = { this._onCloseDialog }
-                    placement = { 'top' }>
+                    placement = { 'top-end' }>
                     { super.render() }
                 </InlineDialog>
             </div>
@@ -261,13 +325,18 @@ class HangupButton extends AbstractHangupButton<Props, *> {
     const { remoteParticipants } = state['features/filmstrip'];
     const { conference, roomInfo } = state['features/base/conference'];
     const isModerator = isLocalParticipantModerator(state);
+    const _isInBreakoutRoom = isInBreakoutRoom(state);
+    const participantCount = getParticipantCountInBreakoutRooms(state);
 
     return {
         _apiBase: getAuthUrl(state),
+        _isInBreakoutRoom,
         _meetingId: conference?.room?.meetingId,
         _participants: remoteParticipants,
+        _rooms: getBreakoutRooms(state),
         _selected: remoteParticipants[0],
-        _showHangupMenu: isModerator && remoteParticipants.length > 0,
+        _showHangupMenu: _isInBreakoutRoom || (isModerator && participantCount > 1),
+        _moderators: state['features/base/participants'].moderators.size,
         _roomInfo: roomInfo,
         _timer: state['features/toolbox'].timer,
     };

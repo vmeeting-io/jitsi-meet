@@ -125,18 +125,24 @@ export function getBaseUrl(w: Object = window) {
  * @param {number} fsize 
  * @returns {string}
  */
- export function processFileSize(fsize) 
- {
-     const oneMB = 1024 * 1024; // units in bytes
-     const oneKB = 1024;
-     if(fsize < oneMB) {
-         const sizeinKB = parseFloat(fsize / oneKB).toFixed(2);
-         return `${sizeinKB} KB`;
-     } else {
-         const sizeinMB = parseFloat(fsize / oneMB).toFixed(2);
-         return `${sizeinMB} MB`;
-     }
- }
+export function processFileSize(fsize) 
+{
+    const oneMB = 1024 * 1024; // units in bytes
+    const oneKB = 1024;
+    if(fsize < oneMB) {
+        const sizeinKB = parseFloat(fsize / oneKB).toFixed(2);
+        return `${sizeinKB} KB`;
+    } else {
+        const sizeinMB = parseFloat(fsize / oneMB).toFixed(2);
+        return `${sizeinMB} MB`;
+    }
+}
+
+export function truncateDateTimeStamp(filename) {
+    const x = filename.lastIndexOf('_')
+    const y = filename.lastIndexOf('.')
+    return filename.substring(0,x) + filename.substring(y,filename.length);
+}
 
 /**
  * Returns the namespace for all global variables, functions, etc that we need.
@@ -226,4 +232,20 @@ function parseShorthandColor(color) {
     b = parseInt(b, 16);
 
     return [ r, g, b ];
+}
+
+/**
+ * Sorts an object by a sort function, same functionality as array.sort().
+ *
+ * @param {Object} object - The data object.
+ * @param {Function} callback - The sort function.
+ * @returns {void}
+ */
+export function objectSort(object: Object, callback: Function) {
+    return Object.entries(object)
+        .sort(([ , a ], [ , b ]) => callback(a, b))
+        .reduce((row, [ key, value ]) => {
+            return { ...row,
+                [key]: value };
+        }, {});
 }

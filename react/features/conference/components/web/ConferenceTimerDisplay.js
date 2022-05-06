@@ -8,7 +8,7 @@ import React from 'react';
  * Returns web element to be rendered.
  *
  * @param {string} timerValue - String to display as time.
- * @param {Object} textStyle - Unused on web.
+ * @param {string} textStyle - timer text style.
  *
  * @returns {ReactElement}
  */

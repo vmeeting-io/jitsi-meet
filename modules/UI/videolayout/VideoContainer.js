@@ -98,14 +98,21 @@ function computeCameraVideoSize( // eslint-disable-line max-params
     }
 
     const aspectRatio = videoWidth / videoHeight;
+    const videoSpaceRatio = videoSpaceWidth / videoSpaceHeight;
 
     switch (videoLayoutFit) {
     case 'height':
         return [ videoSpaceHeight * aspectRatio, videoSpaceHeight ];
     case 'width':
         return [ videoSpaceWidth, videoSpaceWidth / aspectRatio ];
+    case 'nocrop':
+        return computeCameraVideoSize(
+            videoWidth,
+            videoHeight,
+            videoSpaceWidth,
+            videoSpaceHeight,
+            videoSpaceRatio < aspectRatio ? 'width' : 'height');
     case 'both': {
-        const videoSpaceRatio = videoSpaceWidth / videoSpaceHeight;
         const maxZoomCoefficient = interfaceConfig.MAXIMUM_ZOOMING_COEFFICIENT
             || Infinity;
 
@@ -238,11 +245,13 @@ export class VideoContainer extends LargeContainer {
          */
         this.$wrapperParent = this.$wrapper.parent();
         this.avatarHeight = $('#dominantSpeakerAvatarContainer').height();
-        this.$video[0].onplaying = function(event) {
-            if (typeof resizeContainer === 'function') {
-                resizeContainer(event);
-            }
-        };
+        if (this.$video.length) {
+            this.$video[0].onplaying = function(event) {
+                if (typeof resizeContainer === 'function') {
+                    resizeContainer(event);
+                }
+            };
+        }
 
         /**
          * A Set of functions to invoke when the video element resizes.
@@ -251,14 +260,16 @@ export class VideoContainer extends LargeContainer {
          */
         this._resizeListeners = new Set();
 
-        this.$video[0].onresize = this._onResize.bind(this);
-
-        if (isTestModeEnabled(APP.store.getState())) {
-            const cb = name => APP.store.dispatch(updateLastLargeVideoMediaEvent(name));
-
-            containerEvents.forEach(event => {
-                this.$video[0].addEventListener(event, cb.bind(this, event));
-            });
+        if (this.$video.length) {
+            this.$video[0].onresize = this._onResize.bind(this);
+    
+            if (isTestModeEnabled(APP.store.getState())) {
+                const cb = name => APP.store.dispatch(updateLastLargeVideoMediaEvent(name));
+    
+                containerEvents.forEach(event => {
+                    this.$video[0].addEventListener(event, cb.bind(this, event));
+                });
+            }
         }
     }
 
@@ -374,9 +385,11 @@ export class VideoContainer extends LargeContainer {
         if (this.avatarDisplayed) {
             const $avatarImage = $('#dominantSpeakerAvatarContainer');
 
-            $element.css(
-                'top',
-                $avatarImage.offset().top + $avatarImage.height() + 10);
+            if ($avatarImage.length) {
+                $element.css(
+                    'top',
+                    $avatarImage.offset().top + $avatarImage.height() + 10);
+            }
         } else {
             const height = $element.height();
             const parentHeight = $element.parent().height();
@@ -488,6 +501,10 @@ export class VideoContainer extends LargeContainer {
 
         stream.attach(this.$video[0]);
 
+        // Ensure large video gets play() called on it when a new stream is attached to it. This is necessary in the
+        // case of Safari as autoplay doesn't kick-in automatically on Safari 15 and newer versions.
+        browser.isWebKitBased() && this.$video[0].play();
+
         const flipX = stream.isLocal() && this.localFlipX && !this.isScreenSharing();
 
         this.$video.css({
@@ -554,7 +571,7 @@ export class VideoContainer extends LargeContainer {
                 resolve();
             }
 
-            this.$wrapperParent.css('visibility', 'visible').fadeTo(
+            this.$wrapperParent.stop(true).css('visibility', 'visible').fadeTo(
                 FADE_DURATION_MS,
                 1,
                 () => {

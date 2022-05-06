@@ -21,8 +21,10 @@ const DEFAULT_STATE = {
     disableCallIntegration: true,
     disableCrashReporting: undefined,
     disableP2P: undefined,
+    disableSelfView: false,
     displayName: undefined,
     email: undefined,
+    birthDate: undefined,
     localFlipX: true,
     micDeviceId: undefined,
     serverURL: 'https://vmeeting.io',
@@ -31,14 +33,19 @@ const DEFAULT_STATE = {
     soundsParticipantJoined: true,
     soundsParticipantLeft: true,
     soundsTalkWhileMuted: true,
+    soundsReactions: true,
     startAudioOnly: false,
     startWithAudioMuted: false,
     startWithVideoMuted: false,
+    aiAttentionAnalysisEnabled: false,
     userSelectedAudioOutputDeviceId: undefined,
     userSelectedCameraDeviceId: undefined,
     userSelectedMicDeviceId: undefined,
     userSelectedAudioOutputDeviceLabel: undefined,
     userSelectedCameraDeviceLabel: undefined,
+    userSelectedNotifications: {
+        'notify.chatMessages': true
+    },
     userSelectedMicDeviceLabel: undefined,
     userSelectedSkipPrejoin: undefined
 };
@@ -60,8 +67,13 @@ Object.keys(DEFAULT_STATE).forEach(key => {
 filterSubtree.audioOutputDeviceId = false;
 filterSubtree.cameraDeviceId = false;
 filterSubtree.micDeviceId = false;
+filterSubtree.soundsReactions = false;
+filterSubtree.soundsIncomingMessage = false;
+filterSubtree.soundsParticipantJoined = false;
+filterSubtree.soundsParticipantLeft = false;
+filterSubtree.aiAttentionAnalysisEnabled = false; // keep it true for persistent storage
 
-PersistenceRegistry.register(STORE_NAME, filterSubtree);
+PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
 
 ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
     switch (action.type) {

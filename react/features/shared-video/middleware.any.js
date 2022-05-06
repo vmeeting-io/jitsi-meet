@@ -80,7 +80,7 @@ MiddlewareRegistry.register(store => next => action => {
 
 /**
  * Set up state change listener to perform maintenance tasks when the conference
- * is left or failed, e.g. clear messages or close the chat modal if it's left
+ * is left or failed, e.g. Clear messages or close the chat modal if it's left
  * open.
  */
 StateListenerRegistry.register(
@@ -98,9 +98,13 @@ StateListenerRegistry.register(
                     if (isSharingStatus(status)) {
                         handleSharingVideoStatus(store, value, attributes, conference);
                     } else if (status === 'stop') {
+                        // dispatch(participantLeft(value, conference));
                         if (localParticipantId !== from) {
                             dispatch(resetSharedVideoStatus());
                         }
+
+                        // switch the order of dispatching participantLeft, we want to call participantLeft only after
+                        // shared video has been reset for all participants, not just the user who shared the video
                         dispatch(participantLeft(value, conference));
                     }
                 }

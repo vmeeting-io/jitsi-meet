@@ -12,11 +12,8 @@ import { type StyleType } from '../../../base/styles';
 import { MESSAGE_TYPE_ERROR, MESSAGE_TYPE_LOCAL } from '../../constants';
 import { replaceNonUnicodeEmojis } from '../../functions';
 import AbstractChatMessage, { type Props as AbstractProps } from '../AbstractChatMessage';
-import PrivateMessageButton from '../PrivateMessageButton';
-import { Icon, IconDocDOC, IconDocHTML, IconDocHWP, IconDocJPEG, IconDocMP3, IconDocMP4, IconDocPDF, IconDocXLS, IconDocZIP, IconDocGENERAL} from '../../../base/icons';
-import { getBaseUrl, getFileSize, processFileSize, validURL} from '../../../base/util';
-import { getServerURL } from '../../../base/settings';
 
+import PrivateMessageButton from './PrivateMessageButton';
 import styles from './styles';
 
 type Props = AbstractProps & {

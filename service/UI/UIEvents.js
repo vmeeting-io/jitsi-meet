@@ -6,6 +6,13 @@ export default {
      */
     EMAIL_CHANGED: 'UI.email_changed',
 
+    BECOME_MODERATOR: 'UI.become_moderator',
+
+    /**
+     * Notifies that local user changed birthDate.
+     */
+    BIRTHDATE_CHANGED: 'UI_birthdate_changed',
+
     /**
      * Notifies that "start muted" settings changed.
      */

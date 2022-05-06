@@ -11,6 +11,7 @@ import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
     CONFERENCE_LEFT,
+    CONFERENCE_LOCAL_SUBJECT_CHANGED,
     CONFERENCE_SUBJECT_CHANGED,
     CONFERENCE_TIMESTAMP_CHANGED,
     CONFERENCE_TIME_REMAINED,
@@ -24,7 +25,9 @@ import {
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
     SET_START_MUTED_POLICY,
-    DEVICE_ACCESS_DISABLED
+    START_RANDOM_SELECTION_COUNTDOWN,
+    START_TIMER,
+    SET_START_REACTIONS_MUTED
 } from './actionTypes';
 import { isRoomValid } from './functions';
 
@@ -63,6 +66,9 @@ ReducerRegistry.register(
         case CONFERENCE_TIME_REMAINED:
             return set(state, 'conferenceTimeRemained', action.timeRemained);
 
+        case CONFERENCE_LOCAL_SUBJECT_CHANGED:
+            return set(state, 'localSubject', action.localSubject);
+
         case CONFERENCE_TIMESTAMP_CHANGED:
             return set(state, 'conferenceTimestamp', action.conferenceTimestamp);
 
@@ -85,6 +91,9 @@ ReducerRegistry.register(
         case SET_FOLLOW_ME:
             return set(state, 'followMeEnabled', action.enabled);
 
+        case SET_START_REACTIONS_MUTED:
+            return set(state, 'startReactionsMuted', action.muted);
+
         case SET_LOCATION_URL:
             return set(state, 'room', undefined);
 
@@ -104,14 +113,19 @@ ReducerRegistry.register(
                 startVideoMutedPolicy: action.startVideoMutedPolicy
             };
         
-        case DEVICE_ACCESS_DISABLED:
-            return  {
-                ...state, 
-                roomInfo : { 
-                    ...state.roomInfo, 
-                    userDeviceAccessDisabled: action.userDeviceAccessDisabled },
-                userDeviceAccessDisabled: action.userDeviceAccessDisabled
-            };
+        case START_TIMER:
+            return {
+                ...state,
+                timerEndTime: action.endTime,
+                timerStarted: action.timerStarted
+            }
+        
+        case START_RANDOM_SELECTION_COUNTDOWN:
+            return {
+                ...state,
+                countdownRemained: action.countdownRemained,
+                startCountdown: action.startCountdown
+            }
 
         case SET_PUBLIC_SCOPE_ENABLED:
             return set(
@@ -400,13 +414,15 @@ function _setPassword(state, { conference, method, password }) {
              *
              * @type {string}
              */
-            password
+            password,
+            roomInfo: { ...state.roomInfo, password }
         });
 
     case conference.lock:
         return assign(state, {
             locked: password ? LOCKED_LOCALLY : undefined,
-            password
+            password,
+            roomInfo: { ...state.roomInfo, password }
         });
     }
 

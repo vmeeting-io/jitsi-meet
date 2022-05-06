@@ -3,6 +3,7 @@
 import _ from 'lodash';
 
 import { getName } from '../../app/functions';
+import { determineTranscriptionLanguage } from '../../transcribing/functions';
 import { JitsiTrackErrors } from '../lib-jitsi-meet';
 import {
     getLocalParticipant,
@@ -17,6 +18,8 @@ import { getBackendSafePath, getJitsiMeetGlobalNS, safeDecodeURIComponent } from
 import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
+    HAT_COMMAND,
+    BIRTHDATE_COMMAND,
     JITSI_CONFERENCE_URL_KEY
 } from './constants';
 import logger from './logger';
@@ -98,6 +101,8 @@ export function commonUserJoinedHandling(
             name: displayName,
             presence: user.getStatus(),
             role: user.getRole(),
+            birthDate: user.getbDate(),
+            hatOn: user.getHatOn(), // default flag value 'false' that denotes the participant has not put on the birthday hat
             isReplacing
         }));
     }
@@ -179,13 +184,15 @@ export function getConferenceName(stateful: Function | Object): string {
     const state = toState(stateful);
     const { callee } = state['features/base/jwt'];
     const { callDisplayName } = state['features/base/config'];
-    const { pendingSubjectChange, room, subject } = getConferenceState(state);
+    const { localSubject, room, subject } = getConferenceState(state);
 
-    return pendingSubjectChange
+    const name = localSubject
         || subject
         || callDisplayName
         || (callee && callee.name)
-        || safeStartCase(safeDecodeURIComponent(room));
+        || room;
+
+    return safeStartCase(safeDecodeURIComponent(name));
 }
 
 /**
@@ -211,7 +218,7 @@ export function getConferenceOptions(stateful: Function | Object) {
     const config = state['features/base/config'];
     const { locationURL } = state['features/base/connection'];
     const { tenant } = state['features/base/jwt'];
-    const { email, name: nick } = getLocalParticipant(state);
+    const { email, name: nick, presence } = getLocalParticipant(state);
     const options = { ...config };
 
     if (tenant) {
@@ -230,13 +237,18 @@ export function getConferenceOptions(stateful: Function | Object) {
         options.confID = `${locationURL.host}${getBackendSafePath(locationURL.pathname)}`;
     }
 
-    options.applicationName = getName();
+    if (presence) {
+        options.presenceStatus = presence;
+    }
 
-    // Disable analytics, if requessted.
+    options.applicationName = getName();
+    options.transcriptionLanguage = determineTranscriptionLanguage(options);
+
+    // Disable analytics, if requested.
     if (options.disableThirdPartyRequests) {
-        delete config.analytics.scriptURLs;
-        delete config.analytics.amplitudeAPPKey;
-        delete config.analytics.googleAnalyticsTrackingId;
+        delete config.analytics?.scriptURLs;
+        delete config.analytics?.amplitudeAPPKey;
+        delete config.analytics?.googleAnalyticsTrackingId;
         delete options.callStatsID;
         delete options.callStatsSecret;
     } else {
@@ -391,7 +403,7 @@ function _reportError(msg, err) {
 
 /**
  * Sends a representation of the local participant such as her avatar (URL),
- * e-mail address, and display name to (the remote participants of) a specific
+ * email address, and display name to (the remote participants of) a specific
  * conference.
  *
  * @param {Function|Object} stateful - The redux store, state, or
@@ -409,6 +421,8 @@ export function sendLocalParticipant(
     const {
         avatarURL,
         email,
+        birthDate,
+        hatOn,
         features,
         name
     } = getLocalParticipant(stateful);
@@ -418,6 +432,17 @@ export function sendLocalParticipant(
     });
     email && conference.sendCommand(EMAIL_COMMAND, {
         value: email
+    });
+
+    if (hatOn !== undefined) {
+        conference.sendCommand(HAT_COMMAND, {
+            value: hatOn
+        });
+    }
+
+    // code block for sending birthDate info about local participant
+    birthDate && conference.sendCommand(BIRTHDATE_COMMAND, {
+        value: birthDate
     });
 
     if (features && features['screen-sharing'] === 'true') {
@@ -441,4 +466,29 @@ function safeStartCase(s = '') {
     return _.words(`${s}`.replace(/['\u2019]/g, '')).reduce(
         (result, word, index) => result + (index ? ' ' : '') + _.upperFirst(word)
         , '');
+}
+
+
+/**
+ * Returns room info and base url of the ongoing conference.
+ * @param {Object} store global redux store   
+ * @returns JSON Object with room information
+ */
+export function getRoomInfo(store) {
+    return {
+        // retrieve JitsiConference object
+        conference: store.getState()['features/base/conference'],
+        room: store.getState()['features/base/conference'].roomInfo,
+
+        // update conference database information to set 
+        // 1. timerEndTime: End time of timerclock.
+        config:{
+            headers: { Authorization: `Bearer ${window._env_.VMEETING_API_TOKEN}`}
+        },
+        apiBaseUrl : `${store.getState()['features/base/connection'].locationURL.origin}${window._env_.VMEETING_API_BASE}`,
+    };
+}
+
+export function isStartCountDown(state) {
+    return state['features/base/conference'].startCountDown;
 }

@@ -2,8 +2,8 @@
 
 import 'jquery';
 import 'jquery-ui-bundle';
-import 'olm';
-import '@andxor/jquery-ui-touch-punch-fix';
+
+import '@matrix-org/olm';
 
 import 'focus-visible';
 import { polyfill } from 'seamless-scroll-polyfill';

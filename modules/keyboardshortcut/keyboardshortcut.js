@@ -1,6 +1,6 @@
 /* global APP */
 import { jitsiLocalStorage } from '@jitsi/js-utils';
-import Logger from 'jitsi-meet-logger';
+import Logger from '@jitsi/logger';
 
 import {
     ACTION_SHORTCUT_PRESSED as PRESSED,
@@ -64,12 +64,6 @@ const _focusedElementsSelector = `:focus:is(${_elementsBlacklist.join(',')})`;
 const KeyboardShortcut = {
 
     init() {
-        const { disableShortcut } = APP.store.getState()['features/base/config'];
-
-        if (disableShortcut) {
-            return;
-        }
-
         this._initGlobalShortcuts();
 
         window.onkeyup = e => {
@@ -124,7 +118,8 @@ const KeyboardShortcut = {
     getEnabled() {
         // Should be enabled if not explicitly set to false
         // eslint-disable-next-line no-unneeded-ternary
-        return jitsiLocalStorage.getItem(_enableShortcutsKey) === 'false' ? false : true;
+        const { disableShortcuts } = APP.store.getState()['features/base/config'];
+        return disableShortcuts || jitsiLocalStorage.getItem(_enableShortcutsKey) === 'false' ? false : true;
     },
 
     /**

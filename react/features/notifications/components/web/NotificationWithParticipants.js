@@ -60,6 +60,7 @@ export default function({
             { participants.map(p => (
                 <li
                     className = 'knocking-participant'
+                    data-testid = { p.id }
                     key = { p.id }>
                     <Avatar
                         displayName = { p.name }
@@ -78,19 +79,20 @@ export default function({
                         ) }
                     </div>
                     { <NotificationButton
+                        action = { onReject }
+                        className = 'borderLess'
+                        id = 'dismiss-button'
+                        participant = { p }
+                        testId = { `${testIdPrefix}.reject` }>
+                        { rejectButtonText }
+                    </NotificationButton>}
+                    { <NotificationButton
                         action = { onApprove }
                         className = 'primary'
                         participant = { p }
                         testId = { `${testIdPrefix}.allow` }>
                         { approveButtonText }
                     </NotificationButton> }
-                    { <NotificationButton
-                        action = { onReject }
-                        className = 'borderLess'
-                        participant = { p }
-                        testId = { `${testIdPrefix}.reject` }>
-                        { rejectButtonText }
-                    </NotificationButton>}
                 </li>
             )) }
         </ul>);

@@ -6,6 +6,7 @@ libs/
 .remote-sync.json
 .sync-config.cson
 .env
+env-config.js
 config/
 lang/countries-*.json
 
@@ -95,3 +96,5 @@ twa/*.apk
 twa/*.aab
 twa/assetlinks.json
 
+# CSS
+css/all.css

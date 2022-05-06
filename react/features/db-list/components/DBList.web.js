@@ -1,5 +1,6 @@
 // @flow
 
+import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 import React from 'react';
 import type { Dispatch } from 'redux';
 
@@ -12,10 +13,7 @@ import AbstractDBList from './AbstractDBList';
 
 import axios from 'axios';
 
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
-
-import s from './DBList.module.scss';
-
+const AUTH_API_BASE = window._env_.VMEETING_API_BASE;
 
 /**
  * The type of the React {@code Component} props of {@link RecentList}
@@ -145,7 +143,7 @@ class DBList extends AbstractDBList<Props, State> {
             <ModalTransition>
                 {modalOpen && (
                 <Modal
-                    className={s.lightModal}
+                    className='lightModal'
                     actions={[{ text: t('welcomepage.deleteElement'), onClick: this._proceedDelete }, { text: t('welcomepage.cancelDelete'), onClick: this._closeModal }]}
                     onClose={ this._closeModal }
                     heading={t('welcomepage.deleteModalHeading')}
@@ -157,7 +155,7 @@ class DBList extends AbstractDBList<Props, State> {
             <ModalTransition>
                 {failedModalOpen && (
                 <Modal
-                    className={s.lightModal}
+                    className='lightModal'
                     actions={[{ text: t('welcomepage.cancelDelete'), onClick: this._closeDeleteFailModal }]}
                     onClose={ this._closeDeleteFailModal }
                     heading={t('welcomepage.deleteFailHeading')}
@@ -197,7 +195,6 @@ class DBList extends AbstractDBList<Props, State> {
             baseURL
         } = this.props;
 
-        const AUTH_API_BASE = process.env.VMEETING_API_BASE;
         const apiBaseUrl = `${baseURL.origin}${AUTH_API_BASE}`;
         try {
             axios.post(`${apiBaseUrl}/conferences/get-conference-by-email`, {
@@ -220,7 +217,6 @@ class DBList extends AbstractDBList<Props, State> {
             baseURL
         } = this.props;
 
-        const AUTH_API_BASE = process.env.VMEETING_API_BASE;
         const apiBaseUrl = `${baseURL.origin}${AUTH_API_BASE}`;
         
         try {

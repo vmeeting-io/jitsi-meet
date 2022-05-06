@@ -1,7 +1,6 @@
 /* @flow */
 
 import { MEDIA_TYPE } from '../base/media/constants';
-import type { MediaType } from '../base/media/constants';
 import {
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED
@@ -9,37 +8,68 @@ import {
 import { ReducerRegistry } from '../base/redux';
 
 import {
+    _RESET_MODERATIONS,
     DISABLE_MODERATION,
     DISMISS_PENDING_PARTICIPANT,
     ENABLE_MODERATION,
     LOCAL_PARTICIPANT_APPROVED,
+    LOCAL_PARTICIPANT_REJECTED,
     PARTICIPANT_APPROVED,
-    PARTICIPANT_PENDING_AUDIO
+    PARTICIPANT_PENDING_AUDIO,
+    PARTICIPANT_REJECTED,
 } from './actionTypes';
-import { MEDIA_TYPE_TO_PENDING_STORE_KEY } from './constants';
 
 const initialState = {
-    audioModerationEnabled: false,
-    videoModerationEnabled: false,
-    audioWhitelist: {},
-    videoWhitelist: {},
-    pendingAudio: [],
-    pendingVideo: []
+    moderationEnabled: {
+        audio: false,
+        video: false,
+        chat: false,
+        poll: false,
+        name: false,
+        presenter: false,
+        breakout: false,
+    },
+    whitelist: {
+        audio: {},
+        video: {},
+        chat: {},
+        poll: {},
+        name: {},
+        presenter: {},
+        breakout: {},
+    },
+    pending: {
+        audio: [],
+        video: [],
+        chat: [],
+        poll: [],
+        name: [],
+        presenter: [],
+        breakout: [],
+    },
+    unmuteApproved: {
+        audio: false,
+        video: false,
+        chat: false,
+        poll: false,
+        name: false,
+        presenter: false,
+        breakout: false,
+    }
 };
 
 /**
  Updates a participant in the state for the specified media type.
  *
- * @param {MediaType} mediaType - The media type.
+ * @param {string} kind - The kind of moderation.
  * @param {Object} participant - Information about participant to be modified.
  * @param {Object} state - The current state.
  * @private
  * @returns {boolean} - Whether state instance was modified.
  */
-function _updatePendingParticipant(mediaType: MediaType, participant, state: Object = {}) {
+function _updatePendingParticipant(kind: string, participant, state: Object = {}) {
     let arrayItemChanged = false;
-    const storeKey = MEDIA_TYPE_TO_PENDING_STORE_KEY[mediaType];
-    const arr = state[storeKey];
+    const arr = state.pending[kind] || [];
     const newArr = arr.map(pending => {
         if (pending.id === participant.id) {
             arrayItemChanged = true;
@@ -54,7 +84,7 @@ function _updatePendingParticipant(mediaType: MediaType, participant, state: Obj
     });
 
     if (arrayItemChanged) {
-        state[storeKey] = newArr;
+        state.pending[kind] = newArr;
 
         return true;
     }
@@ -66,38 +96,45 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
 
     switch (action.type) {
     case DISABLE_MODERATION: {
-        const newState = action.mediaType === MEDIA_TYPE.AUDIO
-            ? {
-                audioModerationEnabled: false,
-                audioUnmuteApproved: undefined
-            } : {
-                videoModerationEnabled: false,
-                videoUnmuteApproved: undefined
-            };
-
         return {
             ...state,
-            ...newState,
-            audioWhitelist: {},
-            videoWhitelist: {},
-            pendingAudio: [],
-            pendingVideo: []
+            moderationEnabled: { ...state.moderationEnabled, [action.kind]: false },
+            unmuteApproved: { ...state.unmuteApproved, [action.kind]: false },
+            whitelist: { ...state.whitelist, [action.kind]: {} },
+            pending: { ...state.pending, [action.kind]: [] },
         };
     }
 
     case ENABLE_MODERATION: {
-        const newState = action.mediaType === MEDIA_TYPE.AUDIO
-            ? { audioModerationEnabled: true } : { videoModerationEnabled: true };
+        const moderationEnabled = { ...state.moderationEnabled, [action.kind]: true };
 
         return {
             ...state,
-            ...newState
+            moderationEnabled
         };
     }
 
     case LOCAL_PARTICIPANT_APPROVED: {
+        const unmuteApproved = { ...state.unmuteApproved, [action.kind]: true };
+
+        return {
+            ...state,
+            unmuteApproved
+        };
+    }
+
+    case LOCAL_PARTICIPANT_REJECTED: {
+        const unmuteApproved = { ...state.unmuteApproved, [action.kind]: false };
+
+        return {
+            ...state,
+            unmuteApproved
+        };
+    }
+
+    case LOCAL_PARTICIPANT_REJECTED: {
         const newState = action.mediaType === MEDIA_TYPE.AUDIO
-            ? { audioUnmuteApproved: true } : { videoUnmuteApproved: true };
+            ? { audioUnmuteApproved: false } : { videoUnmuteApproved: false };
 
         return {
             ...state,
@@ -109,14 +146,17 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
         const { participant } = action;
 
         // Add participant to pendingAudio array only if it's not already added
-        if (!state.pendingAudio.find(pending => pending.id === participant.id)) {
-            const updated = [ ...state.pendingAudio ];
+        if (!state.pending.audio.find(pending => pending.id === participant.id)) {
+            const pending = {
+                ...state.pending,
+                audio: [ ...state.pending.audio ]
+            };
 
-            updated.push(participant);
+            pending.audio.push(participant);
 
             return {
                 ...state,
-                pendingAudio: updated
+                pending
             };
         }
 
@@ -125,17 +165,17 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
 
     case PARTICIPANT_UPDATED: {
         const participant = action.participant;
-        const { audioModerationEnabled, videoModerationEnabled } = state;
+        const { moderationEnabled } = state;
         let hasStateChanged = false;
 
         // skips changing the reference of pendingAudio or pendingVideo,
         // if there is no change in the elements
-        if (audioModerationEnabled) {
-            hasStateChanged = _updatePendingParticipant(MEDIA_TYPE.AUDIO, participant, state);
+        if (moderationEnabled.audio) {
+            hasStateChanged = _updatePendingParticipant('audio', participant, state);
         }
 
-        if (videoModerationEnabled) {
-            hasStateChanged = _updatePendingParticipant(MEDIA_TYPE.VIDEO, participant, state);
+        if (moderationEnabled.video) {
+            hasStateChanged = hasStateChanged || _updatePendingParticipant('video', participant, state);
         }
 
         // If the state has changed we need to return a new object reference in order to trigger subscriber updates.
@@ -149,25 +189,25 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
     }
     case PARTICIPANT_LEFT: {
         const participant = action.participant;
-        const { audioModerationEnabled, videoModerationEnabled } = state;
+        const { moderationEnabled } = state;
         let hasStateChanged = false;
 
         // skips changing the reference of pendingAudio or pendingVideo,
         // if there is no change in the elements
-        if (audioModerationEnabled) {
-            const newPendingAudio = state.pendingAudio.filter(pending => pending.id !== participant.id);
+        if (moderationEnabled.audio) {
+            const newPendingAudio = state.pending.audio.filter(pending => pending.id !== participant.id);
 
-            if (state.pendingAudio.length !== newPendingAudio.length) {
-                state.pendingAudio = newPendingAudio;
+            if (state.pending.audio.length !== newPendingAudio.length) {
+                state.pending.audio = newPendingAudio;
                 hasStateChanged = true;
             }
         }
 
-        if (videoModerationEnabled) {
-            const newPendingVideo = state.pendingVideo.filter(pending => pending.id !== participant.id);
+        if (moderationEnabled.video) {
+            const newPendingVideo = state.pending.video.filter(pending => pending.id !== participant.id);
 
-            if (state.pendingVideo.length !== newPendingVideo.length) {
-                state.pendingVideo = newPendingVideo;
+            if (state.pending.video.length !== newPendingVideo.length) {
+                state.pending.video = newPendingVideo;
                 hasStateChanged = true;
             }
         }
@@ -183,26 +223,42 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
     }
 
     case DISMISS_PENDING_PARTICIPANT: {
-        const { participant, mediaType } = action;
+        const { id, kind } = action;
+        const newPending = state.pending[kind].filter(pending => pending.id !== id);
 
-        if (mediaType === MEDIA_TYPE.AUDIO) {
-            return {
-                ...state,
-                pendingAudio: state.pendingAudio.filter(pending => pending.id !== participant.id)
-            };
-        }
-
-        if (mediaType === MEDIA_TYPE.VIDEO) {
-            return {
-                ...state,
-                pendingVideo: state.pendingVideo.filter(pending => pending.id !== participant.id)
-            };
-        }
-
-        return state;
+        return {
+            ...state,
+            pending: { ...state.pending, [kind]: newPending } 
+        };
     }
 
     case PARTICIPANT_APPROVED: {
+        const { kind, id } = action;
+        const newWhitelist = { ...state.whitelist[kind], [id]: true };
+
+        return {
+            ...state,
+            whitelist: {
+                ...state.whitelist,
+                [kind]: newWhitelist
+            }
+        };
+    }
+
+    case PARTICIPANT_REJECTED: {
+        const { kind, id } = action;
+        const newWhitelist = { ...state.whitelist[kind], [id]: false };
+
+        return {
+            ...state,
+            whitelist: {
+                ...state.whitelist,
+                [kind]: newWhitelist
+            }
+        };
+    }
+
+    case PARTICIPANT_REJECTED: {
         const { mediaType, id } = action;
 
         if (mediaType === MEDIA_TYPE.AUDIO) {
@@ -210,7 +266,7 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
                 ...state,
                 audioWhitelist: {
                     ...state.audioWhitelist,
-                    [id]: true
+                    [id]: false
                 }
             };
         }
@@ -220,13 +276,16 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
                 ...state,
                 videoWhitelist: {
                     ...state.videoWhitelist,
-                    [id]: true
+                    [id]: false
                 }
             };
         }
 
         return state;
     }
+
+    case _RESET_MODERATIONS:
+        return initialState;
 
     }
 

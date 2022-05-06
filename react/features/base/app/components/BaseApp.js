@@ -102,6 +102,18 @@ export default class BaseApp extends Component<*, State> {
     }
 
     /**
+     * Logs for errors that were not caught.
+     *
+     * @param {Error} error - The error that was thrown.
+     * @param {Object} info - Info about the error(stack trace);.
+     *
+     * @returns {void}
+     */
+    componentDidCatch(error: Error, info: Object) {
+        logger.error(error, info);
+    }
+
+    /**
      * Delays this {@code BaseApp}'s startup until the {@code Storage}
      * implementation of {@code localStorage} initializes. While the
      * initialization is instantaneous on Web (with Web Storage API), it is
@@ -188,7 +200,7 @@ export default class BaseApp extends Component<*, State> {
         // - Thunk - allows us to dispatch async actions easily. For more info
         // @see https://github.com/gaearon/redux-thunk.
         const middlewares = [Thunk];
-        if (process.env.ENABLE_REDUX_LOG === '1') {
+        if (window._env_.ENABLE_REDUX_LOG === '1') {
             middlewares.push(reduxLogger);
         }
         let middleware = MiddlewareRegistry.applyMiddleware(...middlewares);
@@ -252,5 +264,5 @@ export default class BaseApp extends Component<*, State> {
      *
      * @returns {React$Element}
      */
-    _renderDialogContainer: () => React$Element<*>
+    _renderDialogContainer: () => React$Element<*>;
 }

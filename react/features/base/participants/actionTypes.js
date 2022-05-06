@@ -6,7 +6,9 @@
  * {
  *     type: DOMINANT_SPEAKER_CHANGED,
  *     participant: {
- *         id: string
+ *         conference: JitsiConference,
+ *         id: string,
+ *         previousSpeakers: Array<string>
  *     }
  * }
  */
@@ -31,44 +33,6 @@ export const GRANT_MODERATOR = 'GRANT_MODERATOR';
  * }
  */
 export const KICK_PARTICIPANT = 'KICK_PARTICIPANT';
-
-/**
- * Create an action for disabling chat for a participant from the conference.
- *
- * {
- *     type: DISABLE_CHAT_PARTICIPANT,
- *     id: string
- * }
- */
-export const DISABLE_CHAT_PARTICIPANT = 'DISABLE_CHAT_PARTICIPANT';
-
-/**
- * Create an action for disabling chat for all participants in the conference.
- *
- * {
- *     type: DISABLE_CHAT_FOR_ALL
- * }
- */
-export const DISABLE_CHAT_FOR_ALL = 'DISABLE_CHAT_FOR_ALL';
-
-/**
- * Create an action for enabling chat for a participant from the conference.
- *
- * {
- *     type: ENABLE_CHAT_PARTICIPANT,
- *     id: string
- * }
- */
-export const ENABLE_CHAT_PARTICIPANT = 'ENABLE_CHAT_PARTICIPANT';
-
-/**
- * Create an action for enabling chat for all participants in the conference.
- *
- * {
- *     type: ENABLE_CHAT_FOR_ALL
- * }
- */
-export const ENABLE_CHAT_FOR_ALL = 'ENABLE_CHAT_FOR_ALL';
 
 /**
  * Create an action for muting a remote participant.
@@ -141,16 +105,6 @@ export const PARTICIPANT_JOINED = 'PARTICIPANT_JOINED';
 export const PARTICIPANT_KICKED = 'PARTICIPANT_KICKED';
 
 /**
- * Action to signal that a participant has been granted moderator role in a conference
- *
- * {
- *     type: MODERATOR_ROLE_GRANTED,
- *     participant: Object
- * }
- */
-export const MODERATOR_ROLE_GRANTED = 'MODERATOR_ROLE_GRANTED';
-
-/**
  * Action to handle case when participant lefts.
  *
  * {
@@ -220,19 +174,43 @@ export const HIDDEN_PARTICIPANT_LEFT = 'HIDDEN_PARTICIPANT_LEFT';
 export const SET_LOADABLE_AVATAR_URL = 'SET_LOADABLE_AVATAR_URL';
 
 /**
- * The type of Redux action which notifies the app that the participants has changed.
- *
- * {
- *     type: SET_PARTICIPANTS,
- *     participants: array of Participant
- * }
- */
-export const SET_PARTICIPANTS = 'SET_PARTICIPANTS';
-
-/**
  * Raises hand for the local participant.
  * {
  *     type: LOCAL_PARTICIPANT_RAISE_HAND
  * }
  */
 export const LOCAL_PARTICIPANT_RAISE_HAND = 'LOCAL_PARTICIPANT_RAISE_HAND';
+
+/**
+ * Updates participant in raise hand queue.
+ * {
+ *     type: RAISE_HAND_UPDATED,
+ *     participant: {
+ *         id: string,
+ *         raiseHand: boolean
+ *     }
+ * }
+ */
+export const RAISE_HAND_UPDATED = 'RAISE_HAND_UPDATED';
+
+export const PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED = 'PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED';
+
+/**
+ * The type of the Redux action which pinned tiles.
+ *
+ * {
+ *     type: PIN_TILES,
+ *     participants: Array<string>
+ * }
+ */
+export const PIN_TILES = 'PIN_TILES';
+
+/**
+ * The type of the Redux action which received pinned tiles message
+ *
+ * {
+ *     type: SET_PINNED_TILES,
+ *     participants: Array<string>
+ * }
+ */
+export const SET_PINNED_TILES = 'SET_PINNED_TILES';

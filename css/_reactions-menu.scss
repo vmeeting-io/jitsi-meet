@@ -2,18 +2,12 @@
 
 .reactions-menu {
 	width: 280px;
-	background: #292929;
+	background: $menuBG;
 	box-shadow: 0px 3px 16px rgba(0, 0, 0, 0.6), 0px 0px 4px 1px rgba(0, 0, 0, 0.25);
 	border-radius: 3px;
 	padding: 16px;
 
 	&.overflow {
-		width: auto;
-		padding-bottom: max(env(safe-area-inset-bottom, 0), 16px);
-		background-color: #141414;
-		box-shadow: none;
-		border-radius: 0;
-		position: relative;
 
 		.toolbox-icon {
 			width: 48px;
@@ -48,6 +42,13 @@
 			display: flex;
 			align-items: center;
 			justify-content: center;
+			transition: font-size ease .1s;
+
+			@for $i from 1 through 12 {
+				&.increase-#{$i}{
+					font-size: calc(20px + #{$i}px);
+				}
+			}
 		}
 	}
 
@@ -108,13 +109,17 @@ $reactionCount: 20;
 .reaction-emoji {
 	position: absolute;
 	font-size: 24px;
-	line-height: 32px;
-	width: 32px;
-	height: 32px;
-	top: 0;
+	bottom: 16px;
 	left: 20px;
-	opacity: 0;
-	z-index: 1;
+	z-index: 300;
+
+	&.shift-right {
+		margin-left: $sidebarWidth;
+	}
+
+	> img {
+		width: 100px;
+	}
 
 	&.reaction-0 {
 		animation: flowToRight 5s forwards ease-in-out;

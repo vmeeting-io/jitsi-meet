@@ -34,7 +34,7 @@ type Props = {
  * Implements a React {@link Component} which depicts the establishment of a
  * call with a specific remote callee.
  *
- * @extends Component
+ * @augments Component
  */
 class CalleeInfo extends Component<Props> {
     /**
@@ -60,11 +60,11 @@ class CalleeInfo extends Component<Props> {
                     <Avatar
                         { ...this._style('ringing__avatar') }
                         participantId = { id } />
-                    <Container { ...this._style('ringing__status') }>
+                    {/* <Container { ...this._style('ringing__status') }>
                         <PresenceLabel
                             defaultPresence = { status }
                             { ...this._style('ringing__text') } />
-                    </Container>
+                    </Container> */}
                     <Container { ...this._style('ringing__name') }>
                         <Text
                             { ...this._style('ringing__text') }>

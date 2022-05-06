@@ -1,27 +1,35 @@
 // @flow
 
+import { isMobileBrowser } from '../base/environment/utils';
 import { getParticipantCountWithFake } from '../base/participants';
 import { StateListenerRegistry, equals } from '../base/redux';
 import { clientResized } from '../base/responsive-ui';
 import { setFilmstripVisible } from '../filmstrip/actions';
 import { getParticipantsPaneOpen } from '../participants-pane/functions';
+import { getTileViewMaxColumns } from '../settings';
 import { setOverflowDrawer } from '../toolbox/actions.web';
 import { getCurrentLayout, getTileViewGridDimensions, shouldDisplayTileView, LAYOUTS } from '../video-layout';
 
-import { setHorizontalViewDimensions, setTileViewDimensions, setVerticalViewDimensions } from './actions.web';
+import {
+    setHorizontalViewDimensions,
+    setTileViewDimensions,
+    setVerticalViewDimensions
+} from './actions';
 import {
     ASPECT_RATIO_BREAKPOINT,
     DISPLAY_DRAWER_THRESHOLD,
     SINGLE_COLUMN_BREAKPOINT,
     TWO_COLUMN_BREAKPOINT
 } from './constants';
+import './subscriber.any';
+
 
 /**
  * Listens for changes in the number of participants to calculate the dimensions of the tile view grid and the tiles.
  */
 StateListenerRegistry.register(
-    /* selector */ getParticipantCountWithFake,
-    /* listener */ (numberOfParticipants, store) => {
+    /* selector */ state => getParticipantCountWithFake(state),
+    /* listener */ (currentState, store) => {
         const state = store.getState();
 
         if (shouldDisplayTileView(state)) {
@@ -32,6 +40,8 @@ StateListenerRegistry.register(
                 store.dispatch(setTileViewDimensions(gridDimensions));
             }
         }
+    }, {
+        deepEquals: true
     });
 
 /**
@@ -52,6 +62,18 @@ StateListenerRegistry.register(
         case LAYOUTS.VERTICAL_FILMSTRIP_VIEW:
             store.dispatch(setVerticalViewDimensions());
             break;
+        }
+    });
+
+/**
+ * Listens for changes in the selected layout to calculate the dimensions of the tile view grid and horizontal view.
+ */
+StateListenerRegistry.register(
+    /* selector */ state => getTileViewMaxColumns(state),
+    /* listener */ (_, store) => {
+        const state = store.getState();
+        if (getCurrentLayout(state) === LAYOUTS.TILE_VIEW) {
+            store.dispatch(setTileViewDimensions(getTileViewGridDimensions(state)));
         }
     });
 
@@ -93,7 +115,9 @@ StateListenerRegistry.register(
 StateListenerRegistry.register(
     /* selector */ state => state['features/base/responsive-ui'].clientWidth < DISPLAY_DRAWER_THRESHOLD,
     /* listener */ (widthBelowThreshold, store) => {
-        store.dispatch(setOverflowDrawer(widthBelowThreshold));
+        if (isMobileBrowser()) {
+            store.dispatch(setOverflowDrawer(widthBelowThreshold));
+        }
     });
 
 /**

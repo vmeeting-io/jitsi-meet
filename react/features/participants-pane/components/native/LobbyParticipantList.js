@@ -7,7 +7,7 @@ import { Button, withTheme } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { admitMultiple } from '../../../lobby/actions.native';
-import { getLobbyState } from '../../../lobby/functions';
+import { getKnockingParticipants, getLobbyEnabled } from '../../../lobby/functions';
 
 import { LobbyParticipantItem } from './LobbyParticipantItem';
 import styles from './styles';
@@ -21,10 +21,9 @@ type Props = {
 };
 
 const LobbyParticipantList = ({ theme }: Props) => {
-    const {
-        lobbyEnabled,
-        knockingParticipants: participants
-    } = useSelector(getLobbyState);
+    const lobbyEnabled = useSelector(getLobbyEnabled);
+    const participants = useSelector(getKnockingParticipants);
+
     const dispatch = useDispatch();
     const admitAll = useCallback(() =>
         dispatch(admitMultiple(participants)),
@@ -37,7 +36,8 @@ const LobbyParticipantList = ({ theme }: Props) => {
     }
 
     return (
-        <View style = { styles.lobbyList }>
+        <View
+            style = { styles.lobbyListContainer } >
             <View style = { styles.lobbyListDetails } >
                 <Text style = { styles.lobbyListDescription }>
                     {t('participantsPane.headings.waitingLobby',

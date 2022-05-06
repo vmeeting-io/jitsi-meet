@@ -14,7 +14,7 @@ import { AbstractAudioMuteButton } from '../../base/toolbox/components';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
 import { isLocalTrackMuted } from '../../base/tracks';
 import { muteLocal } from '../../video-menu/actions';
-import { getLocalParticipant, isLocalParticipantModerator } from '../../base/participants';
+import { isAudioMuteButtonDisabled } from '../functions';
 
 declare var APP: Object;
 
@@ -42,7 +42,7 @@ type Props = AbstractButtonProps & {
 /**
  * Component that renders a toolbar button for toggling audio mute.
  *
- * @extends AbstractAudioMuteButton
+ * @augments AbstractAudioMuteButton
  */
 class AudioMuteButton extends AbstractAudioMuteButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.mute';
@@ -109,6 +109,11 @@ class AudioMuteButton extends AbstractAudioMuteButton<Props, *> {
      * @returns {void}
      */
     _onKeyboardShortcut() {
+        // Ignore keyboard shortcuts if the audio button is disabled.
+        if (this._isDisabled()) {
+            return;
+        }
+
         sendAnalytics(
             createShortcutEvent(
                 AUDIO_MUTE,
@@ -151,17 +156,13 @@ class AudioMuteButton extends AbstractAudioMuteButton<Props, *> {
  * }}
  */
 function _mapStateToProps(state): Object {
-    const _audioMuted = isLocalTrackMuted(state['features/base/tracks'], MEDIA_TYPE.AUDIO);    const localParticipant = getLocalParticipant(state);
-    let isLocalParticipantAModerator = isLocalParticipantModerator(state);
-    const _disabled = state['features/base/config'].startSilent;
+    const _audioMuted = isLocalTrackMuted(state['features/base/tracks'], MEDIA_TYPE.AUDIO);
+    const _disabled = state['features/base/config'].startSilent || isAudioMuteButtonDisabled(state);
     const enabledFlag = getFeatureFlag(state, AUDIO_MUTE_BUTTON_ENABLED, true);
-
-    let isUserDeviceAccessDisabled = state['features/base/conference'].userDeviceAccessDisabled;
-    isUserDeviceAccessDisabled = false ? undefined : isUserDeviceAccessDisabled;
 
     return {
         _audioMuted,
-        _disabled: !isLocalParticipantAModerator && (_disabled || isUserDeviceAccessDisabled),
+        _disabled,
         visible: enabledFlag
     };
 }

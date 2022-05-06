@@ -10,6 +10,11 @@ import { QuickActionButton } from './web/styled';
 type Props = {
 
     /**
+     * The translated ask unmute aria label.
+     */
+    ariaLabel?: boolean,
+
+    /**
      * The translated "ask unmute" text.
      */
     askUnmuteText: string,
@@ -24,6 +29,9 @@ type Props = {
      */
     muteAudio: Function,
 
+    /**
+     * Label for mute participant button.
+     */
     muteParticipantButtonText: string,
 
     /**
@@ -49,6 +57,7 @@ export default function ParticipantQuickAction({
     case QUICK_ACTION_BUTTON.MUTE: {
         return (
             <QuickActionButton
+                aria-label = { `mute-${participantID}` }
                 onClick = { muteAudio(participantID) }
                 primary = { true }>
                 { muteParticipantButtonText }
@@ -59,7 +68,7 @@ export default function ParticipantQuickAction({
         return (
             <AskToUnmuteButton
                 askUnmuteText = { askUnmuteText }
-                id = { participantID } />
+                participantID = { participantID } />
         );
     }
     default: {

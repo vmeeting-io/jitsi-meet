@@ -7,13 +7,15 @@ import type { Dispatch } from 'redux';
 
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
-import { getLocalParticipant, getParticipants, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
-import { Icon, IconPlane, IconSmile } from '../../../base/icons';
+import { getLocalParticipant, getParticipantCount, getRemoteParticipants } from '../../../base/participants';
+import { Icon, IconPlane, IconSmile, IconShareDoc } from '../../../base/icons';
 import { connect } from '../../../base/redux';
+import { Tooltip } from '../../../base/tooltip';
+import { areSmileysDisabled } from '../../functions';
 
 import { setPrivateMessageRecipient } from '../../actions';
 
-
+import FileUploadButton from './FileUploadButton';
 import SmileysPanel from './SmileysPanel';
 
 /**
@@ -40,7 +42,18 @@ type Props = {
     /**
      * Invoked to obtain translated strings.
      */
-    t: Function
+    t: Function,
+
+    /**
+     * Whether chat emoticons are disabled.
+     */
+    _areSmileysDisabled: boolean,
+
+    /**
+     * Whether or not file upload element is visible or not.
+     */
+    _fileUploadExists: Boolean,
+
 };
 
 /**
@@ -67,7 +80,7 @@ type State = {
 /**
  * Implements a React Component for drafting and submitting a chat message.
  *
- * @extends Component
+ * @augments Component
  */
 class ChatInput extends Component<Props, State> {
     _textArea: ?HTMLTextAreaElement;
@@ -121,9 +134,10 @@ class ChatInput extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
+        const { t, _areSmileysDisabled, _fileUploadExists } = this.props;
         const smileysPanelClassName = `${this.state.showSmileysPanel
             ? 'show-smileys' : 'hide-smileys'} smileys-panel`;
-        
+        const smileysPanelMarginClassName = `${_fileUploadExists ? 'set-smileys-margin': '' }`;
         const { _localParticipant } = this.props;
         // let localParticipant = getLocalParticipant(APP.store.getState());
         let prole = _localParticipant.role;
@@ -131,28 +145,36 @@ class ChatInput extends Component<Props, State> {
         return (
             <div className = { `chat-input-container${this.state.message.trim().length ? ' populated' : ''}` }>
                 <div id = 'chat-input' >
-                    <div className = 'smiley-input'>
-                        <div id = 'smileysarea'>
-                            <div id = 'smileys'>
-                                <div
-                                    aria-expanded = { this.state.showSmileysPanel }
-                                    aria-haspopup = 'smileysContainer'
-                                    aria-label = { this.props.t('chat.smileysPanel') }
-                                    className = 'smiley-button'
-                                    onClick = { this._onToggleSmileysPanel }
-                                    onKeyDown = { this._onEscHandler }
-                                    onKeyPress = { this._onToggleSmileysPanelKeyPress }
-                                    role = 'button'
-                                    tabIndex = { 0 }>
-                                    <Icon src = { IconSmile } />
+                    <FileUploadButton t = { t } visible = { true } />
+                    { _areSmileysDisabled ? null : (
+                        <div className = 'smiley-input'>
+                            <div id = 'smileysarea'>
+                                <div id = 'smileys'>
+                                    <Tooltip
+                                        content = { t('chat.smileys') }
+                                        position = 'top'>
+                                        <div
+                                            aria-expanded = { this.state.showSmileysPanel }
+                                            aria-haspopup = 'smileysContainer'
+                                            aria-label = { t('chat.smileysPanel') }
+                                            className = 'smiley-button'
+                                            onClick = { this._onToggleSmileysPanel }
+                                            onKeyDown = { this._onEscHandler }
+                                            onKeyPress = { this._onToggleSmileysPanelKeyPress }
+                                            role = 'button'
+                                            tabIndex = { 0 }>
+                                            <Icon src = { IconSmile } />
+                                        </div>
+                                    </Tooltip>
                                 </div>
                             </div>
+                            <div
+                                className = { `${smileysPanelClassName} ${smileysPanelMarginClassName}` } >
+                                <SmileysPanel
+                                    onSmileySelect = { this._onSmileySelect } />
+                            </div>
                         </div>
-                        <div className = { smileysPanelClassName }>
-                            <SmileysPanel
-                                onSmileySelect = { this._onSmileySelect } />
-                        </div>
-                    </div>
+                    )}
 
                     {/* this code will render a list containing chatroom participants */}
                     { this._renderChatRoomParticipantsList() }
@@ -166,21 +188,25 @@ class ChatInput extends Component<Props, State> {
                             onChange = { this._onMessageChange }
                             onHeightChange = { this.props.onResize }
                             onKeyDown = { this._onDetectSubmit }
-                            placeholder = { this.props.t('chat.messagebox') }
+                            placeholder = { t('chat.messagebox') }
                             ref = { this._setTextAreaRef }
                             tabIndex = { 0 }
                             value = { this.state.message } />
                     </div>
                     <div className = 'send-button-container'>
-                        <div
-                            aria-label = { this.props.t('chat.sendButton') }
-                            className = 'send-button'
-                            onClick = { this._onSubmitMessage }
-                            onKeyPress = { this._onSubmitMessageKeyPress }
-                            role = 'button'
-                            tabIndex = { this.state.message.trim() ? 0 : -1 } >
-                            <Icon src = { IconPlane } />
-                        </div>
+                        <Tooltip
+                            content = { t('chat.send') }
+                            position = 'top'>
+                            <div
+                                aria-label = { t('chat.sendButton') }
+                                className = 'send-button'
+                                onClick = { this._onSubmitMessage }
+                                onKeyPress = { this._onSubmitMessageKeyPress }
+                                role = 'button'
+                                tabIndex = { this.state.message.trim() ? 0 : -1 } >
+                                <Icon src = { IconPlane } />
+                            </div>
+                        </Tooltip>
                     </div>
                 </div>
             </div>
@@ -265,7 +291,7 @@ class ChatInput extends Component<Props, State> {
      * @returns {void}
      */
     _onMessageChange(event) {
-        console.error('_onMessageChange:', event.target.value);
+        // console.error('_onMessageChange:', event.target.value);
         event.preventDefault();
         event.persist();
         this.setState({ message: event.target.value });
@@ -297,7 +323,7 @@ class ChatInput extends Component<Props, State> {
 
         // filter participants dynamically with typed filter text (input message) from otherParticipants
         // we use trimEnd here, so that it still shows the list even when pressing space char
-        const filteredParticipants = [..._remoteParticipants].filter(participant => participant.name?.startsWith(filterText.trimEnd()));
+        const filteredParticipants = [..._remoteParticipants.values()].filter(participant => participant.name?.startsWith(filterText.trimEnd()));
 
         // in case filtered text matches that of a participant's name, it will replace the current message to private message type
         if(filterText !== '') {                
@@ -320,23 +346,23 @@ class ChatInput extends Component<Props, State> {
                     <DropdownMenu
                         boundariesElement = 'scrollParent'
                         defaultOpen >
-                            <DropdownItemGroup>
-                                { filteredParticipants.map((participant) => {
-                                    return (
-                                        <DropdownItem 
-                                            key = { participant.id } 
-                                            className = 'participant-item'
-                                            onClick = { 
-                                                () =>  { 
-                                                    this._sendPrivateMessage(participant);
-                                                    this.setState({ message: '', showParticipantsList: false });
-                                                }
-                                            }>
-                                            { participant.name }
-                                        </DropdownItem>
-                                    )
-                                }) }
-                            </DropdownItemGroup>
+                        <DropdownItemGroup>
+                            { filteredParticipants.map((participant) => {
+                                return (
+                                    <DropdownItem 
+                                        key = { participant.id } 
+                                        className = 'participant-item'
+                                        onClick = { 
+                                            () =>  { 
+                                                this._sendPrivateMessage(participant);
+                                                this.setState({ message: '', showParticipantsList: false });
+                                            }
+                                        }>
+                                        { participant.name }
+                                    </DropdownItem>
+                                )
+                            }) }
+                        </DropdownItemGroup>
                     </DropdownMenu>
                 </div>
             );
@@ -447,7 +473,15 @@ class ChatInput extends Component<Props, State> {
  * @returns {Props}
  */
 export function _mapStateToProps(state) {
+
+    const fileUploadElExists = document.getElementById('fileuploadarea');
+    let fileUploadExists = false;
+    if(fileUploadElExists !== null) {
+        fileUploadExists = true;
+    }
     return {
+        _areSmileysDisabled: areSmileysDisabled(state),
+        _fileUploadExists: Boolean(fileUploadExists),
         _participantCount: getParticipantCount(state),
         _remoteParticipants: getRemoteParticipants(state),
         _localParticipant: getLocalParticipant(state)

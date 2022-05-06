@@ -81,8 +81,18 @@ export const brandedDialog = {
     },
 
     closeWrapper: {
-        alignSelf: 'flex-end',
         padding: BoxModel.padding
+    },
+
+    dialogTitle: {
+        fontWeight: 'bold',
+        paddingLeft: BoxModel.padding * 2
+    },
+
+    headerWrapper: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between'
     },
 
     mainWrapper: {
@@ -211,6 +221,13 @@ ColorSchemeRegistry.register('BottomSheet', {
      */
     sheetHeader: {
         backgroundColor: BaseTheme.palette.ui02
+    },
+
+    /**
+     * Bottom sheet's background color with footer.
+     */
+    sheetFooter: {
+        backgroundColor: BaseTheme.palette.bottomSheet
     }
 });
 

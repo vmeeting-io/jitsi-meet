@@ -1,7 +1,7 @@
 // @flow
 import type { Dispatch } from 'redux';
 
-import { getLocalParticipant, getRemoteParticipants, pinParticipant } from '../base/participants';
+import { getLocalParticipant, getParticipantById, pinParticipant } from '../base/participants';
 
 import {
     SET_HORIZONTAL_VIEW_DIMENSIONS,
@@ -24,6 +24,8 @@ import {
     calculateThumbnailSizeForVerticalView
 } from './functions';
 
+export * from './actions.any';
+
 /**
  * Sets the dimensions of the tile view grid.
  *
@@ -36,7 +38,7 @@ export function setTileViewDimensions(dimensions: Object) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const state = getState();
         const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
-        const { disableResponsiveTiles } = state['features/base/config'];
+        const { disableResponsiveTiles, disableTileEnlargement } = state['features/base/config'];
         const {
             height,
             width
@@ -44,7 +46,8 @@ export function setTileViewDimensions(dimensions: Object) {
             ...dimensions,
             clientWidth,
             clientHeight,
-            disableResponsiveTiles
+            disableResponsiveTiles,
+            disableTileEnlargement
         });
         const { columns, rows } = dimensions;
         const thumbnailsTotalHeight = rows * (TILE_VERTICAL_MARGIN + height);
@@ -85,7 +88,8 @@ export function setVerticalViewDimensions() {
                 remoteVideosContainer: {
                     width: thumbnails?.local?.width
                         + TILE_HORIZONTAL_MARGIN + STAGE_VIEW_THUMBNAIL_HORIZONTAL_BORDER + SCROLL_SIZE,
-                    height: clientHeight - thumbnails?.local?.height - VERTICAL_FILMSTRIP_VERTICAL_MARGIN
+                    height: clientHeight - (thumbnails?.local?.height)
+                        - VERTICAL_FILMSTRIP_VERTICAL_MARGIN
                 }
             }
 
@@ -109,7 +113,7 @@ export function setHorizontalViewDimensions() {
             dimensions: {
                 ...thumbnails,
                 remoteVideosContainer: {
-                    width: clientWidth - thumbnails?.local?.width - HORIZONTAL_FILMSTRIP_MARGIN,
+                    width: clientWidth - (thumbnails?.local?.width) - HORIZONTAL_FILMSTRIP_MARGIN,
                     height: thumbnails?.local?.height
                         + TILE_VERTICAL_MARGIN + STAGE_VIEW_THUMBNAIL_VERTICAL_BORDER + SCROLL_SIZE
                 }
@@ -127,9 +131,12 @@ export function setHorizontalViewDimensions() {
 export function clickOnVideo(n: number) {
     return (dispatch: Function, getState: Function) => {
         const state = getState();
-        const participants = [ getLocalParticipant(state), ...getRemoteParticipants(state).values() ];
-        const nThParticipant = participants[n];
-        const { id, pinned } = nThParticipant;
+        const { id: localId } = getLocalParticipant(state);
+
+        // Use the list that correctly represents the current order of the participants as visible in the UI.
+        const { remoteParticipants } = state['features/filmstrip'];
+        const participants = [ localId, ...remoteParticipants ];
+        const { id, pinned } = getParticipantById(state, participants[n]);
 
         dispatch(pinParticipant(pinned ? null : id));
     };
@@ -153,5 +160,3 @@ export function setVolume(participantId: string, volume: number) {
         volume
     };
 }
-
-export * from './actions.native';

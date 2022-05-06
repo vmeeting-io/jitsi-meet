@@ -3,15 +3,19 @@
 
 const UI = {};
 
+import Logger from '@jitsi/logger';
 import EventEmitter from 'events';
-import Logger from 'jitsi-meet-logger';
 
 import { isMobileBrowser } from '../../react/features/base/environment/utils';
 import { setColorAlpha } from '../../react/features/base/util';
 import { setDocumentUrl } from '../../react/features/etherpad';
 import { setFilmstripVisible } from '../../react/features/filmstrip';
 import { joinLeaveNotificationsDisabled } from '../../react/features/notifications/functions.any';
-import { setNotificationsEnabled } from '../../react/features/notifications';
+import {
+    setNotificationsEnabled,
+    showNotification,
+    NOTIFICATION_TIMEOUT_TYPE
+} from '../../react/features/notifications';
 import {
     dockToolbox,
     setToolboxEnabled,
@@ -41,6 +45,13 @@ const UIListeners = new Map([
     ], [
         UIEvents.TOGGLE_FILMSTRIP,
         () => UI.toggleFilmstrip()
+    ], [
+        UIEvents.BECOME_MODERATOR,
+        () => {
+            if(etherpadManager && etherpadManager.isOpen){
+                etherpadManager.reloadForModerator();
+            }
+        }
     ]
 ]);
 
@@ -216,12 +227,10 @@ UI.updateUserStatus = (user, status) => {
 
     const displayName = user.getDisplayName();
 
-    messageHandler.participantNotification(
-        displayName,
-        '',
-        'connected',
-        'dialOut.statusMessage',
-        { status: UIUtil.escapeHtml(status) });
+    APP.store.dispatch(showNotification({
+        titleKey: `${displayName} connected`,
+        descriptionKey: 'dialOut.statusMessage'
+    }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
 };
 
 /**
@@ -334,30 +343,6 @@ UI.notifyMaxUsersLimitReached = function() {
     });
 };
 
-/**
- * Notify user that he was automatically muted when joned the conference.
- */
-UI.notifyInitiallyMuted = function() {
-    messageHandler.participantNotification(
-        null,
-        'notify.mutedTitle',
-        'connected',
-        'notify.muted',
-        null);
-};
-
-/**
- * Notify user that he was automatically muted when joned the conference.
- */
-UI.notifyInitiallyVideoMuted = function() {
-    messageHandler.participantNotification(
-        null,
-        'notify.videoMutedTitle',
-        'connected',
-        'notify.videoMuted',
-        null);
-};
-
 UI.handleLastNEndpoints = function(leavingIds, enteringIds) {
     VideoLayout.onLastNEndpointsChanged(leavingIds, enteringIds);
 };
@@ -374,15 +359,6 @@ UI.notifyTokenAuthFailed = function() {
         descriptionKey: 'dialog.tokenAuthFailed',
         titleKey: 'dialog.tokenAuthFailedTitle'
     });
-};
-
-UI.notifyFocusDisconnected = function(focus, retrySec) {
-    messageHandler.participantNotification(
-        null, 'notify.focus',
-        'disconnected', 'notify.focusFail',
-        { component: focus,
-            ms: retrySec }
-    );
 };
 
 /**

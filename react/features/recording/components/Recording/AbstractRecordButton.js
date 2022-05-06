@@ -13,6 +13,7 @@ import {
 } from '../../../base/participants';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
 import { isRecording, isStreaming } from '../../functions';
+import { isInBreakoutRoom } from '../../../breakout-rooms';
 import { maybeShowPremiumFeatureDialog } from '../../../jaas/actions';
 import { FEATURES } from '../../../jaas/constants';
 
@@ -77,7 +78,13 @@ export default class AbstractRecordButton<P: Props> extends AbstractButton<P, *>
      * @returns {void}
      */
     async _handleClick() {
-        const { _isRecordingRunning, dispatch } = this.props;
+        const { _isRecordingRunning, dispatch, handleClick } = this.props;
+
+        if (handleClick) {
+            handleClick();
+
+            return;
+        }
 
         sendAnalytics(createToolbarEvent(
             'recording.button',
@@ -153,6 +160,9 @@ export function _mapStateToProps(state: Object, ownProps: Props): Object {
         const isLogined = record_user? true : false;
         const { features = {} } = getLocalParticipant(state);
 
+        //console.log(`User: ${record_user}`);
+        //console.log(`Logined?: ${isLogined}`);
+
         visible = isModerator && isLogined && fileRecordingsEnabled;
 
         if (enableFeaturesBasedOnToken) {
@@ -170,6 +180,12 @@ export function _mapStateToProps(state: Object, ownProps: Props): Object {
     if (isStreaming(state)) {
         _disabled = true;
         _tooltip = 'dialog.recordingDisabledBecauseOfActiveLiveStreamingTooltip';
+    }
+
+    // disable the button if we are in a breakout room.
+    if (isInBreakoutRoom(state)) {
+        _disabled = true;
+        visible = false;
     }
 
     return {

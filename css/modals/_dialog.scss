@@ -126,9 +126,6 @@
         margin-bottom: 8px;
     }
 }
-.modal-dialog-footer {
-    font-size: $modalButtonFontSize;
-}
 
 /**
  * Styling inline dialog errors.
@@ -145,5 +142,51 @@
     &-button {
         display: block;
         margin: 16px auto 0 auto;
+    }
+}
+
+.notice-dialog {
+    padding: 0;
+    min-height: 30vh;
+
+    .modal-dialog-form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .notice-dialog-container {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+    }
+
+    .notice-dialog-wrapper {
+        background-color: white;
+        height: fit-content;
+        width: 400px;
+    }
+
+    .notice-dialog-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-grow: 1;
+        padding:  0 1rem;
+        padding: 0;
+        background: white;
+        width: 400px;
+
+        img {
+            width: 100%;
+            object-fit: contain;
+        }
+    }
+
+    .notice-dialog-footer {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        font-size: 14px;
     }
 }

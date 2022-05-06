@@ -31,12 +31,14 @@ export function deleteRecentListEntry(entryId: Object) {
  * @returns {{
  *     type: _STORE_CURRENT_CONFERENCE,
  *     locationURL: Object
+ *     siteName: string
  * }}
  */
-export function _storeCurrentConference(locationURL: Object) {
+export function _storeCurrentConference(locationURL: Object, siteName: string) {
     return {
         type: _STORE_CURRENT_CONFERENCE,
-        locationURL
+        locationURL,
+        siteName
     };
 }
 

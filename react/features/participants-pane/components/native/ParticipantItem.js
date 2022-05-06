@@ -15,14 +15,19 @@ import styles from './styles';
 type Props = {
 
     /**
-     * Media state for audio
+     * Media state for audio.
      */
-    audioMediaState: MediaState,
+    audioMediaState?: MediaState,
 
     /**
-     * React children
+     * React children.
      */
     children?: Node,
+
+    /**
+     * Whether or not to disable the moderator indicator.
+     */
+    disableModeratorIndicator?: boolean,
 
     /**
      * The name of the participant. Used for showing lobby names.
@@ -40,9 +45,14 @@ type Props = {
     isKnockingParticipant: boolean,
 
     /**
+     * Whether or not the user is a moderator.
+     */
+    isModerator?: boolean,
+
+    /**
      * True if the participant is local.
      */
-    local: boolean,
+    local?: boolean,
 
     /**
      * Callback to be invoked on pressing the participant item.
@@ -57,12 +67,12 @@ type Props = {
     /**
      * True if the participant have raised hand.
      */
-    raisedHand: boolean,
+    raisedHand?: boolean,
 
     /**
-     * Media state for video
+     * Media state for video.
      */
-    videoMediaState: MediaState
+    videoMediaState?: MediaState
 }
 
 /**
@@ -85,8 +95,9 @@ function shortName(text, max){
 function ParticipantItem({
     children,
     displayName,
-    isModerator,
+    disableModeratorIndicator,
     isKnockingParticipant,
+    isModerator,
     local,
     onPress,
     participantID,
@@ -105,28 +116,30 @@ function ParticipantItem({
                 style = { styles.participantContent }>
                 <Avatar
                     className = 'participant-avatar'
+                    displayName = { displayName }
                     participantId = { participantID }
                     size = { 32 } />
-                <Text
-                    numberOfLines = { 2 }
-                    style = { styles.participantName }>
-                    { local ? `${shortDisplayName} (${t('me')})` : shortDisplayName }
-                    { isModerator &&<Text 
-                        style = { styles.participantIsModerator }>
-                        {`\nModerator`}
-                    </Text> }
-                </Text>
-                {/* <Text
-                    numberOfLines = { 1 }
-                    style = { styles.participantIsModerator }>
-                    { isModerator ? "(Moderator)" : "" }
-                </Text> */}
+                <View
+                    style = { [
+                        styles.participantDetailsContainer,
+                        raisedHand && styles.participantDetailsContainerRaisedHand
+                    ] }>
+                    <View style = { styles.participantNameContainer }>
+                        <Text
+                            numberOfLines = { 1 }
+                            style = { styles.participantName }>
+                            { displayName }
+                            {local && ` (${t('chat.you')})` }
+                        </Text>
+                    </View>
+                    {isModerator && !disableModeratorIndicator
+                        && <Text style = { styles.moderatorLabel }>{t('videothumbnail.moderator')}</Text>
+                    }
+                </View>
                 {
                     !isKnockingParticipant
                     && <>
-                        {
-                            raisedHand && <RaisedHandIndicator />
-                        }
+                        {raisedHand && <RaisedHandIndicator />}
                         <View style = { styles.participantStatesContainer }>
                             <View style = { styles.participantStateVideo }>{VideoStateIcons[videoMediaState]}</View>
                             <View>{AudioStateIcons[audioMediaState]}</View>

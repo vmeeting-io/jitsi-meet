@@ -1,12 +1,12 @@
 // @flow
 
 import _ from 'lodash';
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import VideoLayout from '../../../../../modules/UI/videolayout/VideoLayout';
-import AudioModerationNotifications from '../../../av-moderation/components/AudioModerationNotifications';
 import { getConferenceNameForTitle } from '../../../base/conference';
 import { connect, disconnect } from '../../../base/connection';
+import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { connect as reactReduxConnect } from '../../../base/redux';
 import { setColorAlpha } from '../../../base/util';
@@ -15,13 +15,18 @@ import { Filmstrip } from '../../../filmstrip';
 import { CalleeInfoContainer } from '../../../invite';
 import { LargeVideo } from '../../../large-video';
 import { KnockingParticipantList, LobbyScreen } from '../../../lobby';
+import { getIsLobbyVisible } from '../../../lobby/functions';
 import { ParticipantsPane } from '../../../participants-pane/components/web';
 import { getParticipantsPaneOpen } from '../../../participants-pane/functions';
 import { Prejoin, isPrejoinPageVisible } from '../../../prejoin';
+import { ReactionEmoji } from '../../../reactions/components/web';
+import { type ReactionEmojiProps } from '../../../reactions/constants';
+import { getReactionsQueue } from '../../../reactions/functions.any';
+import { toggleToolboxVisible } from '../../../toolbox/actions.any';
 import { fullScreenChanged, showToolbox } from '../../../toolbox/actions.web';
-import { Toolbox } from '../../../toolbox/components/web';
+import { JitsiPortal, Toolbox } from '../../../toolbox/components/web';
 import { LAYOUTS, getCurrentLayout } from '../../../video-layout';
-import { maybeShowSuboptimalExperienceNotification } from '../../functions';
+import { maybeShowSuboptimalExperienceNotification, reduceRandomSelectionCountdown } from '../../functions';
 import {
     AbstractConference,
     abstractMapStateToProps
@@ -66,14 +71,9 @@ const LAYOUT_CLASSNAMES = {
 type Props = AbstractProps & {
 
     /**
-     * The alpha(opacity) of the background
+     * The alpha(opacity) of the background.
      */
     _backgroundAlpha: number,
-
-    /**
-     * Returns true if the 'lobby screen' is visible.
-     */
-    _isLobbyScreenVisible: boolean,
 
     /**
      * If participants pane is visible or not.
@@ -87,14 +87,24 @@ type Props = AbstractProps & {
     _layoutClassName: string,
 
     /**
-     * The config specified interval for triggering mouseMoved iframe api events
+     * The config specified interval for triggering mouseMoved iframe api events.
      */
     _mouseMoveCallbackInterval: number,
+
+    /**
+     *Whether or not the notifications should be displayed in the overflow drawer.
+     */
+    _overflowDrawer: boolean,
 
     /**
      * Name for this conference room.
      */
     _roomName: string,
+
+    /**
+     * If lobby page is visible or not.
+     */
+    _showLobby: boolean,
 
     /**
      * If prejoin page is visible or not.
@@ -114,9 +124,11 @@ class Conference extends AbstractConference<Props, *> {
     _onMouseLeave: Function;
     _onMouseMove: Function;
     _onShowToolbar: Function;
+    _onVidespaceTouchStart: Function;
     _originalOnMouseMove: Function;
     _originalOnShowToolbar: Function;
     _setBackground: Function;
+    _renderRandomSelectionCountdown: Function;
 
     /**
      * Initializes a new Conference instance.
@@ -152,7 +164,9 @@ class Conference extends AbstractConference<Props, *> {
 
         // Bind event handler so it is only bound once for every instance.
         this._onFullScreenChange = this._onFullScreenChange.bind(this);
+        this._onVideospaceTouchStart = this._onVideospaceTouchStart.bind(this);
         this._setBackground = this._setBackground.bind(this);
+        this._renderRandomSelectionCountdown = this._renderRandomSelectionCountdown.bind(this);
     }
 
     /**
@@ -207,9 +221,13 @@ class Conference extends AbstractConference<Props, *> {
      */
     render() {
         const {
-            _isLobbyScreenVisible,
+            _isChatOpen,
             _isParticipantsPaneVisible,
             _layoutClassName,
+            _reactionsQueue,
+            _notificationsVisible,
+            _overflowDrawer,
+            _showLobby,
             _showPrejoin
         } = this.props;
 
@@ -222,33 +240,59 @@ class Conference extends AbstractConference<Props, *> {
                 <div
                     className = { _layoutClassName }
                     id = 'videoconference_page'
-                    onMouseMove = { this._onShowToolbar }
+                    onMouseMove = { isMobileBrowser() ? undefined : this._onShowToolbar }
                     ref = { this._setBackground }>
                     <ConferenceInfo />
 
                     <Notice />
-                    <div id = 'videospace'>
+                    <div
+                        id = 'videospace'
+                        onTouchStart = { this._onVideospaceTouchStart }>
                         <LargeVideo />
                         {!_isParticipantsPaneVisible
-                         && <div id = 'notification-participant-list'>
-                             <KnockingParticipantList />
-                             <AudioModerationNotifications />
-                         </div>}
+                        && <div id = 'notification-participant-list' className = {_isChatOpen ? 'shift-right' : ''}>
+                        <KnockingParticipantList />
+                        </div>}
                         <Filmstrip />
+                        { this._renderRandomSelectionCountdown() }
                     </div>
 
-                    { _showPrejoin || _isLobbyScreenVisible || <Toolbox /> }
+                    { _showPrejoin || _showLobby || <Toolbox showDominantSpeakerName = { true } /> }
                     <Chat />
 
-                    { this.renderNotificationsContainer() }
+                    {_notificationsVisible && (_overflowDrawer
+                        ? <JitsiPortal className = 'notification-portal'>
+                            {this.renderNotificationsContainer({ portal: true })}
+                        </JitsiPortal>
+                        : this.renderNotificationsContainer())
+                    }
 
                     <CalleeInfoContainer />
 
                     { _showPrejoin && <Prejoin />}
+                    { _showLobby && <LobbyScreen />}
+                    { _reactionsQueue.map(({ reaction, uid }, index) => (<ReactionEmoji
+                        index = { index }
+                        key = { uid }
+                        reaction = { reaction }
+                        uid = { uid } />))}
+
                 </div>
                 <ParticipantsPane />
             </div>
         );
+    }
+
+    _renderRandomSelectionCountdown() {
+        if(this.props._startCountdown === true) {
+            return(
+            <div className = 'videospace_countdown' id = 'videospace_countdown'>
+                { reduceRandomSelectionCountdown(this.props._startCountdownFrom) }
+            </div>
+            );
+        } else {
+            return <></>;
+        }
     }
 
     /**
@@ -278,6 +322,16 @@ class Conference extends AbstractConference<Props, *> {
                 element.parentElement.style.background = alphaParentColor;
             }
         }
+    }
+
+    /**
+     * Handler used for touch start on Video container.
+     *
+     * @private
+     * @returns {void}
+     */
+    _onVideospaceTouchStart() {
+        this.props.dispatch(toggleToolboxVisible());
     }
 
     /**
@@ -368,15 +422,29 @@ class Conference extends AbstractConference<Props, *> {
  */
 function _mapStateToProps(state) {
     const { backgroundAlpha, mouseMoveCallbackInterval } = state['features/base/config'];
+    const { overflowDrawer } = state['features/toolbox'];
+
+    // variable that identifies whether or not random selection has been initiated or not
+    const startCountdown = state['features/base/conference'].startCountdown;
+
+    // variable that identifies the countdown before random selection is finalized
+    const startCountdownFrom = state['features/base/conference'].countdownRemained;
+
+    const { isOpen: _isChatOpen } = state['features/chat'];
 
     return {
         ...abstractMapStateToProps(state),
         _backgroundAlpha: backgroundAlpha,
-        _isLobbyScreenVisible: state['features/base/dialog']?.component === LobbyScreen,
+        _isChatOpen,
         _isParticipantsPaneVisible: getParticipantsPaneOpen(state),
         _layoutClassName: LAYOUT_CLASSNAMES[getCurrentLayout(state)],
         _mouseMoveCallbackInterval: mouseMoveCallbackInterval,
+        _overflowDrawer: overflowDrawer,
+        _reactionsQueue: getReactionsQueue(state),
         _roomName: getConferenceNameForTitle(state),
+        _showLobby: getIsLobbyVisible(state),
+        _startCountdown: startCountdown,
+        _startCountdownFrom: startCountdownFrom,
         _showPrejoin: isPrejoinPageVisible(state)
     };
 }

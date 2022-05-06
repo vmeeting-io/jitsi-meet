@@ -11,9 +11,9 @@ import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/com
 type Props = AbstractButtonProps & {
 
     /**
-     * External handler for click action.
+     * Whether or not the participants pane is open.
      */
-    handleClick: Function
+    _isOpen: boolean,
 };
 
 /**
@@ -32,8 +32,39 @@ class ParticipantsPaneButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        this.props.handleClick();
+        const { handleClick } = this.props;
+
+        if (handleClick) {
+            handleClick();
+
+            return;
+        }
+    }
+
+    /**
+     * Indicates whether this button is in toggled state or not.
+     *
+     * @override
+     * @protected
+     * @returns {boolean}
+     */
+    _isToggled() {
+        return this.props._isOpen;
     }
 }
 
-export default translate(connect()(ParticipantsPaneButton));
+/**
+ * Maps part of the Redux state to the props of this component.
+ *
+ * @param {Object} state - The Redux state.
+ * @returns {Props}
+ */
+function mapStateToProps(state) {
+    const { isOpen } = state['features/participants-pane'];
+
+    return {
+        _isOpen: isOpen
+    };
+}
+
+export default translate(connect(mapStateToProps)(ParticipantsPaneButton));

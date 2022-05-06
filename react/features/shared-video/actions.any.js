@@ -1,6 +1,10 @@
+import { showModeratedNotification } from '../av-moderation/actions';
+import { shouldShowModeratedNotification } from '../av-moderation/functions';
 import { getCurrentConference } from '../base/conference';
 import { openDialog } from '../base/dialog/actions';
+import { MEDIA_TYPE } from '../base/media';
 import { getLocalParticipant } from '../base/participants';
+import { isModerationNotificationDisplayed } from '../notifications/functions.any';
 import { SharedVideoDialog } from '../shared-video/components';
 
 import { RESET_SHARED_VIDEO_STATUS, SET_SHARED_VIDEO_STATUS } from './actionTypes';
@@ -21,13 +25,12 @@ export function resetSharedVideoStatus() {
 /**
  * Updates the current known status of the shared video.
  *
- * @param {{
- *     muted: boolean,
- *     ownerId: string,
- *     status: string,
- *     time: number,
- *     videoUrl: string
- * }} options - The options.
+ * @param {Object} options - The options.
+ * @param {boolean} options.muted - Is video muted.
+ * @param {boolean} options.ownerId - Participant ID of the owner.
+ * @param {boolean} options.status - Sharing status.
+ * @param {boolean} options.time - Playback timestamp.
+ * @param {boolean} options.videoUrl - URL of the shared video.
  *
  * @returns {{
  *     type: SET_SHARED_VIDEO_STATUS,
@@ -117,6 +120,14 @@ export function toggleSharedVideo() {
         if ([ 'playing', 'start', 'pause' ].includes(status)) {
             dispatch(stopSharedVideo());
         } else {
+            if (shouldShowModeratedNotification(MEDIA_TYPE.PRESENTER, state)) {
+                if (!isModerationNotificationDisplayed(MEDIA_TYPE.PRESENTER, state)) {
+                    dispatch(showModeratedNotification(MEDIA_TYPE.PRESENTER));
+                }
+    
+                return;
+            }
+    
             dispatch(showSharedVideoDialog(id => dispatch(playSharedVideo(id))));
         }
     };

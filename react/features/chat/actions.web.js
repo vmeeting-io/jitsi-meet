@@ -3,6 +3,7 @@
 import type { Dispatch } from 'redux';
 
 import VideoLayout from '../../../modules/UI/videolayout/VideoLayout';
+import { getParticipantById } from '../base/participants/functions';
 
 import { OPEN_CHAT } from './actionTypes';
 import { closeChat } from './actions.any';
@@ -21,6 +22,26 @@ export * from './actions.any';
 export function openChat(participant: Object) {
     return function(dispatch: (Object) => Object) {
         dispatch({
+            participant,
+            type: OPEN_CHAT
+        });
+    };
+}
+
+/**
+ * Displays the chat panel for a participant identified by an id.
+ *
+ * @param {string} id - The id of the participant.
+ * @returns {{
+ *     participant: Participant,
+ *     type: OPEN_CHAT
+ * }}
+ */
+export function openChatById(id: string) {
+    return function(dispatch: (Object) => Object, getState: Function) {
+        const participant = getParticipantById(getState(), id);
+
+        return dispatch({
             participant,
             type: OPEN_CHAT
         });

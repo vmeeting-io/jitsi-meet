@@ -6,7 +6,7 @@ import { isMobileBrowser } from '../../../base/environment/utils';
 import { translate } from '../../../base/i18n';
 import { IconArrowUp } from '../../../base/icons';
 import { connect } from '../../../base/redux';
-import { ToolboxButtonWithIcon } from '../../../base/toolbox/components';
+import { ToolboxButtonWithIcon } from '../../../base/toolbox/components/web';
 import { getLocalJitsiVideoTrack } from '../../../base/tracks';
 import { toggleVideoSettings, VideoSettingsPopup } from '../../../settings';
 import { getVideoSettingsVisibility } from '../../../settings/functions';
@@ -15,6 +15,11 @@ import VideoMuteButton from '../VideoMuteButton';
 
 
 type Props = {
+
+    /**
+     * External handler for click action.
+     */
+    handleClick: Function,
 
     /**
      * Click handler for the small icon. Opens video options.
@@ -32,7 +37,7 @@ type Props = {
     hasVideoTrack: boolean,
 
     /**
-     * If the button should be disabled
+     * If the button should be disabled.
      */
     isDisabled: boolean,
 
@@ -45,12 +50,12 @@ type Props = {
     visible: boolean,
 
     /**
-     * Used for translation
+     * Used for translation.
      */
     t: Function,
 
     /**
-     * Defines is popup is open
+     * Defines is popup is open.
      */
     isOpen: boolean
 };
@@ -70,6 +75,7 @@ class VideoSettingsButton extends Component<Props> {
         super(props);
 
         this._onEscClick = this._onEscClick.bind(this);
+        this._onClick = this._onClick.bind(this);
     }
 
     /**
@@ -82,6 +88,7 @@ class VideoSettingsButton extends Component<Props> {
 
         return (!hasPermissions || isDisabled) && !hasVideoTrack;
     }
+
     _onEscClick: (KeyboardEvent) => void;
 
     /**
@@ -94,8 +101,26 @@ class VideoSettingsButton extends Component<Props> {
         if (event.key === 'Escape' && this.props.isOpen) {
             event.preventDefault();
             event.stopPropagation();
-            this.props.onVideoOptionsClick();
+            this._onClick();
         }
+    }
+
+    _onClick: () => void;
+
+    /**
+     * Click handler for the more actions entries.
+     *
+     * @returns {void}
+     */
+    _onClick() {
+        const { handleClick, onVideoOptionsClick } = this.props;
+
+        if (handleClick) {
+            handleClick();
+            return;
+        }
+
+        onVideoOptionsClick();
     }
 
     /**
@@ -104,7 +129,7 @@ class VideoSettingsButton extends Component<Props> {
      * @inheritdoc
      */
     render() {
-        const { onVideoOptionsClick, t, visible, isOpen } = this.props;
+        const { handleClick, t, visible, isOpen } = this.props;
 
         return visible ? (
             <VideoSettingsPopup>
@@ -117,12 +142,12 @@ class VideoSettingsButton extends Component<Props> {
                     iconDisabled = { this._isIconDisabled() }
                     iconId = 'video-settings-button'
                     iconTooltip = { t('toolbar.videoSettings') }
-                    onIconClick = { onVideoOptionsClick }
+                    onIconClick = { this._onClick }
                     onIconKeyDown = { this._onEscClick }>
-                    <VideoMuteButton />
+                    <VideoMuteButton handleClick = { handleClick } />
                 </ToolboxButtonWithIcon>
             </VideoSettingsPopup>
-        ) : <VideoMuteButton />;
+        ) : <VideoMuteButton handleClick = { handleClick } />;
     }
 }
 
@@ -150,5 +175,5 @@ const mapDispatchToProps = {
 
 export default translate(connect(
     mapStateToProps,
-    mapDispatchToProps,
+    mapDispatchToProps
 )(VideoSettingsButton));

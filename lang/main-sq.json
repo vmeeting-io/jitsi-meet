@@ -66,10 +66,12 @@
         "noMessagesMessage": "Ende s’ka mesazhe te takimi. Filloni një bisedë këtu!",
         "nickname": {
             "popover": "Zgjidhni një nofkë",
-            "title": "Që të përdorni fjalosjen, jepni një nofkë"
+            "title": "Që të përdorni fjalosjen, jepni një nofkë",
+            "titleWithPolls": "Që të përdorni fjalosjen, jepni një nofkë"
         },
         "privateNotice": "Mesazh privat për {{recipient}}",
         "title": "Fjalosje",
+        "titleWithPolls": "Fjalosje",
         "you": "ju",
         "message": "Mesazh",
         "messageAccessibleTitle": "{{user}} thotë:",
@@ -209,7 +211,6 @@
         "e2eeLabel": "Aktivizo Fshehtëzim Skaj-më-Skaj",
         "e2eeWarning": "KUJDES: Jo të gjithë pjesëmarrësit në këtë takim duket të kenë mbulim për fshehtëzim Skaj-më-Skaj. Në e aktivizofshi, ata s’do të jenë në gjendje t’ju shohin apo dëgjojnë.",
         "enterDisplayName": "Ju lutemi, jepni këtu emrin tuaj",
-        "enterDisplayNameToJoin": "Që të merrni pjesë, ju lutemi, jepni emrin tuaj",
         "embedMeeting": "Trupëzoni takim",
         "error": "Gabim",
         "gracefulShutdown": "Shërbimi ynë është aktualisht i ndërprerë, për punë mirëmbajtjeje. Ju lutemi, riprovoni më vonë.",

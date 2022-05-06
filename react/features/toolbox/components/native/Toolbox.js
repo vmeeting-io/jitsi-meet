@@ -4,12 +4,12 @@ import React from 'react';
 import { SafeAreaView, View } from 'react-native';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
-import { getFeatureFlag, REACTIONS_ENABLED } from '../../../base/flags';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import { ChatButton } from '../../../chat';
 import { ParticipantsPaneButton } from '../../../participants-pane/components/native';
 import { ReactionsMenuButton } from '../../../reactions/components';
+import { isReactionsEnabled } from '../../../reactions/functions.any';
 import { TileViewButton } from '../../../video-layout';
 import { isToolboxVisible, getMovableButtons } from '../../functions.native';
 import AudioMuteButton from '../AudioMuteButton';
@@ -44,12 +44,7 @@ type Props = {
     /**
      * Whether or not the reactions feature is enabled.
      */
-    _reactionsEnabled: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
+    _reactionsEnabled: boolean
 };
 
 /**
@@ -88,10 +83,12 @@ function Toolbox(props: Props) {
                 <VideoMuteButton
                     styles = { buttonStylesBorderless }
                     toggledStyles = { toggledButtonStyles } />
-                { additionalButtons.has('chat')
+                {
+                    additionalButtons.has('chat')
                       && <ChatButton
                           styles = { buttonStylesBorderless }
-                          toggledStyles = { backgroundToggledStyle } />}
+                          toggledStyles = { backgroundToggledStyle } />
+                }
 
                 { additionalButtons.has('raisehand') && (_reactionsEnabled
                     ? <ReactionsMenuButton
@@ -133,7 +130,7 @@ function _mapStateToProps(state: Object): Object {
         _styles: ColorSchemeRegistry.get(state, 'Toolbox'),
         _visible: isToolboxVisible(state),
         _width: state['features/base/responsive-ui'].clientWidth,
-        _reactionsEnabled: getFeatureFlag(state, REACTIONS_ENABLED, false)
+        _reactionsEnabled: isReactionsEnabled(state)
     };
 }
 

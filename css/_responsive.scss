@@ -17,8 +17,6 @@
         }
 
         .header {
-            background-color: #002637;
-
             #enter_room {
                 .enter-room-input-container {
                     padding-right: 0;
@@ -41,12 +39,6 @@
 
         .welcome-cards-container {
             padding: 0;
-        }
-
-        &.without-content {
-            .header {
-            height: 100%;
-            }
         }
 
         #moderated-meetings {

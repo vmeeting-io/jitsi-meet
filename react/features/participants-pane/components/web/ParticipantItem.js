@@ -1,101 +1,49 @@
 // @flow
 
-import React, { type Node } from 'react';
+import { makeStyles } from '@material-ui/styles';
+import React, { type Node, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 
 import { Avatar } from '../../../base/avatar';
+import { ListItem } from '../../../base/components';
+import { Icon, IconPinned } from '../../../base/icons';
+import { translate } from '../../../base/i18n';
+import { pinParticipant } from '../../../base/participants';
 import {
-    Icon,
-    IconCameraEmpty,
-    IconCameraEmptyDisabled,
-    IconMicrophoneEmpty,
-    IconMicrophoneEmptySlash
-} from '../../../base/icons';
-import { ACTION_TRIGGER, MEDIA_STATE, type ActionTrigger, type MediaState } from '../../constants';
+    ACTION_TRIGGER,
+    AudioStateIcons,
+    MEDIA_STATE,
+    type ActionTrigger,
+    type MediaState,
+    VideoStateIcons,
+    PresenterStateIcons
+} from '../../constants';
+import { STATUS_TABLE } from '../../../face-detect/constants';
 
 import { RaisedHandIndicator } from './RaisedHandIndicator';
-import {
-    ColoredIcon,
-    ParticipantActionsHover,
-    ParticipantActionsPermanent,
-    ParticipantContainer,
-    ParticipantContent,
-    ParticipantName,
-    ParticipantNameContainer,
-    ParticipantStates
-} from './styled';
-
-/**
- * Participant actions component mapping depending on trigger type.
- */
-const Actions = {
-    [ACTION_TRIGGER.HOVER]: ParticipantActionsHover,
-    [ACTION_TRIGGER.PERMANENT]: ParticipantActionsPermanent
-};
-
-/**
- * Icon mapping for possible participant audio states.
- */
-const AudioStateIcons: {[MediaState]: React$Element<any> | null} = {
-    [MEDIA_STATE.FORCE_MUTED]: (
-        <ColoredIcon color = '#E04757'>
-            <Icon
-                size = { 16 }
-                src = { IconMicrophoneEmptySlash } />
-        </ColoredIcon>
-    ),
-    [MEDIA_STATE.MUTED]: (
-        <Icon
-            size = { 16 }
-            src = { IconMicrophoneEmptySlash } />
-    ),
-    [MEDIA_STATE.UNMUTED]: (
-        <ColoredIcon color = '#1EC26A'>
-            <Icon
-                size = { 16 }
-                src = { IconMicrophoneEmpty } />
-        </ColoredIcon>
-    ),
-    [MEDIA_STATE.NONE]: null
-};
-
-/**
- * Icon mapping for possible participant video states.
- */
-const VideoStateIcons = {
-    [MEDIA_STATE.FORCE_MUTED]: (
-        <Icon
-            size = { 16 }
-            src = { IconCameraEmptyDisabled } />
-    ),
-    [MEDIA_STATE.MUTED]: (
-        <Icon
-            size = { 16 }
-            src = { IconCameraEmptyDisabled } />
-    ),
-    [MEDIA_STATE.UNMUTED]: (
-        <Icon
-            size = { 16 }
-            src = { IconCameraEmpty } />
-    ),
-    [MEDIA_STATE.NONE]: null
-};
+import { BirthdayIndicator } from './BirthdayIndicator';
 
 type Props = {
 
     /**
-     * Type of trigger for the participant actions
+     * Type of trigger for the participant actions.
      */
-    actionsTrigger: ActionTrigger,
+    actionsTrigger?: ActionTrigger,
 
     /**
-     * Media state for audio
+     * Media state for audio.
      */
-    audioMediaState: MediaState,
+    audioMediaState?: MediaState,
 
     /**
-     * React children
+     * React children.
      */
-    children: Node,
+    children?: Node,
+
+    /**
+     * Whether or not to disable the moderator indicator.
+     */
+    disableModeratorIndicator: boolean,
 
     /**
      * The name of the participant. Used for showing lobby names.
@@ -103,9 +51,19 @@ type Props = {
     displayName: string,
 
     /**
-     * Is this item highlighted/raised
+     * Is this item highlighted/raised.
      */
     isHighlighted?: boolean,
+
+    /**
+     * Whether or not the participant is a moderator.
+     */
+    isModerator: boolean,
+
+    /**
+     * Whether or not today is meeting participant's birthday
+     */
+    isParticipantBirthday: Boolean,
 
     /**
      * True if the participant is local.
@@ -113,9 +71,19 @@ type Props = {
     local: boolean,
 
     /**
-     * Callback for when the mouse leaves this component
+     * Opens a drawer with participant actions.
+     */
+    openDrawerForParticipant?: Function,
+
+    /**
+     * Callback for when the mouse leaves this component.
      */
     onLeave?: Function,
+
+    /**
+     * If an overflow drawer can be opened.
+     */
+    overflowDrawer?: boolean,
 
     /**
      * The ID of the participant.
@@ -125,18 +93,63 @@ type Props = {
     /**
      * True if the participant have raised hand.
      */
-    raisedHand: boolean,
+    raisedHand?: boolean,
 
     /**
-     * Media state for video
+     * Media state for video.
      */
-    videoMuteState: MediaState,
+    videoMediaState?: MediaState,
+
+    /**
+     * Invoked to obtain translated strings.
+     */
+    t: Function,
 
     /**
      * The translated "you" text.
      */
-    youText: string
+    youText?: string
 }
+
+const useStyles = makeStyles(theme => {
+    return {
+        labelContainer: {
+            display: 'flex',
+            flexDirection: 'row',
+            overflow: 'hidden'
+        },
+
+        detailsContainer: {
+            display: 'flex',
+            flex: 1,
+            marginRight: 8,
+            overflow: 'hidden',
+            flexDirection: 'column',
+            justifyContent: 'flex-start'
+        },
+
+        nameContainer: {
+            display: 'flex',
+            flex: 1,
+            overflow: 'hidden'
+        },
+
+        name: {
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+        },
+
+        moderatorLabel: {
+            ...theme.typography.labelRegular,
+            lineHeight: `${theme.typography.labelRegular.lineHeight}px`,
+            color: theme.palette.text03,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+        }
+    };
+});
 
 /**
  * A component representing a participant entry in ParticipantPane and Lobby.
@@ -144,44 +157,108 @@ type Props = {
  * @param {Props} props - The props of the component.
  * @returns {ReactNode}
  */
-export default function ParticipantItem({
-    children,
-    isHighlighted,
-    onLeave,
+function ParticipantItem({
+    aiAttentionFlag,
     actionsTrigger = ACTION_TRIGGER.HOVER,
     audioMediaState = MEDIA_STATE.NONE,
-    videoMuteState = MEDIA_STATE.NONE,
+    children,
+    disableModeratorIndicator,
     displayName,
-    participantID,
+    followMeModerator,
+    isHighlighted,
+    isModerator,
+    isParticipantBirthday,
+    isPinned,
+    isVideoMuted,
     local,
+    onLeave,
+    openDrawerForParticipant,
+    overflowDrawer,
+    participantID,
+    participantStatus,
+    pinEnabled,
+    presenterMediaState = MEDIA_STATE.NONE,
     raisedHand,
+    t,
+    videoMediaState = MEDIA_STATE.NONE,
     youText
 }: Props) {
-    const ParticipantActions = Actions[actionsTrigger];
+    const dispatch = useDispatch();
+    const onClick = useCallback(() => {
+        dispatch(pinParticipant(isPinned ? null : participantID));
+    }, [isPinned, participantID]);
 
-    return (
-        <ParticipantContainer
-            isHighlighted = { isHighlighted }
-            onMouseLeave = { onLeave }
-            trigger = { actionsTrigger }>
+    const styles = useStyles();
+
+    // Dummy array that randomly assigns concentrated, lapsed or absent, must be replaced with the data from the model
+    let attentionClass = 'participant-avatar-container ';
+    if (aiAttentionFlag && participantStatus) {
+        attentionClass += isVideoMuted ? STATUS_TABLE[2] : participantStatus;
+    }
+
+    const icon = (
+        <div className={attentionClass} >
             <Avatar
                 className = 'participant-avatar'
+                displayName = { displayName }
                 participantId = { participantID }
                 size = { 32 } />
-            <ParticipantContent>
-                <ParticipantNameContainer>
-                    <ParticipantName>
-                        { displayName }
-                    </ParticipantName>
-                    { local ? <span>&nbsp;({ youText })</span> : null }
-                </ParticipantNameContainer>
-                { !local && <ParticipantActions children = { children } /> }
-                <ParticipantStates>
-                    { raisedHand && <RaisedHandIndicator /> }
-                    { VideoStateIcons[videoMuteState] }
-                    { AudioStateIcons[audioMediaState] }
-                </ParticipantStates>
-            </ParticipantContent>
-        </ParticipantContainer>
+            { isPinned && (
+                <Icon
+                    className = 'pin-icon'
+                    size = { 12 }
+                    src = { IconPinned } />
+            )}
+        </div>
+    );
+
+    let label = '';
+    if (isModerator && !disableModeratorIndicator) {
+        label = t('videothumbnail.moderator');
+        if (followMeModerator === participantID) {
+            label += `, ${t('videothumbnail.following')}`;
+        }
+    } else if (followMeModerator === participantID) {
+        label = t('videothumbnail.following');
+    }
+
+    const text = (
+        <div className = { styles.detailsContainer }>
+            <div className = { styles.nameContainer }>
+                <div className = { styles.name }>
+                    {displayName}
+                </div>
+                {local ? <span>&nbsp;({youText})</span> : null}
+            </div>
+            <div className = { styles.labelContainer }>
+                {label && <div className = { styles.moderatorLabel }>{label}</div>}
+            </div>
+        </div>
+    );
+
+    const indicators = (
+        <>
+            {isParticipantBirthday && <BirthdayIndicator />}
+            {raisedHand && <RaisedHandIndicator />}
+            {PresenterStateIcons[presenterMediaState]}
+            {VideoStateIcons[videoMediaState]}
+            {AudioStateIcons[audioMediaState]}
+        </>
+    );
+
+    return (
+        <ListItem
+            actions = { children }
+            icon = { icon }
+            id = { `participant-item-${participantID}` }
+            indicators = { indicators }
+            isHighlighted = { isHighlighted }
+            $local = { local }
+            onClick = { pinEnabled ? onClick : undefined }
+            onMouseLeave = { onLeave }
+            textChildren = { text }
+            trigger = { actionsTrigger } />
     );
 }
+
+export default translate(ParticipantItem);

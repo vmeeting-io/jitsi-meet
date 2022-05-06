@@ -1,12 +1,14 @@
 BUILD_DIR = build
 CLEANCSS = ./node_modules/.bin/cleancss
 DEPLOY_DIR = libs
-LIBJITSIMEET_DIR = node_modules/lib-jitsi-meet/
-LIBFLAC_DIR = node_modules/libflacjs/dist/min/
-OLM_DIR = node_modules/olm
-RNNOISE_WASM_DIR = node_modules/rnnoise-wasm/dist/
+LIBJITSIMEET_DIR = node_modules/lib-jitsi-meet
+LIBFLAC_DIR = node_modules/libflacjs/dist/min
+OLM_DIR = node_modules/@matrix-org/olm
+RNNOISE_WASM_DIR = node_modules/rnnoise-wasm/dist
 TFLITE_WASM = react/features/stream-effects/virtual-background/vendor/tflite
-MEET_MODELS_DIR  = react/features/stream-effects/virtual-background/vendor/models/
+MEET_MODELS_DIR  = react/features/stream-effects/virtual-background/vendor/models
+FACE_DETECT_MODELS_DIR = react/features/face-detect/models
+FACIAL_MODELS_DIR = react/features/facial-recognition/resources
 NODE_SASS = ./node_modules/.bin/sass
 NPM = npm
 OUTPUT_DIR = .
@@ -14,7 +16,7 @@ STYLES_BUNDLE = css/all.bundle.css
 STYLES_DESTINATION = css/all.css
 STYLES_MAIN = css/main.scss
 WEBPACK = ./node_modules/.bin/webpack
-WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack-dev-server
+WEBPACK_DEV_SERVER = ./node_modules/.bin/webpack serve --mode development
 LANGUAGES := $(shell node -p "Object.keys(require('./lang/languages.json')).join(' ')")
 COUNTRIES_DIR := node_modules/i18n-iso-countries/langs
 DEV_COUNTRIES_DIR := lang/countries
@@ -22,7 +24,7 @@ DEV_COUNTRIES_DIR := lang/countries
 all: compile deploy clean
 
 compile:
-	node --max-old-space-size=4096 $(WEBPACK) -p
+	node --max-old-space-size=4096 $(WEBPACK)
 
 compile-load-test:
 	${NPM} install --prefix resources/load-test && ${NPM} run build --prefix resources/load-test
@@ -31,7 +33,7 @@ clean:
 	rm -fr $(BUILD_DIR)
 
 .NOTPARALLEL:
-deploy: deploy-init deploy-appbundle deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-css deploy-local $(LANGUAGES)
+deploy: deploy-init deploy-appbundle deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-lib-jitsi-meet deploy-libflac deploy-olm deploy-css deploy-local deploy-facial-expressions $(LANGUAGES)
 
 deploy-init:
 	rm -fr $(DEPLOY_DIR)
@@ -39,30 +41,15 @@ deploy-init:
 
 deploy-appbundle:
 	cp \
-		$(BUILD_DIR)/app.bundle.min.js \
-		$(BUILD_DIR)/app.bundle.min.map \
-		$(BUILD_DIR)/do_external_connect.min.js \
-		$(BUILD_DIR)/do_external_connect.min.map \
-		$(BUILD_DIR)/external_api.min.js \
-		$(BUILD_DIR)/external_api.min.map \
-		$(BUILD_DIR)/flacEncodeWorker.min.js \
-		$(BUILD_DIR)/flacEncodeWorker.min.map \
-		$(BUILD_DIR)/dial_in_info_bundle.min.js \
-		$(BUILD_DIR)/dial_in_info_bundle.min.map \
-		$(BUILD_DIR)/alwaysontop.min.js \
-		$(BUILD_DIR)/alwaysontop.min.map \
-		$(OUTPUT_DIR)/analytics-ga.js \
-		$(BUILD_DIR)/analytics-ga.min.js \
-		$(BUILD_DIR)/analytics-ga.min.map \
-		$(BUILD_DIR)/close3.min.js \
-		$(BUILD_DIR)/close3.min.map \
-		$(DEPLOY_DIR)
+		$(BUILD_DIR)/*.min.js \
+		$(BUILD_DIR)/*.min.js.map \
+		$(DEPLOY_DIR) || true
 
 deploy-lib-jitsi-meet:
 	cp \
-		$(LIBJITSIMEET_DIR)/lib-jitsi-meet.min.js \
-		$(LIBJITSIMEET_DIR)/lib-jitsi-meet.min.map \
-		$(LIBJITSIMEET_DIR)/lib-jitsi-meet.e2ee-worker.js \
+		$(LIBJITSIMEET_DIR)/dist/umd/lib-jitsi-meet.min.js \
+		$(LIBJITSIMEET_DIR)/dist/umd/lib-jitsi-meet.min.map \
+		$(LIBJITSIMEET_DIR)/dist/umd/lib-jitsi-meet.e2ee-worker.js \
 		$(LIBJITSIMEET_DIR)/connection_optimization/external_connect.js \
 		$(LIBJITSIMEET_DIR)/modules/browser/capabilities.json \
 		$(DEPLOY_DIR)
@@ -86,12 +73,22 @@ deploy-rnnoise-binary:
 deploy-tflite:
 	cp \
 		$(TFLITE_WASM)/*.wasm \
-		$(DEPLOY_DIR)		
+		$(DEPLOY_DIR)
 
 deploy-meet-models:
 	cp \
 		$(MEET_MODELS_DIR)/*.tflite \
-		$(DEPLOY_DIR)	
+		$(DEPLOY_DIR)
+
+deploy-facial-expressions:
+	cp \
+		$(FACIAL_MODELS_DIR)/* \
+		$(DEPLOY_DIR)
+
+deploy-face-detect-models:
+	cp -rf \
+		$(FACE_DETECT_MODELS_DIR)/* \
+		$(DEPLOY_DIR)
 
 deploy-css:
 	$(NODE_SASS) $(STYLES_MAIN) $(STYLES_BUNDLE) && \
@@ -114,7 +111,7 @@ $(LANGUAGES):
 	fi;
 
 .NOTPARALLEL:
-dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-libflac deploy-olm $(LANGUAGES)
+dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-face-detect-models deploy-libflac deploy-olm deploy-facial-expressions $(LANGUAGES)
 	if [ ! -d $(DEV_COUNTRIES_DIR) ] ; \
 	then \
 		mkdir $(DEV_COUNTRIES_DIR); \
@@ -123,6 +120,7 @@ dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-mode
 
 dev-start:
 	./cssmon.sh ./css &
+	$(MAKE) deploy-css
 	$(WEBPACK_DEV_SERVER)
 
 source-package:

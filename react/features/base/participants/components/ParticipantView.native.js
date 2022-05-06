@@ -133,7 +133,7 @@ type Props = {
  * Implements a React Component which depicts a specific participant's avatar
  * and video.
  *
- * @extends Component
+ * @augments Component
  */
 class ParticipantView extends Component<Props> {
 

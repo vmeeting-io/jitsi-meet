@@ -1,6 +1,8 @@
+import { DOMParser } from '@xmldom/xmldom';
 import { Platform } from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 
+import 'promise.allsettled/auto'; // Promise.allSettled.
 import 'react-native-url-polyfill/auto'; // Complete URL polyfill.
 
 import Storage from './Storage';
@@ -91,8 +93,6 @@ function _visitNode(node, callback) {
 }
 
 (global => {
-    const { DOMParser } = require('xmldom');
-
     // DOMParser
     //
     // Required by:
@@ -282,7 +282,7 @@ function _visitNode(node, callback) {
             const { console } = global;
 
             if (console) {
-                const loggerLevels = require('jitsi-meet-logger').levels;
+                const loggerLevels = require('@jitsi/logger').levels;
 
                 Object.keys(loggerLevels).forEach(key => {
                     const level = loggerLevels[key];
@@ -382,6 +382,26 @@ function _visitNode(node, callback) {
 
     // WebRTC
     require('./webrtc');
+
+    // Performance API
+
+    // RN 0.61 does not provide performance.now(), and react-native-performance
+    // requires it.
+    const now = () => Date.now();
+
+    if (!global.performance) {
+        global.performance = {};
+    }
+
+    if (!global.performance.now) {
+        global.performance.now = now;
+    }
+
+    const perf = require('react-native-performance');
+
+    global.performance = perf.default;
+    global.performance.now = now;
+    global.PerformanceObserver = perf.PerformanceObserver;
 
     // CallStats
     //

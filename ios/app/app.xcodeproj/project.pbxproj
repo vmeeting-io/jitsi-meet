@@ -606,7 +606,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Vmeeting\"",
 				);
-				MARKETING_VERSION = 21.3.5;
+				MARKETING_VERSION = 21.3.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -648,7 +648,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/Vmeeting\"",
 				);
-				MARKETING_VERSION = 21.3.5;
+				MARKETING_VERSION = 21.3.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -686,7 +686,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 21.3.5;
+				MARKETING_VERSION = 21.3.6;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.postech.vmeeting.broadcast-extension";
@@ -724,7 +724,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 21.3.5;
+				MARKETING_VERSION = 21.3.6;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.postech.vmeeting.broadcast-extension";
 				PRODUCT_NAME = "$(TARGET_NAME)";

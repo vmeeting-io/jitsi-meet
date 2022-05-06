@@ -35,7 +35,6 @@ import {
     conferenceLeft,
     conferenceSubjectChanged,
     conferenceTimestampChanged,
-    conferenceUniqueIdSet,
     conferenceWillJoin,
     conferenceWillLeave,
     dataChannelOpened,
@@ -2010,7 +2009,6 @@ export default {
                 // Preserve the sessionId so that the value is accessible even after room
                 // is disconnected.
                 room.sessionId = room.getMeetingUniqueId();
-                APP.store.dispatch(conferenceUniqueIdSet(room, ...args));
             });
 
         room.on(

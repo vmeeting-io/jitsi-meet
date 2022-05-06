@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 
+import { conferences } from '../../../api/conferences';
 import {
     ACTION_PINNED,
     ACTION_UNPINNED,
@@ -32,6 +33,7 @@ import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
     CONFERENCE_SUBJECT_CHANGED,
+    CONFERENCE_UNIQUE_ID_SET,
     CONFERENCE_WILL_LEAVE,
     SEND_TONES,
     SET_PASSWORD,
@@ -84,6 +86,9 @@ MiddlewareRegistry.register(store => next => action => {
 
     case CONFERENCE_SUBJECT_CHANGED:
         return _conferenceSubjectChanged(store, next, action);
+
+    case CONFERENCE_UNIQUE_ID_SET:
+        return _conferenceUniqueIdSet(store, next, action);
 
     case CONFERENCE_WILL_LEAVE:
         _conferenceWillLeave();
@@ -404,6 +409,24 @@ function _conferenceSubjectChanged({ dispatch, getState }, next, action) {
     }
 
     typeof APP === 'object' && APP.API.notifySubjectChanged(subject);
+
+    return result;
+}
+
+function _conferenceUniqueIdSet({ getState }, next, action) {
+    const result = next(action);
+    const state = getState();
+    const { roomInfo } = state['features/base/conference'];
+    const { locationURL } = state['features/base/connection'];
+
+    if (roomInfo.isHost && !roomInfo.meetingId) {
+        conferences(locationURL)
+            .id(roomInfo._id)
+            .update({ meeting_id: action.meetingId })
+            .then(resp => {
+                // console.log('conference updated:', resp.data);
+            });
+    }
 
     return result;
 }

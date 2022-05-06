@@ -112,6 +112,10 @@ function _addConferenceListeners(conference, dispatch, state) {
         (...args) => dispatch(conferenceTimestampChanged(...args)));
 
     conference.on(
+        JitsiConferenceEvents.CONFERENCE_UNIQUE_ID_SET,
+        (...args) => dispatch(conferenceUniqueIdSet(conference, ...args)));
+
+    conference.on(
         JitsiConferenceEvents.KICKED,
         (...args) => dispatch(kickedOut(conference, ...args)));
 
@@ -496,10 +500,11 @@ export function conferenceTimestampChanged(conferenceTimestamp: number) {
 *   conference: JitsiConference,
 * }}
 */
-export function conferenceUniqueIdSet(conference: Object) {
+export function conferenceUniqueIdSet(conference: Object, meetingId: string) {
     return {
         type: CONFERENCE_UNIQUE_ID_SET,
-        conference
+        conference,
+        meetingId
     };
 }
 

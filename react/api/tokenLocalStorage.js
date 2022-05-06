@@ -5,7 +5,7 @@ import jwtDecode from 'jwt-decode';
 
 import { getAuthServerURL } from './url';
 
-const DEFAULT_TOKEN_VERSION = "2";
+const DEFAULT_TOKEN_VERSION = "3";
 const JWT_TOKEN_VERSION = navigator.product === 'ReactNative'
     ? DEFAULT_TOKEN_VERSION
     : process.env.JWT_TOKEN_VERSION;

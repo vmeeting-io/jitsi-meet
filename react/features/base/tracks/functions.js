@@ -108,10 +108,12 @@ export async function createLocalPresenterTrack(options, desktopHeight) {
 
     // compute the constraints of the camera track based on the resolution
     // of the desktop screen that is being shared.
-    const cameraHeights = [ 180, 270, 360, 540, 720 ];
-    const proportion = 5;
+    const cameraHeights = [ 180, 270, 360, 540, 720, 1080 ];
+    const proportion = 2;
     const result = cameraHeights.find(
-            height => (desktopHeight / proportion) < height);
+            height => (desktopHeight / proportion) < height)
+        || cameraHeights[cameraHeights.length - 1];
+
     const constraints = {
         video: {
             aspectRatio: 4 / 3,

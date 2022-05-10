@@ -168,6 +168,7 @@ import { i18next } from './react/features/base/i18n';
 import { openDialog } from './react/features/base/dialog';
 import BirthdayHatApprove from './react/features/ar-effect/components/BirthdayHatApprove';
 import { arApprovalDialog, enableARHat } from './react/features/ar-effect';
+import { toggleAvatarAndBackgroundEffects } from './react/features/virtual-avatar/functions'
 
 const logger = Logger.getLogger(__filename);
 const eventEmitter = new EventEmitter();
@@ -1804,6 +1805,13 @@ export default {
             APP.store.dispatch(trackAdded(this.localPresenterVideo));
         }
         try {
+            const virtualAvatar = APP.store.getState()['features/virtual-avatar'];
+            const avatarAndBgOptions = {
+                ...virtualAvatar,
+                enabled: virtualAvatar.virtualAvatarEffectEnabled
+            }
+
+            await toggleAvatarAndBackgroundEffects(APP.store.dispatch, avatarAndBgOptions, this.localPresenterVideo);
             const effect = await createPresenterEffect(this.localPresenterVideo.stream);
 
             return effect;
@@ -2274,7 +2282,7 @@ export default {
                     sendData(commands.HATON, hatOn);
                 }
             })
-        
+
 
 
         room.on(JitsiConferenceEvents.NOTIFY_RANDOM_SELECTION_STARTED,
@@ -3292,7 +3300,7 @@ export default {
             birthDate: bDate
         }));
 
-        // XMPP helper function that sends birthdate info to other participants 
+        // XMPP helper function that sends birthdate info to other participants
         // as presence message
         sendData(commands.BIRTHDATE, bDate);
     },

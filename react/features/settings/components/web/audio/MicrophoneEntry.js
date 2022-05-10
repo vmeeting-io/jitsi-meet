@@ -1,11 +1,14 @@
 // @flow
 
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 
 import JitsiMeetJS from '../../../../base/lib-jitsi-meet/_';
 
 import AudioSettingsEntry, { type Props as AudioSettingsEntryProps } from './AudioSettingsEntry';
 import Meter from './Meter';
+import TestButton from './TestButton';
+import {TEST, RECORDING, PLAYING} from './TestButton';
+import { OggAdapter } from '../../../../local-recording/recording/OggAdapter';
 
 const JitsiTrackEvents = JitsiMeetJS.events.track;
 
@@ -59,6 +62,14 @@ type State = {
  * @returns { ReactElement}
  */
 export default class MicrophoneEntry extends Component<Props, State> {
+
+    /**
+     * A React ref to the HTML element containing the {@code audio} instance.
+     */
+    audioRef: Object;
+
+    recorder: OggAdapter;
+
     /**
      * Initializes a new {@code MicrophoneEntry} instance.
      *
@@ -68,9 +79,15 @@ export default class MicrophoneEntry extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
+        this.audioRef = React.createRef();
+        this.recorder = new OggAdapter();
+        this._onTestButtonClick = this._onTestButtonClick.bind(this);
+        this._onTestAudioEnded = this._onTestAudioEnded.bind(this);
         this.state = {
-            level: -1
+            level: -1,
+            testButtonText: TEST
         };
+        this.micTestTimer = null;
         this._onClick = this._onClick.bind(this);
         this._onKeyPress = this._onKeyPress.bind(this);
         this._updateLevel = this._updateLevel.bind(this);
@@ -109,6 +126,59 @@ export default class MicrophoneEntry extends Component<Props, State> {
         }
     }
 
+    _onTestButtonClick: Object => void;
+
+    /**
+     * Click handler for Test button.
+     * Sets the current audio output id and plays a sound.
+     *
+     * @param {Object} e - The sythetic event.
+     * @returns {void}
+     */
+    async _onTestButtonClick(e) {
+        e.stopPropagation();
+
+        if (this.state.testButtonText !== TEST) {
+            return;
+        }
+
+        try {
+            await this.recorder.start(this.props.deviceId);
+            this.setState({
+                testButtonText: RECORDING
+            });
+
+            this.micTestTimer = setTimeout(async () => {
+                clearTimeout(this.micTestTimer);
+
+                await this.recorder.stop();
+                const { data } = await this.recorder.exportRecordedData();
+
+                const curSpeakerId = JitsiMeetJS.mediaDevices.getAudioOutputDevice();
+                await this.audioRef.current.setSinkId(curSpeakerId);
+                this.audioRef.current.src = URL.createObjectURL(data);
+                this.audioRef.current.play();
+                this.setState({
+                    testButtonText: PLAYING
+                });
+            }, 3000);
+
+        } catch (err) {
+            APP.UI.messageHandler.showWarning({
+                descriptionKey: "deviceError.microphoneError",
+                titleKey: "notify.warning"
+            });
+        }
+    }
+
+    _onTestAudioEnded: void => void;
+
+    _onTestAudioEnded() {
+        this.setState({
+            testButtonText: TEST
+        });
+    }
+
     _updateLevel: (number) => void;
 
     /**
@@ -143,6 +213,13 @@ export default class MicrophoneEntry extends Component<Props, State> {
      * @returns {void}
      */
     _stopListening(jitsiTrack) {
+        // clear the mic test first
+        this.micTestTimer && clearTimeout(this.micTestTimer);
+        this.audioRef.current.pause();
+        this.setState({
+            testButtonText: TEST
+        });
+
         jitsiTrack && jitsiTrack.off(JitsiTrackEvents.TRACK_AUDIO_LEVEL_CHANGED, this._updateLevel);
         this.setState({
             level: -1
@@ -209,10 +286,21 @@ export default class MicrophoneEntry extends Component<Props, State> {
                     labelId = { deviceTextId }>
                     {children}
                 </AudioSettingsEntry>
-                { Boolean(jitsiTrack) && <Meter
-                    className = 'audio-preview-meter-mic'
-                    isDisabled = { hasError }
-                    level = { this.state.level } />
+                { Boolean(jitsiTrack) &&
+                <React.Fragment>
+                    <Meter
+                        className = 'audio-preview-meter-mic'
+                        isDisabled = { hasError }
+                        level = { this.state.level } />
+                    <TestButton
+                        onClick={this._onTestButtonClick}
+                        onKeyPress={this._onTestButtonClick}
+                        buttonText={this.state.testButtonText} />
+                    <audio
+                        preload = 'auto'
+                        ref = { this.audioRef }
+                        onEnded={this._onTestAudioEnded} />
+                </React.Fragment>
                 }
             </li>
         );

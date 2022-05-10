@@ -108,7 +108,7 @@
     &-microphone {
         position: relative;
 
-        &:hover {
+        &:hover, &:focus-within, &:focus {
             .audio-preview-entry {
                 background: #36383C;
                 margin-left: 0;
@@ -118,6 +118,10 @@
                     background: $newToolbarBackgroundColor;
                     padding-left: 18px;
                 }
+            }
+
+             .audio-preview-test-button {
+                display: inline-block;
             }
         }
 
@@ -157,7 +161,7 @@
         display: none;
         background: #FFF;
         border: 1px solid #D1DBE8;
-        border-radius: 3px;
+        border-radius: 2px;
         color: #1C2025;
         cursor: pointer;
         font-weight: 600;
@@ -167,6 +171,16 @@
         position: absolute;
         right: 16px;
         top: 5px;
+
+        &--recording {
+            @extend .audio-preview-test-button;
+            color: red;
+        }
+
+        &--playing {
+            @extend .audio-preview-test-button;
+            color: #0056E0;
+        }
     }
 
     &-meter-mic {

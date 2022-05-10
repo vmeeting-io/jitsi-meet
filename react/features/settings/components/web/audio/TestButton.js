@@ -2,6 +2,10 @@
 
 import React from 'react';
 
+export const TEST = "Test";
+export const RECORDING = "Recording...";
+export const PLAYING = "Playing...";
+
 type Props = {
 
     /**
@@ -20,15 +24,17 @@ type Props = {
  *
  * @returns { ReactElement}
  */
-export default function TestButton({ onClick, onKeyPress }: Props) {
+export default function TestButton({ onClick, onKeyPress, buttonText = "Test" }: Props) {
     return (
         <div
-            className = 'audio-preview-test-button'
+            className={buttonText === RECORDING ? 'audio-preview-test-button--recording' :
+                        buttonText === PLAYING ? 'audio-preview-test-button--playing' :
+                        'audio-preview-test-button'}
             onClick = { onClick }
             onKeyPress = { onKeyPress }
             role = 'button'
             tabIndex = { 0 }>
-            Test
+            { buttonText }
         </div>
     );
 }

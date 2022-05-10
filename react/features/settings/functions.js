@@ -141,7 +141,7 @@ export function getMoreTabProps(stateful: Object | Function) {
         showNotificationsSettings: Object.keys(enabledNotifications).length > 0,
         showPrejoinPage: !userSelectedSkipPrejoin,
         showPrejoinSettings: prejoinConfig?.enabled,
-        showFramerateSelect: showFramerateSelect
+        showFramerateSelect
     };
 }
 

@@ -28,4 +28,5 @@ do
   echo "  $varname: \"$value\"," >> ./env-config.js
 done < .env
 
+echo "  VMEETING_UPDATE_TIME: \"$(date --utc +%FT%TZ)\"" >> ./env-config.js
 echo "}" >> ./env-config.js

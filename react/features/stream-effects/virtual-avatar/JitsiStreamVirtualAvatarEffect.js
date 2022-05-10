@@ -210,7 +210,7 @@ export default class JitsiStreamVirtualAvatarEffect {
      * false otherwise.
      */
     isEnabled(jitsiLocalTrack: Object) {
-        return jitsiLocalTrack.isVideoTrack() && jitsiLocalTrack.videoType === 'camera';
+        return jitsiLocalTrack.videoType === 'camera';
     }
 
     _onResults(results) {
@@ -314,11 +314,11 @@ export default class JitsiStreamVirtualAvatarEffect {
      * @returns {MediaStream} - The stream with the applied effect.
      */
     startEffect(stream: MediaStream) {
-        const width = 1280;
-        const height = 720;
-        const frameRate = 30;
 
         this.usedServices += 1;
+
+        const height = 720;
+        const width = 1280;
 
         if (! this._stream) {
             this._stream = stream;
@@ -345,7 +345,7 @@ export default class JitsiStreamVirtualAvatarEffect {
             this._inputVideoElement.autoplay = true;
             this._inputVideoElement.srcObject = this._stream;
 
-            this.outputStream = this.renderer.domElement.captureStream(frameRate);
+            this.outputStream = this.renderer.domElement.captureStream();
 
         } else if (this._stream !== stream) {
             this._stream = stream;
@@ -363,6 +363,13 @@ export default class JitsiStreamVirtualAvatarEffect {
      */
     stopEffect() {
         this.usedServices -= 1;
+    }
+
+    _stopStream(stream: MediaStream) {
+        const tracks = stream.getTracks();
+        tracks.forEach(function (track) {
+            track.stop();
+        });
     }
 
     _flipLocalVideo() {

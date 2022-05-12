@@ -312,6 +312,7 @@ class WelcomePage extends AbstractWelcomePage {
     render() {
         const {
             _defaultLogoUrl,
+            _disableIntroVideo,
             _moderatedRoomServiceUrl,
             _user,
             _virtualAvatarSupport,
@@ -608,13 +609,18 @@ class WelcomePage extends AbstractWelcomePage {
                                 </div>
                             </div>
                             <div className = 'header-image'>
-                                <iframe
-                                    src="https://www.youtube.com/embed/3Z-bkgjYUTc"
-                                    title="YouTube video player"
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen>
-                                </iframe>
+                                { _disableIntroVideo ? (
+                                    <img
+                                        alt = 'Video conference'
+                                        src = '/images/header-image.png' />
+                                ) : (
+                                    <iframe
+                                        src="https://www.youtube.com/embed/3Z-bkgjYUTc"
+                                        title="YouTube video player"
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen />
+                                )}
                             </div>
                         </div>
                     </div>

@@ -75,7 +75,6 @@ class WelcomePage extends AbstractWelcomePage {
                 interfaceConfig.GENERATE_ROOMNAMES_ON_WELCOME_PAGE,
             selectedTab: 0,
             submitting: false,
-            siteName: props._jwt.siteName || DEFAULT_TENANT,
             currentTenant: props._jwt.tenant || DEFAULT_TENANT,
         };
 
@@ -314,17 +313,19 @@ class WelcomePage extends AbstractWelcomePage {
             _defaultLogoUrl,
             _disableIntroVideo,
             _moderatedRoomServiceUrl,
+            _jwt,
             _user,
             _virtualAvatarSupport,
             t
         } = this.props;
-        const { submitting, siteName, currentTenant, room } = this.state;
+        const { submitting, currentTenant, room } = this.state;
         const { APP_NAME, DEFAULT_WELCOME_PAGE_LOGO_URL } = interfaceConfig;
         const showAdditionalContent = this._shouldShowAdditionalContent();
         const showAdditionalToolbarContent = this._shouldShowAdditionalToolbarContent();
         const buttons = [];
         const [ tenant ] = room.split('/');
         const avatarColor = getAvatarColor(getInitials(_user?.name), 0.9);
+        const siteName = _jwt.siteName || DEFAULT_TENANT;
 
         if (_user) {
             if (_user.isAdmin) {

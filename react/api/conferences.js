@@ -4,4 +4,4 @@ class Conference extends BaseAPI {
   _route = '/conferences';
 }  
 
-export const conferences = () => new Conference();
+export const conferences = token => new Conference(token);

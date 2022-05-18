@@ -17,8 +17,11 @@ export function loadCurrentUser() {
             const token = tokenLocalStorage.getItem(getState());
             if (token) {
                 jitsiLocalStorage.removeItem('background');
+                dispatch(setJWT(token));
+
+                // reload from rest api
                 const resp = await users(token).me();
-                console.log('loadCurrentUser:', resp.data);
+                // console.log('loadCurrentUser:', resp.data);
                 dispatch(setJWT(resp.data));
             }
         } catch (e) {

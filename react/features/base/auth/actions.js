@@ -1,6 +1,7 @@
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 
 import tokenLocalStorage from '../../../api/tokenLocalStorage';
+import { users } from '../../../api/users';
 import { setJWT } from '../jwt';
 
 import { SET_CURRENT_USER } from './actionTypes';
@@ -17,6 +18,11 @@ export function loadCurrentUser() {
             if (token) {
                 jitsiLocalStorage.removeItem('background');
                 dispatch(setJWT(token));
+
+                // reload from rest api
+                const resp = await users(token).me();
+                // console.log('loadCurrentUser:', resp.data);
+                dispatch(setJWT(resp.data));
             }
         } catch (e) {
             console.error('loadCurrentUser is failed:', e.message);

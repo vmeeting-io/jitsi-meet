@@ -6,9 +6,9 @@ import { API_ROOT } from './constants';
 const apiToken = window._env_.VMEETING_API_TOKEN;
 
 export default class BaseAPI {
-  constructor() {
+  constructor(token) {
     this._config = {
-      headers: { Authorization: `Bearer ${apiToken}` },
+      headers: { Authorization: `Bearer ${token || apiToken}` },
     }
     this._path = '';
     this._route = '';

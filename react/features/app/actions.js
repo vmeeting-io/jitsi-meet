@@ -278,7 +278,7 @@ export function appNavigate(uri: ?string) {
                     start_time: new Date(),
                 }, { headers });
                 roomInfo = resp.data.conference;
-                roomInfo.isHost = roomInfo?.mail_owner === user?.email;
+                roomInfo.isHost = user && roomInfo?.mail_owner === user?.email;
             } catch (err) {
                 console.log('Request is failed.', err.response);
                 const { error, conference } = err.response?.data || {};
@@ -301,7 +301,7 @@ export function appNavigate(uri: ?string) {
                     default: {
                         roomInfo = conference;
                         if (roomInfo) {
-                            roomInfo.isHost = roomInfo.mail_owner === user?.email;
+                            roomInfo.isHost = user && roomInfo.mail_owner === user?.email;
                         }
                     }
                 }

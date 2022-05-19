@@ -285,6 +285,7 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
  */
 export function _mapStateToProps(state: Object) {
     const {
+        disableIntroVideo,
         enableInsecureRoomNameWarning,
         logoUrl,
         moderatedRoomServiceUrl,
@@ -294,6 +295,7 @@ export function _mapStateToProps(state: Object) {
     return {
         _calendarEnabled: isCalendarEnabled(state),
         _defaultLogoUrl: logoUrl,
+        _disableIntroVideo: disableIntroVideo,
         _enableInsecureRoomNameWarning: enableInsecureRoomNameWarning || false,
         _moderatedRoomServiceUrl: moderatedRoomServiceUrl,
         _recentListEnabled: isRecentListEnabled(),

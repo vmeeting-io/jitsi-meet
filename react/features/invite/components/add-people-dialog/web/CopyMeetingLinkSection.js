@@ -36,7 +36,7 @@ function CopyMeetingLinkSection({ t, url }: Props) {
                 id = 'copy-button-id'
                 textOnCopySuccess = { t('addPeople.linkCopied') }
                 textOnHover = { t('addPeople.copyLink') }
-                textToCopy = { url } />
+                textToCopy = { decodeURI(url) } />
         </>
     );
 }

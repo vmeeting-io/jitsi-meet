@@ -141,6 +141,8 @@ MiddlewareRegistry.register(store => next => action => {
 function _onFollowMeCommand(attributes = {}, id, store) {
     const state = store.getState();
 
+    console.log('onFollowMeCommand:', attributes);
+
     // console.log('onFollowMeCommand:', id, attributes);
     // We require to know who issued the command because (1) only a
     // moderator is allowed to send commands and (2) a command MUST be
@@ -191,16 +193,16 @@ function _onFollowMeCommand(attributes = {}, id, store) {
         store.dispatch(setTileView(attributes.tileViewEnabled === 'true'));
     }
 
-    // For now gate etherpad checks behind a web-app check to be extra safe
+    // For now gate whiteboard checks behind a web-app check to be extra safe
     // against calling a web-app global.
     if (typeof APP !== 'undefined'
-        && oldState.sharedDocumentVisible !== attributes.sharedDocumentVisible) {
-        const isEtherpadVisible = attributes.sharedDocumentVisible === 'true';
-        const documentManager = APP.UI.getSharedDocumentManager();
+        && oldState.whiteboardVisible !== attributes.whiteboardVisible) {
+        const isWhiteboardVisible = attributes.whiteboardVisible === 'true';
+        const whiteboardManager = APP.UI.getWhiteboardManager();
 
-        if (documentManager
-                && isEtherpadVisible !== state['features/etherpad'].editing) {
-            documentManager.toggleEtherpad();
+        if (whiteboardManager
+                && isWhiteboardVisible !== state['features/whiteboard'].editing) {
+            whiteboardManager.toggleWhiteboard();
         }
     }
 

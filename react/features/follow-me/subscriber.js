@@ -33,14 +33,14 @@ StateListenerRegistry.register(
     /* listener */ _sendFollowMeCommand);
 
 /**
- * Subscribes to changes to the shared document (etherpad) visibility in the
+ * Subscribes to changes to the whiteboard visibility in the
  * user interface of the local participant.
  *
- * @param sharedDocumentVisible - {Boolean} {true} If the shared document was
+ * @param whiteboardVisible - {Boolean} {true} If the whiteboard was
  * shown (as a result of the toggle) or {false} if it was hidden.
  */
 StateListenerRegistry.register(
-    /* selector */ state => state['features/etherpad'].editing,
+    /* selector */ state => state['features/whiteboard'].editing,
     /* listener */ _sendFollowMeCommand);
 
 /**
@@ -72,7 +72,7 @@ function _getFollowMeState(state) {
     return {
         filmstripVisible: state['features/filmstrip'].visible,
         nextOnStage: pinnedParticipant && pinnedParticipant.id,
-        sharedDocumentVisible: state['features/etherpad'].editing,
+        whiteboardVisible: state['features/whiteboard'].editing,
         tileViewEnabled: shouldDisplayTileView(state)
     };
 }

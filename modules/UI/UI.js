@@ -8,7 +8,7 @@ import EventEmitter from 'events';
 
 import { isMobileBrowser } from '../../react/features/base/environment/utils';
 import { setColorAlpha } from '../../react/features/base/util';
-import { setDocumentUrl } from '../../react/features/etherpad';
+import { setWhiteboardUrl } from '../../react/features/whiteboard';
 import { setFilmstripVisible } from '../../react/features/filmstrip';
 import { joinLeaveNotificationsDisabled } from '../../react/features/notifications/functions.any';
 import {
@@ -23,7 +23,7 @@ import {
 } from '../../react/features/toolbox/actions.web';
 import UIEvents from '../../service/UI/UIEvents';
 
-import EtherpadManager from './etherpad/Etherpad';
+import WhiteboardManager from './whiteboard/Whiteboard';
 import messageHandler from './util/MessageHandler';
 import UIUtil from './util/UIUtil';
 import VideoLayout from './videolayout/VideoLayout';
@@ -36,20 +36,20 @@ const eventEmitter = new EventEmitter();
 
 UI.eventEmitter = eventEmitter;
 
-let etherpadManager;
+let whiteboardManager;
 
 const UIListeners = new Map([
     [
-        UIEvents.ETHERPAD_CLICKED,
-        () => etherpadManager && etherpadManager.toggleEtherpad()
+        UIEvents.WHITEBOARD_CLICKED,
+        () => whiteboardManager && whiteboardManager.toggleWhiteboard()
     ], [
         UIEvents.TOGGLE_FILMSTRIP,
         () => UI.toggleFilmstrip()
     ], [
         UIEvents.BECOME_MODERATOR,
         () => {
-            if(etherpadManager && etherpadManager.isOpen){
-                etherpadManager.reloadForModerator();
+            if(whiteboardManager && whiteboardManager.isOpen){
+                whiteboardManager.reload();
             }
         }
     ]
@@ -170,31 +170,31 @@ UI.unbindEvents = () => {
 };
 
 /**
- * Setup and show Etherpad.
- * @param {string} name etherpad id
+ * Setup and show Whiteboard.
+ * @param {string} name whiteboard id
  */
-UI.initEtherpad = name => {
-    if (etherpadManager || !config.etherpad_base || !name) {
+UI.initWhiteboard = name => {
+    if (whiteboardManager || !config.whiteboard_base || !name) {
         return;
     }
-    logger.log('Etherpad is enabled');
+    logger.log('Whiteboard is enabled');
 
-    etherpadManager = new EtherpadManager(eventEmitter);
+    whiteboardManager = new WhiteboardManager(eventEmitter);
 
-    const url = new URL(name, config.etherpad_base);
+    const url = new URL(name, config.whiteboard_base);
 
-    APP.store.dispatch(setDocumentUrl(url.toString()));
+    APP.store.dispatch(setWhiteboardUrl(url.toString()));
 
-    if (config.openSharedDocumentOnJoin) {
-        etherpadManager.toggleEtherpad();
+    if (config.openWhiteboardOnJoin) {
+        whiteboardManager.toggleWhiteboard();
     }
 };
 
 /**
- * Returns the shared document manager object.
- * @return {EtherpadManager} the shared document manager object
+ * Returns the whiteboard manager object.
+ * @return {WhiteboardManager} the whtieboard manager object
  */
-UI.getSharedDocumentManager = () => etherpadManager;
+UI.getWhiteboardManager = () => whiteboardManager;
 
 /**
  * Show user on UI.

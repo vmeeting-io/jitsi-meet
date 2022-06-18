@@ -31,7 +31,7 @@ import '../chat/reducer';
 import '../deep-linking/reducer';
 import '../dropbox/reducer';
 import '../dynamic-branding/reducer';
-import '../etherpad/reducer';
+import '../whiteboard/reducer';
 import '../filmstrip/reducer';
 import '../follow-me/reducer';
 import '../google-api/reducer';

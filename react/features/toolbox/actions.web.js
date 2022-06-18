@@ -11,6 +11,7 @@ import {
     SET_FULL_SCREEN,
     SET_OVERFLOW_DRAWER,
     SET_OVERFLOW_MENU_VISIBLE,
+    SET_SHARE_MENU_VISIBLE,
     SET_TOOLBAR_HOVERED,
     SET_TOOLBOX_TIMEOUT
 } from './actionTypes';
@@ -200,6 +201,22 @@ export function clearToolboxTimeout(): Object {
 export function setOverflowMenuVisible(visible: boolean): Object {
     return {
         type: SET_OVERFLOW_MENU_VISIBLE,
+        visible
+    };
+}
+
+/**
+ * Shows/hides the share menu.
+ * 
+ * @param {boolean} visible - True to show it or false to hide it.
+ * @returns {{
+ *     type: SET_SHARE_MENU_VISIBLE,
+ *     visible: boolean
+ * }}
+ */
+export function setShareMenuVisible(visible: boolean): Object {
+    return {
+        type: SET_SHARE_MENU_VISIBLE,
         visible
     };
 }

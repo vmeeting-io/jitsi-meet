@@ -585,6 +585,7 @@ var config = {
     // obscures the conference controls -- it's better to let users
     // choose to open the pad on their own in that case.
     // openSharedDocumentOnJoin: false,
+    // openWhiteboardOnJoin: false,
 
     // If true, shows the unsafe room name warning label when a room name is
     // deemed unsafe (due to the simplicity in the name) and a password is not
@@ -621,10 +622,10 @@ var config = {
        'camera',
        'chat',
        'closedcaptions',
-       'desktop',
+       'share',
        'download',
        'embedmeeting',
-       'etherpad',
+       'whiteboard',
        'feedback',
        'filmstrip',
        'fullscreen',

@@ -862,7 +862,8 @@
             "stopEveryonesVideo": "카메라 모두 끄기",
             "stopVideo": "카메라 끄기",
             "unblockEveryoneMicCamera": "마이크와 카메라 모두 차단 해제",
-            "moreModerationControls": "방장 설정 더보기"
+            "moreModerationControls": "방장 설정 더보기",
+            "whiteboardModeration": "문서 공유"
         },
         "search": "참가자 검색"
     },
@@ -1197,8 +1198,9 @@
             "Settings": "설정 토글",
             "shareaudio": "오디오 공유",
             "sharedvideo": "YouTube 비디오 공유 토글",
+            "shareMenu": "문서/화면 공유 토글",
             "shareRoom": "친구 초대하기",
-            "shareYourScreen": "화면공유 토글",
+            "shareYourScreen": "화면 공유 토글",
             "shortcuts": "단축키 보기",
             "show": "화면에 표시",
             "silence": "조용",
@@ -1211,6 +1213,7 @@
             "toggleWhiteboard": "판서 토글",
             "videomute": "카메라 토글",
             "videoblur": "카메라 블러 토글",
+            "whiteboard": "문서 공유",
             "selectBackground": "배경 선택",
             "selectVirtualAvatar": "배경/아바타 선택",
             "expand": "펼치기",
@@ -1299,15 +1302,18 @@
         "selectNewModerator": "새 호스트 지정",
         "Settings": "설정",
         "shareaudio": "오디오 공유",
+        "shareDocument": "문서 공유",
         "sharedvideo": "YouTube 비디오 공유",
+        "shareMenu": "문서/화면 공유",
         "shareRoom": "친구 초대하기",
+        "shareScreen": "화면 공유",
         "shortcuts": "단축키 보기",
         "silence": "조용",
         "speakerStats": "접속자 통계",
-        "startScreenSharing": "화면공유 시작",
+        "screenSharing": "화면 공유",
         "startSubtitles": "자막 보이기",
         "stopAudioSharing": "오디오 공유 종료",
-        "stopScreenSharing": "화면공유 종료",
+        "stopSharing": "공유 종료",
         "stopSubtitles": "자막 숨기기",
         "stopSharedVideo": "비디오 종료",
         "surprised": "놀람",
@@ -1316,8 +1322,7 @@
         "tileViewToggle": "타일뷰 토글",
         "toggleCamera": "카메라 토글",
         "videomute": "카메라 켜기/끄기",
-        "whiteboardClose": "판서 닫기",
-        "whiteboardOpen": "판서 열기",
+        "whiteboard": "문서 공유",
         "videoSettings": "비디오 설정",
         "selectBackground": "배경 선택",
         "selectVirtualAvatar": "배경/아바타 선택"
@@ -1529,5 +1534,8 @@
         "reject": "거부",
         "rejectAll": "모두 거부",
         "toggleLabel": "로비 활성화"
+    },
+    "whiteboard": {
+        "title": "판서"
     }
 }

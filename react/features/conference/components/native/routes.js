@@ -25,7 +25,7 @@ export const screen = {
         speakerStats: 'Speaker Stats',
         participants: 'Participants',
         invite: 'Invite',
-        sharedDocument: 'Shared document'
+        whiteboard: 'Whiteboard'
     },
     lobby: 'Lobby'
 };

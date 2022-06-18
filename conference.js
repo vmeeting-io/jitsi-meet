@@ -58,7 +58,8 @@ import {
     setNoticeMessage,
     nonParticipantMessageReceived,
     startRandomSelectionCountdown,
-    Timer
+    Timer,
+    WHITEBOARD_COMMAND
 } from './react/features/base/conference';
 import { getReplaceParticipant } from './react/features/base/config/functions';
 import {
@@ -222,7 +223,7 @@ const commands = {
     EMAIL: EMAIL_COMMAND,
     BIRTHDATE: BIRTHDATE_COMMAND,
     HATON: HAT_COMMAND,
-    ETHERPAD: 'etherpad'
+    WHITEBOARD: WHITEBOARD_COMMAND
 };
 
 /**
@@ -2450,9 +2451,9 @@ export default {
             this.muteVideo(muted);
         });
 
-        room.addCommandListener(this.commands.defaults.ETHERPAD,
+        room.addCommandListener(this.commands.defaults.WHITEBOARD,
             ({ value }) => {
-                APP.UI.initEtherpad(value);
+                APP.UI.initWhiteboard(value);
             }
         );
 

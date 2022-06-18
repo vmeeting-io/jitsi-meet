@@ -9,7 +9,7 @@ import {
     getPinnedParticipant
 } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
-import { SET_DOCUMENT_EDITING_STATUS } from '../etherpad';
+import { SET_WHITEBOARD_STATUS } from '../whiteboard';
 import { isFollowMeActive } from '../follow-me';
 
 import { SET_TILE_VIEW } from './actionTypes';
@@ -59,7 +59,7 @@ MiddlewareRegistry.register(store => next => action => {
         }
         break;
     }
-    case SET_DOCUMENT_EDITING_STATUS:
+    case SET_WHITEBOARD_STATUS:
         if (action.editing) {
             _storeTileViewStateAndClear(store);
         } else {

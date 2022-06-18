@@ -125,7 +125,7 @@ export function getTileViewGridDimensions(state: Object) {
 /**
  * Selector for determining if the UI layout should be in tile view. Tile view
  * is determined by more than just having the tile view setting enabled, as
- * one-on-one calls should not be in tile view, as well as etherpad editing.
+ * one-on-one calls should not be in tile view, as well as whiteboard editing.
  *
  * @param {Object} state - The redux state.
  * @returns {boolean} True if tile view should be displayed.
@@ -156,8 +156,8 @@ export function shouldDisplayTileView(state: Object = {}) {
 
         // Reasons for normal mode:
 
-        // Editing etherpad
-        state['features/etherpad']?.editing
+        // Editing whiteboard
+        state['features/whiteboard']?.editing
 
         // We pinned a participant
         || getPinnedParticipant(state)

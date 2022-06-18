@@ -866,7 +866,8 @@
             "stopEveryonesVideo": "Stop everyone's video",
             "stopVideo": "Stop video",
             "unblockEveryoneMicCamera": "Unblock everyone's mic and camera",
-            "moreModerationControls": "More moderation controls"
+            "moreModerationControls": "More moderation controls",
+            "whiteboardModeration": "Document share"
         },
         "search": "Search participants"
     },
@@ -1201,8 +1202,9 @@
             "Settings": "Toggle settings",
             "shareaudio": "Share audio",
             "sharedvideo": "Toggle YouTube video sharing",
+            "shareMenu": "Toggle document/screen sharing",
             "shareRoom": "Invite someone",
-            "shareYourScreen": "Start / Stop sharing your screen",
+            "shareYourScreen": "Start / Stop sharing screen",
             "shortcuts": "Toggle shortcuts",
             "show": "Show on stage",
             "silence": "Silence",
@@ -1215,6 +1217,7 @@
             "toggleWhiteboard": "Toggle whiteboard",
             "videomute": "Start / Stop camera",
             "videoblur": "Toggle video blur",
+            "whiteboard": "Sharing document",
             "selectBackground": "Select Background",
             "selectVirtualAvatar": "Select Background/Avatar",
             "expand": "Expand",
@@ -1303,15 +1306,17 @@
         "selectNewModerator": "Select New Host",
         "Settings": "Settings",
         "shareaudio": "Share audio",
+        "shareDocument": "Share document",
         "sharedvideo": "Share a YouTube video",
+        "shareMenu": "Share document/screen",
         "shareRoom": "Invite someone",
+        "shareScreen": "Share screen",
         "shortcuts": "View shortcuts",
         "silence": "Silence",
         "speakerStats": "Speaker stats",
-        "startScreenSharing": "Start screen sharing",
+        "screenSharing": "Share screen",
         "startSubtitles": "Start subtitles",
         "stopAudioSharing": "Stop audio sharing",
-        "stopScreenSharing": "Stop screen sharing",
         "stopSubtitles": "Stop subtitles",
         "stopSharedVideo": "Stop video",
         "surprised": "Surprised",
@@ -1320,8 +1325,7 @@
         "tileViewToggle": "Toggle tile view",
         "toggleCamera": "Toggle camera",
         "videomute": "Start / Stop camera",
-        "whiteboardClose": "Close whiteboard",
-        "whiteboardOpen": "Open whiteboard",
+        "whiteboard": "Share document",
         "videoSettings": "Video settings",
         "selectBackground": "Select background",
         "selectVirtualAvatar": "Select background/avatar"
@@ -1533,5 +1537,8 @@
         "reject": "Reject",
         "rejectAll": "Reject all",
         "toggleLabel": "Enable lobby"
+    },
+    "whiteboard": {
+        "title": "Whiteboard"
     }
 }

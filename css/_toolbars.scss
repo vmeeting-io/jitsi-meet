@@ -536,3 +536,20 @@
 .settings-button-container {
     display: inline-block;
 }
+
+.share-menu-popup {
+    display: inline-block;
+
+    & > div:nth-child(2) {
+        background: $menuBG;
+        margin-bottom: 4px;
+        padding: 0;
+    }
+}
+
+.share-menu {
+    padding: 8px 0;
+    font-size: 14px;
+    list-style-type: none;
+    background-color: #3D3D3D;    
+}

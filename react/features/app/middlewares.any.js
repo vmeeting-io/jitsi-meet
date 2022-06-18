@@ -28,7 +28,7 @@ import '../connection-indicator/middleware';
 import '../deep-linking/middleware';
 import '../device-selection/middleware';
 import '../display-name/middleware';
-import '../etherpad/middleware';
+import '../whiteboard/middleware';
 import '../filmstrip/middleware';
 import '../follow-me/middleware';
 import '../invite/middleware';

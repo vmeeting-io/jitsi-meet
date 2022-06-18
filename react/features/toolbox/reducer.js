@@ -7,6 +7,7 @@ import {
     FULL_SCREEN_CHANGED,
     SET_OVERFLOW_DRAWER,
     SET_OVERFLOW_MENU_VISIBLE,
+    SET_SHARE_MENU_VISIBLE,
     SET_TOOLBAR_HOVERED,
     SET_TOOLBOX_ENABLED,
     SET_TOOLBOX_TIMEOUT,
@@ -49,13 +50,19 @@ const INITIAL_STATE = {
     overflowMenuVisible: false,
 
     /**
+     * The indicator which determines whether the ShareMenu is visible.
+     * 
+     * @type {boolean}
+     */
+    shareMenuVisible: false,
+
+    /**
      * A number, non-zero value which identifies the timer created by a call
      * to setTimeout().
      *
      * @type {number|null}
      */
     timeoutID: null,
-
 
     /**
      * The indicator that determines whether the Toolbox is visible.
@@ -91,6 +98,12 @@ ReducerRegistry.register(
             return {
                 ...state,
                 overflowMenuVisible: action.visible
+            };
+
+        case SET_SHARE_MENU_VISIBLE:
+            return {
+                ...state,
+                shareMenuVisible: action.visible
             };
 
         case SET_TOOLBAR_HOVERED:

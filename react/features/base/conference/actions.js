@@ -70,7 +70,8 @@ import {
     EMAIL_COMMAND,
     BIRTHDATE_COMMAND,
     HAT_COMMAND,
-    JITSI_CONFERENCE_URL_KEY
+    JITSI_CONFERENCE_URL_KEY,
+    WHITEBOARD_COMMAND
 } from './constants';
 import {
     _addLocalTracksToConference,

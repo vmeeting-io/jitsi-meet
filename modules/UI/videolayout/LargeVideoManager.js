@@ -207,7 +207,7 @@ export default class LargeVideoManager {
 
             // FIXME this does not really make sense, because the videoType
             // (camera or desktop) is a completely different thing than
-            // the video container type (Etherpad, SharedVideo, VideoContainer).
+            // the video container type (Whiteboard, SharedVideo, VideoContainer).
             const isVideoContainer = LargeVideoManager.isVideoContainer(videoType);
 
             this.newStreamData = null;

@@ -1313,6 +1313,8 @@
         "screenSharing": "화면 공유",
         "startSubtitles": "자막 보이기",
         "stopAudioSharing": "오디오 공유 종료",
+        "stopDocumentSharing": "문서 공유 종료",
+        "stopScreenSharing": "화면 공유 종료",
         "stopSharing": "공유 종료",
         "stopSubtitles": "자막 숨기기",
         "stopSharedVideo": "비디오 종료",

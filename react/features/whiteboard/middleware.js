@@ -32,7 +32,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
             APP.UI.emitEvent(UIEvents.WHITEBOARD_CLICKED);
             const state = getState();
             const { editing: visible } = state['features/whiteboard'];
-            console.log('whiteboardVisible:', visible);
+            // console.log('whiteboardVisible:', visible);
             const conference = getCurrentConference(state);
 
             try {
@@ -96,7 +96,7 @@ StateListenerRegistry.register(
                         const local = getLocalParticipant(state);
                         const approved = !isForceMuted(local, 'whiteboard', state);
                         
-                        console.log(enabled, approved);
+                        // console.log(enabled, approved);
                         if (actor !== local.id && enabled !== approved) {
                             const whiteboardManager = APP.UI.getWhiteboardManager();
                             whiteboardManager.reload();

@@ -250,7 +250,7 @@ export default class WhiteboardManager {
         const local = getLocalParticipant(state);
         const approved = !isForceMuted(local, 'whiteboard', state);
     
-        console.log('whiteboard.reload:', approved);
+        // console.log('whiteboard.reload:', approved);
         if (!url || !this.whiteboard) {
             return undefined;
         }

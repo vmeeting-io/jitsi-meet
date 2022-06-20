@@ -3,7 +3,7 @@
 import UIEvents from '../../../service/UI/UIEvents';
 import { getCurrentConference } from '../base/conference';
 import { JitsiConferenceEvents, } from '../base/lib-jitsi-meet';
-import { getLocalParticipant } from '../base/participants';
+import { getLocalParticipant, PARTICIPANT_JOINED } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
 import { isForceMuted } from '../participants-pane/functions';
 
@@ -25,6 +25,18 @@ const WHITEBOARD_COMMAND = 'whiteboard';
 // eslint-disable-next-line no-unused-vars
 MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
     switch (action.type) {
+    case PARTICIPANT_JOINED: {
+        if (!action.participant.local) {
+            const state = getState();
+            const { editing: visible } = state['features/whiteboard'];
+            const conference = getCurrentConference(state);
+
+            if (conference && visible) {
+                conference.sendMessage({ type: 'whiteboard', visible }, action.participant.id);
+            }
+        }
+        break;
+    }
     case TOGGLE_WHITEBOARD: {
         if (typeof APP !== 'undefined') {
             const result = next(action);
@@ -34,14 +46,10 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
             // console.log('whiteboardVisible:', visible);
             const conference = getCurrentConference(state);
 
-            try {
-                conference && conference.sendMessage('', {
-                    type: 'whiteboard',
-                    visible
-                });
-            } catch (error) {
-                logger.warn('Cannot send endpointMessage', error);
+            if (conference) {
+                conference.sendMessage({ type: 'whiteboard', visible });
             }
+
             return result;
         }
         break;

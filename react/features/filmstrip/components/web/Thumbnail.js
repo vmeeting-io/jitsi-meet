@@ -6,6 +6,7 @@ import React, { Component } from 'react';
 
 import { createScreenSharingIssueEvent, sendAnalytics } from '../../../analytics';
 import { Avatar } from '../../../base/avatar';
+import { openDialog } from '../../../base/dialog';
 import { isMobileBrowser } from '../../../base/environment/utils';
 import { MEDIA_TYPE, VideoTrack } from '../../../base/media';
 import {
@@ -23,6 +24,7 @@ import {
     updateLastTrackVideoMediaEvent
 } from '../../../base/tracks';
 import { getCurrentLayout, LAYOUTS } from '../../../video-layout';
+import ShareDocumentWarningDialog from '../../../whiteboard/components/ShareDocumentWarningDialog';
 import {
     DISPLAY_MODE_TO_CLASS_NAME,
     DISPLAY_VIDEO,
@@ -545,8 +547,14 @@ class Thumbnail extends Component<Props, State> {
      * @returns {void}
      */
     _onClick() {
-        const { _participant, dispatch } = this.props;
+        const { _documentSharing, _participant, dispatch } = this.props;
         const { id, pinned } = _participant;
+
+        if (_documentSharing) {
+            dispatch(openDialog(ShareDocumentWarningDialog));
+
+            return;
+        }
 
         dispatch(pinParticipant(pinned ? null : id));
     }
@@ -950,12 +958,15 @@ function _mapStateToProps(state, ownProps): Object {
     }
     }
 
+    const { editing } = state['features/whiteboard'];
+
     return {
         _audioTrack,
         _currentLayout,
         _defaultLocalDisplayName: defaultLocalDisplayName,
         _disableLocalVideoFlip: Boolean(disableLocalVideoFlip),
         _disableTileEnlargement: Boolean(disableTileEnlargement),
+        _documentSharing: Boolean(editing),
         _isHidden: isLocal && iAmRecorder && !iAmSipGateway,
         _isAudioOnly: Boolean(state['features/base/audio-only'].enabled),
         _isCurrentlyOnLargeVideo: state['features/large-video']?.participantId === id,

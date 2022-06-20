@@ -1,6 +1,7 @@
 // @flow
 
 import type { Dispatch } from 'redux';
+import { openDialog } from '../../../base/dialog';
 
 import { translate } from '../../../base/i18n';
 import { IconShareVideo } from '../../../base/icons';
@@ -9,6 +10,7 @@ import {
     AbstractButton,
     type AbstractButtonProps
 } from '../../../base/toolbox/components';
+import ShareDocumentWarningDialog from '../../../whiteboard/components/ShareDocumentWarningDialog';
 import { toggleSharedVideo } from '../../actions.any';
 import { isSharingStatus } from '../../functions';
 
@@ -66,10 +68,16 @@ class SharedVideoButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { handleClick } = this.props;
+        const { _documentSharing, dispatch, handleClick } = this.props;
 
         if (handleClick) {
             handleClick();
+
+            return;
+        }
+
+        if (_documentSharing) {
+            dispatch(openDialog(ShareDocumentWarningDialog));
 
             return;
         }
@@ -122,8 +130,10 @@ function _mapStateToProps(state): Object {
         disabled: sharedVideoBtnDisabled,
         status: sharedVideoStatus
     } = state['features/shared-video'];
+    const { editing } = state['features/whiteboard'];
 
     return {
+        _documentSharing: Boolean(editing),
         _isDisabled: sharedVideoBtnDisabled,
         _sharingVideo: isSharingStatus(sharedVideoStatus)
     };

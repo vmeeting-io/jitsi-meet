@@ -6,12 +6,14 @@ import {
     createToolbarEvent,
     sendAnalytics
 } from '../../analytics';
+import { openDialog } from '../../base/dialog';
 import { TILE_VIEW_ENABLED, getFeatureFlag } from '../../base/flags';
 import { translate } from '../../base/i18n';
 import { IconTileView } from '../../base/icons';
 import { connect } from '../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
 import { setOverflowMenuVisible } from '../../toolbox/actions';
+import ShareDocumentWarningDialog from '../../whiteboard/components/ShareDocumentWarningDialog';
 import { setTileView } from '../actions';
 import { shouldDisplayTileView } from '../functions';
 import logger from '../logger';
@@ -52,10 +54,16 @@ class TileViewButton<P: Props> extends AbstractButton<P, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { _tileViewEnabled, dispatch, handleClick } = this.props;
+        const { _documentSharing, _tileViewEnabled, dispatch, handleClick } = this.props;
 
         if (handleClick) {
             handleClick();
+
+            return;
+        }
+
+        if (_documentSharing) {
+            dispatch(openDialog(ShareDocumentWarningDialog));
 
             return;
         }
@@ -99,8 +107,10 @@ class TileViewButton<P: Props> extends AbstractButton<P, *> {
 function _mapStateToProps(state, ownProps) {
     const enabled = getFeatureFlag(state, TILE_VIEW_ENABLED, true);
     const { visible = enabled } = ownProps;
+    const { editing } = state['features/whiteboard'];
 
     return {
+        _documentSharing: Boolean(editing),
         _tileViewEnabled: shouldDisplayTileView(state),
         visible
     };

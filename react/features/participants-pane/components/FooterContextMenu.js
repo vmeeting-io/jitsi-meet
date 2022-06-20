@@ -40,6 +40,7 @@ import {
     notifyRandomSelectionCompleted,
 } from '../actions.any';
 import { initAnalytics } from '../../analytics';
+import ShareDocumentWarningDialog from '../../whiteboard/components/ShareDocumentWarningDialog';
 
 const useStyles = makeStyles(() => {
     return {
@@ -103,6 +104,7 @@ export const FooterContextMenu = ({ inDrawer, onMouseLeave }: Props) => {
     const isVideoModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.VIDEO));
     const isModerationEnabled = useSelector(isAvModerationEnabled(MEDIA_TYPE.AUDIO));
     const { id } = useSelector(getLocalParticipant);
+    const { editing: _documentSharing } = useSelector(state => state['features/whiteboard']);
 
     // gets the display name of the participant who clicked on the FooterContextMenu
     const initiator = getParticipantDisplayName(APP.store.getState(), id);
@@ -128,6 +130,12 @@ export const FooterContextMenu = ({ inDrawer, onMouseLeave }: Props) => {
 
     const startRandomSelection = useCallback(
         () => {
+            if (_documentSharing) {
+                dispatch(openDialog(ShareDocumentWarningDialog));
+    
+                return;
+            }
+    
             // function that notifies random selection procedure has now started
             notifyRandomSelectionStarted(initiator);
 
@@ -145,8 +153,9 @@ export const FooterContextMenu = ({ inDrawer, onMouseLeave }: Props) => {
                 notifyRandomSelectionCompleted(selectedParticipantDisplayName, randomParticipantID);
             }, 5000);
 
-        }
-    )
+        },
+        [ dispatch, _documentSharing ]
+    );
 
     const _onStartTimerClick = useCallback(
         () => {

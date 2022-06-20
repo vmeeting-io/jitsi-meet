@@ -1,7 +1,7 @@
 // @flow
 
 import InlineDialog from '@atlaskit/inline-dialog';
-import React, { Component, Fragment } from 'react';
+import React, { Fragment } from 'react';
 
 import {
     ACTION_SHORTCUT_TRIGGERED,

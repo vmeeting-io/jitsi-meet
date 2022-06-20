@@ -1,6 +1,7 @@
 // @flow
 
 import type { Dispatch } from 'redux';
+import { openDialog } from '../../base/dialog';
 
 import { translate } from '../../base/i18n';
 import {
@@ -13,6 +14,7 @@ import {
     type AbstractButtonProps
 } from '../../base/toolbox/components';
 import { setOverflowMenuVisible } from '../../toolbox/actions';
+import ShareDocumentWarningDialog from '../../whiteboard/components/ShareDocumentWarningDialog';
 import { startAudioScreenShareFlow } from '../actions';
 import { isAudioOnlySharing } from '../functions';
 
@@ -47,10 +49,16 @@ class ShareAudioButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { dispatch, handleClick } = this.props;
+        const { _documentSharing, dispatch, handleClick } = this.props;
 
         if (handleClick) {
             handleClick();
+
+            return;
+        }
+
+        if (_documentSharing) {
+            dispatch(openDialog(ShareDocumentWarningDialog));
 
             return;
         }
@@ -79,8 +87,10 @@ class ShareAudioButton extends AbstractButton<Props, *> {
  * @returns {Props}
  */
 function _mapStateToProps(state: Object): $Shape<Props> {
+    const { editing } = state['features/whiteboard'];
 
     return {
+        _documentSharing: Boolean(editing),
         _isAudioOnlySharing: isAudioOnlySharing(state)
     };
 }

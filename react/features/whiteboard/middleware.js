@@ -3,14 +3,13 @@
 import UIEvents from '../../../service/UI/UIEvents';
 import { getCurrentConference } from '../base/conference';
 import { JitsiConferenceEvents, } from '../base/lib-jitsi-meet';
+import { getLocalParticipant } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
+import { isForceMuted } from '../participants-pane/functions';
 
 import { TOGGLE_WHITEBOARD } from './actionTypes';
 import { setWhiteboardUrl } from './actions';
-import { DISABLE_MODERATION, ENABLE_MODERATION } from '../av-moderation/actionTypes';
-import { getLocalParticipant } from '../base/participants';
-import { isForceMuted } from '../participants-pane/functions';
-import { isEnabledFromState } from '../av-moderation/functions';
+import logger from './logger';
 
 declare var APP: Object;
 
@@ -36,7 +35,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
             const conference = getCurrentConference(state);
 
             try {
-                conference && conference.sendEndpointMessage('', {
+                conference && conference.sendMessage('', {
                     type: 'whiteboard',
                     visible
                 });

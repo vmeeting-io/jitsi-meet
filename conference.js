@@ -2485,7 +2485,10 @@ export default {
         });
 
         room.addCommandListener(this.commands.defaults.WHITEBOARD,
-            ({ value }) => {
+            (msg, id, jid) => {
+                // console.log('etherpad message:', msg, id, jid);
+                // convert jid to [site]room
+                const value = jid.replace(/([^@]+)[^.]+.([^.]+).+$/, '[$2]$1');
                 APP.UI.initWhiteboard(value);
             }
         );

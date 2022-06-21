@@ -21,8 +21,12 @@ export function loadCurrentUser() {
 
                 // reload from rest api
                 const resp = await users(token).me();
-                // console.log('loadCurrentUser:', resp.data);
-                dispatch(setJWT(resp.data));
+                if (token !== resp.data) {
+                    // console.log('loadCurrentUser:', resp.data);
+                    
+                    tokenLocalStorage.setItem(resp.data, getState());
+                    dispatch(setJWT(resp.data));
+                }
             }
         } catch (e) {
             console.error('loadCurrentUser is failed:', e.message);

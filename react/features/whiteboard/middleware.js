@@ -5,11 +5,11 @@ import { getCurrentConference } from '../base/conference';
 import { JitsiConferenceEvents, } from '../base/lib-jitsi-meet';
 import { getLocalParticipant, PARTICIPANT_JOINED } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
+import { SETTINGS_UPDATED } from '../base/settings';
 import { isForceMuted } from '../participants-pane/functions';
 
 import { TOGGLE_WHITEBOARD } from './actionTypes';
 import { setWhiteboardUrl } from './actions';
-import logger from './logger';
 
 declare var APP: Object;
 
@@ -50,6 +50,19 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                 conference.sendMessage({ type: 'whiteboard', visible });
             }
 
+            return result;
+        }
+        break;
+    }
+    case SETTINGS_UPDATED: {
+        const state = getState();
+        if (typeof APP !== 'undefined'
+            && action.settings.hasOwnProperty('displayName')
+            && state['features/base/settings'].displayName !== action.settings.displayName)
+        {
+            const result = next(action);
+            const whiteboardManager = APP.UI.getWhiteboardManager();
+            whiteboardManager.reload();
             return result;
         }
         break;

@@ -181,7 +181,10 @@ UI.initWhiteboard = name => {
 
     whiteboardManager = new WhiteboardManager(eventEmitter);
 
-    const url = new URL(name, config.whiteboard_base);
+    const whiteboard_base = window._env_.NODE_ENV === 'development'
+        ? config.whiteboard_base.replace(/(https?:\/\/)([^/]+)(.+$)/, '$1$2:8443$3')
+        : config.whiteboard_base;
+    const url = new URL(name, whiteboard_base);
 
     APP.store.dispatch(setWhiteboardUrl(url.toString()));
 

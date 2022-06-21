@@ -242,6 +242,6 @@ export default class WhiteboardManager {
     reload() {
         //not using getSharedDocumentUrl because redux state is not updated yet at the time this function is calling
         const state = APP.store.getState();
-        this.whiteboard.iframe.src = `${getWhiteboardUrl(state)}}`;
+        this.whiteboard.iframe.src = `${getWhiteboardUrl(state)}`;
     }
 }

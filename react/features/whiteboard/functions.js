@@ -13,7 +13,6 @@ import { getLocalParticipant } from '../base/participants';
 export function getWhiteboardUrl(stateful: Function | Object) {
     const state = toState(stateful);
     const { url } = state['features/whiteboard'];
-    const { displayName } = state['features/base/settings'];
     const local = getLocalParticipant(state);
     const approved = !isForceMuted(local, 'whiteboard', state);
 
@@ -27,8 +26,8 @@ export function getWhiteboardUrl(stateful: Function | Object) {
 
     const params = new URLSearchParams(WHITEBOARD_OPTIONS);
 
-    if (displayName) {
-        params.append('userName', displayName);
+    if (local?.name) {
+        params.append('userName', local.name);
     }
 
     return `${url}?${params.toString()}`;

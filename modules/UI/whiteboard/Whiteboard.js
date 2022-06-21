@@ -1,12 +1,9 @@
 /* global $, APP, interfaceConfig */
 
 import { getWhiteboardUrl, setWhiteboardState } from '../../../react/features/whiteboard';
-import { getToolboxHeight } from '../../../react/features/toolbox/functions.web';
 import Filmstrip from '../videolayout/Filmstrip';
 import LargeContainer from '../videolayout/LargeContainer';
 import VideoLayout from '../videolayout/VideoLayout';
-import { getLocalParticipant } from '../../../react/features/base/participants';
-import { isForceMuted } from '../../../react/features/participants-pane/functions';
 
 /**
  *
@@ -245,26 +242,6 @@ export default class WhiteboardManager {
     reload() {
         //not using getSharedDocumentUrl because redux state is not updated yet at the time this function is calling
         const state = APP.store.getState();
-        const { url } = state['features/whiteboard'];
-        const { displayName } = state['features/base/settings'];
-        const local = getLocalParticipant(state);
-        const approved = !isForceMuted(local, 'whiteboard', state);
-    
-        // console.log('whiteboard.reload:', approved);
-        if (!url || !this.whiteboard) {
-            return undefined;
-        }
-
-        const WHITEBOARD_OPTIONS = {
-            role: approved ? 'owner' : 'participant'
-        };
-    
-        const params = new URLSearchParams(WHITEBOARD_OPTIONS);
-
-        if (displayName) {
-            params.append('userName', displayName);
-        }
-
-        this.whiteboard.iframe.src = `${url}?${params.toString()}`;
+        this.whiteboard.iframe.src = `${getWhiteboardUrl(state)}}`;
     }
 }

@@ -174,12 +174,14 @@ UI.unbindEvents = () => {
  * @param {string} name whiteboard id
  */
 UI.initWhiteboard = name => {
-    if (whiteboardManager || !config.whiteboard_base || !name) {
+    if (!config.whiteboard_base || !name) {
         return;
     }
     logger.log('Whiteboard is enabled');
 
-    whiteboardManager = new WhiteboardManager(eventEmitter);
+    if (!whiteboardManager) {
+        whiteboardManager = new WhiteboardManager(eventEmitter);
+    }
 
     const whiteboard_base = window._env_.NODE_ENV === 'development'
         ? config.whiteboard_base.replace(/(https?:\/\/)([^/]+)(.+$)/, '$1$2:8443$3')

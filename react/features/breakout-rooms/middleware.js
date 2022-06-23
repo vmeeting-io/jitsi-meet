@@ -3,7 +3,7 @@
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import { find } from 'lodash';
 
-import { conferenceSubjectChanged } from '../base/conference';
+import { conferenceSubjectChanged, setRoomInfo } from '../base/conference';
 import { CONNECTION_DISCONNECTED } from '../base/connection';
 import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
 import { getParticipantById } from '../base/participants';
@@ -29,6 +29,7 @@ StateListenerRegistry.register(
                 logger.debug(`Moving to room: ${roomId}`);
                 const state = getState();
                 const { editing } = state['features/whiteboard'];
+                const { roomInfo } = state['features/base/conference'];
                 if (editing) {
                     dispatch(setRoomInfo({ ...roomInfo, whiteboard_owner: '' }));
                     dispatch(toggleWhiteboard());

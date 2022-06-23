@@ -235,6 +235,7 @@ export default class WhiteboardManager {
 
         if (isVisible) {
             VideoLayout.removeLargeVideoContainer(WHITEBOARD_CONTAINER_TYPE);
+            this.whiteboard.container.removeChild(this.whiteboard.iframe);
             this.whiteboard = null;
         }
     }

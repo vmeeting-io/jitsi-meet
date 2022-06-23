@@ -66,6 +66,7 @@ StateListenerRegistry.register(
                 const state = getState();
                 const { editing } = state['features/whiteboard'];
                 const local = getLocalParticipant(state);
+                console.log('editing=', editing, 'local.id=', local.id);
                 if (editing !== Boolean(owner) && local.id !== owner) {
                     const { roomInfo } = state['features/base/conference'];
                     dispatch(setRoomInfo({ ...roomInfo, whiteboard_owner: owner }));
@@ -86,6 +87,7 @@ StateListenerRegistry.register(
                         url = u.toString();
                     }
 
+                    console.log('WHITEBOARD_COMMAND:', value);
                     dispatch(setWhiteboardUrl(url));
                 }
             );

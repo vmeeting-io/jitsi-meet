@@ -2488,7 +2488,10 @@ export default {
             (msg, id, jid) => {
                 // console.log('etherpad message:', msg, id, jid);
                 // convert jid to [site]room
-                const value = jid.replace(/([^@]+)[^.]+.([^.]+).+$/, '[$2]$1');
+                const value = jid[0] === '['
+                    ? jid.split('@')[0]
+                    : jid.replace(/([^@]+)[^.]+.([^.]+).+$/, '[$2]$1');
+                console.log('WHITEBOARD_COMMAND:', jid, value);
                 APP.UI.initWhiteboard(value);
             }
         );

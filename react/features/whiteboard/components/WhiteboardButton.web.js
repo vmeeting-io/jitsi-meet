@@ -70,7 +70,6 @@ class WhiteboardButton extends AbstractButton<Props, *> {
                 enable: !_editing
             }));
 
-        dispatch(toggleWhiteboard());
         if (this.props.closeOverflowMenu) {
             this.props.closeOverflowMenu();
         }

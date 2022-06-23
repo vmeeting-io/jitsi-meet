@@ -2,7 +2,10 @@
 
 import { ReducerRegistry } from '../base/redux';
 
-import { SET_WHITEBOARD_STATUS, SET_WHITEBOARD_URL } from './actionTypes';
+import {
+    SET_WHITEBOARD_STATUS,
+    SET_WHITEBOARD_URL,
+} from './actionTypes';
 
 const DEFAULT_STATE = {
 
@@ -17,7 +20,7 @@ const DEFAULT_STATE = {
      * @public
      * @type {boolean}
      */
-    editing: false
+    editing: false,
 };
 
 /**

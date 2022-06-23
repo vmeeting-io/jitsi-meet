@@ -241,6 +241,17 @@ export const SET_PENDING_SUBJECT_CHANGE = 'SET_PENDING_SUBJECT_CHANGE';
 export const SET_ROOM = 'SET_ROOM';
 
 /**
+ * The type of (redux) action which sets the room information of the
+ * conference.
+ *
+ * {
+ *     type: SET_ROOM_INFO,
+ *     roomInfo: object
+ * }
+ */
+export const SET_ROOM_INFO = 'SET_ROOM_INFO';
+
+/**
  * The type of (redux) action which updates the current known status of the
  * moderator features for starting participants as audio or video muted.
  *

@@ -1,7 +1,8 @@
 // @flow
 
 import UIEvents from '../../../service/UI/UIEvents';
-import { getCurrentConference } from '../base/conference';
+import { conferences } from '../../api/conferences';
+import { getCurrentConference, setRoomInfo } from '../base/conference';
 import { JitsiConferenceEvents, } from '../base/lib-jitsi-meet';
 import { getLocalParticipant, PARTICIPANT_JOINED } from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
@@ -9,7 +10,7 @@ import { SETTINGS_UPDATED } from '../base/settings';
 import { isForceMuted } from '../participants-pane/functions';
 
 import { TOGGLE_WHITEBOARD } from './actionTypes';
-import { setWhiteboardUrl } from './actions';
+import { setWhiteboardUrl, toggleWhiteboard } from './actions';
 
 declare var APP: Object;
 
@@ -25,32 +26,9 @@ const WHITEBOARD_COMMAND = 'whiteboard';
 // eslint-disable-next-line no-unused-vars
 MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
     switch (action.type) {
-    case PARTICIPANT_JOINED: {
-        if (!action.participant.local) {
-            const state = getState();
-            const { editing: visible } = state['features/whiteboard'];
-            const conference = getCurrentConference(state);
-
-            if (conference && visible) {
-                conference.sendMessage({ type: 'whiteboard', visible }, action.participant.id);
-            }
-        }
-        break;
-    }
     case TOGGLE_WHITEBOARD: {
         if (typeof APP !== 'undefined') {
-            const result = next(action);
             APP.UI.emitEvent(UIEvents.WHITEBOARD_CLICKED);
-            const state = getState();
-            const { editing: visible } = state['features/whiteboard'];
-            // console.log('whiteboardVisible:', visible);
-            const conference = getCurrentConference(state);
-
-            if (conference) {
-                conference.sendMessage({ type: 'whiteboard', visible });
-            }
-
-            return result;
         }
         break;
     }
@@ -81,13 +59,17 @@ StateListenerRegistry.register(
     state => getCurrentConference(state),
     (conference, { dispatch, getState }, previousConference) => {
         const receiveMessage = (_, data) => {
-            // console.log('message is received:', data);
-            const { type, visible } = data || {};
+            console.log('message is received:', data);
+            const { type, owner } = data || {};
 
             if (typeof APP !== 'undefined' && type === 'whiteboard') {
-                const { editing } = getState()['features/whiteboard'];
-                if (editing !== visible) {
-                    APP.UI.emitEvent(UIEvents.WHITEBOARD_CLICKED);
+                const state = getState();
+                const { editing } = state['features/whiteboard'];
+                const local = getLocalParticipant(state);
+                if (editing !== Boolean(owner) && local.id !== owner) {
+                    const { roomInfo } = state['features/base/conference'];
+                    dispatch(setRoomInfo({ ...roomInfo, whiteboard_owner: owner }));
+                    dispatch(toggleWhiteboard());
                 }
             }
         };
@@ -108,6 +90,7 @@ StateListenerRegistry.register(
                 }
             );
 
+            conference.on(JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED, receiveMessage);
             conference.on(JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED, receiveMessage);
             conference.on(JitsiConferenceEvents.AV_MODERATION_CHANGED, ({ enabled, kind, actor }) => {
                 if (typeof APP !== 'undefined' && kind === 'whiteboard') {

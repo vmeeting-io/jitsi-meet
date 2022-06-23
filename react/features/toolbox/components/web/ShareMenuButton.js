@@ -30,6 +30,8 @@ import ShareDesktopButton from './ShareDesktopButton';
 import { toggleWhiteboard } from '../../../whiteboard';
 import { isForceMuted } from '../../../participants-pane/functions';
 import { getLocalParticipant } from '../../../base/participants';
+import { setRoomInfo } from '../../../base/conference';
+import { conferences } from '../../../../api/conferences';
 
 /**
  * Share Desktop Popup.
@@ -114,12 +116,21 @@ class ShareMenuButton extends AbstractButton<Props, *> {
     }
 
     _onToggleWhiteboard() {
+        const { _documentSharing, _roomInfo, _local, dispatch } = this.props;
+
         sendAnalytics(createToolbarEvent(
             'toggle.whiteboard.sharing',
             ACTION_SHORTCUT_TRIGGERED,
-            { enable: !this.props._documentSharing }));
+            { enable: !_documentSharing }));
 
-        this.props.dispatch(toggleWhiteboard());
+        conferences()
+            .id(_roomInfo._id)
+            .update({ whiteboard_owner: _documentSharing ? '' : _local.id })
+            .then(resp => {
+                console.log('conference updated:', resp.data);
+                dispatch(setRoomInfo(resp.data));
+            });
+        dispatch(toggleWhiteboard());
     }
 
     _getMenus() {
@@ -300,6 +311,7 @@ function mapStateToProps(state) {
     const localVideo = getLocalVideoTrack(state['features/base/tracks']);
     const isGuest = !isHost(state);
     const local = getLocalParticipant(state);
+    const { roomInfo } = state['features/base/conference'];
     const _approvedPresenter = !isForceMuted(local, 'presenter', state);
     const _approvedWhiteboard = !isForceMuted(local, 'whiteboard', state);
 
@@ -329,7 +341,9 @@ function mapStateToProps(state) {
         _desktopSharingDisabledTooltipKey: desktopSharingDisabledTooltipKey,
         _documentSharing: Boolean(editing),
         _isOpen: false,
+        _local: local,
         _localVideo: localVideo,
+        _roomInfo: roomInfo,
         _screenSharing,
         _shareMenuVisible: shareMenuVisible,
         _virtualSource: state['features/virtual-background'].virtualSource,

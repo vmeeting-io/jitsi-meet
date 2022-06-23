@@ -195,6 +195,7 @@ export function moveToRoom(roomId?: string) {
         const mainRoomId = getMainRoom(getState)?.id;
         let _roomId = roomId || mainRoomId;
 
+        console.log('moveToRoom:', roomId);
         // Check if we got a full JID.
         // $FlowExpectedError
         if (_roomId?.indexOf('@') !== -1) {

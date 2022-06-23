@@ -15,6 +15,7 @@ import { UPDATE_BREAKOUT_ROOMS } from './actionTypes';
 import { moveToRoom } from './actions';
 import { getBreakoutRooms } from './functions';
 import logger from './logger';
+import { toggleWhiteboard } from '../whiteboard';
 
 /**
  * Registers a change handler for state['features/base/conference'].conference to
@@ -26,6 +27,12 @@ StateListenerRegistry.register(
         if (conference && !previousConference) {
             conference.on(JitsiConferenceEvents.BREAKOUT_ROOMS_MOVE_TO_ROOM, roomId => {
                 logger.debug(`Moving to room: ${roomId}`);
+                const state = getState();
+                const { editing } = state['features/whiteboard'];
+                if (editing) {
+                    dispatch(setRoomInfo({ ...roomInfo, whiteboard_owner: '' }));
+                    dispatch(toggleWhiteboard());
+                }
                 dispatch(moveToRoom(roomId));
             });
 

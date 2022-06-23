@@ -222,22 +222,19 @@ export default class WhiteboardManager {
      * Open new Whiteboard frame if there is no Whiteboard frame yet.
      */
     toggleWhiteboard() {
-        if (!this.isOpen) {
+        const isVisible = this.isOpen;
+        if (!isVisible) {
             this.openWhiteboard();
         }
 
-        const isVisible = this.isVisible();
-
-        VideoLayout.showLargeVideoContainer(
-            WHITEBOARD_CONTAINER_TYPE, !isVisible);
-
-        APP.store.dispatch(setWhiteboardState(!isVisible));
-
+        VideoLayout.showLargeVideoContainer(WHITEBOARD_CONTAINER_TYPE, !isVisible);
         if (isVisible) {
             VideoLayout.removeLargeVideoContainer(WHITEBOARD_CONTAINER_TYPE);
             this.whiteboard.container.removeChild(this.whiteboard.iframe);
             this.whiteboard = null;
         }
+        // console.log('toggleWhiteboard:', isVisible, this.whiteboard);
+        APP.store.dispatch(setWhiteboardState(!isVisible));
     }
 
     reload() {

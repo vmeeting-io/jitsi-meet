@@ -13,7 +13,8 @@ import {
     conferenceWillLeave,
     createConference,
     getCurrentConference,
-    setFollowMe
+    setFollowMe,
+    setRoomInfo
 } from '../base/conference';
 import {
     MEDIA_TYPE,
@@ -33,6 +34,7 @@ import {
     clearNotifications,
     showNotification
 } from '../notifications';
+import { toggleWhiteboard } from '../whiteboard';
 
 import { _RESET_BREAKOUT_ROOMS, _UPDATE_ROOM_COUNTER } from './actionTypes';
 import { FEATURE_KEY } from './constants';
@@ -196,6 +198,14 @@ export function moveToRoom(roomId?: string) {
         let _roomId = roomId || mainRoomId;
 
         console.log('moveToRoom:', roomId);
+        const state = getState();
+        const { editing } = state['features/whiteboard'];
+        const { roomInfo } = state['features/base/conference'];
+        if (editing) {
+            dispatch(setRoomInfo({ ...roomInfo, whiteboard_owner: '' }));
+            dispatch(toggleWhiteboard());
+        }
+
         // Check if we got a full JID.
         // $FlowExpectedError
         if (_roomId?.indexOf('@') !== -1) {

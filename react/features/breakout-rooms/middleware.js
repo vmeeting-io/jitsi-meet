@@ -3,7 +3,7 @@
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import { find } from 'lodash';
 
-import { conferenceSubjectChanged, setRoomInfo } from '../base/conference';
+import { conferenceSubjectChanged } from '../base/conference';
 import { CONNECTION_DISCONNECTED } from '../base/connection';
 import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
 import { getParticipantById } from '../base/participants';
@@ -15,7 +15,6 @@ import { UPDATE_BREAKOUT_ROOMS } from './actionTypes';
 import { moveToRoom } from './actions';
 import { getBreakoutRooms } from './functions';
 import logger from './logger';
-import { toggleWhiteboard } from '../whiteboard';
 
 /**
  * Registers a change handler for state['features/base/conference'].conference to
@@ -27,13 +26,6 @@ StateListenerRegistry.register(
         if (conference && !previousConference) {
             conference.on(JitsiConferenceEvents.BREAKOUT_ROOMS_MOVE_TO_ROOM, roomId => {
                 logger.debug(`Moving to room: ${roomId}`);
-                const state = getState();
-                const { editing } = state['features/whiteboard'];
-                const { roomInfo } = state['features/base/conference'];
-                if (editing) {
-                    dispatch(setRoomInfo({ ...roomInfo, whiteboard_owner: '' }));
-                    dispatch(toggleWhiteboard());
-                }
                 dispatch(moveToRoom(roomId));
             });
 

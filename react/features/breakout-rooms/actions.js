@@ -5,6 +5,7 @@ import i18next from 'i18next';
 import _ from 'lodash';
 import { batch } from 'react-redux';
 import type { Dispatch } from 'redux';
+import { conferences } from '../../api/conferences';
 
 import { createBreakoutRoomsEvent, sendAnalytics } from '../analytics';
 import { _RESET_MODERATIONS } from '../av-moderation/actionTypes';
@@ -197,7 +198,7 @@ export function moveToRoom(roomId?: string) {
         const mainRoomId = getMainRoom(getState)?.id;
         let _roomId = roomId || mainRoomId;
 
-        console.log('moveToRoom:', roomId);
+        console.log('moveToRoom:', roomId, mainRoomId);
         const state = getState();
         const { editing } = state['features/whiteboard'];
         const { roomInfo } = state['features/base/conference'];
@@ -294,6 +295,17 @@ export function moveToRoom(roomId?: string) {
                 startWithVideoMuted: isVideoMuted
             });
         }
+
+        conferences()
+            .delete_yn(false)
+            .name(goToMainRoom ? _roomId : _roomId.replace(/\[[^\]]+\](.+$)/, '$1'))
+            .then(resp => {
+                console.log('conference result:', resp.data);
+                dispatch(setRoomInfo(resp.data.docs[0]));
+            })
+            .catch(error => {
+                console.error('conference not found:', error.message);
+            });
 
         if (goToMainRoom) {
             dispatch(showNotification({

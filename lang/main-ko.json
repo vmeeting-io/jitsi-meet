@@ -446,6 +446,7 @@
         "shareAudioWarningD2": "화면 공유를 다시 시작하고 \"오디오 공유\" 옵션을 선택해야 합니다.",
         "shareDocumentWarningTitle": "문서 공유 중지",
         "shareDocumentWarningD1": "먼저 문서 공유를 중지해야 합니다.",
+        "shareDocumentWarningD2": "문서 공유를 중지할 수 없습니다. 방장만 문서 공유를 중지할 수 있습니다.",
         "shareMediaWarningGenericH2": "화면과 오디오를 공유하고 싶다면",
         "shareVideoLinkError": "올바른 YouTube 링크를 입력하세요",
         "shareVideoTitle": "비디오 공유",

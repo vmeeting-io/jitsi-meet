@@ -242,7 +242,7 @@ class ShareMenuButton extends AbstractButton<Props, *> {
             _screenSharing,
         } = this.props;
 
-        if (!_documentSharing || !_screenSharing) {
+        if (!_documentSharing && !_screenSharing) {
             return false;
         }
 

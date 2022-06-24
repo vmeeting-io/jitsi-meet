@@ -447,6 +447,7 @@
         "shareAudioWarningD2": "you need to restart your screen sharing and check the \"share audio\" option.",
         "shareDocumentWarningTitle": "Stop document sharing",
         "shareDocumentWarningD1": "you need to stop document sharing first.",
+        "shareDocumentWarningD2": "you cannot stop sharing document. only moderator can stop sharing document.",
         "shareMediaWarningGenericH2": "If you want to share your screen and audio",
         "shareVideoLinkError": "Please provide a correct video link.",
         "shareVideoTitle": "Share video",

@@ -1,10 +1,14 @@
 // @flow
 
 import UIEvents from '../../../service/UI/UIEvents';
-import { conferences } from '../../api/conferences';
 import { getCurrentConference, setRoomInfo } from '../base/conference';
 import { JitsiConferenceEvents, } from '../base/lib-jitsi-meet';
-import { getLocalParticipant, PARTICIPANT_JOINED } from '../base/participants';
+import {
+    PARTICIPANT_ROLE,
+    PARTICIPANT_UPDATED,
+    getParticipantById,
+    getLocalParticipant
+} from '../base/participants';
 import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
 import { SETTINGS_UPDATED } from '../base/settings';
 import { isForceMuted } from '../participants-pane/functions';
@@ -32,6 +36,33 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         }
         break;
     }
+    case PARTICIPANT_UPDATED: {
+        const state = getState();
+
+        const { id, role } = action.participant;
+        const localParticipant = getLocalParticipant(state);
+
+        if (localParticipant?.id !== id) {
+            return next(action);
+        }
+
+        const oldParticipant = getParticipantById(state, id);
+        const oldRole = oldParticipant?.role;
+
+        if (typeof APP !== 'undefined'
+            && oldRole
+            && oldRole !== role
+            && role === PARTICIPANT_ROLE.MODERATOR)
+        {
+            const result = next(action);
+            const whiteboardManager = APP.UI.getWhiteboardManager();
+            if (whiteboardManager && whiteboardManager.isOpen) {
+                whiteboardManager.reload();
+            }
+            return result;
+        }
+        break;
+    }
     case SETTINGS_UPDATED: {
         const state = getState();
         if (typeof APP !== 'undefined'
@@ -40,7 +71,9 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         {
             const result = next(action);
             const whiteboardManager = APP.UI.getWhiteboardManager();
-            whiteboardManager.reload();
+            if (whiteboardManager && whiteboardManager.isOpen) {
+                whiteboardManager.reload();
+            }
             return result;
         }
         break;

@@ -3,7 +3,6 @@
 import { getWhiteboardUrl, setWhiteboardState } from '../../../react/features/whiteboard';
 import Filmstrip from '../videolayout/Filmstrip';
 import LargeContainer from '../videolayout/LargeContainer';
-import { VIDEO_CONTAINER_TYPE } from '../videolayout/VideoContainer';
 import VideoLayout from '../videolayout/VideoLayout';
 
 /**
@@ -229,9 +228,10 @@ export default class WhiteboardManager {
         }
 
         VideoLayout.showLargeVideoContainer(WHITEBOARD_CONTAINER_TYPE, !isVisible);
+
         if (isVisible) {
             VideoLayout.removeLargeVideoContainer(WHITEBOARD_CONTAINER_TYPE);
-            VideoLayout.showLargeVideoContainer(VIDEO_CONTAINER_TYPE, true);
+            // VideoLayout.showLargeVideoContainer(VIDEO_CONTAINER_TYPE, true);
             this.whiteboard.container.removeChild(this.whiteboard.iframe);
             this.whiteboard = null;
         }

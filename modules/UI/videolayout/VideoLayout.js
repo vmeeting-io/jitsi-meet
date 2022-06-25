@@ -245,7 +245,7 @@ const VideoLayout = {
             }
         }
 
-        return largeVideo.showContainer(containerTypeToShow);
+        return largeVideo.showContainer(containerTypeToShow || VIDEO_CONTAINER_TYPE);
     },
 
     isLargeContainerTypeVisible(type) {

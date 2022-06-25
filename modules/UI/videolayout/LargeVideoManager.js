@@ -636,6 +636,22 @@ export default class LargeVideoManager {
                 // is a bigger refactoring
                 this.showWatermark(true);
 
+                const id = APP.UI.getLargeVideoID();
+                const state = APP.store.getState();
+                const videoTrack = getTrackByMediaTypeAndParticipant(state['features/base/tracks'], MEDIA_TYPE.VIDEO, id);
+                const stream = videoTrack?.jitsiTrack;
+        
+                const isVideoMuted = !stream || stream.isMuted();
+                const participant = getParticipantById(state, id);
+                const connectionStatus = participant?.connectionStatus;
+                const isVideoRenderable = !isVideoMuted
+                    && (APP.conference.isLocalId(id) || connectionStatus === JitsiParticipantConnectionStatus.ACTIVE);
+                const isAudioOnly = APP.conference.isAudioOnly();
+                const showAvatar
+                    = (isAudioOnly && videoType !== VIDEO_TYPE.DESKTOP) || !isVideoRenderable;
+    
+                container.showAvatar(showAvatar);
+
                 // "avatar" and "video connection" can not be displayed both
                 // at the same time, but the latter is of higher priority and it
                 // will hide the avatar one if will be displayed.

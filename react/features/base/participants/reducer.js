@@ -286,7 +286,7 @@ ReducerRegistry.register('features/base/participants', (state = DEFAULT_STATE, a
         // The sort order of participants is preserved since Map remembers the original insertion order of the keys.
         state.sortedRemoteParticipants = new Map(sortedRemoteParticipants);
 
-        console.log('PARTICIPANT_JOINED:', state.sortedRemoteParticipants);
+        // console.log('PARTICIPANT_JOINED:', state.sortedRemoteParticipants);
         if (isFakeParticipant) {
             state.fakeParticipants.set(id, participant);
         }

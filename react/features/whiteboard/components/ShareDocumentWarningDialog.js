@@ -3,6 +3,8 @@
 import React, { Component } from 'react';
 import type { Dispatch } from 'redux';
 
+import { conferences } from '../../../api/conferences';
+import { setRoomInfo } from '../../base/conference';
 import { Dialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
 import { getLocalParticipant } from '../../base/participants';
@@ -47,9 +49,17 @@ class ShareDocumentWarningDialog extends Component<Props> {
      * @returns {boolean}
      */
     _onStopSharing() {
-        const { _approvedWhiteboard, dispatch } = this.props;
+        const { _approvedWhiteboard, _roomInfo, dispatch } = this.props;
 
         if (_approvedWhiteboard) {
+            conferences()
+                .id(_roomInfo._id)
+                .update({ whiteboard_owner: '' })
+                .then(resp => {
+                    console.log('conference updated:', resp.data);
+                    dispatch(setRoomInfo(resp.data));
+                });
+
             // Depending on the context from which this dialog is opened we'll either be toggling off an audio only
             // share session or a normal screen sharing one, this is indicated by the _isAudioScreenShareWarning prop.
             dispatch(toggleWhiteboard());
@@ -101,10 +111,12 @@ class ShareDocumentWarningDialog extends Component<Props> {
  */
 function mapStateToProps(state) {
     const local = getLocalParticipant(state);
+    const { roomInfo } = state['features/base/conference'];
     const _approvedWhiteboard = !isForceMuted(local, 'whiteboard', state);
 
     return {
         _approvedWhiteboard,
+        _roomInfo: roomInfo,
     };
 }
 

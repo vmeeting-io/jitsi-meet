@@ -96,15 +96,22 @@ StateListenerRegistry.register(
             const { type, owner } = data || {};
 
             if (typeof APP !== 'undefined' && type === 'whiteboard') {
-                const state = getState();
-                const { editing } = state['features/whiteboard'];
-                const local = getLocalParticipant(state);
-                console.log('editing=', editing, 'local.id=', local.id);
-                if (editing !== Boolean(owner)) {
-                    const { roomInfo } = state['features/base/conference'];
-                    dispatch(setRoomInfo({ ...roomInfo, whiteboard_owner: owner }));
-                    dispatch(toggleWhiteboard());
-                }
+                /*
+                 * Delay show toggle whiteboard
+                 * largeVideoContainer hide : 300ms + alpha
+                 * tileViewContainer show : 300ms + alpha
+                 */
+                setTimeout(() => {
+                    const state = getState();
+                    const { editing } = state['features/whiteboard'];
+                    const local = getLocalParticipant(state);
+                    console.log('editing=', editing, 'local.id=', local.id);
+                    if (editing !== Boolean(owner)) {
+                        const { roomInfo } = state['features/base/conference'];
+                        dispatch(setRoomInfo({ ...roomInfo, whiteboard_owner: owner }));
+                        dispatch(toggleWhiteboard());
+                    }
+                }, 2000);
             }
         };
 

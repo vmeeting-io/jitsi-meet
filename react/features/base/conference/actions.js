@@ -418,6 +418,7 @@ export function conferenceTimestampChanged(conferenceTimestamp: number) {
 * }}
 */
 export function conferenceUniqueIdSet(conference: Object, meetingId) {
+    // console.error('conferenceUniqueIdSet:', meetingId);
     return {
         type: CONFERENCE_UNIQUE_ID_SET,
         conference,

@@ -48,6 +48,7 @@ import {
     conferenceWillLeave,
     createConference,
     setLocalSubject,
+    setRoomInfo,
     setSubject
 } from './actions';
 import { TRIGGER_READY_TO_CLOSE_REASONS } from './constants';
@@ -444,6 +445,15 @@ function _conferenceUniqueIdSet(store, next, action) {
             .update({ meeting_id: action.meetingId })
             .then(resp => {
                 // console.log('conference updated:', resp.data);
+                store.dispatch(setRoomInfo(resp.data));
+            });
+    } else if (!roomInfo._id) {
+        // 방 생성 전에 들어온 경우,
+        conferences()
+            .meetingId(action.meetingId)
+            .then(resp => {
+                // console.log('conference info:', resp.data);
+                store.dispatch(setRoomInfo(resp.data.docs[0]));
             });
     }
 

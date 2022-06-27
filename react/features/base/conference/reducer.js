@@ -483,6 +483,6 @@ function _setRoomInfo(state, action) {
      */
     return assign(state, {
         error: undefined,
-        roomInfo
+        roomInfo: { ...state.roomInfo, ...roomInfo }
     });
 }

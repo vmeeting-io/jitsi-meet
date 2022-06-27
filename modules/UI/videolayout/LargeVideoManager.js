@@ -63,6 +63,7 @@ export default class LargeVideoManager {
          */
         this.containers = {};
 
+        // console.log('LargeVideoManager.state=', VIDEO_CONTAINER_TYPE);
         this.state = VIDEO_CONTAINER_TYPE;
 
         // FIXME: We are passing resizeContainer as parameter which is calling
@@ -213,6 +214,7 @@ export default class LargeVideoManager {
             this.newStreamData = null;
 
             logger.info(`hover in ${id}`);
+            // console.log('LargeVideoManager.state=', videoType);
             this.state = videoType;
             // eslint-disable-next-line no-shadow
             const container = this.getCurrentContainer();
@@ -625,6 +627,7 @@ export default class LargeVideoManager {
         }
         oldContainer.hide();
 
+        // console.log('LargeVideoManager.state=', type);
         this.state = type;
         const container = this.getContainer(type);
 

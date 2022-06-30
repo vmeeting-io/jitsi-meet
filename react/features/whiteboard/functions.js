@@ -14,6 +14,7 @@ export function getWhiteboardUrl(stateful: Function | Object) {
     const state = toState(stateful);
     const { url } = state['features/whiteboard'];
     const { displayName } = state['features/base/settings'];
+    const { roomInfo } = state['features/base/conference'];
     const local = getLocalParticipant(state);
     const approved = !isForceMuted(local, 'whiteboard', state);
 
@@ -22,13 +23,17 @@ export function getWhiteboardUrl(stateful: Function | Object) {
     }
 
     const WHITEBOARD_OPTIONS = {
-        role: approved ? 'owner' : 'participant'
+        role: approved ? 'owner' : 'participant',
     };
 
     const params = new URLSearchParams(WHITEBOARD_OPTIONS);
 
     if (local?.name || displayName) {
         params.append('userName', local?.name || displayName);
+    }
+
+    if (Boolean(roomInfo.whiteboard?.userVisible)) {
+        params.append('userVisible', roomInfo.whiteboard?.userVisible);
     }
 
     return `${url}?${params.toString()}`;

@@ -125,7 +125,10 @@ class ShareMenuButton extends AbstractButton<Props, *> {
 
         conferences()
             .id(_roomInfo._id)
-            .update({ whiteboard_owner: _documentSharing ? '' : _local.id })
+            .update({ whiteboard: {
+                ...(_roomInfo.whiteboard || {}),
+                owner: _documentSharing ? '' : _local.id,
+            }})
             .then(resp => {
                 console.log('conference updated:', resp.data);
                 dispatch(setRoomInfo(resp.data));

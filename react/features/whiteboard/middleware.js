@@ -1,5 +1,7 @@
 // @flow
 
+import { batch } from 'react-redux';
+
 import UIEvents from '../../../service/UI/UIEvents';
 import { getCurrentConference, setRoomInfo } from '../base/conference';
 import { JitsiConferenceEvents, } from '../base/lib-jitsi-meet';
@@ -93,7 +95,7 @@ StateListenerRegistry.register(
     (conference, { dispatch, getState }, previousConference) => {
         const receiveMessage = (_, data) => {
             console.log('message is received:', data);
-            const { type, owner } = data || {};
+            const { type, ...whiteboard } = data || {};
 
             if (typeof APP !== 'undefined' && type === 'whiteboard') {
                 /*
@@ -103,13 +105,21 @@ StateListenerRegistry.register(
                  */
                 setTimeout(() => {
                     const state = getState();
+                    const { roomInfo } = state['features/base/conference'];
                     const { editing } = state['features/whiteboard'];
-                    const local = getLocalParticipant(state);
-                    console.log('editing=', editing, 'local.id=', local.id);
-                    if (editing !== Boolean(owner)) {
-                        const { roomInfo } = state['features/base/conference'];
-                        dispatch(setRoomInfo({ ...roomInfo, whiteboard_owner: owner }));
-                        dispatch(toggleWhiteboard());
+                    const whiteboardManager = APP.UI.getWhiteboardManager();
+
+                    if (editing !== Boolean(whiteboard.owner)) {
+                        batch(() => {
+                            dispatch(setRoomInfo({ ...roomInfo, whiteboard }));
+                            dispatch(toggleWhiteboard());
+                        });
+                    } else if (whiteboardManager
+                        && whiteboardManager.isOpen
+                        && roomInfo.whiteboard?.userVisible !== whiteboard.userVisible)
+                    {
+                        dispatch(setRoomInfo({ ...roomInfo, whiteboard }));
+                        whiteboardManager.reload();
                     }
                 }, 2000);
             }

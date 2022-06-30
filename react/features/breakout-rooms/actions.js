@@ -203,7 +203,8 @@ export function moveToRoom(roomId?: string) {
         const { editing } = state['features/whiteboard'];
         const { roomInfo } = state['features/base/conference'];
         if (editing) {
-            dispatch(setRoomInfo({ ...roomInfo, whiteboard_owner: '' }));
+            const whiteboard = { ...(roomInfo.whiteboard || {}), owner: '' };
+            dispatch(setRoomInfo({ ...roomInfo, whiteboard }));
             dispatch(toggleWhiteboard());
         }
 

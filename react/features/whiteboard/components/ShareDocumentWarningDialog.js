@@ -52,9 +52,11 @@ class ShareDocumentWarningDialog extends Component<Props> {
         const { _approvedWhiteboard, _roomInfo, dispatch } = this.props;
 
         if (_approvedWhiteboard) {
+            const whiteboard = { ...(_roomInfo.whiteboard || {}), owner: '' };
+
             conferences()
                 .id(_roomInfo._id)
-                .update({ whiteboard_owner: '' })
+                .update({ whiteboard })
                 .then(resp => {
                     console.log('conference updated:', resp.data);
                     dispatch(setRoomInfo(resp.data));

@@ -1092,7 +1092,8 @@
         "tileViewPinnedDescription": "Pin participants from the participant list and drag the pinned item for reordering",
         "title": "Settings",
         "turnOffAIAttentionAnalysis": "Do Not Use",
-        "turnOnAIAttentionAnalysis": "Use"
+        "turnOnAIAttentionAnalysis": "Use",
+        "whiteboardUserVisible": "Show user name of pointer in document shareing"
     },
     "settingsView": {
         "advanced": "Advanced",

@@ -48,7 +48,12 @@ export type Props = {
     /**
      * Invoked to obtain translated strings.
      */
-    t: Function
+    t: Function,
+
+    /**
+     * Whether or not the user name should be visible on whiteboard
+     */
+    whiteboardUserVisible: boolean,
 };
 
 /**
@@ -71,6 +76,7 @@ class ModeratorTab extends AbstractDialogTab<Props> {
         this._onStartVideoMutedChanged = this._onStartVideoMutedChanged.bind(this);
         this._onStartReactionsMutedChanged = this._onStartReactionsMutedChanged.bind(this);
         this._onFollowMeEnabledChanged = this._onFollowMeEnabledChanged.bind(this);
+        this._onWhiteboardUserVisibleChanged = this._onWhiteboardUserVisibleChanged.bind(this);
     }
 
     /**
@@ -139,6 +145,20 @@ class ModeratorTab extends AbstractDialogTab<Props> {
         super._onChange({ followMeEnabled: checked });
     }
 
+    _onWhiteboardUserVisibleChanged: (Object) => void;
+
+    /**
+     * Callback invoked to select if user name
+     * should be visible on whiteboard.
+     *
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
+     */
+    _onWhiteboardUserVisibleChanged({ target: { checked } }) {
+        super._onChange({ whiteboardUserVisible: checked });
+    }
+
     /**
      * Returns the React Element for modifying conference-wide settings.
      *
@@ -153,7 +173,8 @@ class ModeratorTab extends AbstractDialogTab<Props> {
             startAudioMuted,
             startVideoMuted,
             startReactionsMuted,
-            t
+            t,
+            whiteboardUserVisible,
         } = this.props;
 
         return (
@@ -183,6 +204,11 @@ class ModeratorTab extends AbstractDialogTab<Props> {
                             label = { t('settings.startReactionsMuted') }
                             name = 'start-reactions-muted'
                             onChange = { this._onStartReactionsMutedChanged } /> }
+                    <Checkbox
+                        isChecked = { whiteboardUserVisible }
+                        label = { t('settings.whiteboardUserVisible') }
+                        name = 'whiteboard-user-visible'
+                        onChange = { this._onWhiteboardUserVisibleChanged } />
                 </div>
             </div>
         );

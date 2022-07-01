@@ -215,7 +215,7 @@ export default class MicrophoneEntry extends Component<Props, State> {
     _stopListening(jitsiTrack) {
         // clear the mic test first
         this.micTestTimer && clearTimeout(this.micTestTimer);
-        this.audioRef.current.pause();
+        this.audioRef.current && this.audioRef.current.pause();
         this.setState({
             testButtonText: TEST
         });

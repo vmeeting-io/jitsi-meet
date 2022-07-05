@@ -1093,7 +1093,7 @@
         "title": "Settings",
         "turnOffAIAttentionAnalysis": "Do Not Use",
         "turnOnAIAttentionAnalysis": "Use",
-        "whiteboardUserVisible": "Show user name of pointer in document shareing"
+        "whiteboardUserVisible": "Show user name of pointer in document sharing"
     },
     "settingsView": {
         "advanced": "Advanced",

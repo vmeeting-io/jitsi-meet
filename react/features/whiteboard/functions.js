@@ -29,7 +29,8 @@ export function getWhiteboardUrl(stateful: Function | Object) {
     const params = new URLSearchParams(WHITEBOARD_OPTIONS);
 
     if (local?.name || displayName) {
-        params.append('userName', local?.name || displayName);
+        // console.log('===>getWhiteboardUrl:', local?.name, displayName);
+        params.append('userName', displayName || local?.name);
     }
 
     if (Boolean(roomInfo.whiteboard?.userVisible)) {

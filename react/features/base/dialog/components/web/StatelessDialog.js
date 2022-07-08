@@ -117,7 +117,7 @@ type Props = DialogProps & {
 const styles = () => {
     return {
         footer: {
-            boxShadow: 'none'
+            boxShadow: 'none !important'
         }
     };
 };
@@ -240,7 +240,11 @@ class StatelessDialog extends Component<Props> {
                      * Atlaskit has this empty span (JustifySim) so...
                      */
                 }
-                <span />
+                { this.props.leftButtons ? (
+                    <ButtonGroup>
+                        { this.props.leftButtons }
+                    </ButtonGroup>
+                ) : <span /> }
                 <ButtonGroup>
                     { buttons }
                 </ButtonGroup>

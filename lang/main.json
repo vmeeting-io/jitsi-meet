@@ -296,6 +296,8 @@
         "displayNameRequired": "Enter your name",
         "done": "Done",
         "dontShowMeAgain": "Don't show me again",
+        "downloadToExcel":"Download to excel",
+        "downloading":"Downloading...",
         "duration_expired": "Conference duration has expired.",
         "e2eeDescription": "End-to-End Encryption is currently EXPERIMENTAL. Please keep in mind that turning on end-to-end encryption will effectively disable server-side provided services such as: phone participation. Also keep in mind that the meeting will only work for people joining from browsers with support for insertable streams.",
         "e2eeLabel": "Enable End-to-End Encryption",

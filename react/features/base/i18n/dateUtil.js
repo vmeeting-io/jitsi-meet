@@ -72,7 +72,7 @@ require('moment/locale/zh-tw');
  * @returns {Object}
  */
 export function getLocalizedDateFormatter(dateOrTimeStamp: Date | number) {
-    return moment(dateOrTimeStamp).locale(_getSupportedLocale());
+    return moment(dateOrTimeStamp).locale(getSupportedLocale());
 }
 
 /**
@@ -104,10 +104,9 @@ export function getLocalizedDurationFormatter(duration: number) {
 /**
  * A lenient locale matcher to match language and dialect if possible.
  *
- * @private
  * @returns {string}
  */
-function _getSupportedLocale() {
+export function getSupportedLocale() {
     const i18nLocale = i18next.language;
     let supportedLocale;
 

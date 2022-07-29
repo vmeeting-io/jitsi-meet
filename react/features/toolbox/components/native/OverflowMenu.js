@@ -8,7 +8,7 @@ import { BottomSheet, hideDialog, isDialogOpen } from '../../../base/dialog';
 import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import { BreakoutRoomButton } from '../../../breakout-rooms';
-import { SharedDocumentButton } from '../../../etherpad';
+import { WhiteboardButton } from '../../../whiteboard';
 import { AudioRouteButton } from '../../../mobile/audio-mode';
 import { ParticipantsPaneButton } from '../../../participants-pane/components/native';
 import { ReactionMenu } from '../../../reactions/components';
@@ -160,7 +160,7 @@ class OverflowMenu extends PureComponent<Props, State> {
                 {!toolbarButtons.has('tileview') && <TileViewButton { ...buttonProps } />}
                 <Divider style = { styles.divider } />
                 <ClosedCaptionButton { ...buttonProps } />
-                <SharedDocumentButton { ...buttonProps } />
+                <WhiteboardButton { ...buttonProps } />
                 <HelpButton { ...buttonProps } />
             </BottomSheet>
         );

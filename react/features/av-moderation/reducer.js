@@ -28,6 +28,7 @@ const initialState = {
         name: false,
         presenter: false,
         breakout: false,
+        whiteboard: false,
     },
     whitelist: {
         audio: {},
@@ -37,6 +38,7 @@ const initialState = {
         name: {},
         presenter: {},
         breakout: {},
+        whiteboard: {},
     },
     pending: {
         audio: [],
@@ -46,6 +48,7 @@ const initialState = {
         name: [],
         presenter: [],
         breakout: [],
+        whiteboard: []
     },
     unmuteApproved: {
         audio: false,
@@ -55,6 +58,7 @@ const initialState = {
         name: false,
         presenter: false,
         breakout: false,
+        whiteboard: false,
     }
 };
 

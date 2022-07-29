@@ -8,7 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
 import { Chat, ChatAndPolls } from '../../../chat';
-import { SharedDocument } from '../../../etherpad';
+import { Whiteboard } from '../../../whiteboard';
 import AddPeopleDialog
     from '../../../invite/components/add-people-dialog/native/AddPeopleDialog';
 import LobbyScreen from '../../../lobby/components/native/LobbyScreen';
@@ -31,7 +31,7 @@ import {
     navigationContainerTheme,
     participantsScreenOptions,
     securityScreenOptions,
-    sharedDocumentScreenOptions,
+    whiteboardScreenOptions,
     speakerStatsScreenOptions
 } from './ConferenceNavigatorScreenOptions';
 import { screen } from './routes';
@@ -109,11 +109,11 @@ const ConferenceNavigationContainer = () => {
                             title: t('addPeople.add')
                         }} />
                     <ConferenceStack.Screen
-                        component = { SharedDocument }
-                        name = { screen.conference.sharedDocument }
+                        component = { Whiteboard }
+                        name = { screen.conference.whiteboard }
                         options = {{
-                            ...sharedDocumentScreenOptions,
-                            title: t('documentSharing.title')
+                            ...whiteboardScreenOptions,
+                            title: t('whiteboard.title')
                         }} />
                 </ConferenceStack.Navigator>
             </NavigationContainer>

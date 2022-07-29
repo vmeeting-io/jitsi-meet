@@ -158,6 +158,7 @@ export function getModeratorTabProps(stateful: Object | Function) {
     const {
         conference,
         followMeEnabled,
+        roomInfo,
         startAudioMutedPolicy,
         startVideoMutedPolicy,
         startReactionsMuted
@@ -180,6 +181,7 @@ export function getModeratorTabProps(stateful: Object | Function) {
         startReactionsMuted: Boolean(conference && startReactionsMuted),
         startAudioMuted: Boolean(conference && startAudioMutedPolicy),
         startVideoMuted: Boolean(conference && startVideoMutedPolicy),
+        whiteboardUserVisible: Boolean(roomInfo && roomInfo.whiteboard?.userVisible),
     };
 }
 

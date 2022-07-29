@@ -31,7 +31,7 @@ import { toggleChat } from '../../../chat';
 import { ChatButton } from '../../../chat/components';
 import { DominantSpeakerName } from '../../../display-name';
 import { EmbedMeetingButton } from '../../../embed-meeting';
-import { SharedDocumentButton } from '../../../etherpad';
+import { WhiteboardButton } from '../../../whiteboard';
 import { FeedbackButton } from '../../../feedback';
 import { InviteButton } from '../../../invite/components/add-people-dialog';
 import { isVpaasMeeting } from '../../../jaas/functions';
@@ -93,10 +93,11 @@ import FullscreenButton from './FullscreenButton';
 import OverflowMenuButton from './OverflowMenuButton';
 import ProfileButton from './ProfileButton';
 import Separator from './Separator';
-import ShareDesktopButton from './ShareDesktopButton';
+import ShareMenuButton from './ShareMenuButton';
 import TileViewSettingsButton from './TileViewSettingsButton';
 import ToggleCameraButton from './ToggleCameraButton';
 import VideoSettingsButton from './VideoSettingsButton';
+import { setShareMenuVisible } from '../../actions.web';
 
 /**
  * The type of the React {@code Component} props of {@link Toolbox}.
@@ -320,7 +321,6 @@ class Toolbox extends Component<Props> {
         this._onToolbarToggleChat = this._onToolbarToggleChat.bind(this);
         this._onToolbarToggleFullScreen = this._onToolbarToggleFullScreen.bind(this);
         this._onToolbarToggleRaiseHand = this._onToolbarToggleRaiseHand.bind(this);
-        this._onToolbarToggleScreenshare = this._onToolbarToggleScreenshare.bind(this);
         this._onShortcutToggleTileView = this._onShortcutToggleTileView.bind(this);
         this._onEscKey = this._onEscKey.bind(this);
     }
@@ -427,6 +427,11 @@ class Toolbox extends Component<Props> {
             && !prevProps._dialog
             && _dialog) {
             this._onSetOverflowVisible(false);
+            dispatch(setToolbarHovered(false));
+        } else if (prevProps._shareMenuVisible
+            && !prevProps._dialog
+            && _dialog) {
+            dispatch(setShareMenuVisible(false))
             dispatch(setToolbarHovered(false));
         }
     }
@@ -636,10 +641,9 @@ class Toolbox extends Component<Props> {
             group: 2
         };
 
-        const desktop = this._showDesktopSharingButton() && {
-            key: 'desktop',
-            Content: ShareDesktopButton,
-            handleClick: this._onToolbarToggleScreenshare,
+        const share = {
+            key: 'share',
+            Content: ShareMenuButton,
             group: 2
         };
 
@@ -749,12 +753,12 @@ class Toolbox extends Component<Props> {
             group: 3
         };
 
-        const etherpad = {
-            afterClick: this._closeOverflowMenuIfOpen,
-            key: 'etherpad',
-            Content: SharedDocumentButton,
-            group: 3
-        };
+        // const whiteboard = {
+        //     afterClick: this._closeOverflowMenuIfOpen,
+        //     key: 'whiteboard',
+        //     Content: WhiteboardButton,
+        //     group: 3
+        // };
 
         const virtualBackground = !_screenSharing && {
             key: 'select-background',
@@ -820,7 +824,7 @@ class Toolbox extends Component<Props> {
             microphone,
             camera,
             // profile,
-            desktop,
+            share,
             chat,
             raisehand,
             participants,
@@ -838,7 +842,7 @@ class Toolbox extends Component<Props> {
             // muteVideoEveryone,
             shareVideo,
             shareAudio,
-            etherpad,
+            // whiteboard,
             virtualBackground,
             virtualAvatar,
             // speakerStats,
@@ -1201,25 +1205,6 @@ class Toolbox extends Component<Props> {
         this._doToggleRaiseHand();
     }
 
-    _onToolbarToggleScreenshare: () => void;
-
-    /**
-     * Creates an analytics toolbar event and dispatches an action for toggling
-     * screensharing.
-     *
-     * @private
-     * @returns {void}
-     */
-    _onToolbarToggleScreenshare() {
-        sendAnalytics(createToolbarEvent(
-            'toggle.screen.sharing',
-            ACTION_SHORTCUT_TRIGGERED,
-            { enable: !this.props._screenSharing }));
-
-        this._closeOverflowMenuIfOpen();
-        this._doToggleScreenshare();
-    }
-
     /**
      * Returns true if the audio sharing button should be visible and
      * false otherwise.
@@ -1232,21 +1217,6 @@ class Toolbox extends Component<Props> {
         } = this.props;
 
         return _desktopSharingEnabled && isScreenAudioSupported();
-    }
-
-    /**
-     * Returns true if the desktop sharing button should be visible and
-     * false otherwise.
-     *
-     * @returns {boolean}
-     */
-    _showDesktopSharingButton() {
-        const {
-            _desktopSharingEnabled,
-            _desktopSharingDisabledTooltipKey
-        } = this.props;
-
-        return _desktopSharingEnabled || _desktopSharingDisabledTooltipKey;
     }
 
     /**
@@ -1389,6 +1359,7 @@ function _mapStateToProps(state, ownProps) {
     } = state['features/base/config'];
     const {
         fullScreen,
+        shareMenuVisible,
         overflowMenuVisible,
         overflowDrawer
     } = state['features/toolbox'];
@@ -1452,6 +1423,7 @@ function _mapStateToProps(state, ownProps) {
         _raisedHand: hasRaisedHand(localParticipant),
         _reactionsEnabled: isReactionsEnabled(state),
         _screenSharing,
+        _shareMenuVisible: shareMenuVisible,
         _tileViewEnabled: shouldDisplayTileView(state),
         _toolbarButtons: toolbarButtons,
         _virtualSource: state['features/virtual-background'].virtualSource,

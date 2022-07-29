@@ -215,7 +215,8 @@ function _mapStateToProps(state) {
                     followMeEnabled: tabState.followMeEnabled,
                     startAudioMuted: tabState.startAudioMuted,
                     startVideoMuted: tabState.startVideoMuted,
-                    startReactionsMuted: tabState.startReactionsMuted
+                    startReactionsMuted: tabState.startReactionsMuted,
+                    whiteboardUserVisible: tabState.whiteboardUserVisible,
                 };
             },
             styles: 'settings-pane moderator-pane',

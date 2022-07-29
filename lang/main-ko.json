@@ -294,6 +294,8 @@
         "displayNameRequired": "이름을 입력하세요",
         "done": "완료",
         "dontShowMeAgain": "오늘하루 보지않기",
+        "downloadToExcel": "엑셀로 다운로드",
+        "downloading": "다운로드 중...",
         "duration_expired": "회의 시간이 만료되었습니다.",
         "e2eeDescription": "엔드-투-엔드 암호화는 현재 실험적입니다. 종단 간 암호화를 켜면 녹화, 라이브 스트리밍 및 전화 참가와 같은 서버 측 제공 서비스가 효과적으로 비활성화됩니다. 또한 회의는 삽입 가능한 스트림을 지원하는 브라우저에서 참가하는 사람들에게만 작동합니다.",
         "e2eeLabel": "E2EE 키",
@@ -444,6 +446,9 @@
         "shareAudioWarningH1": "오디오만 공유하려면:",
         "shareAudioWarningD1": "오디오를 공유하기 전에 화면 공유를 중지해야 합니다.",
         "shareAudioWarningD2": "화면 공유를 다시 시작하고 \"오디오 공유\" 옵션을 선택해야 합니다.",
+        "shareDocumentWarningTitle": "문서 공유 중지",
+        "shareDocumentWarningD1": "먼저 문서 공유를 중지해야 합니다.",
+        "shareDocumentWarningD2": "문서 공유를 중지할 수 없습니다. 방장만 문서 공유를 중지할 수 있습니다.",
         "shareMediaWarningGenericH2": "화면과 오디오를 공유하고 싶다면",
         "shareVideoLinkError": "올바른 YouTube 링크를 입력하세요",
         "shareVideoTitle": "비디오 공유",
@@ -862,7 +867,8 @@
             "stopEveryonesVideo": "카메라 모두 끄기",
             "stopVideo": "카메라 끄기",
             "unblockEveryoneMicCamera": "마이크와 카메라 모두 차단 해제",
-            "moreModerationControls": "방장 설정 더보기"
+            "moreModerationControls": "방장 설정 더보기",
+            "whiteboardModeration": "문서 공유"
         },
         "search": "참가자 검색"
     },
@@ -1083,7 +1089,8 @@
         "tileViewPinnedDescription": "참가자 목록에서 고정할 참가자를 선택하고, 선택된 참가자를 드래그하여 타일 순서를 조정할 수 있습니다.",
         "title": "설정",
         "turnOffAIAttentionAnalysis": "미사용",
-        "turnOnAIAttentionAnalysis": "사용"
+        "turnOnAIAttentionAnalysis": "사용",
+        "whiteboardUserVisible": "문서공유에서 포인터 사용자이름 표시"
     },
     "settingsView": {
         "advanced": "고급 설정",
@@ -1197,8 +1204,9 @@
             "Settings": "설정 토글",
             "shareaudio": "오디오 공유",
             "sharedvideo": "YouTube 비디오 공유 토글",
+            "shareMenu": "문서/화면 공유 토글",
             "shareRoom": "친구 초대하기",
-            "shareYourScreen": "화면공유 토글",
+            "shareYourScreen": "화면 공유 토글",
             "shortcuts": "단축키 보기",
             "show": "화면에 표시",
             "silence": "조용",
@@ -1211,6 +1219,7 @@
             "toggleWhiteboard": "판서 토글",
             "videomute": "카메라 토글",
             "videoblur": "카메라 블러 토글",
+            "whiteboard": "문서 공유",
             "selectBackground": "배경 선택",
             "selectVirtualAvatar": "배경/아바타 선택",
             "expand": "펼치기",
@@ -1299,15 +1308,20 @@
         "selectNewModerator": "새 호스트 지정",
         "Settings": "설정",
         "shareaudio": "오디오 공유",
+        "shareDocument": "문서 공유",
         "sharedvideo": "YouTube 비디오 공유",
+        "shareMenu": "문서/화면 공유",
         "shareRoom": "친구 초대하기",
+        "shareScreen": "화면 공유",
         "shortcuts": "단축키 보기",
         "silence": "조용",
         "speakerStats": "접속자 통계",
-        "startScreenSharing": "화면공유 시작",
+        "screenSharing": "화면 공유",
         "startSubtitles": "자막 보이기",
         "stopAudioSharing": "오디오 공유 종료",
-        "stopScreenSharing": "화면공유 종료",
+        "stopDocumentSharing": "문서 공유 종료",
+        "stopScreenSharing": "화면 공유 종료",
+        "stopSharing": "공유 종료",
         "stopSubtitles": "자막 숨기기",
         "stopSharedVideo": "비디오 종료",
         "surprised": "놀람",
@@ -1316,8 +1330,7 @@
         "tileViewToggle": "타일뷰 토글",
         "toggleCamera": "카메라 토글",
         "videomute": "카메라 켜기/끄기",
-        "whiteboardClose": "판서 닫기",
-        "whiteboardOpen": "판서 열기",
+        "whiteboard": "문서 공유",
         "videoSettings": "비디오 설정",
         "selectBackground": "배경 선택",
         "selectVirtualAvatar": "배경/아바타 선택"
@@ -1529,5 +1542,8 @@
         "reject": "거부",
         "rejectAll": "모두 거부",
         "toggleLabel": "로비 활성화"
+    },
+    "whiteboard": {
+        "title": "판서"
     }
 }

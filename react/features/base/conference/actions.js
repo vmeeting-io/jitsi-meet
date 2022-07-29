@@ -59,6 +59,7 @@ import {
     SET_PASSWORD,
     SET_PASSWORD_FAILED,
     SET_ROOM,
+    SET_ROOM_INFO,
     SET_PENDING_SUBJECT_CHANGE,
     SET_START_MUTED_POLICY,
     START_RANDOM_SELECTION_COUNTDOWN,
@@ -70,7 +71,8 @@ import {
     EMAIL_COMMAND,
     BIRTHDATE_COMMAND,
     HAT_COMMAND,
-    JITSI_CONFERENCE_URL_KEY
+    JITSI_CONFERENCE_URL_KEY,
+    WHITEBOARD_COMMAND
 } from './constants';
 import {
     _addLocalTracksToConference,
@@ -416,6 +418,7 @@ export function conferenceTimestampChanged(conferenceTimestamp: number) {
 * }}
 */
 export function conferenceUniqueIdSet(conference: Object, meetingId) {
+    // console.error('conferenceUniqueIdSet:', meetingId);
     return {
         type: CONFERENCE_UNIQUE_ID_SET,
         conference,
@@ -807,6 +810,22 @@ export function setRoom(room: ?string, roomInfo: ?Object) {
     return {
         type: SET_ROOM,
         room,
+        roomInfo
+    };
+}
+
+/**
+ * Sets the room information of the conference.
+ *
+ * @param {object} roomInfo - The info of the room of the conference.
+ * @returns {{
+ *     type: SET_ROOM_INFO,
+ *     roomInfo: object
+ * }}
+ */
+export function setRoomInfo(roomInfo: ?Object) {
+    return {
+        type: SET_ROOM_INFO,
         roomInfo
     };
 }

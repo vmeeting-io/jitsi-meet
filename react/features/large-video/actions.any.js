@@ -29,8 +29,8 @@ export function selectParticipantInLargeVideo(participant: ?string) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const state = getState();
 
-        // Keep Etherpad open.
-        if (state['features/etherpad'].editing) {
+        // Keep whiteboard open.
+        if (state['features/whiteboard'].editing) {
             return;
         }
 

@@ -24,6 +24,7 @@ import {
     SET_PASSWORD,
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
+    SET_ROOM_INFO,
     SET_START_MUTED_POLICY,
     START_RANDOM_SELECTION_COUNTDOWN,
     START_TIMER,
@@ -105,6 +106,9 @@ ReducerRegistry.register(
 
         case SET_ROOM:
             return _setRoom(state, action);
+
+        case SET_ROOM_INFO:
+            return _setRoomInfo(state, action);
 
         case SET_START_MUTED_POLICY:
             return {
@@ -460,3 +464,25 @@ function _setRoom(state, action) {
     });
 }
 
+/**
+ * Reduces a specific Redux action SET_ROOM of the feature base/conference.
+ *
+ * @param {Object} state - The Redux state of the feature base/conference.
+ * @param {Action} action - The Redux action SET_ROOM to reduce.
+ * @private
+ * @returns {Object} The new state of the feature base/conference after the
+ * reduction of the specified action.
+ */
+function _setRoomInfo(state, action) {
+    let { roomInfo } = action;
+
+    /**
+     * The name of the room of the conference (to be) joined.
+     *
+     * @type {string}
+     */
+    return assign(state, {
+        error: undefined,
+        roomInfo: { ...state.roomInfo, ...roomInfo }
+    });
+}

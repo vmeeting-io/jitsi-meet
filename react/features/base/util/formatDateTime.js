@@ -12,5 +12,5 @@ export function formatTime(time) {
 }
 
 export function formatDuration(duration) {
-    return duration ? moment.utc(duration).format(timeFormat) : '-';
+    return duration ? moment.duration(duration).humanize() : '-';
 }

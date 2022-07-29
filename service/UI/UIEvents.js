@@ -19,6 +19,7 @@ export default {
     AUDIO_MUTED: 'UI.audio_muted',
     VIDEO_MUTED: 'UI.video_muted',
     ETHERPAD_CLICKED: 'UI.etherpad_clicked',
+    WHITEBOARD_CLICKED: 'UI.whiteboard_clicked',
 
     /**
      * Updates shared video with params: url, state, time(optional)

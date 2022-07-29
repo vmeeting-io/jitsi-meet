@@ -5,7 +5,9 @@ import { IconShareDesktop } from '../../../base/icons';
 import JitsiMeetJS from '../../../base/lib-jitsi-meet/_';
 import { connect } from '../../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import { isForceMuted } from '../../../participants-pane/functions';
 import { isScreenMediaShared, isScreenVideoShared } from '../../../screen-share';
+import { getLocalParticipant } from '../../../base/participants';
 
 type Props = AbstractButtonProps & {
 
@@ -36,9 +38,8 @@ type Props = AbstractButtonProps & {
  */
 class ShareDesktopButton extends AbstractButton<Props, *> {
     accessibilityLabel = 'toolbar.accessibilityLabel.shareYourScreen';
-    label = 'toolbar.startScreenSharing';
+    label = 'toolbar.screenSharing';
     icon = IconShareDesktop;
-    toggledLabel = 'toolbar.stopScreenSharing';
     tooltip = 'toolbar.accessibilityLabel.shareYourScreen';
 
     /**
@@ -48,11 +49,7 @@ class ShareDesktopButton extends AbstractButton<Props, *> {
         const { _desktopSharingDisabledTooltipKey, _desktopSharingEnabled, _screensharing } = this.props;
 
         if (_desktopSharingEnabled) {
-            if (_screensharing) {
-                return 'toolbar.stopScreenSharing';
-            }
-
-            return 'toolbar.startScreenSharing';
+            return 'toolbar.screenSharing';
         }
 
         return _desktopSharingDisabledTooltipKey;
@@ -115,6 +112,8 @@ class ShareDesktopButton extends AbstractButton<Props, *> {
 const mapStateToProps = state => {
     const { muted, unmuteBlocked } = state['features/base/media'].video;
     const videoOrShareInProgress = isScreenMediaShared(state) || !muted;
+    const local = getLocalParticipant(state);
+    const _approved = !isForceMuted(local, 'presenter', state);
 
     // Disable the screenshare button if the video sender limit is reached and there is no video or media share in
     // progress.
@@ -129,6 +128,8 @@ const mapStateToProps = state => {
         // feature enabled
         desktopSharingEnabled = state['features/base/participants'].haveParticipantWithScreenSharingFeature;
         desktopSharingDisabledTooltipKey = 'dialog.shareYourScreenDisabled';
+    } else if (!_approved) {
+        desktopSharingEnabled = false;
     }
 
     return {

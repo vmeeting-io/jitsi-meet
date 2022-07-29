@@ -250,7 +250,7 @@
 }
 
 #sharedVideo,
-#etherpad,
+#whiteboard,
 #localVideoWrapper video,
 #localVideoWrapper object,
 #localVideoWrapper,
@@ -267,11 +267,11 @@
     height: 100%;
 }
 
-#etherpad {
+#whiteboard {
     text-align: center;
 }
 
-#etherpad {
+#whiteboard {
     z-index: $zindex0;
 }
 

@@ -236,7 +236,7 @@ export function getVerticalFilmstripVisibleAreaWidth() {
     // Also adding 7px for the scrollbar. Note that we are not counting the left margins and paddings because this
     // function is used for calculating the available space and they are invisible.
     // TODO: Check if we can remove the left margins and paddings from the CSS.
-    // FIXME: This function is used to calculate the size of the large video, etherpad or shared video. Once everything
+    // FIXME: This function is used to calculate the size of the large video, whiteboard or shared video. Once everything
     // is reactified this calculation will need to move to the corresponding components.
     const filmstripMaxWidth = (interfaceConfig.FILM_STRIP_MAX_HEIGHT || 120) + 18;
 

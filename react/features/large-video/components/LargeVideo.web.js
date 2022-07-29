@@ -86,7 +86,7 @@ class LargeVideo extends Component<Props> {
                 id = 'largeVideoContainer'
                 style = { style }>
                 <SharedVideo />
-                <div id = 'etherpad' />
+                <div id = 'whiteboard' />
 
                 <Watermarks className = 'watermark' />
 

@@ -54,3 +54,5 @@ export const LEAVING_TIMESTAMP = 'leaving-timestamp';
 export const TRIGGER_READY_TO_CLOSE_REASONS = [
     'The meeting has been terminated'
 ];
+
+export const WHITEBOARD_COMMAND = 'etherpad';

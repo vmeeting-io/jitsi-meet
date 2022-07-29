@@ -45,6 +45,16 @@ export const SET_OVERFLOW_DRAWER = 'SET_OVERFLOW_DRAWER';
 export const SET_OVERFLOW_MENU_VISIBLE = 'SET_OVERFLOW_MENU_VISIBLE';
 
 /**
+ * The type of the (redux) action which shows/hides the ShareMenu.
+ * 
+ * {
+ *     type: SET_SHARE_MENU_VISIBLE,
+ *     visible: boolean
+ * }
+ */
+export const SET_SHARE_MENU_VISIBLE = 'SET_SHARE_MENU_VISIBLE';
+
+/**
  * The type of the action which sets the indicator which determiens whether a
  * fToolbar in the Toolbox is hovered.
  *

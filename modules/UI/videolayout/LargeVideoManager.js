@@ -63,6 +63,7 @@ export default class LargeVideoManager {
          */
         this.containers = {};
 
+        // console.log('LargeVideoManager.state=', VIDEO_CONTAINER_TYPE);
         this.state = VIDEO_CONTAINER_TYPE;
 
         // FIXME: We are passing resizeContainer as parameter which is calling
@@ -207,12 +208,13 @@ export default class LargeVideoManager {
 
             // FIXME this does not really make sense, because the videoType
             // (camera or desktop) is a completely different thing than
-            // the video container type (Etherpad, SharedVideo, VideoContainer).
+            // the video container type (Whiteboard, SharedVideo, VideoContainer).
             const isVideoContainer = LargeVideoManager.isVideoContainer(videoType);
 
             this.newStreamData = null;
 
             logger.info(`hover in ${id}`);
+            // console.log('LargeVideoManager.state=', videoType);
             this.state = videoType;
             // eslint-disable-next-line no-shadow
             const container = this.getCurrentContainer();
@@ -625,6 +627,7 @@ export default class LargeVideoManager {
         }
         oldContainer.hide();
 
+        // console.log('LargeVideoManager.state=', type);
         this.state = type;
         const container = this.getContainer(type);
 
@@ -635,6 +638,22 @@ export default class LargeVideoManager {
                 // the container would be taking care of it by itself, but that
                 // is a bigger refactoring
                 this.showWatermark(true);
+
+                const id = APP.UI.getLargeVideoID();
+                const state = APP.store.getState();
+                const videoTrack = getTrackByMediaTypeAndParticipant(state['features/base/tracks'], MEDIA_TYPE.VIDEO, id);
+                const stream = videoTrack?.jitsiTrack;
+        
+                const isVideoMuted = !stream || stream.isMuted();
+                const participant = getParticipantById(state, id);
+                const connectionStatus = participant?.connectionStatus;
+                const isVideoRenderable = !isVideoMuted
+                    && (APP.conference.isLocalId(id) || connectionStatus === JitsiParticipantConnectionStatus.ACTIVE);
+                const isAudioOnly = APP.conference.isAudioOnly();
+                const showAvatar
+                    = (isAudioOnly && videoType !== VIDEO_TYPE.DESKTOP) || !isVideoRenderable;
+    
+                container.showAvatar(showAvatar);
 
                 // "avatar" and "video connection" can not be displayed both
                 // at the same time, but the latter is of higher priority and it

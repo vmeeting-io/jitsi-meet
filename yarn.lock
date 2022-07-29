@@ -7858,9 +7858,9 @@
     "prelude-ls" "^1.2.1"
     "type-check" "~0.4.0"
 
-"lib-jitsi-meet@github:vmeeting-io/lib-jitsi-meet#c65619be4374ad8af2573f7e417be27fb4d153ee":
-  "integrity" "sha512-6LoglNqMG+rqz4hcFCA6SXBCrXjEkTbdND6T5Gw2D3PV/AaJ8E7K7MJ/CxRARL/bG0m/ffXezJZPxFQOGKV54Q=="
-  "resolved" "git+ssh://git@github.com/vmeeting-io/lib-jitsi-meet.git#c65619be4374ad8af2573f7e417be27fb4d153ee"
+"lib-jitsi-meet@github:vmeeting-io/lib-jitsi-meet#d14258180c01c8b88204520deca82dd25d33e0a9":
+  "integrity" "sha512-NlozCL7LiTiyg6VLXvssQnnDJOo/rRfkacPtQNh1FAlGJc9nTfegXUPSO4wT0rw9h3LvudS+evmjYMtCCkoF2g=="
+  "resolved" "git+ssh://git@github.com/vmeeting-io/lib-jitsi-meet.git#d14258180c01c8b88204520deca82dd25d33e0a9"
   "version" "0.0.0"
   dependencies:
     "@jitsi/js-utils" "2.0.0"

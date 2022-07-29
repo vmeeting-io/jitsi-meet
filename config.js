@@ -10,8 +10,8 @@ var config = {
             krLink : "https://sites.google.com/kedutech.kr/ko-vmeeting-guide-v2"
         },
         download:{
-            krLink : "/static/doc/manual/Vmeeting_Manual_KO_v2.pdf",
-            enLink : "/static/doc/manual/Vmeeting_Manual_EN_v2.pdf"
+            krLink : "/static/doc/manual/Vmeeting_Manual_KO_v2.3.pdf",
+            enLink : "/static/doc/manual/Vmeeting_Manual_EN_v2.3.pdf"
         }
     },
     DID:{
@@ -585,6 +585,7 @@ var config = {
     // obscures the conference controls -- it's better to let users
     // choose to open the pad on their own in that case.
     // openSharedDocumentOnJoin: false,
+    // openWhiteboardOnJoin: false,
 
     // If true, shows the unsafe room name warning label when a room name is
     // deemed unsafe (due to the simplicity in the name) and a password is not
@@ -617,40 +618,40 @@ var config = {
     // - 'desktop' controls the "Share your screen" button
     // - if `toolbarButtons` is undefined, we fallback to enabling all buttons on the UI
     toolbarButtons: [
-       // 'ar-effect',
-       'camera',
-       'chat',
-       'closedcaptions',
-       'desktop',
-       'download',
-       'embedmeeting',
-       'etherpad',
-       'feedback',
-       'filmstrip',
-       'fullscreen',
-       'hangup',
-       'help',
-       'invite',
-       'livestreaming',
-       'microphone',
-       'mute-everyone',
-       'mute-video-everyone',
-       'participants',
-       'profile',
-       'raisehand',
-       'recording',
-       'security',
-       'select-background',
-       'select-virtual-avatar',
-       'settings',
-       'shareaudio',
-       'sharedvideo',
-       'shortcuts',
-       'stats',
-       'tileview',
-       'toggle-camera',
-       'videoquality',
-       '__end'
+        // 'ar-effect',
+        'camera',
+        'chat',
+        'closedcaptions',
+        'share',
+        'download',
+        'embedmeeting',
+        'whiteboard',
+        'feedback',
+        'filmstrip',
+        'fullscreen',
+        'hangup',
+        'help',
+        'invite',
+        'livestreaming',
+        'microphone',
+        'mute-everyone',
+        'mute-video-everyone',
+        'participants',
+        'profile',
+        'raisehand',
+        'recording',
+        'security',
+        // 'select-background',
+        'select-virtual-avatar',
+        'settings',
+        'shareaudio',
+        'sharedvideo',
+        'shortcuts',
+        'stats',
+        'tileview',
+        'toggle-camera',
+        'videoquality',
+        '__end'
     ],
 
     // Holds values related to toolbar visibility control.

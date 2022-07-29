@@ -100,6 +100,8 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
     const isNameModerationEnabled = useSelector(isAvModerationEnabled('name'));
     const isScreenShareModerationEnabled = useSelector(isAvModerationEnabled('presenter'));
     const isBreakoutModerationEnabled = useSelector(isAvModerationEnabled('breakout'));
+    const isWhiteboardModerationEnabled = useSelector(isAvModerationEnabled('whiteboard'));
+
     const { id } = useSelector(getLocalParticipant);
     const timerStarted = useSelector(getTimerStarted);
     const participantCount = useSelector(getParticipantCount);
@@ -121,6 +123,7 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
     const disableNameModeration = useCallback(() => dispatch(requestDisableModeration('name')), [dispatch]);
     const disableScreenShareModeration = useCallback(() => dispatch(requestDisableModeration('presenter')), [dispatch]);
     const disableBreakoutModeration = useCallback(() => dispatch(requestDisableModeration('breakout')), [dispatch]);
+    const disableWhiteboardModeration = useCallback(() => dispatch(requestDisableModeration('whiteboard')), [dispatch]);
 
     const enableAudioModeration = useCallback(() => dispatch(requestEnableModeration('audio')), [dispatch]);
     const enableVideoModeration = useCallback(() => dispatch(requestEnableModeration('video')), [dispatch]);
@@ -129,6 +132,7 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
     const enableNameModeration = useCallback(() => dispatch(requestEnableModeration('name')), [dispatch]);
     const enableScreenShareModeration = useCallback(() => dispatch(requestEnableModeration('presenter')), [dispatch]);
     const enableBreakoutModeration = useCallback(() => dispatch(requestEnableModeration('breakout')), [dispatch]);
+    const enableWhiteboardModeration = useCallback(() => dispatch(requestEnableModeration('whiteboard')), [dispatch]);
 
     const classes = useStyles();
 
@@ -263,6 +267,17 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
             text: t('participantsPane.actions.breakoutModeration')
         });
     }
+
+    moderationActions.push({
+        accessibilityLabel: t('participantsPane.actions.whiteboardModeration'),
+        className: isWhiteboardModerationEnabled ? classes.indentedLabel : '',
+        id: isWhiteboardModerationEnabled
+            ? 'participants-pane-context-menu-stop-whiteboard-moderation'
+            : 'participants-pane-context-menu-start-whiteboard-moderation',
+        icon: !isWhiteboardModerationEnabled && IconCheck,
+        onClick: isWhiteboardModerationEnabled ? disableWhiteboardModeration : enableWhiteboardModeration,
+        text: t('participantsPane.actions.whiteboardModeration')
+    })
 
     return (
         <ContextMenu

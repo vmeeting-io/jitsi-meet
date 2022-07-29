@@ -3,16 +3,18 @@ import axios from 'axios';
 import { batch } from 'react-redux';
 
 import { getAuthUrl } from '../../api/url';
-import { setJWT } from '../base/jwt';
+import { conferences } from '../../api/conferences';
 import tokenLocalStorage from '../../api/tokenLocalStorage';
 
 import {
     setFollowMe,
+    setRoomInfo,
     setStartMutedPolicy,
     setStartReactionsMuted
 } from '../base/conference';
 import { hideDialog, openDialog } from '../base/dialog';
 import { i18next } from '../base/i18n';
+import { setJWT } from '../base/jwt';
 import { updateSettings } from '../base/settings';
 import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../notifications';
 import { setScreenshareFramerate } from '../screen-share/actions';
@@ -184,6 +186,27 @@ export function submitModeratorTab(newState: Object): Function {
             || newState.startVideoMuted !== currentState.startVideoMuted) {
             dispatch(setStartMutedPolicy(
                 newState.startAudioMuted, newState.startVideoMuted));
+        }
+
+        if (newState.whiteboardUserVisible !== currentState.whiteboardUserVisible) {
+            const { roomInfo } = getState()['features/base/conference'];
+            conferences()
+                .id(roomInfo._id)
+                .update({ whiteboard: {
+                    ...(roomInfo.whiteboard || {}),
+                    userVisible: newState.whiteboardUserVisible,
+                }})
+                .then(resp => {
+                    console.log('conference updated:', resp.data);
+                    dispatch(setRoomInfo(resp.data));
+
+                    if (typeof APP !== 'undefined') {
+                        const whiteboardManager = APP.UI.getWhiteboardManager();
+                        if (whiteboardManager && whiteboardManager.isOpen) {
+                            whiteboardManager.reload();
+                        }
+                    }
+                });
         }
     };
 }

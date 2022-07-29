@@ -1,17 +1,19 @@
 // @flow
 
+import Button from '@atlaskit/button/standard-button';
 import { FieldTextStateless as TextField } from '@atlaskit/field-text';
 import {
     HeaderComponentProps,
     ModalHeader
 } from '@atlaskit/modal-dialog';
 import Spinner from '@atlaskit/spinner';
-import { filter, keyBy, map } from 'lodash';
+import { filter, identity, map } from 'lodash';
+import moment from 'moment'
 import React, { Component } from 'react';
 import type { Dispatch } from 'redux';
 
 import { Dialog } from '../../base/dialog';
-import { translate } from '../../base/i18n';
+import { getSupportedLocale, translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
 import { Tooltip } from '../../base/tooltip';
 import { loadSpeakerStats } from '../actions';
@@ -24,6 +26,7 @@ import { getLocalVideoTrack, getTrackByMediaTypeAndParticipant, isLocalTrackMute
 import { getParticipantById, PARTICIPANT_ROLE } from '../../base/participants';
 import { Icon, IconSearch } from '../../base/icons';
 import CrossCircleIcon from '@atlaskit/icon/glyph/cross-circle';
+import exportExcel from '../../../utils/exportExcel';
 
 /**
  * The type of the React {@code Component} props of {@link SpeakerStats}.
@@ -80,6 +83,7 @@ class SpeakerStats extends Component<Props, State> {
             showSearch: false,
         };
 
+        this._onClickDownload = this._onClickDownload.bind(this);
         this._onRefresh = this._onRefresh.bind(this);
         this._onToggleSearch = this._onToggleSearch.bind(this);
         this._customHeader = this._customHeader.bind(this);
@@ -118,6 +122,7 @@ class SpeakerStats extends Component<Props, State> {
         
         this.setState({ loading: true });
         dispatch(loadSpeakerStats(conference.room.meetingId)).then(() => {
+            moment.locale(getSupportedLocale());
             this.setState({ loading: false });
         });
     }
@@ -163,6 +168,47 @@ class SpeakerStats extends Component<Props, State> {
             </ModalHeader>
         );
     };
+
+    makeExportData() {
+        return map(this.props.stats, item => ({
+            Name: item.name,
+            Email: item.email,
+            Join: moment(item.joinTime).format('LLL'),
+            Leave: moment(item.leaveTime).format('LLL'),
+            Duration: moment(item.joinTime).to(item.leaveTime, true),
+        }));
+    }
+    
+    _onClickDownload: () => void;
+
+    _onClickDownload() {
+        const csvData = this.makeExportData();
+        exportExcel(csvData, 'participants_export');
+    };
+
+    /**
+     * Renders Left buttons.
+     *
+     * @private
+     * @returns {ReactElement|null} The Left buttons if enabled.
+     */
+    _renderLeftButtons() {
+        const {
+            isHost,
+            t /* The following fixes a flow error: */ = identity
+        } = this.props;
+
+        return [
+            <Button
+                id = 'export-participants'
+                isDisabled = { !isHost }
+                key = 'export-participants'
+                onClick = { this._onClickDownload }
+                type = 'button'>
+                {t('dialog.downloadToExcel')}
+            </Button>
+        ];
+    }
 
     /**
      * Function to handle search inputs
@@ -221,6 +267,7 @@ class SpeakerStats extends Component<Props, State> {
             <Dialog
                 cancelKey = { 'dialog.close' }
                 customHeader = { this._customHeader }
+                leftButtons = { this._renderLeftButtons() }
                 submitDisabled = { true }
                 width = { 'large' }
                 titleKey = 'speakerStats.speakerStats'>
@@ -269,6 +316,7 @@ class SpeakerStats extends Component<Props, State> {
 function _mapStateToProps(state) {
     const tracks = state['features/base/tracks'];
     const stats = state['features/speaker-stats'];
+    const { isHost } = state['features/base/conference'].roomInfo || {};
 
     return {
         stats: map(stats.items, item => {
@@ -294,7 +342,8 @@ function _mapStateToProps(state) {
                 }
             }
             return item;
-        })
+        }),
+        isHost
     };
 }
 

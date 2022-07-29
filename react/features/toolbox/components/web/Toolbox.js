@@ -98,6 +98,7 @@ import TileViewSettingsButton from './TileViewSettingsButton';
 import ToggleCameraButton from './ToggleCameraButton';
 import VideoSettingsButton from './VideoSettingsButton';
 import { setShareMenuVisible } from '../../actions.web';
+import ShareDesktopButton from './ShareDesktopButton';
 
 /**
  * The type of the React {@code Component} props of {@link Toolbox}.
@@ -321,6 +322,7 @@ class Toolbox extends Component<Props> {
         this._onToolbarToggleChat = this._onToolbarToggleChat.bind(this);
         this._onToolbarToggleFullScreen = this._onToolbarToggleFullScreen.bind(this);
         this._onToolbarToggleRaiseHand = this._onToolbarToggleRaiseHand.bind(this);
+        this._onToolbarToggleScreenshare = this._onToolbarToggleScreenshare.bind(this);
         this._onShortcutToggleTileView = this._onShortcutToggleTileView.bind(this);
         this._onEscKey = this._onEscKey.bind(this);
     }
@@ -647,6 +649,13 @@ class Toolbox extends Component<Props> {
             group: 2
         };
 
+        const desktop = this._showDesktopSharingButton() && {
+            key: 'desktop',
+            Content: ShareDesktopButton,
+            handleClick: this._onToolbarToggleScreenshare,
+            group: 2
+        };
+
         const raisehand = {
             key: 'raisehand',
             Content: ReactionsMenuButton,
@@ -825,6 +834,7 @@ class Toolbox extends Component<Props> {
             camera,
             // profile,
             share,
+            desktop,
             chat,
             raisehand,
             participants,
@@ -1205,6 +1215,25 @@ class Toolbox extends Component<Props> {
         this._doToggleRaiseHand();
     }
 
+    _onToolbarToggleScreenshare: () => void;
+
+    /**
+     * Creates an analytics toolbar event and dispatches an action for toggling
+     * screensharing.
+     *
+     * @private
+     * @returns {void}
+     */
+    _onToolbarToggleScreenshare() {
+        sendAnalytics(createToolbarEvent(
+            'toggle.screen.sharing',
+            ACTION_SHORTCUT_TRIGGERED,
+            { enable: !this.props._screenSharing }));
+
+        this._closeOverflowMenuIfOpen();
+        this._doToggleScreenshare();
+    }
+
     /**
      * Returns true if the audio sharing button should be visible and
      * false otherwise.
@@ -1217,6 +1246,21 @@ class Toolbox extends Component<Props> {
         } = this.props;
 
         return _desktopSharingEnabled && isScreenAudioSupported();
+    }
+
+    /**
+     * Returns true if the desktop sharing button should be visible and
+     * false otherwise.
+     *
+     * @returns {boolean}
+     */
+    _showDesktopSharingButton() {
+        const {
+            _desktopSharingEnabled,
+            _desktopSharingDisabledTooltipKey
+        } = this.props;
+
+        return _desktopSharingEnabled || _desktopSharingDisabledTooltipKey;
     }
 
     /**

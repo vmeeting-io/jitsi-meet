@@ -182,6 +182,7 @@ export function getModeratorTabProps(stateful: Object | Function) {
         startAudioMuted: Boolean(conference && startAudioMutedPolicy),
         startVideoMuted: Boolean(conference && startVideoMutedPolicy),
         whiteboardUserVisible: Boolean(roomInfo && roomInfo.whiteboard?.userVisible),
+        whiteboardUseYN: Boolean(roomInfo && roomInfo.whiteboard?.use_yn)
     };
 }
 

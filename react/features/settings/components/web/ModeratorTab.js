@@ -175,6 +175,7 @@ class ModeratorTab extends AbstractDialogTab<Props> {
             startReactionsMuted,
             t,
             whiteboardUserVisible,
+            whiteboardUseYN
         } = this.props;
 
         return (
@@ -204,11 +205,12 @@ class ModeratorTab extends AbstractDialogTab<Props> {
                             label = { t('settings.startReactionsMuted') }
                             name = 'start-reactions-muted'
                             onChange = { this._onStartReactionsMutedChanged } /> }
-                    <Checkbox
-                        isChecked = { whiteboardUserVisible }
-                        label = { t('settings.whiteboardUserVisible') }
-                        name = 'whiteboard-user-visible'
-                        onChange = { this._onWhiteboardUserVisibleChanged } />
+                    { whiteboardUseYN && 
+                        <Checkbox
+                            isChecked = { whiteboardUserVisible }
+                            label = { t('settings.whiteboardUserVisible') }
+                            name = 'whiteboard-user-visible'
+                            onChange = { this._onWhiteboardUserVisibleChanged } /> }
                 </div>
             </div>
         );

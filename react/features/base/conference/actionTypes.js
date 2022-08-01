@@ -252,6 +252,17 @@ export const SET_ROOM = 'SET_ROOM';
 export const SET_ROOM_INFO = 'SET_ROOM_INFO';
 
 /**
+ * The type of (redux) action which sets the site information of the
+ * conference.
+ *
+ * {
+ *     type: SET_SITE,
+ *     site: object
+ * }
+ */
+export const SET_SITE = 'SET_SITE';
+
+ /**
  * The type of (redux) action which updates the current known status of the
  * moderator features for starting participants as audio or video muted.
  *

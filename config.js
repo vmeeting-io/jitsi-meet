@@ -623,6 +623,7 @@ var config = {
         'chat',
         'closedcaptions',
         'share',
+        'desktop',
         'download',
         'embedmeeting',
         'whiteboard',

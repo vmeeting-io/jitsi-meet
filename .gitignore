@@ -7,7 +7,6 @@ libs/
 .sync-config.cson
 .env
 env-config.js
-config/
 lang/countries-*.json
 
 # CocoaPods

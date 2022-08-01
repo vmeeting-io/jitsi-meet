@@ -32,7 +32,7 @@ export default class BaseAPI {
   
   delete = data => axios.delete(this.toString(), data, this._config);
   
-  get = callback => axios.get(this.toString(), this._config).then(callback);
+  get = () => axios.get(this.toString(), this._config);
 
   page = value => {
     this._query.page = value;

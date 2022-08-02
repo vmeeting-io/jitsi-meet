@@ -200,7 +200,7 @@ export function appNavigate(uri: ?string) {
         // console.log('conference.site:', site);
 
         const pathname = locationURL.pathname;
-        const { ssoKey } = site;
+        const { sso_key: ssoKey } = site;
         const ssoValue = params[ssoKey];
         if (pathname === '/' && ssoKey) {
             const args = omit(qs.parse(locationURL.search), [ssoKey]);

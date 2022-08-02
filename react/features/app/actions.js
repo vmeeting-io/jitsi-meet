@@ -212,12 +212,12 @@ export function appNavigate(uri: ?string) {
         // 전달된 ssoValue가 저장된 ssoValue와 다르면 인증키를 저장하고 로그아웃 한다.
         if (ssoValue && jitsiLocalStorage.getItem(ssoKey) !== ssoValue) {
             jitsiLocalStorage.setItem(ssoKey, ssoValue);
+            dispatch(setJWT());
 
             if (tokenLocalStorage.getItem(getState())) {
                 axios.get(`${apiBase}/logout`).then(() => {
                     // dispatch(setCurrentUser());
                     tokenLocalStorage.removeItem(getState());
-                    dispatch(setJWT());
                 });
             }
         }

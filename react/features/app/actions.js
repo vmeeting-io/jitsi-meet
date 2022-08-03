@@ -191,8 +191,7 @@ export function appNavigate(uri: ?string) {
         }
 
         let { site } = getState()['features/base/conference'];
-        const { iAmRecorder, iAmSipGateway } = getState()['features/base/config'];
-        if (!iAmRecorder && !iAmSipGateway && !site) {
+        if (!site) {
             const resp = await sites().siteId(tenant).get();
             site = resp.data.docs[0];
             dispatch(setSite(site));

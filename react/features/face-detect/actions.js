@@ -33,7 +33,6 @@ export function initFaceDetect() {
         }
     
         const state = getState();
-        // const granted = await grantFaceDetect(state);
         
         console.log('==> initFaceDetect');
         let instance = getFaceDetector(state);

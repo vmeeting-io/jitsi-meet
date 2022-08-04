@@ -108,7 +108,7 @@ StateListenerRegistry.register(
                     const { roomInfo } = state['features/base/conference'];
                     const { editing } = state['features/whiteboard'];
                     const whiteboardManager = APP.UI.getWhiteboardManager();
-                    const newWhiteboard = { ...(roomInfo.whiteboard || {}), whiteboard };
+                    const newWhiteboard = { ...(roomInfo.whiteboard || {}), ...whiteboard };
 
                     if (editing !== Boolean(whiteboard.owner)) {
                         batch(() => {

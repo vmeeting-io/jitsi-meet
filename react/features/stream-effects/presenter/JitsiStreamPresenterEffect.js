@@ -214,29 +214,41 @@ export default class JitsiStreamPresenterEffect {
             const ratio = 4/3;
             const drawWidth = Math.min(this._videoElement.width, this._videoElement.height*ratio);
             const offset = (this._videoElement.width - drawWidth) / 2;
-            const videoWidth = drawWidth / 3;
-            const videoHeight = this._videoElement.height / 3;
-
 
             this._ctx.drawImage(this._desktopElement, 0, 0, this._canvas.width, this._canvas.height);
-            this._ctx.drawImage(
-                this._videoElement,
-                offset,
-                0,
-                drawWidth,
-                this._videoElement.height,
-                this._canvas.width - videoWidth,
-                0,
-                videoWidth,
-                videoHeight);
 
-            // draw a border around the video element.
-            this._ctx.beginPath();
-            this._ctx.lineWidth = 2;
-            this._ctx.strokeStyle = '#A9A9A9'; // dark grey
-            this._ctx.rect(this._canvas.width - videoWidth, 0,
-                videoWidth, videoHeight);
-            this._ctx.stroke();
+            if (true) {
+                const { w = 240 } = this._config?.layout?.presenter?.rect?.w || {};
+                const dWidth = this._canvas.width * w / window.innerWidth;
+                const dHeight = dWidth / ratio;
+
+                this._ctx.drawImage(
+                    this._videoElement,
+                    offset, 0, drawWidth, this._videoElement.height,
+                    this._canvas.width - dWidth, 0, dWidth, dHeight);
+    
+                // draw a border around the video element.
+                this._ctx.beginPath();
+                this._ctx.lineWidth = 2;
+                this._ctx.strokeStyle = '#A9A9A9'; // dark grey
+                this._ctx.rect(this._canvas.width - dWidth, 0, dWidth, dHeight);
+                this._ctx.stroke();
+            } else {
+                const videoWidth = drawWidth / 3;
+                const videoHeight = this._videoElement.height / 3;
+
+                this._ctx.drawImage(
+                    this._videoElement,
+                    offset, 0, drawWidth, this._videoElement.height,
+                    this._canvas.width - videoWidth, 0, videoWidth, videoHeight);
+    
+                // draw a border around the video element.
+                this._ctx.beginPath();
+                this._ctx.lineWidth = 2;
+                this._ctx.strokeStyle = '#A9A9A9'; // dark grey
+                this._ctx.rect(this._canvas.width - videoWidth, 0, videoWidth, videoHeight);
+                this._ctx.stroke();
+            }
         }
     }
 

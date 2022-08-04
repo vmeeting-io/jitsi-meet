@@ -218,8 +218,7 @@ export default class JitsiStreamPresenterEffect {
             this._ctx.drawImage(this._desktopElement, 0, 0, this._canvas.width, this._canvas.height);
 
             if (true) {
-                const { w = 240 } = this._config?.layout?.presenter?.rect?.w || {};
-                const dWidth = this._canvas.width * w / window.innerWidth;
+                const dWidth = this._canvas.width * this._config.presenterWidth / window.innerWidth;
                 const dHeight = dWidth / ratio;
 
                 this._ctx.drawImage(
@@ -307,7 +306,8 @@ export default class JitsiStreamPresenterEffect {
                         y: mapY(layout.presenter.title.y),
                     },
                 },
-            }
+            },
+            presenterWidth: config.presenterWidth || 240
         };
 
         console.log('config:', _config);

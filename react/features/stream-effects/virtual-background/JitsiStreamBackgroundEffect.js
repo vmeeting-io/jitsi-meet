@@ -140,19 +140,23 @@ export default class JitsiStreamBackgroundEffect {
         // Draw the background.
 
         this._outputCanvasCtx.globalCompositeOperation = 'destination-over';
-        if (backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE
-            || backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
-            this._outputCanvasCtx.drawImage(
-                backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE
-                    ? this._virtualImage : this._virtualVideo,
-                0,
-                0,
-                this._outputCanvasElement.width,
-                this._outputCanvasElement.height
-            );
-        } else {
-            this._outputCanvasCtx.filter = `blur(${this._options.virtualBackground.blurValue}px)`;
-            this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
+        try {
+            if (backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE
+                || backgroundType === VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE) {
+                this._outputCanvasCtx.drawImage(
+                    backgroundType === VIRTUAL_BACKGROUND_TYPE.IMAGE
+                        ? this._virtualImage : this._virtualVideo,
+                    0,
+                    0,
+                    this._outputCanvasElement.width,
+                    this._outputCanvasElement.height
+                );
+            } else {
+                this._outputCanvasCtx.filter = `blur(${this._options.virtualBackground.blurValue}px)`;
+                this._outputCanvasCtx.drawImage(this._inputVideoElement, 0, 0);
+            }
+        } catch (err) {
+            console.error(err);
         }
     }
 

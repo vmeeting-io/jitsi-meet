@@ -6,6 +6,12 @@ import { VIRTUAL_AVATAR_ENABLED, SET_VIRTUAL_AVATAR } from './actionTypes';
 
 const STORE_NAME = 'features/virtual-avatar';
 
+export const DEFAULT_STATE = {
+    selectedVirtualAvatarUrl: 'none',
+    selectedBackgroundId: 'none',
+    selectedBackgroundUrl: 'none',
+};
+
 /**
  * Reduces redux actions which activate/deactivate virtual avatar, or
  * indicate if the virtual avatar is activated/deactivated. The
@@ -17,7 +23,7 @@ const STORE_NAME = 'features/virtual-avatar';
  * @returns {State} The next redux state that is the result of reducing the
  * specified action.
  */
-ReducerRegistry.register(STORE_NAME, (state = {}, action) => {
+ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
     const { virtualAvatarEffectEnabled, virtualAvatarType, selectedVirtualAvatarUrl, selectedBackgroundUrl, selectedBackgroundId } = action;
 
     /**

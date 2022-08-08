@@ -350,10 +350,13 @@ export default class JitsiStreamPresenterEffect {
         this._canvas.height = parseInt(height, 10);
         this._videoFrameTimerWorker = new Worker(timerWorkerScript, { name: 'Presenter effect worker' });
         this._videoFrameTimerWorker.onmessage = this._onVideoFrameTimer;
-        this._videoFrameTimerWorker.postMessage({
-            id: SET_INTERVAL,
-            timeMs: 1000 / this._frameRate
-        });
+
+        this._videoElement.onloadeddata = () => {
+            this._videoFrameTimerWorker.postMessage({
+                id: SET_INTERVAL,
+                timeMs: 1000 / this._frameRate
+            });
+        };
 
         return this._canvas.captureStream(this._frameRate);
     }

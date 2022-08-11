@@ -175,11 +175,11 @@ export function submitModeratorTab(newState: Object): Function {
         }
 
         if (newState.startReactionsMuted !== currentState.startReactionsMuted) {
-            batch(() => {
+            dispatch(setStartReactionsMuted(newState.startReactionsMuted, true));
+            setTimeout(() => {
                 // updating settings we want to update and backend (notify the rest of the participants)
-                dispatch(setStartReactionsMuted(newState.startReactionsMuted, true));
                 dispatch(updateSettings({ soundsReactions: !newState.startReactionsMuted }));
-            });
+            }, 300);
         }
 
         if (newState.startAudioMuted !== currentState.startAudioMuted

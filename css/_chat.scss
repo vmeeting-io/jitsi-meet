@@ -101,11 +101,14 @@
     padding: 10px;
     margin: 0 16px;
     border-radius: 4px;
+    width: calc(#{$sidebarWidth} - 52px);
 
     span {
         color: white;
-        display: flex;
-        flex: 1;
+        display: inline-block;
+        margin: 0 auto 0 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     div {

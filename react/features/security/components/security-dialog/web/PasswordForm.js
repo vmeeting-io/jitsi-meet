@@ -211,7 +211,10 @@ class PasswordForm extends Component<Props, State> {
      */
     _onKeyPress(event) {
         if (event.key === 'Enter') {
+            event.preventDefault();
             event.stopPropagation();
+
+            this.props.onSubmit(this.state.enteredPassword);
         }
     }
 }

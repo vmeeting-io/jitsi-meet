@@ -132,7 +132,11 @@ class ShareMenuButton extends AbstractButton<Props, *> {
             .then(resp => {
                 console.log('conference updated:', resp.data);
                 dispatch(setRoomInfo(resp.data));
+            })
+            .catch(err => {
+                console.error('update error: toggle whiteboard is failed.', err);
             });
+
         dispatch(toggleWhiteboard());
     }
 

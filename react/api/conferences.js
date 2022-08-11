@@ -16,6 +16,13 @@ class Conference extends BaseAPI {
     }
     return this;
   }
+
+  site = value => {
+    if (typeof value !== 'undefined') {
+      this._query.site = value;
+    }
+    return this;
+  }
 }
 
 export const conferences = token => new Conference(token);

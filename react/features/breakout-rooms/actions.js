@@ -201,7 +201,7 @@ export function moveToRoom(roomId?: string) {
         console.log('moveToRoom:', roomId, mainRoomId);
         const state = getState();
         const { editing } = state['features/whiteboard'];
-        const { roomInfo } = state['features/base/conference'];
+        const { roomInfo, site } = state['features/base/conference'];
         if (editing) {
             const whiteboard = { ...(roomInfo.whiteboard || {}), owner: '' };
             dispatch(setRoomInfo({ ...roomInfo, whiteboard }));
@@ -298,8 +298,9 @@ export function moveToRoom(roomId?: string) {
         }
 
         conferences()
+            .site(site.site_id)
             .delete_yn(false)
-            .name(goToMainRoom ? _roomId : _roomId.replace(/\[[^\]]+\](.+$)/, '$1'))
+            .name(goToMainRoom ? _roomId : _roomId.toString().replace(/\[[^\]]+\](.+$)/, '$1'))
             .then(resp => {
                 console.log('conference result:', resp.data);
                 dispatch(setRoomInfo(resp.data.docs[0]));

@@ -204,7 +204,7 @@ MiddlewareRegistry.register(store => next => action => {
         if (isModerator && !disableReactionsModeration) {
             customActions.push('notify.reactionSoundsForAll');
             customFunctions.push(() => batch(() => {
-                dispatch(setStartReactionsMuted(true));
+                dispatch(setStartReactionsMuted(true, true));
                 dispatch(updateSettings({ soundsReactions: false }));
             }));
         }

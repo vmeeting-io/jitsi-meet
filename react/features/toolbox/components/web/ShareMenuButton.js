@@ -210,11 +210,11 @@ class ShareMenuButton extends AbstractButton<Props, *> {
             dispatch(setShareMenuVisible(false));
             dispatch(setToolbarHovered(false));
         } else {
-            if (_screenSharing && _approvedPresenter) {
-                this._onToggleScreenshare();
-                return;
-            } else if (_documentSharing && _approvedWhiteboard) {
+            if (_documentSharing && _approvedWhiteboard) {
                 this._onToggleWhiteboard();
+                return;
+            } else if (_screenSharing && _approvedPresenter) {
+                this._onToggleScreenshare();
                 return;
             }
     

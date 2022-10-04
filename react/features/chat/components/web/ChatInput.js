@@ -134,7 +134,12 @@ class ChatInput extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { t, _areSmileysDisabled, _fileUploadExists } = this.props;
+        const {
+            _areSmileysDisabled,
+            _fileUploadExists,
+            _isFileDownloadEnabled,
+            t,
+        } = this.props;
         const smileysPanelClassName = `${this.state.showSmileysPanel
             ? 'show-smileys' : 'hide-smileys'} smileys-panel`;
         const smileysPanelMarginClassName = `${_fileUploadExists ? 'set-smileys-margin': '' }`;
@@ -145,7 +150,7 @@ class ChatInput extends Component<Props, State> {
         return (
             <div className = { `chat-input-container${this.state.message.trim().length ? ' populated' : ''}` }>
                 <div id = 'chat-input' >
-                    <FileUploadButton t = { t } visible = { true } />
+                    { _isFileDownloadEnabled && <FileUploadButton t = { t } visible = { true } /> }
                     { _areSmileysDisabled ? null : (
                         <div className = 'smiley-input'>
                             <div id = 'smileysarea'>
@@ -473,8 +478,9 @@ class ChatInput extends Component<Props, State> {
  * @returns {Props}
  */
 export function _mapStateToProps(state) {
-
     const fileUploadElExists = document.getElementById('fileuploadarea');
+    const { use_download } = state['features/base/conference'].site;
+
     let fileUploadExists = false;
     if(fileUploadElExists !== null) {
         fileUploadExists = true;
@@ -482,6 +488,7 @@ export function _mapStateToProps(state) {
     return {
         _areSmileysDisabled: areSmileysDisabled(state),
         _fileUploadExists: Boolean(fileUploadExists),
+        _isFileDownloadEnabled: Boolean(use_download),
         _participantCount: getParticipantCount(state),
         _remoteParticipants: getRemoteParticipants(state),
         _localParticipant: getLocalParticipant(state)

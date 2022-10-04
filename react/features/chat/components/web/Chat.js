@@ -227,7 +227,14 @@ class Chat extends AbstractChat<Props> {
      * @returns {ReactElement}
      */
     _renderChat() {
-        const { _showChatInput, _privateMessageRecipient, _isPollsEnabled, _isPollsTabFocused, t } = this.props;
+        const {
+            _isFileDownloadEnabled,
+            _isPollsEnabled,
+            _isPollsTabFocused,
+            _showChatInput,
+            _privateMessageRecipient,
+            t
+        } = this.props;
         let _showMessageRecipient = false;
 
         if ((_privateMessageRecipient !== undefined) && (_privateMessageRecipient !== 'Vmeeter') && (_privateMessageRecipient !== 'Fellow Jister')) {
@@ -257,6 +264,7 @@ class Chat extends AbstractChat<Props> {
             <>
                 {_isPollsEnabled && this._renderTabs()}
                 <DragAndDrop
+                    disabled = { !_isFileDownloadEnabled }
                     dropString = { t('chat.dropFiles') }
                     handleDrop = { this._fileDropHandler }>
                     <TouchmoveHack isModal = { this.props._isModal }>

@@ -14,6 +14,11 @@ import { SMALL_WIDTH_THRESHOLD } from '../constants';
 export type Props = {
 
     /**
+     * Whether file download is enabled or not
+     */
+    _isFileDownloadEnabled: boolean,
+
+    /**
      * Whether the chat is opened in a modal or not (computed based on window width).
      */
     _isModal: boolean,
@@ -177,6 +182,7 @@ export function _mapStateToProps(state: Object) {
     const _localParticipant = getLocalParticipant(state);
     const { disablePolls } = state['features/base/config'];
     const chatModerationEnabled = isEnabledFromState('chat', state);
+    const { use_download } = state['features/base/conference'].site;
 
     // whether or not there is file upload currently in progress
     const existingFileName = state['features/chat'].fileName || undefined;
@@ -191,6 +197,7 @@ export function _mapStateToProps(state: Object) {
         _fileSize: fileSize,
         _fileUploadInProgress: Boolean(fileUploadInProgress),
         _fileUploadPercentage: fileUploadPercentage,
+        _isFileDownloadEnabled: Boolean(use_download),
         _isUploading: Boolean(uploading),
         _isModal: window.innerWidth <= SMALL_WIDTH_THRESHOLD,
         _isOpen: isOpen,

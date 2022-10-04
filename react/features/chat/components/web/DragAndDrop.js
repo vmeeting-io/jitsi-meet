@@ -36,18 +36,22 @@ class DragAndDrop extends Component {
     }
   }
   componentDidMount() {
-    let div = this.dropRef.current
-    div.addEventListener('dragenter', this.handleDragIn)
-    div.addEventListener('dragleave', this.handleDragOut)
-    div.addEventListener('dragover', this.handleDrag)
-    div.addEventListener('drop', this.handleDrop)
+    if (!this.props.disabled) {
+      let div = this.dropRef.current
+      div.addEventListener('dragenter', this.handleDragIn)
+      div.addEventListener('dragleave', this.handleDragOut)
+      div.addEventListener('dragover', this.handleDrag)
+      div.addEventListener('drop', this.handleDrop)
+    }
   }
   componentWillUnmount() {
-    let div = this.dropRef.current
-    div.removeEventListener('dragenter', this.handleDragIn)
-    div.removeEventListener('dragleave', this.handleDragOut)
-    div.removeEventListener('dragover', this.handleDrag)
-    div.removeEventListener('drop', this.handleDrop)
+    if (!this.props.disabled) {
+      let div = this.dropRef.current
+      div.removeEventListener('dragenter', this.handleDragIn)
+      div.removeEventListener('dragleave', this.handleDragOut)
+      div.removeEventListener('dragover', this.handleDrag)
+      div.removeEventListener('drop', this.handleDrop)
+    }
   }
   render() {
     return (

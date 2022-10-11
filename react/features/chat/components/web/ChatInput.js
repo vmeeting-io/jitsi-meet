@@ -479,7 +479,7 @@ class ChatInput extends Component<Props, State> {
  */
 export function _mapStateToProps(state) {
     const fileUploadElExists = document.getElementById('fileuploadarea');
-    const { use_download } = state['features/base/conference'].site;
+    const { use_security } = state['features/base/conference'].site;
 
     let fileUploadExists = false;
     if(fileUploadElExists !== null) {
@@ -488,7 +488,7 @@ export function _mapStateToProps(state) {
     return {
         _areSmileysDisabled: areSmileysDisabled(state),
         _fileUploadExists: Boolean(fileUploadExists),
-        _isFileDownloadEnabled: Boolean(use_download),
+        _isFileDownloadEnabled: !Boolean(use_security),
         _participantCount: getParticipantCount(state),
         _remoteParticipants: getRemoteParticipants(state),
         _localParticipant: getLocalParticipant(state)

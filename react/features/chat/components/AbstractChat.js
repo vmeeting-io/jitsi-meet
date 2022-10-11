@@ -182,7 +182,7 @@ export function _mapStateToProps(state: Object) {
     const _localParticipant = getLocalParticipant(state);
     const { disablePolls } = state['features/base/config'];
     const chatModerationEnabled = isEnabledFromState('chat', state);
-    const { use_security } = state['features/base/conference'].site;
+    const { use_file_chat } = state['features/base/conference'].site;
 
     // whether or not there is file upload currently in progress
     const existingFileName = state['features/chat'].fileName || undefined;
@@ -197,7 +197,7 @@ export function _mapStateToProps(state: Object) {
         _fileSize: fileSize,
         _fileUploadInProgress: Boolean(fileUploadInProgress),
         _fileUploadPercentage: fileUploadPercentage,
-        _isFileDownloadEnabled: !Boolean(use_security),
+        _isFileDownloadEnabled: Boolean(use_file_chat),
         _isUploading: Boolean(uploading),
         _isModal: window.innerWidth <= SMALL_WIDTH_THRESHOLD,
         _isOpen: isOpen,

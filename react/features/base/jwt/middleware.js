@@ -244,7 +244,7 @@ function _undoOverwriteLocalParticipant(
  *     birthDate: ?string
  * }}
  */
-function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, background, birthDate, phoneNumber }) { 
+function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, isSiteStaff, background, birthDate, phoneNumber }) { 
     // we added additional functional parameter birthDate which is received from context object in _setJWT function
     const participant = {};
 
@@ -267,6 +267,9 @@ function _user2participant({ avatar, avatarUrl, email, email_verified, id, name,
     }
     if (typeof isAdmin === 'boolean') {
         participant.isAdmin = isAdmin;
+    }
+    if (typeof isSiteStaff === 'boolean') {
+        participant.isSiteStaff = isSiteStaff;
     }
     if (typeof username === 'string') {
         participant.username = username;

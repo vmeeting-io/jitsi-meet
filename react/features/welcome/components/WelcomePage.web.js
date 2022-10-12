@@ -396,6 +396,13 @@ class WelcomePage extends AbstractWelcomePage {
                                 <hr className = 'divider mobile' />
                             </DropdownItemGroup> }
                         <DropdownItemGroup className = 'menu-container'>
+                            {_user.isSiteStaff && (
+                                <DropdownItem
+                                    className = 'menu-item'
+                                    href = { `${AUTH_PAGE_BASE}/sitemanage` }>
+                                    { t('welcomepage.siteManage') }
+                                </DropdownItem>
+                            )}
                             <DropdownItem
                                 className = 'menu-item'
                                 href = { `${AUTH_PAGE_BASE}/meetingmanage` }>

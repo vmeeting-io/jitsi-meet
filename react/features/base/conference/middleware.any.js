@@ -566,7 +566,7 @@ function _setPassword({ getState }, next, action) {
     case conference.lock: {
         const room = state['features/base/conference'].roomInfo;
 
-        if (room && password) {
+        if (room) {
             const baseURL = getState()['features/base/connection'].locationURL;
 
             const AUTH_API_BASE = window._env_.VMEETING_API_BASE;

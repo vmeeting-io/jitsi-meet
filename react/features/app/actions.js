@@ -190,12 +190,9 @@ export function appNavigate(uri: ?string) {
             dispatch(loadCurrentUser());
         }
 
-        let { site } = getState()['features/base/conference'];
-        if (!site) {
-            const resp = await sites().siteId(tenant).get();
-            site = resp.data.docs[0];
-            dispatch(setSite(site));
-        }
+        const resp = await sites().siteId(tenant).get();
+        const site = resp.data.docs[0];
+        dispatch(setSite(site));
         // console.log('conference.site:', site);
 
         const pathname = locationURL.pathname;

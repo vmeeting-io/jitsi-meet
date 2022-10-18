@@ -4,7 +4,7 @@ import { LOCKED_LOCALLY, LOCKED_REMOTELY } from '../../room-lock';
 import { SET_PUBLIC_SCOPE_ENABLED } from '../../security';
 import { CONNECTION_WILL_CONNECT, SET_LOCATION_URL } from '../connection';
 import { JitsiConferenceErrors } from '../lib-jitsi-meet';
-import { assign, ReducerRegistry, set } from '../redux';
+import { assign, PersistenceRegistry, ReducerRegistry, set } from '../redux';
 
 import {
     AUTH_STATUS_CHANGED,
@@ -42,115 +42,118 @@ const DEFAULT_STATE = {
     membersOnly: undefined,
     password: undefined,
     passwordRequired: undefined,
-    roomInfo: undefined
+    roomInfo: undefined,
+    site: undefined
 };
+
+const STORE_NAME = 'features/base/conference';
+
+PersistenceRegistry.register(STORE_NAME, { site: true }, DEFAULT_STATE);
 
 /**
  * Listen for actions that contain the conference object, so that it can be
  * stored for use by other action creators.
  */
-ReducerRegistry.register(
-    'features/base/conference',
-    (state = DEFAULT_STATE, action) => {
-        switch (action.type) {
-        case AUTH_STATUS_CHANGED:
-            return _authStatusChanged(state, action);
+ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
+    switch (action.type) {
+    case AUTH_STATUS_CHANGED:
+        return _authStatusChanged(state, action);
 
-        case CONFERENCE_FAILED:
-            return _conferenceFailed(state, action);
+    case CONFERENCE_FAILED:
+        return _conferenceFailed(state, action);
 
-        case CONFERENCE_JOINED:
-            return _conferenceJoined(state, action);
+    case CONFERENCE_JOINED:
+        return _conferenceJoined(state, action);
 
-        case CONFERENCE_SUBJECT_CHANGED:
-            return set(state, 'subject', action.subject);
+    case CONFERENCE_SUBJECT_CHANGED:
+        return set(state, 'subject', action.subject);
 
-        case CONFERENCE_TIME_REMAINED:
-            return set(state, 'conferenceTimeRemained', action.timeRemained);
+    case CONFERENCE_TIME_REMAINED:
+        return set(state, 'conferenceTimeRemained', action.timeRemained);
 
-        case CONFERENCE_LOCAL_SUBJECT_CHANGED:
-            return set(state, 'localSubject', action.localSubject);
+    case CONFERENCE_LOCAL_SUBJECT_CHANGED:
+        return set(state, 'localSubject', action.localSubject);
 
-        case CONFERENCE_TIMESTAMP_CHANGED:
-            return set(state, 'conferenceTimestamp', action.conferenceTimestamp);
+    case CONFERENCE_TIMESTAMP_CHANGED:
+        return set(state, 'conferenceTimestamp', action.conferenceTimestamp);
 
-        case CONFERENCE_LEFT:
-        case CONFERENCE_WILL_LEAVE:
-            return _conferenceLeftOrWillLeave(state, action);
+    case CONFERENCE_LEFT:
+    case CONFERENCE_WILL_LEAVE:
+        return _conferenceLeftOrWillLeave(state, action);
 
-        case CONFERENCE_WILL_JOIN:
-            return _conferenceWillJoin(state, action);
+    case CONFERENCE_WILL_JOIN:
+        return _conferenceWillJoin(state, action);
 
-        case CONNECTION_WILL_CONNECT:
-            return set(state, 'authRequired', undefined);
+    case CONNECTION_WILL_CONNECT:
+        return set(state, 'authRequired', undefined);
 
-        case LOCK_STATE_CHANGED:
-            return _lockStateChanged(state, action);
+    case LOCK_STATE_CHANGED:
+        return _lockStateChanged(state, action);
 
-        case P2P_STATUS_CHANGED:
-            return _p2pStatusChanged(state, action);
+    case P2P_STATUS_CHANGED:
+        return _p2pStatusChanged(state, action);
 
-        case SET_FOLLOW_ME:
-            return set(state, 'followMeEnabled', action.enabled);
+    case SET_FOLLOW_ME:
+        return set(state, 'followMeEnabled', action.enabled);
 
-        case SET_START_REACTIONS_MUTED:
-            return set(state, 'startReactionsMuted', action.muted);
+    case SET_START_REACTIONS_MUTED:
+        return set(state, 'startReactionsMuted', action.muted);
 
-        case SET_LOCATION_URL:
-            return set(state, 'room', undefined);
+    case SET_LOCATION_URL:
+        return set(state, 'room', undefined);
 
-        case SET_PASSWORD:
-            return _setPassword(state, action);
+    case SET_PASSWORD:
+        return _setPassword(state, action);
 
-        case SET_PENDING_SUBJECT_CHANGE:
-            return set(state, 'pendingSubjectChange', action.subject);
+    case SET_PENDING_SUBJECT_CHANGE:
+        return set(state, 'pendingSubjectChange', action.subject);
 
-        case SET_ROOM:
-            return _setRoom(state, action);
+    case SET_ROOM:
+        return _setRoom(state, action);
 
-        case SET_ROOM_INFO:
-            return _setRoomInfo(state, action);
+    case SET_ROOM_INFO:
+        return _setRoomInfo(state, action);
 
-        case SET_SITE:
-            return _setSite(state, action);
+    case SET_SITE:
+        return _setSite(state, action);
 
-        case SET_START_MUTED_POLICY:
-            return {
-                ...state,
-                startAudioMutedPolicy: action.startAudioMutedPolicy,
-                startVideoMutedPolicy: action.startVideoMutedPolicy
-            };
-        
-        case START_TIMER:
-            return {
-                ...state,
-                timerEndTime: action.endTime,
-                timerStarted: action.timerStarted
-            }
-        
-        case START_RANDOM_SELECTION_COUNTDOWN:
-            return {
-                ...state,
-                countdownRemained: action.countdownRemained,
-                startCountdown: action.startCountdown
-            }
-
-        case SET_PUBLIC_SCOPE_ENABLED:
-            return set(
-                state,
-                'roomInfo',
-                { ...state.roomInfo, scope: action.enabled }
-            );
-        case SET_NOTICE_MESSAGE:
-            return set(
-                state,
-                'noticeMessage',
-                action.noticeMessage
-            );
+    case SET_START_MUTED_POLICY:
+        return {
+            ...state,
+            startAudioMutedPolicy: action.startAudioMutedPolicy,
+            startVideoMutedPolicy: action.startVideoMutedPolicy
+        };
+    
+    case START_TIMER:
+        return {
+            ...state,
+            timerEndTime: action.endTime,
+            timerStarted: action.timerStarted
+        }
+    
+    case START_RANDOM_SELECTION_COUNTDOWN:
+        return {
+            ...state,
+            countdownRemained: action.countdownRemained,
+            startCountdown: action.startCountdown
         }
 
-        return state;
-    });
+    case SET_PUBLIC_SCOPE_ENABLED:
+        return set(
+            state,
+            'roomInfo',
+            { ...state.roomInfo, scope: action.enabled }
+        );
+    case SET_NOTICE_MESSAGE:
+        return set(
+            state,
+            'noticeMessage',
+            action.noticeMessage
+        );
+    }
+
+    return state;
+});
 
 /**
  * Reduces a specific Redux action AUTH_STATUS_CHANGED of the feature

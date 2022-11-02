@@ -47,8 +47,7 @@ var interfaceConfig = {
     // with lower CPU usage and better audio quality
     DISABLE_DOMINANT_SPEAKER_INDICATOR: false,
     DISABLE_FOCUS_INDICATOR: false,
-    DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-    DISABLE_JOIN_LEAVE_NOTIFICATION_SOUND: true,
+    DISABLE_JOIN_LEAVE_NOTIFICATIONS: false,
     DISABLE_VIDEO_BACKGROUND: true,
     DISABLE_MUTED_NOTIFICATION: false,
 

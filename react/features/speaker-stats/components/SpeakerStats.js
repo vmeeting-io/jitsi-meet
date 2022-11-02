@@ -27,6 +27,7 @@ import { getParticipantById, PARTICIPANT_ROLE } from '../../base/participants';
 import { Icon, IconSearch } from '../../base/icons';
 import CrossCircleIcon from '@atlaskit/icon/glyph/cross-circle';
 import exportExcel from '../../../utils/exportExcel';
+import { formatDuration } from '../../base/util/formatDateTime';
 
 /**
  * The type of the React {@code Component} props of {@link SpeakerStats}.
@@ -174,8 +175,8 @@ class SpeakerStats extends Component<Props, State> {
             Name: item.name,
             Email: item.email,
             Join: moment(item.joinTime).format('LLL'),
-            Leave: moment(item.leaveTime).format('LLL'),
-            Duration: moment(item.joinTime).to(item.leaveTime, true),
+            Leave: item.leaveTime ? moment(item.leaveTime).format('LLL') : '-',
+            Duration: item.duration ? formatDuration(item.duration) : '-',
         }));
     }
     

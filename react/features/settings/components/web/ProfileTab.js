@@ -200,7 +200,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
                         <Label label = "Birthday" />
                         <DatePicker
                             format = { DATE_FORMAT }
-                            defaultValue = { this.state.birthdate }
+                            defaultValue = { this.state.birthdate ? this.state.birthdate : null }
                             id = 'birthdatepicker'
                             locale = { this.state.locale }
                             onChange = { this._onBirthDateChange }

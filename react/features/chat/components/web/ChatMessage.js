@@ -40,7 +40,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
         const { message, t } = this.props;
         const processedMessage = [];
         const serverURL = getBaseUrl();
-
+        const downloadBaseURL = `${serverURL}download`;
         const txt = this._getMessageText();
 
         // Tokenize the text in order to avoid emoji substitution for URLs.
@@ -73,7 +73,7 @@ class ChatMessage extends AbstractChatMessage<Props> {
 
         content.forEach(msg => {
 
-            if (typeof msg === 'string' && msg.startsWith(serverURL)) {
+            if (typeof msg === 'string' && msg.startsWith(downloadBaseURL)) {
                 let filename = msg.split('/').pop(); // use pop to fetch the last element contained in the array after using split
                 if ((filename !== undefined) && (filename !== '')) {
 

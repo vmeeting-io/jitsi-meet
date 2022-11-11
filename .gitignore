@@ -6,7 +6,7 @@ libs/
 .remote-sync.json
 .sync-config.cson
 .env
-config/
+env-config.js
 lang/countries-*.json
 
 # CocoaPods

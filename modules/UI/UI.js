@@ -27,6 +27,7 @@ import WhiteboardManager from './whiteboard/Whiteboard';
 import messageHandler from './util/MessageHandler';
 import UIUtil from './util/UIUtil';
 import VideoLayout from './videolayout/VideoLayout';
+import { isAttentionAnalysisEnabled } from '../../react/features/face-detect/functions';
 
 const logger = Logger.getLogger(__filename);
 
@@ -226,7 +227,7 @@ UI.updateUserStatus = (user, status) => {
 
     // We hide status updates when join/leave notifications are disabled,
     // as jigasi is the component with statuses and they are seen as join/leave notifications.
-    if (!status || calleeInfoVisible || joinLeaveNotificationsDisabled()) {
+    if (!status || calleeInfoVisible || joinLeaveNotificationsDisabled() || isAttentionAnalysisEnabled(reduxState)) {
         return;
     }
 

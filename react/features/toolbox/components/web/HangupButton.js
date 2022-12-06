@@ -218,7 +218,7 @@ class HangupButton extends AbstractHangupButton<Props, *> {
             }
         });
 
-        if (_roomInfo) {
+        if (_roomInfo?._id) {
             const apiUrl = `${_apiBase}/conferences/${_roomInfo._id}`;
             axios.delete(apiUrl);
             this._hangup();

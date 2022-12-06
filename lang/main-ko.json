@@ -776,6 +776,8 @@
         "randomSelection": "랜덤 지목",
         "randomSelectionCompleted": "축하합니다. \n{{selectedParticipant}} 님이 지목되었습니다",
         "randomSelectionInitiatedBy": "{{initiator}}님에 의해 임의 참석자를 지목합니다.",
+        "recordingLimitTitle": "녹화 제한 알림",
+        "recordingLimitMessage": "클라우드 스토리지 용량 부족으로 녹화를 시작할 수 없습니다. 관리자에게 문의 바랍니다.",
         "refusedUnmute": "{{participantDisplayName}}님이 음소거 해제를 거부했습니다.",
         "refusedUnmuteVideo": "{{participantDisplayName}}님이 카메라 켜기를 거부했습니다.",
         "screenShare": "화면 공유",

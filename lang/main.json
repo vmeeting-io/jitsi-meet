@@ -780,6 +780,8 @@
         "randomSelection": "Random Selection",
         "randomSelectionCompleted": "Congratulations! \n{{selectedParticipant}} has been chosen",
         "randomSelectionInitiatedBy": "{{initiator}} has started random selection.",
+        "recordingLimitTitle": "Recording Limit Notification",
+        "recordingLimitMessage": "Recording could not start due to insufficient cloud storage capacity. Please contact the administrator.",
         "refusedUnmute": "{{participantDisplayName}} refused to unmute.",
         "refusedUnmuteVideo": "{{participantDisplayName}} refused to unmute video",
         "screenShare": "Start sharing your screen",

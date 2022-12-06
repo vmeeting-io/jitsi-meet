@@ -258,7 +258,7 @@ class Prejoin extends Component<Props, State> {
     // should remove conference
     _beforeUnloadHandler() {
         const { _apiBase, _user, roomInfo } = this.props;
-        if (_user?.email === roomInfo?.mail_owner) {
+        if (_user?.email === roomInfo?.mail_owner && roomInfo?._id) {
             axios.delete(`${_apiBase}/conferences/${roomInfo._id}`);
         }
     }

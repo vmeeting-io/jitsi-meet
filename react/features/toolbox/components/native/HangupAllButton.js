@@ -52,7 +52,7 @@ class HangupAllButton extends AbstractButton<Props, *> {
     async _handleClick() {
         const { _apiBase, _roomInfo, _meetingId } = this.props;
 
-        if (_roomInfo) {
+        if (_roomInfo?._id) {
             const apiUrl = `${_apiBase}/conferences/${_roomInfo._id}`;
             axios.delete(apiUrl);
             this._hangup();

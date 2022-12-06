@@ -18,6 +18,7 @@ import { maybeShowPremiumFeatureDialog } from '../../../jaas/actions';
 import { FEATURES } from '../../../jaas/constants';
 
 import { StartRecordingDialog, StopRecordingDialog } from './_';
+import { NOTIFICATION_TIMEOUT_TYPE, showErrorNotification } from '../../../notifications';
 
 /**
  * The type of the React {@code Component} props of
@@ -78,7 +79,7 @@ export default class AbstractRecordButton<P: Props> extends AbstractButton<P, *>
      * @returns {void}
      */
     async _handleClick() {
-        const { _isRecordingRunning, dispatch, handleClick } = this.props;
+        const { _isRecordingRunning, _site, dispatch, handleClick } = this.props;
 
         if (handleClick) {
             handleClick();
@@ -92,6 +93,15 @@ export default class AbstractRecordButton<P: Props> extends AbstractButton<P, *>
                 'is_recording': _isRecordingRunning,
                 type: JitsiRecordingConstants.mode.FILE
             }));
+
+        if (_site?.storage_limit <= _site?.storage_used) {
+            dispatch(showErrorNotification({
+                descriptionKey: 'notify.recordingLimitMessage',
+                titleKey: 'notify.recordingLimitTitle'
+            }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+
+            return;
+        }
 
         const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(FEATURES.RECORDING));
 
@@ -188,9 +198,12 @@ export function _mapStateToProps(state: Object, ownProps: Props): Object {
         visible = false;
     }
 
+    const _site = state['features/base/conference'].site;
+
     return {
         _disabled,
         _isRecordingRunning: isRecording(state),
+        _site,
         _tooltip,
         visible
     };

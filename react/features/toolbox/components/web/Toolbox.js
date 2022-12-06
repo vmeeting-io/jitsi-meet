@@ -722,6 +722,7 @@ class Toolbox extends Component<Props> {
 
         const recording = {
             key: 'recording',
+            afterClick: this._closeOverflowMenuIfOpen,
             Content: RecordButton,
             group: 2
         };

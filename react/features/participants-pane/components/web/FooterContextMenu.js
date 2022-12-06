@@ -110,6 +110,7 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
     const randomselectionClass = isRandomSelectionRunning ? classes.menudisabled : '';
     const randomParticipantID = useSelector(randomlySelectFromAllParticipants);
     const conference = useSelector(state => state['features/base/conference'].conference);
+    const roomInfo = useSelector(state => state['features/base/conference'].roomInfo);
 
     // randomly selects a participant from allParticipants and get its display name
     const selectedParticipantDisplayName = useSelector(selectParticipantDisplayName(randomParticipantID));
@@ -255,7 +256,7 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
         }
     ];
 
-    if (conference?.getBreakoutRooms()?.isSupported()) {
+    if (conference?.getBreakoutRooms()?.isSupported() && Boolean(roomInfo?.use_breakout_rooms)) {
         moderationActions.push({
             accessibilityLabel: t('participantsPane.actions.breakoutModeration'),
             className: isBreakoutModerationEnabled ? classes.indentedLabel : '',
@@ -268,16 +269,18 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
         });
     }
 
-    moderationActions.push({
-        accessibilityLabel: t('participantsPane.actions.whiteboardModeration'),
-        className: isWhiteboardModerationEnabled ? classes.indentedLabel : '',
-        id: isWhiteboardModerationEnabled
-            ? 'participants-pane-context-menu-stop-whiteboard-moderation'
-            : 'participants-pane-context-menu-start-whiteboard-moderation',
-        icon: !isWhiteboardModerationEnabled && IconCheck,
-        onClick: isWhiteboardModerationEnabled ? disableWhiteboardModeration : enableWhiteboardModeration,
-        text: t('participantsPane.actions.whiteboardModeration')
-    })
+    if (Boolean(roomInfo?.whiteboard?.use_yn)) {
+        moderationActions.push({
+            accessibilityLabel: t('participantsPane.actions.whiteboardModeration'),
+            className: isWhiteboardModerationEnabled ? classes.indentedLabel : '',
+            id: isWhiteboardModerationEnabled
+                ? 'participants-pane-context-menu-stop-whiteboard-moderation'
+                : 'participants-pane-context-menu-start-whiteboard-moderation',
+            icon: !isWhiteboardModerationEnabled && IconCheck,
+            onClick: isWhiteboardModerationEnabled ? disableWhiteboardModeration : enableWhiteboardModeration,
+            text: t('participantsPane.actions.whiteboardModeration')
+        })
+    }
 
     return (
         <ContextMenu

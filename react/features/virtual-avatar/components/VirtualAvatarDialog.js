@@ -19,6 +19,7 @@ import {
     toggleVirtualAvatarEffect,
     virtualAvatarTrackChanged
 } from '../actions';
+import { DEFAULT_STATE } from '../reducer';
 import { toDataURL, toggleAvatarAndBackgroundEffects } from '../functions';
 import logger from '../logger';
 
@@ -619,7 +620,10 @@ function _mapStateToProps(state) {
         _localFlipX: Boolean(localFlipX),
         _apiBase: getAuthUrl(state),
         _jitsiTrack: getLocalVideoTrack(state['features/base/tracks'])?.jitsiTrack,
-        _virtualAvatar: state['features/virtual-avatar'],
+        _virtualAvatar: {
+            ...DEFAULT_STATE,
+            ...state['features/virtual-avatar'],
+        },
         _virtualBackground: state['features/virtual-background'],
     };
 }

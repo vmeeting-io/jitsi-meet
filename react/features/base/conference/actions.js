@@ -60,6 +60,7 @@ import {
     SET_PASSWORD_FAILED,
     SET_ROOM,
     SET_ROOM_INFO,
+    SET_SITE,
     SET_PENDING_SUBJECT_CHANGE,
     SET_START_MUTED_POLICY,
     START_RANDOM_SELECTION_COUNTDOWN,
@@ -827,6 +828,22 @@ export function setRoomInfo(roomInfo: ?Object) {
     return {
         type: SET_ROOM_INFO,
         roomInfo
+    };
+}
+
+/**
+ * Sets the site information of the conference.
+ *
+ * @param {object} site - The info of the site of the conference.
+ * @returns {{
+ *     type: SET_SITE,
+ *     site: object
+ * }}
+ */
+export function setSite(site: ?Object) {
+    return {
+        type: SET_SITE,
+        site
     };
 }
 

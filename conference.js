@@ -170,6 +170,7 @@ import { openDialog } from './react/features/base/dialog';
 import BirthdayHatApprove from './react/features/ar-effect/components/BirthdayHatApprove';
 import { arApprovalDialog, enableARHat } from './react/features/ar-effect';
 import { toggleAvatarAndBackgroundEffects } from './react/features/virtual-avatar/functions'
+import { DEFAULT_STATE } from './react/features/virtual-avatar/reducer';
 
 const logger = Logger.getLogger(__filename);
 const eventEmitter = new EventEmitter();
@@ -1842,6 +1843,7 @@ export default {
         try {
             const virtualAvatar = APP.store.getState()['features/virtual-avatar'];
             const avatarAndBgOptions = {
+                ...DEFAULT_STATE,
                 ...virtualAvatar,
                 enabled: virtualAvatar.virtualAvatarEffectEnabled
             }

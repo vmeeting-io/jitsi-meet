@@ -383,7 +383,7 @@ class ParticipantsPane extends Component<Props, State> {
 function _mapStateToProps(state: Object) {
     const isPaneOpen = getParticipantsPaneOpen(state);
     const { hideAddRoomButton } = state['features/base/config'];
-    const { conference } = state['features/base/conference'];
+    const { conference, roomInfo } = state['features/base/conference'];
     const { aiAttentionAnalysisEnabled } = state['features/base/settings'];
 
     // $FlowExpectedError
@@ -394,7 +394,7 @@ function _mapStateToProps(state: Object) {
         _aiAttentionAnalysisEnabled: Boolean(aiAttentionAnalysisEnabled),
         _isBreakoutRoomsSupported,
         _paneOpen: isPaneOpen,
-        _showAddRoomButton: _isBreakoutRoomsSupported && !hideAddRoomButton && _isLocalParticipantModerator,
+        _showAddRoomButton: _isBreakoutRoomsSupported && !hideAddRoomButton && Boolean(roomInfo?.use_breakout_rooms) && _isLocalParticipantModerator,
         _showFooter: isPaneOpen && isLocalParticipantModerator(state)
     };
 }

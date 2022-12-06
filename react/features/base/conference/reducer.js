@@ -25,6 +25,7 @@ import {
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
     SET_ROOM_INFO,
+    SET_SITE,
     SET_START_MUTED_POLICY,
     START_RANDOM_SELECTION_COUNTDOWN,
     START_TIMER,
@@ -109,6 +110,9 @@ ReducerRegistry.register(
 
         case SET_ROOM_INFO:
             return _setRoomInfo(state, action);
+
+        case SET_SITE:
+            return _setSite(state, action);
 
         case SET_START_MUTED_POLICY:
             return {
@@ -485,4 +489,24 @@ function _setRoomInfo(state, action) {
         error: undefined,
         roomInfo: { ...state.roomInfo, ...roomInfo }
     });
+}
+
+/**
+ * Reduces a specific Redux action SET_SITE of the feature base/conference.
+ *
+ * @param {Object} state - The Redux state of the feature base/conference.
+ * @param {Action} action - The Redux action SET_SITE to reduce.
+ * @private
+ * @returns {Object} The new state of the feature base/conference after the
+ * reduction of the specified action.
+ */
+function _setSite(state, action) {
+    const { site } = action;
+
+    /**
+     * The information of the site of the conference (to be) joined.
+     *
+     * @type {string}
+     */
+    return assign(state, { site });
 }

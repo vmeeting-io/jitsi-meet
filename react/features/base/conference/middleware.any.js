@@ -444,7 +444,7 @@ function _conferenceUniqueIdSet(store, next, action) {
             .id(roomInfo._id)
             .update({ meeting_id: action.meetingId })
             .then(resp => {
-                // console.log('conference updated:', resp.data);
+                // console.log('_conferenceUniqueIdSet:', resp.data);
                 store.dispatch(setRoomInfo(resp.data));
             });
     } else if (!roomInfo._id) {
@@ -452,7 +452,7 @@ function _conferenceUniqueIdSet(store, next, action) {
         conferences()
             .meetingId(action.meetingId)
             .then(resp => {
-                // console.log('conference info:', resp.data);
+                // console.log('_conferenceUniqueIdSet:', resp.data);
                 store.dispatch(setRoomInfo(resp.data.docs[0]));
             });
     }

@@ -108,17 +108,18 @@ StateListenerRegistry.register(
                     const { roomInfo } = state['features/base/conference'];
                     const { editing } = state['features/whiteboard'];
                     const whiteboardManager = APP.UI.getWhiteboardManager();
+                    const newWhiteboard = { ...(roomInfo.whiteboard || {}), ...whiteboard };
 
                     if (editing !== Boolean(whiteboard.owner)) {
                         batch(() => {
-                            dispatch(setRoomInfo({ ...roomInfo, whiteboard }));
+                            dispatch(setRoomInfo({ ...roomInfo, whiteboard: newWhiteboard }));
                             dispatch(toggleWhiteboard());
                         });
                     } else if (whiteboardManager
                         && whiteboardManager.isOpen
                         && roomInfo.whiteboard?.userVisible !== whiteboard.userVisible)
                     {
-                        dispatch(setRoomInfo({ ...roomInfo, whiteboard }));
+                        dispatch(setRoomInfo({ ...roomInfo, whiteboard: newWhiteboard }));
                         whiteboardManager.reload();
                     }
                 }, 2000);

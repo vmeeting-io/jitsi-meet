@@ -1330,6 +1330,7 @@
         "stopSharing": "Stop sharing",
         "stopSubtitles": "Stop subtitles",
         "stopSharedVideo": "Stop video",
+        "stt": "Speech-to-Text",
         "surprised": "Surprised",
         "talkWhileMutedPopup": "Trying to speak? You are muted.",
         "tileViewSettings": "Tile view settings",
@@ -1552,5 +1553,13 @@
     },
     "whiteboard": {
         "title": "Whiteboard"
+    },
+    "stt": {
+        "buttonTooltip": "Open Speech-to-Text menu",
+        "featureDesc": "You can choose whether to enable subtitles (Speech-to-Text) and detail options.",
+        "header": "Speech-to-Text Options",
+        "toggleLabel": "Enable Subtitles",
+        "toggleTranslation": "Enable Translation",
+        "toggleMinutes": "Enable Minutes"
     }
 }

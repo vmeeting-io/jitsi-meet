@@ -56,3 +56,5 @@ export const TRIGGER_READY_TO_CLOSE_REASONS = [
 ];
 
 export const WHITEBOARD_COMMAND = 'etherpad';
+
+export const STT_COMMAND = 'stt-command';

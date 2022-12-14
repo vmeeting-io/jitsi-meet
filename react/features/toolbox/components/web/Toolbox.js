@@ -65,6 +65,7 @@ import { SpeakerStatsButton } from '../../../speaker-stats/components';
 import {
     ClosedCaptionButton
 } from '../../../subtitles';
+import { STTDialogButton } from '../../../speech-to-text/components';
 import {
     TileViewButton,
     shouldDisplayTileView,
@@ -720,6 +721,12 @@ class Toolbox extends Component<Props> {
             group: 2
         };
 
+        const stt = {
+            key: 'stt',
+            Content: STTDialogButton,
+            group: 2
+        }
+
         const recording = {
             key: 'recording',
             afterClick: this._closeOverflowMenuIfOpen,
@@ -846,6 +853,7 @@ class Toolbox extends Component<Props> {
             fullscreen,
             security,
             cc,
+            stt,
             recording,
             localRecording,
             livestreaming,

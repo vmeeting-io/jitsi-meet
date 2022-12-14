@@ -335,6 +335,9 @@ var config = {
     // Enables automatic turning on captions when recording is started
     // autoCaptionOnRecord: false,
 
+    // AirSound STT
+    sttEnabled: true,
+
     // Misc
 
     // Default value for the channel "last N" attribute. -1 for unlimited.
@@ -649,6 +652,7 @@ var config = {
         'sharedvideo',
         'shortcuts',
         'stats',
+        'stt',
         'tileview',
         'toggle-camera',
         'videoquality',

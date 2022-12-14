@@ -59,7 +59,8 @@ import {
     nonParticipantMessageReceived,
     startRandomSelectionCountdown,
     Timer,
-    WHITEBOARD_COMMAND
+    WHITEBOARD_COMMAND,
+    STT_COMMAND
 } from './react/features/base/conference';
 import { getReplaceParticipant } from './react/features/base/config/functions';
 import {
@@ -162,6 +163,7 @@ import { toggleScreenshotCaptureSummary } from './react/features/screenshot-capt
 import { AudioMixerEffect } from './react/features/stream-effects/audio-mixer/AudioMixerEffect';
 import { createPresenterEffect } from './react/features/stream-effects/presenter';
 import { createRnnoiseProcessor } from './react/features/stream-effects/rnnoise';
+import { toggleSTT } from './react/features/speech-to-text';
 import { endpointMessageReceived } from './react/features/subtitles';
 import UIEvents from './service/UI/UIEvents';
 import { isHost } from './react/features/base/jwt';
@@ -224,7 +226,8 @@ const commands = {
     EMAIL: EMAIL_COMMAND,
     BIRTHDATE: BIRTHDATE_COMMAND,
     HATON: HAT_COMMAND,
-    WHITEBOARD: WHITEBOARD_COMMAND
+    WHITEBOARD: WHITEBOARD_COMMAND,
+    STT_COMMAND: STT_COMMAND
 };
 
 /**
@@ -2531,6 +2534,12 @@ export default {
                         birthDate: data.value
                     })
                 );
+            }
+        );
+
+        room.addCommandListener(this.commands.defaults.STT_COMMAND,
+            (data, from) => {
+                APP.store.dispatch(toggleSTT(data.value));
             }
         );
 

@@ -1326,6 +1326,7 @@
         "stopSharing": "공유 종료",
         "stopSubtitles": "자막 숨기기",
         "stopSharedVideo": "비디오 종료",
+        "stt": "자막 (Speech-to-Text) 옵션",
         "surprised": "놀람",
         "talkWhileMutedPopup": "음소거 상태입니다.",
         "tileViewSettings": "타일뷰 설정",
@@ -1548,5 +1549,13 @@
     },
     "whiteboard": {
         "title": "판서"
+    },
+    "stt": {
+        "buttonTooltip": "자막 (Speech-to-Text) 옵션",
+        "featureDesc": "자막 (Speech-to-Text) 활성화 여부 및 세부 옵션을 선택할 수 있습니다.",
+        "header": "자막 (Speech-to-Text) 옵션",
+        "toggleLabel": "자막 활성화",
+        "toggleTranslation": "번역 활성화",
+        "toggleMinutes": "회의록 활성화"
     }
 }

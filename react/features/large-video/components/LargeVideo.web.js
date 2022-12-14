@@ -7,6 +7,7 @@ import { connect } from '../../base/redux';
 import { setColorAlpha } from '../../base/util';
 import { SharedVideo } from '../../shared-video/components/web';
 import { Captions } from '../../subtitles/';
+import { STTCaptions } from '../../speech-to-text/';
 import { setTileView } from '../../video-layout/actions';
 
 declare var interfaceConfig: Object;
@@ -122,6 +123,8 @@ class LargeVideo extends Component<Props> {
                 </div>
                 { interfaceConfig.DISABLE_TRANSCRIPTION_SUBTITLES
                     || <Captions /> }
+                { interfaceConfig.DISABLE_TRANSCRIPTION_SUBTITLES
+                    || <STTCaptions /> }
             </div>
         );
     }

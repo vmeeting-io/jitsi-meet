@@ -43,6 +43,7 @@ export const TOOLBAR_BUTTONS = [
     'sharedvideo',
     'shortcuts',
     'stats',
+    'stt',
     'tileview',
     'toggle-camera',
     'videoquality'

@@ -48,6 +48,7 @@ import '../recent-list/reducer';
 import '../recording/reducer';
 import '../settings/reducer';
 import '../speaker-stats/reducer';
+import '../speech-to-text/reducer';
 import '../subtitles/reducer';
 import '../screen-share/reducer';
 import '../toolbox/reducer';

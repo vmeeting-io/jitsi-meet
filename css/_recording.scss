@@ -17,8 +17,16 @@
             display: inline-flex;
             align-items: center;
             font-size: 16px;
-            margin-left: 16px;
         }
+    }
+
+    .recording-message {
+        display: block;
+    }
+
+    .recording-message2 {
+        display: block;
+        margin-top: 16px;
     }
 
     .recording-header-line {

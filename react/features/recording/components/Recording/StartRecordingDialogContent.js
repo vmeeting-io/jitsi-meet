@@ -2,6 +2,7 @@
 
 import React, { Component } from 'react';
 
+import formatBytes from '../../../../utils/formatBytes';
 import {
     createRecordingDialogEvent,
     sendAnalytics
@@ -226,43 +227,35 @@ class StartRecordingDialogContent extends Component<Props> {
             return null;
         }
 
-        const { _dialogStyles, _styles: styles, isValidating, isVpaas, t } = this.props;
-
-        const switchContent
-            = this.props.integrationsEnabled
-                ? (
-                    <Switch
-                        className = 'recording-switch'
-                        disabled = { isValidating }
-                        onValueChange = { this._onRecordingServiceSwitchChange }
-                        style = { styles.switch }
-                        trackColor = {{ false: ColorPalette.lightGrey }}
-                        value = { this.props.selectedRecordingService === RECORDING_TYPES.JITSI_REC_SERVICE } />
-                ) : null;
-
-        const icon = isVpaas ? ICON_CLOUD : JITSI_LOGO;
-        const label = isVpaas ? t('recording.serviceDescriptionCloud') : t('recording.serviceDescription');
+        const { _dialogStyles, _styles: styles, _site, t } = this.props;
 
         return (
-            <Container
-                className = 'recording-header'
-                key = 'noIntegrationSetting'
-                style = { styles.header }>
-                <Container className = 'recording-icon-container'>
-                    <Image
-                        className = 'recording-icon'
-                        src = { icon }
-                        style = { styles.recordingIcon } />
+            <Container key = 'noIntegrationSetting'>
+                <Container
+                    className = 'recording-header'
+                    style = { styles.header }>
+                    <Text
+                        className = 'recording-title'
+                        style = {{
+                            ..._dialogStyles.text,
+                            ...styles.title
+                        }}>
+                        { t('notify.cloudStorageUsage') }
+                    </Text>
                 </Container>
-                <Text
-                    className = 'recording-title'
-                    style = {{
-                        ..._dialogStyles.text,
-                        ...styles.title
-                    }}>
-                    { label }
-                </Text>
-                { switchContent }
+                <Container
+                    className = 'recording-content'>
+                    <Text
+                        className = 'recording-message'
+                        style = {_dialogStyles.text}>
+                        { t('notify.cloudStorageUsed', { storageUsed: formatBytes(_site.storage_used), storageLimited: formatBytes(_site.storage_limit) }) }
+                    </Text>
+                    <Text
+                        className = 'recording-message2'
+                        style = {_dialogStyles.text}>
+                        { t('notify.cloudStorageWarning') }
+                    </Text>
+                </Container>
             </Container>
         );
     }
@@ -488,7 +481,8 @@ function _mapStateToProps(state) {
     return {
         ..._abstractMapStateToProps(state),
         isVpaas: isVpaasMeeting(state),
-        _styles: ColorSchemeRegistry.get(state, 'StartRecordingDialogContent')
+        _styles: ColorSchemeRegistry.get(state, 'StartRecordingDialogContent'),
+        _site: state['features/base/conference'].site
     };
 }
 

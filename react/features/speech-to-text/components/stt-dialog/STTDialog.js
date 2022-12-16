@@ -1,7 +1,7 @@
 // @flow
 
 import React, { useState, useEffect } from 'react';
-
+import Spinner from '@atlaskit/spinner';
 import { Dialog } from '../../../base/dialog';
 import { Switch } from '../../../base/react';
 import { connect } from '../../../base/redux';
@@ -21,8 +21,10 @@ type Props = {
     _conference: Object,
 
     _sttEnabled: Boolean,
-
+    
     _localParticipant: Object,
+
+    _sttOn: Boolean,
 
     t: function,
 
@@ -38,6 +40,7 @@ function STTDialog({
     _conference,
     _sttEnabled,
     _localParticipant,
+    _sttOn,
     t,
     dispatch
 }: Props) {
@@ -102,6 +105,7 @@ function STTDialog({
                 </div>
                 {
                     enabled?
+                        _sttOn? 
                         <div className = 'stt-section'>
                             <div className = 'control-row'>
                                 <label htmlFor = 'stt-translation-section-switch'>
@@ -121,7 +125,13 @@ function STTDialog({
                                     onValueChange = { onToggleMinutes }
                                     value = { minutesEnabled } disabled/>
                             </div>
-                        </div> : null
+                        </div> : 
+                        <div className = 'stt-spinner'>
+                            <Spinner
+                                isCompleting = { false }
+                                size = 'medium' />
+                        </div>
+                     : null
                 }
             </div>
         </Dialog>
@@ -141,12 +151,14 @@ function mapStateToProps(state) {
         conference
     } = state['features/base/conference'];
     const {
-        _sttEnabled
+        _sttEnabled,
+        _recorder
     } = state['features/stt'];
     return {
         _conference: conference,
         _sttEnabled: _sttEnabled,
-        _localParticipant: getLocalParticipant(state)
+        _localParticipant: getLocalParticipant(state),
+        _sttOn: _recorder? true : false
     };
 }
 

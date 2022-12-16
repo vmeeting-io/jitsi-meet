@@ -16,6 +16,13 @@
             }
         }
     }
+
+    &-spinner {
+        display: flex;
+        justify-content: center;
+        height: 30px;
+        margin-top: 8px;
+    }
 }
 
 .stt-section {

@@ -12,6 +12,8 @@ import {
 import logger from './logger';
 import { getLocalJitsiAudioTrack } from '../base/tracks';
 
+import './subscriber';
+
 const JSON_TYPE_STT_RESULT = 'stt-result';
 
 const REMOVE_AFTER_MS = 3000;
@@ -57,7 +59,7 @@ function _setWSServer({ dispatch, getState }, action) {
 
         recorder = state['features/stt']._recorder;
         if(recorder)
-            recorder.stopRecording();
+            recorder.destroy();
         recorder = undefined;
     }
     dispatch(updateWSServer(wsSoc));

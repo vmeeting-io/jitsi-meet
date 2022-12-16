@@ -110,7 +110,7 @@ function STTDialog({
                                 <Switch
                                     id = 'stt-translation-section-switch'
                                     onValueChange = { onToggleTranslation }
-                                    value = { translationEnabled } />
+                                    value = { translationEnabled } disabled/>
                             </div>
                             <div className = 'control-row'>
                                 <label htmlFor = 'stt-minutes-section-switch'>
@@ -119,7 +119,7 @@ function STTDialog({
                                 <Switch
                                     id = 'stt-minutes-section-switch'
                                     onValueChange = { onToggleMinutes }
-                                    value = { minutesEnabled } />
+                                    value = { minutesEnabled } disabled/>
                             </div>
                         </div> : null
                 }

@@ -16,6 +16,7 @@ import './subscriber';
 
 const JSON_TYPE_STT_RESULT = 'stt-result';
 
+const RETRY_AFTER_MS = 3000;
 const REMOVE_AFTER_MS = 3000;
 
 MiddlewareRegistry.register(store => next => action => {
@@ -33,13 +34,21 @@ function _setWSServer({ dispatch, getState }, action) {
     let wsSoc, recorder;
     const state = getState();
     const { conference } = state['features/base/conference'];
+    if (!conference){
+        setTimeout(() => _setWSServer({dispatch, getState}, action), RETRY_AFTER_MS);
+        return;
+    }
 
     if(action.enabled){
         const roomId = conference.getMeetingUniqueId();
         const pId = getLocalParticipant(state).id;
+
+        if(!roomId || !pId)
+            return;
     
         const wsURL = 'wss://www.tkita.ai/api/V2/kedu';
         const targetStream = getLocalJitsiAudioTrack(state).stream;
+
         wsSoc = new WebSocket(wsURL);
         wsSoc.onopen = function () {
             let data = {

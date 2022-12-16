@@ -3,9 +3,9 @@ import { getLocalJitsiAudioTrack } from "../base/tracks";
 import RecordRTC from './RecordRTC';
 import { updateRecorder } from "./actions";
 
+// Replace STT Recorder when audio track changes
 StateListenerRegistry.register(
     /* selector */ state => {
-        //const micDeviceId = state['features/base/settings'].micDeviceId;
         const currentAudioTrack = getLocalJitsiAudioTrack(state);
 
         return currentAudioTrack? currentAudioTrack : null;

@@ -99,6 +99,8 @@ function activateWS(soc, stream, pId, dispatch, getState) {
             dispatch(updateRecorder(recorder));
         }
         else if (resultSTT['code'] === 'STTResult'){
+            if(!resultSTT.data.result)
+                return;
             // for me
             createSTTMessage(dispatch, getState, {
                 participantId: pId,

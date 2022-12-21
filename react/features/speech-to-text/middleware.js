@@ -11,6 +11,7 @@ import {
 } from './actionTypes';
 import logger from './logger';
 import { getLocalJitsiAudioTrack } from '../base/tracks';
+import { i18next, DEFAULT_LANGUAGE } from '../base/i18n';
 
 import './subscriber';
 
@@ -51,10 +52,11 @@ function _setWSServer({ dispatch, getState }, action) {
 
         wsSoc = new WebSocket(wsURL);
         wsSoc.onopen = function () {
+            const targetLanguage = i18next.language === 'ko'? 'ko' : 'en';
             let data = {
                 'rsn': roomId,
                 'ssn': pId,
-                'el': 'ko'
+                'el': targetLanguage
             }
             wsSoc.send(JSON.stringify(data));
             activateWS(wsSoc, targetStream, pId, dispatch, getState);

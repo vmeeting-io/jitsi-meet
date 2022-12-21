@@ -109,6 +109,8 @@ function activateWS(soc, stream, pId, dispatch, getState) {
                 text: resultSTT.data.result,
                 isComplete: resultSTT.data.complete
             });
+
+            const lang = i18next.language === 'ko'? 'ko' : 'en';
         
             // for others
             if (conference.getParticipantCount(getState()) > 1){
@@ -116,7 +118,10 @@ function activateWS(soc, stream, pId, dispatch, getState) {
                     type: JSON_TYPE_STT_RESULT,
                     participantId: pId,
                     text: resultSTT.data.result,
-                    isComplete: resultSTT.data.complete
+                    isComplete: resultSTT.data.complete,
+                    lang: lang,
+                    st: resultSTT.data.st,
+                    et: resultSTT.data.et
                 });
             }
         }
@@ -157,6 +162,29 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
     }
 
     createSTTMessage(dispatch, getState, json);
+
+    // isComplete가 True이고, 현재 나와 언어가 다른 경우
+    const myLang = i18next.language === 'ko'? 'ko' : 'en';
+    if(json.isComplete === 'True' && json.lang !== myLang){
+        const param_data = {};
+        param_data.SourceLanguage = json.lang;
+        param_data.SourceContent = json.text;
+        param_data.TargetLanguage = myLang;
+        param_data.ssn = json.participantId;
+        param_data.st = json.st;
+        param_data.et = json.et;
+        const st_param_data = JSON.stringify(param_data);
+        // console.log(st_param_data);
+
+        // const targetUrl = 'https://www.tkita.ai/api/V3/getTranslateContent?data=' + st_param_data;
+        // try {
+        //     axios.get(targetUrl).then((resp) => {
+        //         console.log(resp);
+        //     });
+        // } catch(e){
+        //     console.log(e);
+        // }
+    }
 
     return next(action);
 }

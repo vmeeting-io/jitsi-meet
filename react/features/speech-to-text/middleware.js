@@ -47,7 +47,7 @@ function _setWSServer({ dispatch, getState }, action) {
         if(!roomId || !pId)
             return;
     
-        const wsURL = 'wss://www.tkita.ai/api/V2/kedu';
+        const wsURL = window._env_.STT_WS_SERVER;
         const targetStream = getLocalJitsiAudioTrack(state).stream;
 
         wsSoc = new WebSocket(wsURL);
@@ -176,7 +176,7 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
         const st_param_data = JSON.stringify(param_data);
         // console.log(st_param_data);
 
-        // const targetUrl = 'https://www.tkita.ai/api/V3/getTranslateContent?data=' + st_param_data;
+        // const targetUrl = window._env_.STT_API_SERVER + '/getTranslateContent?data=' + st_param_data;
         // try {
         //     axios.get(targetUrl).then((resp) => {
         //         console.log(resp);

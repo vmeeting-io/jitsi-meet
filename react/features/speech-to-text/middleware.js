@@ -212,9 +212,11 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
 
         const targetUrl = window._env_.STT_API_SERVER + '/getTranslateContent?data=' + st_param_data;
         try {
-            axios.get(targetUrl).then((resp) => {
+            fetch(targetUrl)
+            .then(resp => resp.json())
+            .then(resultData => {
                 const translatedJson = {};
-                translatedJson.text = resp.data.data.result;
+                translatedJson.text = resultData.data.result;
                 translatedJson.participantId = json.participantId;
                 translatedJson.isTranslated = true;
                 createSTTMessage(dispatch, getState, translatedJson);

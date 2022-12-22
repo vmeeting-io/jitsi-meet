@@ -14,7 +14,6 @@ import { isLocalParticipantModerator } from '../../../base/participants';
 
 import { 
     toggleSTTTranslation,
-    toggleSTTMinutes,
     changeSTTTargetLanguage
 } from '../../actions';
 import { STT_COMMAND } from '../../../base/conference';

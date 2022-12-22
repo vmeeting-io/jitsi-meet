@@ -42,6 +42,7 @@ type Props = {
 function STTDialog({
     _conference,
     _sttEnabled,
+    _translationEnabled,
     _isLocalModerator,
     _sttOn,
     _targetLanguage,
@@ -50,7 +51,7 @@ function STTDialog({
 }: Props) {
     const [enabled, setEnabled] = useState(_sttEnabled);
     const [targetLanguage, setTargetLanguage] = useState(_targetLanguage || i18next.language);
-    const [translationEnabled, setTranslationEnabled] = useState(false);
+    const [translationEnabled, setTranslationEnabled] = useState(_translationEnabled || false);
 
     const onToggleEnable = () => {
         const targetValue = !enabled;
@@ -165,12 +166,14 @@ function mapStateToProps(state) {
     const {
         _sttEnabled,
         _recorder,
-        _targetLanguage
+        _targetLanguage,
+        _translationEnabled
     } = state['features/stt'];
     const isModerator = isLocalParticipantModerator(state);
     return {
         _conference: conference,
         _sttEnabled: _sttEnabled,
+        _translationEnabled: _translationEnabled,
         _isLocalModerator: isModerator,
         _sttOn: _recorder? true : false,
         _targetLanguage: _targetLanguage

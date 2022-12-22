@@ -13,6 +13,7 @@ import {
 import logger from './logger';
 import { getLocalJitsiAudioTrack } from '../base/tracks';
 import { i18next } from '../base/i18n';
+import axios from 'axios';
 
 import './subscriber';
 import { showNotification, NOTIFICATION_TIMEOUT_TYPE } from '../notifications';
@@ -207,16 +208,20 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
         param_data.st = json.st;
         param_data.et = json.et;
         const st_param_data = JSON.stringify(param_data);
-        // console.log(st_param_data);
+        //console.log(st_param_data);
 
-        // const targetUrl = window._env_.STT_API_SERVER + '/getTranslateContent?data=' + st_param_data;
-        // try {
-        //     axios.get(targetUrl).then((resp) => {
-        //         console.log(resp);
-        //     });
-        // } catch(e){
-        //     console.log(e);
-        // }
+        const targetUrl = window._env_.STT_API_SERVER + '/getTranslateContent?data=' + st_param_data;
+        try {
+            axios.get(targetUrl).then((resp) => {
+                const translatedJson = {};
+                translatedJson.text = resp.data.data.result;
+                translatedJson.participantId = json.participantId;
+                translatedJson.isTranslated = true;
+                createSTTMessage(dispatch, getState, translatedJson);
+            });
+        } catch(e){
+            console.log(e);
+        }
     }
 
     return next(action);

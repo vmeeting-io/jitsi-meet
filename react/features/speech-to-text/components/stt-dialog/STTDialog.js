@@ -135,7 +135,7 @@ function STTDialog({
                                 <Switch
                                     id = 'stt-translation-section-switch'
                                     onValueChange = { onToggleTranslation }
-                                    value = { translationEnabled } disabled/>
+                                    value = { translationEnabled }/>
                             </div>
                         </div> : 
                         <div className = 'stt-spinner'>

@@ -1557,9 +1557,15 @@
     "stt": {
         "buttonTooltip": "Open Speech-to-Text menu",
         "featureDesc": "You can choose whether to enable subtitles (Speech-to-Text) and detail options.",
+        "featureDescP": "You can choose detail options of subtitles (Speech-to-Text feature.",
         "header": "Speech-to-Text Options",
         "toggleLabel": "Enable Subtitles",
         "toggleTranslation": "Enable Translation",
-        "toggleMinutes": "Enable Minutes"
+        "toggleMinutes": "Enable Minutes",
+        "currentTargetLanguage": "Current Target Language",
+        "notifications": {
+            "title": "Speech-to-Text",
+            "enabled": "Speech-to-Text is enabled. You can make detailed settings in the \"More actions\" menu"
+        }
     }
 }

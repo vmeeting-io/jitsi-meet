@@ -1553,9 +1553,15 @@
     "stt": {
         "buttonTooltip": "자막 (Speech-to-Text) 옵션",
         "featureDesc": "자막 (Speech-to-Text) 활성화 여부 및 세부 옵션을 선택할 수 있습니다.",
+        "featureDescP": "자막 (Speech-to-Text) 기능의 세부 옵션을 선택할 수 있습니다.",
         "header": "자막 (Speech-to-Text) 옵션",
         "toggleLabel": "자막 활성화",
         "toggleTranslation": "번역 활성화",
-        "toggleMinutes": "회의록 활성화"
+        "toggleMinutes": "회의록 활성화",
+        "currentTargetLanguage": "현재 인식 언어",
+        "notifications": {
+            "title": "자막 (Speech-to-Text)",
+            "enabled": "자막이 활성화 되었습니다. \"추가 액션\" 메뉴에서 세부 설정이 가능합니다."
+        }
     }
 }

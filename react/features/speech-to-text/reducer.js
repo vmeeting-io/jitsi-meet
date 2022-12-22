@@ -3,11 +3,11 @@ import { ReducerRegistry } from "../base/redux";
 import {
     STT_TOGGLE_MESSAGE,
     STT_TRANSLATION_TOGGLE_MESSAGE,
-    STT_MINUTES_TOGGLE_MESSAGE,
     STT_WS_SERVER_MESSAGE,
     STT_RECORDER_MESSAGE,
     UPDATE_STT_MESSAGE,
-    REMOVE_STT_MESSAGE
+    REMOVE_STT_MESSAGE,
+    STT_CHANGE_TARGET_LANGUAGE
 } from './actionTypes';
 
 /**
@@ -20,6 +20,7 @@ const defaultState = {
     _transcriptMessages: new Map(),
     _wsServer: undefined,
     _recorder: undefined,
+    _targetLanguage: undefined
 };
 
 ReducerRegistry.register('features/stt', (
@@ -30,20 +31,21 @@ ReducerRegistry.register('features/stt', (
             ...state,
             _sttEnabled: action.enabled
         };
+    case STT_CHANGE_TARGET_LANGUAGE:
+        return {
+            ...state,
+            _currentLanguage: action.targetLanguage
+        }
     case STT_TRANSLATION_TOGGLE_MESSAGE:
         return {
             ...state,
             _translationEnabled: action.enabled
         };
-    case STT_MINUTES_TOGGLE_MESSAGE:
-        return {
-            ...state,
-            _minutesEnabled: action.enabled
-        };
     case STT_WS_SERVER_MESSAGE:
         return {
             ...state,
-            _wsServer: action.wsSoc
+            _wsServer: action.wsSoc,
+            _currentLanguage: action.currentLanguage
         };
     case STT_RECORDER_MESSAGE:
         return {

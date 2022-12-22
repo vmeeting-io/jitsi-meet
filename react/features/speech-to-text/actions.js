@@ -1,11 +1,10 @@
 // @flow
 import { openDialog } from '../base/dialog';
 import { STTDialog } from './components/stt-dialog';
-
 import { 
     STT_TOGGLE_MESSAGE,
+    STT_CHANGE_TARGET_LANGUAGE,
     STT_TRANSLATION_TOGGLE_MESSAGE,
-    STT_MINUTES_TOGGLE_MESSAGE,
     STT_WS_SERVER_MESSAGE,
     STT_RECORDER_MESSAGE,
     UPDATE_STT_MESSAGE,
@@ -23,11 +22,19 @@ export function openSTTDialog() {
     };
 }
 
-export function toggleSTT(enabled: boolean) {
+export function toggleSTT(enabled: boolean, targetLanguage: string = undefined) {
     return {
         type: STT_TOGGLE_MESSAGE,
-        enabled
+        enabled,
+        targetLanguage
     };
+}
+
+export function changeSTTTargetLanguage(targetLanguage: string){
+    return {
+        type: STT_CHANGE_TARGET_LANGUAGE,
+        targetLanguage
+    }
 }
 
 export function toggleSTTTranslation(enabled: boolean) {
@@ -37,17 +44,11 @@ export function toggleSTTTranslation(enabled: boolean) {
     };
 }
 
-export function toggleSTTMinutes(enabled: boolean) {
-    return {
-        type: STT_MINUTES_TOGGLE_MESSAGE,
-        enabled
-    };
-}
-
-export function updateWSServer(wsSoc: Object) {
+export function updateWSServer(wsSoc: Object, currentLanguage: string) {
     return {
         type: STT_WS_SERVER_MESSAGE,
-        wsSoc
+        wsSoc,
+        currentLanguage
     }
 }
 

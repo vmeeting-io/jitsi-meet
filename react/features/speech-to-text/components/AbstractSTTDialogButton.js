@@ -77,6 +77,7 @@ export class AbstractSTTDialogButton
  */
 export function _abstractMapStateToProps(state: Object, ownProps: Object) {
     const { sttEnabled } = state['features/base/config'];
+    const sttOn = state['features/stt']._sttEnabled;
 
     // if the participant is moderator, it can enable transcriptions and if
     // transcriptions are already started for the meeting, guests can just show them
@@ -84,7 +85,7 @@ export function _abstractMapStateToProps(state: Object, ownProps: Object) {
     if (typeof visible === 'undefined'){
         const isModerator = isLocalParticipantModerator(state);
 
-        visible = isModerator && sttEnabled;
+        visible = (isModerator && sttEnabled) || sttOn;
     }
     
     return {

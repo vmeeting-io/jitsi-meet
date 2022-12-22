@@ -7,13 +7,15 @@ import RecordRTC from './RecordRTC';
 import { updateWSServer, updateRecorder, updateSTTMessage, removeSTTMessage } from './actions';
 import {
     STT_TOGGLE_MESSAGE,
-    ENDPOINT_MESSAGE_RECEIVED
+    ENDPOINT_MESSAGE_RECEIVED,
+    STT_CHANGE_TARGET_LANGUAGE
 } from './actionTypes';
 import logger from './logger';
 import { getLocalJitsiAudioTrack } from '../base/tracks';
-import { i18next, DEFAULT_LANGUAGE } from '../base/i18n';
+import { i18next } from '../base/i18n';
 
 import './subscriber';
+import { showNotification, NOTIFICATION_TIMEOUT_TYPE } from '../notifications';
 
 const JSON_TYPE_STT_RESULT = 'stt-result';
 
@@ -27,12 +29,18 @@ MiddlewareRegistry.register(store => next => action => {
     case STT_TOGGLE_MESSAGE:
         _setWSServer(store, action);
         break;
+    case STT_CHANGE_TARGET_LANGUAGE:
+        _destorySTT(store.dispatch, store.getState);
+        const new_action = {};
+        new_action.enabled = true;
+        new_action.targetLanguage = action.targetLanguage;
+        _setWSServer(store, new_action);
     }
     return next(action);
 });
 
 function _setWSServer({ dispatch, getState }, action) {
-    let wsSoc, recorder;
+    let wsSoc, recorder, targetLanguage = undefined;
     const state = getState();
     const { conference } = state['features/base/conference'];
     if (!conference){
@@ -49,10 +57,11 @@ function _setWSServer({ dispatch, getState }, action) {
     
         const wsURL = window._env_.STT_WS_SERVER;
         const targetStream = getLocalJitsiAudioTrack(state).stream;
+        targetLanguage = action.targetLanguage || (i18next.language === 'ko'? 'ko' : 'en');
 
         wsSoc = new WebSocket(wsURL);
         wsSoc.onopen = function () {
-            const targetLanguage = i18next.language === 'ko'? 'ko' : 'en';
+            //const targetLanguage = i18next.language === 'ko'? 'ko' : 'en';
             let data = {
                 'rsn': roomId,
                 'ssn': pId,
@@ -73,6 +82,30 @@ function _setWSServer({ dispatch, getState }, action) {
             recorder.destroy();
         recorder = undefined;
     }
+    dispatch(updateWSServer(wsSoc, targetLanguage));
+    dispatch(updateRecorder(recorder));
+    if(action.enabled && !targetLanguage){
+        dispatch(showNotification({
+            titleKey: 'stt.notifications.title',
+            descriptionKey: 'stt.notifications.enabled',
+            concatText: true,
+            maxLines: 2
+        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+    }
+}
+
+function _destorySTT(dispatch, getState){
+    const state = getState();
+    let wsSoc = state['features/stt']._wsServer;
+    if(wsSoc)
+        wsSoc.close();
+    wsSoc = undefined;
+
+    let recorder = state['features/stt']._recorder;
+    if(recorder)
+        recorder.destroy();
+    recorder = undefined;
+
     dispatch(updateWSServer(wsSoc));
     dispatch(updateRecorder(recorder));
 }
@@ -163,9 +196,9 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
 
     createSTTMessage(dispatch, getState, json);
 
-    // isComplete가 True이고, 현재 나와 언어가 다른 경우
+    // 번역 기능이 켜져있고 isComplete가 True이고, 현재 나와 언어가 다른 경우
     const myLang = i18next.language === 'ko'? 'ko' : 'en';
-    if(json.isComplete === 'True' && json.lang !== myLang){
+    if(getState()['features/stt']._translationEnabled &&json.isComplete === 'True' && json.lang !== myLang){
         const param_data = {};
         param_data.SourceLanguage = json.lang;
         param_data.SourceContent = json.text;

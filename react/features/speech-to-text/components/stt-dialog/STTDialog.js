@@ -2,29 +2,33 @@
 
 import React, { useState, useEffect } from 'react';
 import Spinner from '@atlaskit/spinner';
+import DropdownMenu, {
+    DropdownItem,
+    DropdownItemGroup
+} from '@atlaskit/dropdown-menu';
 import { Dialog } from '../../../base/dialog';
 import { Switch } from '../../../base/react';
 import { connect } from '../../../base/redux';
-import { translate } from '../../../base/i18n';
-import { getLocalParticipant } from '../../../base/participants';
+import { i18next, translate } from '../../../base/i18n';
+import { isLocalParticipantModerator } from '../../../base/participants';
 
 import { 
-    toggleSTT,
     toggleSTTTranslation,
-    toggleSTTMinutes
+    toggleSTTMinutes,
+    changeSTTTargetLanguage
 } from '../../actions';
 import { STT_COMMAND } from '../../../base/conference';
-
-import Button from '@atlaskit/button/standard-button';
 
 type Props = {
     _conference: Object,
 
     _sttEnabled: Boolean,
-    
-    _localParticipant: Object,
+
+    _isLocalModerator: Boolean,
 
     _sttOn: Boolean,
+
+    _targetLanguage: String,
 
     t: function,
 
@@ -39,45 +43,32 @@ type Props = {
 function STTDialog({
     _conference,
     _sttEnabled,
-    _localParticipant,
+    _isLocalModerator,
     _sttOn,
+    _targetLanguage,
     t,
     dispatch
 }: Props) {
     const [enabled, setEnabled] = useState(_sttEnabled);
+    const [targetLanguage, setTargetLanguage] = useState(_targetLanguage || i18next.language);
     const [translationEnabled, setTranslationEnabled] = useState(false);
-    const [minutesEnabled, setMinutesEnabled] = useState(false);
 
     const onToggleEnable = () => {
         const targetValue = !enabled;
         setEnabled(targetValue);
         _conference.sendCommandOnce(STT_COMMAND, { value: targetValue });
-        //dispatch(toggleSTT(targetValue));
+    }
+
+    const onChangeTargetLanguage = (e) => {
+        const target = e.currentTarget.getAttribute('data-lang');
+        setTargetLanguage(target);
+        dispatch(changeSTTTargetLanguage(target));
     }
 
     const onToggleTranslation = () => {
         const targetValue = !translationEnabled;
         setTranslationEnabled(targetValue);
         dispatch(toggleSTTTranslation(targetValue));
-    }
-
-    const onToggleMinutes = () => {
-        const targetValue = !minutesEnabled;
-        setMinutesEnabled(targetValue);
-        dispatch(toggleSTTMinutes(targetValue));
-    }
-
-    const onClickTest = () => {
-        if (_conference) {
-            _conference.sendEndpointMessage('', {
-                type: 'transcription-result',
-                participant: { name: _localParticipant.name },
-                message_id: 'test123',
-                transcript: [{text: 'This is test message'}],
-                is_interim: false,
-                stability: 1.0
-            });
-        }
     }
 
     return (
@@ -91,8 +82,9 @@ function STTDialog({
                     <p
                         className = 'description'
                         role = 'banner'>
-                        { t('stt.featureDesc') }
+                        { _isLocalModerator? t('stt.featureDesc') : t('stt.featureDescP') }
                     </p>
+                    { _isLocalModerator && 
                     <div className = 'control-row'>
                         <label htmlFor = 'stt-enable-section-switch'>
                             { t('stt.toggleLabel') }
@@ -101,12 +93,42 @@ function STTDialog({
                             id = 'stt-enable-section-switch'
                             onValueChange = { onToggleEnable }
                             value = { enabled } />
-                    </div>
+                    </div>}
                 </div>
                 {
                     enabled?
                         _sttOn? 
                         <div className = 'stt-section'>
+                            <div className = 'control-row'>
+                                <label htmlFor = 'stt-target-language'>
+                                    { t('stt.currentTargetLanguage') }
+                                </label>
+                                <DropdownMenu
+                                    shouldFitContainer = { true }
+                                    trigger = {targetLanguage === 'ko'? '한국어' : 'English'}
+                                    triggerButtonProps = {{
+                                        shouldFitContainer: true,
+                                        id: 'stt-dropdown-id'
+                                    }}
+                                    triggerType = 'button'>
+                                    <DropdownItemGroup>
+                                        <DropdownItem
+                                            data-lang='ko'
+                                            key='ko'
+                                            isSelected = {'ko' === targetLanguage}
+                                            onClick={onChangeTargetLanguage}>
+                                            한국어
+                                        </DropdownItem>
+                                        <DropdownItem
+                                            data-lang='en'
+                                            key='en'
+                                            isSelected = {'en' === targetLanguage}
+                                            onClick={onChangeTargetLanguage}>
+                                            English
+                                        </DropdownItem>
+                                    </DropdownItemGroup>
+                                </DropdownMenu>
+                            </div>
                             <div className = 'control-row'>
                                 <label htmlFor = 'stt-translation-section-switch'>
                                     { t('stt.toggleTranslation') }
@@ -115,15 +137,6 @@ function STTDialog({
                                     id = 'stt-translation-section-switch'
                                     onValueChange = { onToggleTranslation }
                                     value = { translationEnabled } disabled/>
-                            </div>
-                            <div className = 'control-row'>
-                                <label htmlFor = 'stt-minutes-section-switch'>
-                                    { t('stt.toggleMinutes') }
-                                </label>
-                                <Switch
-                                    id = 'stt-minutes-section-switch'
-                                    onValueChange = { onToggleMinutes }
-                                    value = { minutesEnabled } disabled/>
                             </div>
                         </div> : 
                         <div className = 'stt-spinner'>
@@ -152,13 +165,16 @@ function mapStateToProps(state) {
     } = state['features/base/conference'];
     const {
         _sttEnabled,
-        _recorder
+        _recorder,
+        _targetLanguage
     } = state['features/stt'];
+    const isModerator = isLocalParticipantModerator(state);
     return {
         _conference: conference,
         _sttEnabled: _sttEnabled,
-        _localParticipant: getLocalParticipant(state),
-        _sttOn: _recorder? true : false
+        _isLocalModerator: isModerator,
+        _sttOn: _recorder? true : false,
+        _targetLanguage: _targetLanguage
     };
 }
 

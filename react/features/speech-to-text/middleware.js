@@ -4,7 +4,7 @@ import { MiddlewareRegistry } from '../base/redux';
 import { getLocalParticipant, getParticipantDisplayName } from '../base/participants';
 import RecordRTC from './RecordRTC';
 
-import { updateWSServer, updateRecorder, updateSTTMessage, removeSTTMessage } from './actions';
+import { updateWSServer, updateRecorder, updateSTTMessage, removeSTTMessage, toggleSTTTranslation } from './actions';
 import {
     STT_TOGGLE_MESSAGE,
     ENDPOINT_MESSAGE_RECEIVED,
@@ -13,7 +13,6 @@ import {
 import logger from './logger';
 import { getLocalJitsiAudioTrack } from '../base/tracks';
 import { i18next } from '../base/i18n';
-import axios from 'axios';
 
 import './subscriber';
 import { showNotification, NOTIFICATION_TIMEOUT_TYPE } from '../notifications';
@@ -82,6 +81,7 @@ function _setWSServer({ dispatch, getState }, action) {
         if(recorder)
             recorder.destroy();
         recorder = undefined;
+        dispatch(toggleSTTTranslation(false));
     }
     dispatch(updateWSServer(wsSoc, targetLanguage));
     dispatch(updateRecorder(recorder));
@@ -141,7 +141,8 @@ function activateWS(soc, stream, pId, dispatch, getState) {
             createSTTMessage(dispatch, getState, {
                 participantId: pId,
                 text: resultSTT.data.result,
-                isComplete: resultSTT.data.complete
+                isComplete: resultSTT.data.complete,
+                isTranslated: false
             });
 
             const lang = i18next.language === 'ko'? 'ko' : 'en';
@@ -164,7 +165,6 @@ function activateWS(soc, stream, pId, dispatch, getState) {
 
 function createSTTMessage(dispatch, getState, json) {
     const state = getState();
-
     try {
         const participantId = json.participantId;
         const text = json.text;
@@ -194,7 +194,7 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
         && json.type === JSON_TYPE_STT_RESULT)) {
     return next(action);
     }
-
+    json.isTranslated = false;
     createSTTMessage(dispatch, getState, json);
 
     // 번역 기능이 켜져있고 isComplete가 True이고, 현재 나와 언어가 다른 경우

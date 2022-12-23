@@ -46,6 +46,19 @@ class STTCaptions
         );
     }
 
+    _renderParagraphWithTrans(id: string, text: string, translatedText: string): React$Element<*> {
+        return (
+            <>
+                <p key = { id }>
+                    <span>{ text }</span>
+                </p>
+                <p key = { `${id}-t` }>
+                    <span style={{color: 'rgb(165,0,0)'}}>{ translatedText }</span>
+                </p>
+            </>
+        );
+    }
+
     /**
      * Renders the subtitles container.
      *

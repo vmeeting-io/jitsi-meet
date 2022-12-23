@@ -12,7 +12,9 @@ export type AbstractSTTCaptionsProps = {
      * Mapped by id just to have the keys for convenience during the rendering
      * process.
      */
-    _transcripts: ?Map<string, string>
+    _transcripts: ?Map<string, string>,
+
+    _translations: ?Map<String, string>
 };
 
 /**
@@ -29,7 +31,7 @@ export class AbstractSTTCaptions<P: AbstractSTTCaptionsProps>
      * @returns {React$Element}
      */
     render() {
-        const { _transcripts } = this.props;
+        const { _transcripts, _translations } = this.props;
 
         if (!_transcripts || !_transcripts.size) {
             return null;
@@ -38,7 +40,12 @@ export class AbstractSTTCaptions<P: AbstractSTTCaptionsProps>
         const paragraphs = [];
 
         for (const [ id, text ] of _transcripts) {
-            paragraphs.push(this._renderParagraph(id, text));
+            if(_translations && _translations.get(id)){
+                paragraphs.push(this._renderParagraphWithTrans(id, text, _translations.get(id).text));
+            }
+            else{
+                paragraphs.push(this._renderParagraph(id, text));
+            }
         }
 
         return this._renderSubtitlesContainer(paragraphs);
@@ -56,6 +63,8 @@ export class AbstractSTTCaptions<P: AbstractSTTCaptionsProps>
      * @returns {React$Element} - The React element which displays the text.
      */
     _renderParagraph: (id: string, text: string) => React$Element<*>;
+
+    _renderParagraphWithTrnas: (id: string, text: string, translatedText: string) => React$Element<*>;
 
     /**
      * Renders the subtitles container.
@@ -83,7 +92,8 @@ function _constructTranscripts(state: Object): Map<string, string> {
     const transcripts = new Map();
 
     for (const [ id, transcriptMessage ] of _transcriptMessages) {
-        if (transcriptMessage) {
+        if (transcriptMessage && !transcriptMessage.isTranslated) {
+
             let text = `${transcriptMessage.name}: `;
 
             if (transcriptMessage.final) {
@@ -95,6 +105,26 @@ function _constructTranscripts(state: Object): Map<string, string> {
     }
 
     return transcripts;
+}
+
+function _constructTranslations(state: Object): Map<string, string> {
+    const { _transcriptMessages } = state['features/stt'];
+    const translations = new Map();
+
+    for (const [ id, transcriptMessage ] of _transcriptMessages) {
+        if (transcriptMessage && transcriptMessage.isTranslated) {
+
+            let text = `${transcriptMessage.name}: `;
+
+            if (transcriptMessage.final) {
+                text += transcriptMessage.final;
+            }
+
+            translations.set(id, text);
+        }
+    }
+
+    return translations;
 }
 
 /**
@@ -109,9 +139,11 @@ function _constructTranscripts(state: Object): Map<string, string> {
  */
 export function _abstractMapStateToProps(state: Object) {
     const transcripts = _constructTranscripts(state);
+    const translations = _constructTranslations(state);
 
     return {
         // avoid rerenders by setting to props new empty Map instances.
-        _transcripts: transcripts.size === 0 ? undefined : transcripts
+        _transcripts: transcripts.size === 0 ? undefined : transcripts,
+        _translations: translations.size === 0 ? undefined : translations
     };
 }

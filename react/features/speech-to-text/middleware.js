@@ -85,7 +85,7 @@ function _setWSServer({ dispatch, getState }, action) {
     }
     dispatch(updateWSServer(wsSoc, targetLanguage));
     dispatch(updateRecorder(recorder));
-    if(action.enabled && !targetLanguage){
+    if(action.enabled && !action.targetLanguage){
         dispatch(showNotification({
             titleKey: 'stt.notifications.title',
             descriptionKey: 'stt.notifications.enabled',

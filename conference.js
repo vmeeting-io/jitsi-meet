@@ -2539,7 +2539,7 @@ export default {
 
         room.addCommandListener(this.commands.defaults.STT_COMMAND,
             (data, from) => {
-                APP.store.dispatch(toggleSTT(data.value));
+                APP.store.dispatch(toggleSTT(data.value === 'true'? true : false));
             }
         );
 

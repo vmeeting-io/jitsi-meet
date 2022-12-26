@@ -7,7 +7,9 @@ import {
     STT_RECORDER_MESSAGE,
     UPDATE_STT_MESSAGE,
     REMOVE_STT_MESSAGE,
-    STT_CHANGE_TARGET_LANGUAGE
+    STT_CHANGE_TARGET_LANGUAGE,
+    UPDATE_TRANS_MESSAGE,
+    REMOVE_TRANS_MESSAGE
 } from './actionTypes';
 
 /**
@@ -18,6 +20,7 @@ const defaultState = {
     _translationEnabled: false,
     _minutesEnabled: false,
     _transcriptMessages: new Map(),
+    _translationMessages: new Map(),
     _wsServer: undefined,
     _recorder: undefined,
     _targetLanguage: undefined
@@ -56,6 +59,10 @@ ReducerRegistry.register('features/stt', (
         return _updateSTTMessage(state, action);
     case REMOVE_STT_MESSAGE:
         return _removeSTTMessage(state, action);
+    case UPDATE_TRANS_MESSAGE:
+        return _updateTransMessage(state, action);
+    case REMOVE_TRANS_MESSAGE:
+        return _removeTransMessage(state, action);
     }
 
     return state;
@@ -83,5 +90,30 @@ function _removeSTTMessage(state, { participantId }) {
     return {
         ...state,
         _transcriptMessages: newTranscriptMessages
+    };
+}
+
+function _updateTransMessage(state,
+    { participantId, newSTTMessage }) {
+    const newTranslationMessages = new Map(state._translationMessages);
+
+    // Updates the new message for the given key in the Map.
+    newTranslationMessages.set(participantId, newSTTMessage);
+
+    return {
+        ...state,
+        _translationMessages: newTranslationMessages
+    };
+}
+
+function _removeTransMessage(state, { participantId }) {
+    const newTranslationMessages = new Map(state._translationMessages);
+
+    // Deletes the key from Map once a final message arrives.
+    newTranslationMessages.delete(participantId);
+
+    return {
+        ...state,
+        _translationMessages: newTranslationMessages
     };
 }

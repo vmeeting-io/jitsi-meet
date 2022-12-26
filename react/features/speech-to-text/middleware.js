@@ -4,7 +4,14 @@ import { MiddlewareRegistry } from '../base/redux';
 import { getLocalParticipant, getParticipantDisplayName } from '../base/participants';
 import RecordRTC from './RecordRTC';
 
-import { updateWSServer, updateRecorder, updateSTTMessage, removeSTTMessage, toggleSTTTranslation } from './actions';
+import { 
+    updateWSServer,
+    updateRecorder,
+    updateSTTMessage,
+    removeSTTMessage,
+    toggleSTTTranslation,
+    updateTransMessage,
+    removeTransMessage } from './actions';
 import {
     STT_TOGGLE_MESSAGE,
     ENDPOINT_MESSAGE_RECEIVED,
@@ -168,19 +175,27 @@ function createSTTMessage(dispatch, getState, json) {
     try {
         const participantId = json.participantId;
         const text = json.text;
+        const isTranslated = json.isTranslated;
 
         const newSTTMessage = {
             ...state['features/stt']._transcriptMessages
             .get(participantId)
         || { participantId }
         };
-
-        _setClearerOnSTTMessage(dispatch, participantId, newSTTMessage);
+        if(isTranslated)
+            _setClearerOnTransMessage(dispatch, participantId, newSTTMessage);
+        else
+            _setClearerOnSTTMessage(dispatch, participantId, newSTTMessage);
 
         const dispName = getParticipantDisplayName(state, participantId);
         newSTTMessage.final = text;
         newSTTMessage.name = dispName;
-        dispatch(updateSTTMessage(participantId, newSTTMessage));
+        newSTTMessage.isTranslated = isTranslated;
+
+        if(isTranslated)
+            dispatch(updateTransMessage(participantId, newSTTMessage));
+        else
+            dispatch(updateSTTMessage(participantId, newSTTMessage));
     }
     catch (error) {
         logger.error('Error occurred while updating stt\n', error);
@@ -240,5 +255,19 @@ function _setClearerOnSTTMessage(
     STTMessage.clearTimeOut
         = setTimeout(
             () => dispatch(removeSTTMessage(participantId)),
+            REMOVE_AFTER_MS);
+}
+
+function _setClearerOnTransMessage(
+    dispatch,
+    participantId,
+    STTMessage) {
+    if (STTMessage.clearTimeOut) {
+        clearTimeout(STTMessage.clearTimeOut);
+    }
+
+    STTMessage.clearTimeOut
+        = setTimeout(
+            () => dispatch(removeTransMessage(participantId)),
             REMOVE_AFTER_MS);
 }

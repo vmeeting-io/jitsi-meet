@@ -40,11 +40,9 @@ export class AbstractSTTCaptions<P: AbstractSTTCaptionsProps>
         const paragraphs = [];
 
         for (const [ id, text ] of _transcripts) {
+            paragraphs.push(this._renderParagraph(id, text));
             if(_translations && _translations.get(id)){
-                paragraphs.push(this._renderParagraphWithTrans(id, text, _translations.get(id).text));
-            }
-            else{
-                paragraphs.push(this._renderParagraph(id, text));
+                paragraphs.push(this._renderParagraphTrans(id, _translations.get(id)));
             }
         }
 
@@ -64,7 +62,7 @@ export class AbstractSTTCaptions<P: AbstractSTTCaptionsProps>
      */
     _renderParagraph: (id: string, text: string) => React$Element<*>;
 
-    _renderParagraphWithTrnas: (id: string, text: string, translatedText: string) => React$Element<*>;
+    _renderParagraphTrans: (id: string, translatedText: string) => React$Element<*>;
 
     /**
      * Renders the subtitles container.
@@ -92,7 +90,7 @@ function _constructTranscripts(state: Object): Map<string, string> {
     const transcripts = new Map();
 
     for (const [ id, transcriptMessage ] of _transcriptMessages) {
-        if (transcriptMessage && !transcriptMessage.isTranslated) {
+        if (transcriptMessage) {
 
             let text = `${transcriptMessage.name}: `;
 
@@ -108,16 +106,16 @@ function _constructTranscripts(state: Object): Map<string, string> {
 }
 
 function _constructTranslations(state: Object): Map<string, string> {
-    const { _transcriptMessages } = state['features/stt'];
+    const { _translationMessages } = state['features/stt'];
     const translations = new Map();
 
-    for (const [ id, transcriptMessage ] of _transcriptMessages) {
-        if (transcriptMessage && transcriptMessage.isTranslated) {
+    for (const [ id, translationMessage ] of _translationMessages) {
+        if (translationMessage) {
 
-            let text = `${transcriptMessage.name}: `;
+            let text = `${translationMessage.name}: `;
 
-            if (transcriptMessage.final) {
-                text += transcriptMessage.final;
+            if (translationMessage.final) {
+                text += translationMessage.final;
             }
 
             translations.set(id, text);

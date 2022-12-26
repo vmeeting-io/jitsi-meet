@@ -8,7 +8,9 @@ import {
     STT_WS_SERVER_MESSAGE,
     STT_RECORDER_MESSAGE,
     UPDATE_STT_MESSAGE,
-    REMOVE_STT_MESSAGE
+    REMOVE_STT_MESSAGE,
+    UPDATE_TRANS_MESSAGE,
+    REMOVE_TRANS_MESSAGE
 } from './actionTypes';
 
 /**
@@ -71,6 +73,22 @@ export function updateSTTMessage(participantId: string,
 export function removeSTTMessage(participantId: string) {
     return {
         type: REMOVE_STT_MESSAGE,
+        participantId
+    };
+}
+
+export function updateTransMessage(participantId: string,
+    newSTTMessage: Object) {
+    return {
+        type: UPDATE_TRANS_MESSAGE,
+        participantId,
+        newSTTMessage
+    };
+}
+
+export function removeTransMessage(participantId: string) {
+    return {
+        type: REMOVE_TRANS_MESSAGE,
         participantId
     };
 }

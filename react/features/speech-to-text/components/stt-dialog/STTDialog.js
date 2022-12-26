@@ -14,7 +14,8 @@ import { isLocalParticipantModerator } from '../../../base/participants';
 
 import { 
     toggleSTTTranslation,
-    changeSTTTargetLanguage
+    changeSTTTargetLanguage,
+    changeSubtitleFontSize
 } from '../../actions';
 import { STT_COMMAND } from '../../../base/conference';
 
@@ -51,6 +52,7 @@ function STTDialog({
 }: Props) {
     const [enabled, setEnabled] = useState(_sttEnabled);
     const [targetLanguage, setTargetLanguage] = useState(_targetLanguage || i18next.language);
+    const [fontSize, setFontSize] = useState('small');
     const [translationEnabled, setTranslationEnabled] = useState(_translationEnabled || false);
 
     const onToggleEnable = () => {
@@ -63,6 +65,12 @@ function STTDialog({
         const target = e.currentTarget.getAttribute('data-lang');
         setTargetLanguage(target);
         dispatch(changeSTTTargetLanguage(target));
+    }
+
+    const onChangeFontSize = (e) => {
+        const target = e.currentTarget.getAttribute('data-fontsize');
+        setFontSize(target);
+        dispatch(changeSubtitleFontSize(target));
     }
 
     const onToggleTranslation = () => {
@@ -125,6 +133,43 @@ function STTDialog({
                                             isSelected = {'en' === targetLanguage}
                                             onClick={onChangeTargetLanguage}>
                                             English
+                                        </DropdownItem>
+                                    </DropdownItemGroup>
+                                </DropdownMenu>
+                            </div>
+                            <div className = 'control-row'>
+                                <label htmlFor = 'stt-target-language'>
+                                    { t('stt.fontSize') }
+                                </label>
+                                <DropdownMenu
+                                    shouldFitContainer = { true }
+                                    trigger = {t(`stt.font_${fontSize}`)}
+                                    triggerButtonProps = {{
+                                        shouldFitContainer: true,
+                                        id: 'stt-fs-dropdown-id'
+                                    }}
+                                    triggerType = 'button'>
+                                    <DropdownItemGroup>
+                                        <DropdownItem
+                                            data-fontsize='small'
+                                            key='small'
+                                            isSelected = {'small' === fontSize}
+                                            onClick={onChangeFontSize}>
+                                            {t('stt.font_small')}
+                                        </DropdownItem>
+                                        <DropdownItem
+                                            data-fontsize='medium'
+                                            key='medium'
+                                            isSelected = {'medium' === fontSize}
+                                            onClick={onChangeFontSize}>
+                                            {t('stt.font_medium')}
+                                        </DropdownItem>
+                                        <DropdownItem
+                                            data-fontsize='large'
+                                            key='large'
+                                            isSelected = {'large' === fontSize}
+                                            onClick={onChangeFontSize}>
+                                            {t('stt.font_large')}
                                         </DropdownItem>
                                     </DropdownItemGroup>
                                 </DropdownMenu>

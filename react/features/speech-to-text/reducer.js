@@ -9,7 +9,8 @@ import {
     REMOVE_STT_MESSAGE,
     STT_CHANGE_TARGET_LANGUAGE,
     UPDATE_TRANS_MESSAGE,
-    REMOVE_TRANS_MESSAGE
+    REMOVE_TRANS_MESSAGE,
+    CHANGE_SUBTITLE_FONT_SIZE
 } from './actionTypes';
 
 /**
@@ -23,7 +24,8 @@ const defaultState = {
     _translationMessages: new Map(),
     _wsServer: undefined,
     _recorder: undefined,
-    _targetLanguage: undefined
+    _targetLanguage: undefined,
+    _fontSize: 'small'
 };
 
 ReducerRegistry.register('features/stt', (
@@ -63,6 +65,11 @@ ReducerRegistry.register('features/stt', (
         return _updateTransMessage(state, action);
     case REMOVE_TRANS_MESSAGE:
         return _removeTransMessage(state, action);
+    case CHANGE_SUBTITLE_FONT_SIZE:
+        return {
+            ...state,
+            _fontSize: action.targetSize
+        }
     }
 
     return state;

@@ -18,7 +18,9 @@ type Props = {
     /**
      * Whether the subtitles container is lifted above the invite box.
      */
-    _isLifted: boolean
+    _isLifted: boolean,
+
+    _subtitleSize: string
 } & AbstractSTTCaptionsProps;
 
 /**
@@ -65,7 +67,8 @@ class STTCaptions
     _renderSubtitlesContainer(
             paragraphs: Array<React$Element<*>>): React$Element<*> {
 
-        const className = this.props._isLifted ? 'transcription-subtitles lifted' : 'transcription-subtitles';
+        let className = this.props._isLifted ? 'transcription-subtitles lifted' : 'transcription-subtitles';
+        className += ` ${this.props._subtitleSize}`;
 
         return (
             <div className = { className } >
@@ -87,10 +90,12 @@ function mapStateToProps(state) {
     const isTileView = isLayoutTileView(state);
     const largeVideoParticipant = getLargeVideoParticipant(state);
     const localParticipant = getLocalParticipant(state);
+    const subtitleSize = state['features/stt']._fontSize;
 
     return {
         ..._abstractMapStateToProps(state),
-        _isLifted: largeVideoParticipant && largeVideoParticipant?.id !== localParticipant?.id && !isTileView
+        _isLifted: largeVideoParticipant && largeVideoParticipant?.id !== localParticipant?.id && !isTileView,
+        _subtitleSize: subtitleSize
     };
 }
 

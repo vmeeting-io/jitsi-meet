@@ -1559,6 +1559,10 @@
         "toggleTranslation": "번역 활성화",
         "toggleMinutes": "회의록 활성화",
         "currentTargetLanguage": "현재 인식 언어",
+        "fontSize": "자막 크기",
+        "font_small": "작게",
+        "font_medium": "중간",
+        "font_large": "크게",
         "notifications": {
             "title": "자막 (Speech-to-Text)",
             "enabled": "자막이 활성화 되었습니다. \"추가 액션\" 메뉴에서 세부 설정이 가능합니다."

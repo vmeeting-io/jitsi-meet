@@ -10,7 +10,8 @@ import {
     UPDATE_STT_MESSAGE,
     REMOVE_STT_MESSAGE,
     UPDATE_TRANS_MESSAGE,
-    REMOVE_TRANS_MESSAGE
+    REMOVE_TRANS_MESSAGE,
+    CHANGE_SUBTITLE_FONT_SIZE
 } from './actionTypes';
 
 /**
@@ -92,3 +93,9 @@ export function removeTransMessage(participantId: string) {
         participantId
     };
 }
+
+export function changeSubtitleFontSize(targetSize: string) {
+    return {
+        type: CHANGE_SUBTITLE_FONT_SIZE,
+        targetSize
+    };}

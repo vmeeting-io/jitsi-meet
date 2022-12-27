@@ -144,12 +144,14 @@ function activateWS(soc, stream, pId, dispatch, getState) {
         else if (resultSTT['code'] === 'STTResult'){
             if(!resultSTT.data.result)
                 return;
+            console.log(resultSTT.data.st, resultSTT.data.result);
             // for me
             createSTTMessage(dispatch, getState, {
                 participantId: pId,
                 text: resultSTT.data.result,
                 isComplete: resultSTT.data.complete,
-                isTranslated: false
+                isTranslated: false,
+                sentenceId: pId + resultSTT.data.st
             });
 
             const lang = i18next.language === 'ko'? 'ko' : 'en';
@@ -173,19 +175,28 @@ function activateWS(soc, stream, pId, dispatch, getState) {
 function createSTTMessage(dispatch, getState, json) {
     const state = getState();
     try {
+        const sentenceId = json.sentenceId;
         const participantId = json.participantId;
         const text = json.text;
         const isTranslated = json.isTranslated;
+        let newSTTMessage;
 
-        const newSTTMessage = {
-            ...state['features/stt']._transcriptMessages
-            .get(participantId)
-        || { participantId }
-        };
-        if(isTranslated)
-            _setClearerOnTransMessage(dispatch, participantId, newSTTMessage);
-        else
-            _setClearerOnSTTMessage(dispatch, participantId, newSTTMessage);
+        if(isTranslated){
+            newSTTMessage = {
+                ...state['features/stt']._translationMessages
+                .get(sentenceId)
+            || { sentenceId }
+            };
+            _setClearerOnTransMessage(dispatch, sentenceId, newSTTMessage);
+        }
+        else{
+            newSTTMessage = {
+                ...state['features/stt']._transcriptMessages
+                .get(sentenceId)
+            || { sentenceId }
+            };
+            _setClearerOnSTTMessage(dispatch, sentenceId, newSTTMessage);
+        }
 
         const dispName = getParticipantDisplayName(state, participantId);
         newSTTMessage.final = text;
@@ -193,9 +204,9 @@ function createSTTMessage(dispatch, getState, json) {
         newSTTMessage.isTranslated = isTranslated;
 
         if(isTranslated)
-            dispatch(updateTransMessage(participantId, newSTTMessage));
+            dispatch(updateTransMessage(sentenceId, newSTTMessage));
         else
-            dispatch(updateSTTMessage(participantId, newSTTMessage));
+            dispatch(updateSTTMessage(sentenceId, newSTTMessage));
     }
     catch (error) {
         logger.error('Error occurred while updating stt\n', error);
@@ -210,6 +221,7 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
     return next(action);
     }
     json.isTranslated = false;
+    json.sentenceId = json.participantId + json.st;
     createSTTMessage(dispatch, getState, json);
 
     // 번역 기능이 켜져있고 isComplete가 True이고, 현재 나와 언어가 다른 경우
@@ -234,6 +246,7 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
                 translatedJson.text = resultData.data.result;
                 translatedJson.participantId = json.participantId;
                 translatedJson.isTranslated = true;
+                translatedJson.sentenceId = json.participantId + json.st;
                 createSTTMessage(dispatch, getState, translatedJson);
             });
         } catch(e){
@@ -246,7 +259,7 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
 
 function _setClearerOnSTTMessage(
     dispatch,
-    participantId,
+    sentenceId,
     STTMessage) {
     if (STTMessage.clearTimeOut) {
         clearTimeout(STTMessage.clearTimeOut);
@@ -254,13 +267,13 @@ function _setClearerOnSTTMessage(
 
     STTMessage.clearTimeOut
         = setTimeout(
-            () => dispatch(removeSTTMessage(participantId)),
+            () => dispatch(removeSTTMessage(sentenceId)),
             REMOVE_AFTER_MS);
 }
 
 function _setClearerOnTransMessage(
     dispatch,
-    participantId,
+    sentenceId,
     STTMessage) {
     if (STTMessage.clearTimeOut) {
         clearTimeout(STTMessage.clearTimeOut);
@@ -268,6 +281,6 @@ function _setClearerOnTransMessage(
 
     STTMessage.clearTimeOut
         = setTimeout(
-            () => dispatch(removeTransMessage(participantId)),
+            () => dispatch(removeTransMessage(sentenceId)),
             REMOVE_AFTER_MS);
 }

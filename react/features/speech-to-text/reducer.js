@@ -76,11 +76,11 @@ ReducerRegistry.register('features/stt', (
 });
 
 function _updateSTTMessage(state,
-        { participantId, newSTTMessage }) {
+        { sentenceId, newSTTMessage }) {
     const newTranscriptMessages = new Map(state._transcriptMessages);
 
     // Updates the new message for the given key in the Map.
-    newTranscriptMessages.set(participantId, newSTTMessage);
+    newTranscriptMessages.set(sentenceId, newSTTMessage);
 
     return {
         ...state,
@@ -88,11 +88,11 @@ function _updateSTTMessage(state,
     };
 }
 
-function _removeSTTMessage(state, { participantId }) {
+function _removeSTTMessage(state, { sentenceId }) {
     const newTranscriptMessages = new Map(state._transcriptMessages);
 
     // Deletes the key from Map once a final message arrives.
-    newTranscriptMessages.delete(participantId);
+    newTranscriptMessages.delete(sentenceId);
 
     return {
         ...state,
@@ -101,11 +101,11 @@ function _removeSTTMessage(state, { participantId }) {
 }
 
 function _updateTransMessage(state,
-    { participantId, newSTTMessage }) {
+    { sentenceId, newSTTMessage }) {
     const newTranslationMessages = new Map(state._translationMessages);
 
     // Updates the new message for the given key in the Map.
-    newTranslationMessages.set(participantId, newSTTMessage);
+    newTranslationMessages.set(sentenceId, newSTTMessage);
 
     return {
         ...state,
@@ -113,11 +113,11 @@ function _updateTransMessage(state,
     };
 }
 
-function _removeTransMessage(state, { participantId }) {
+function _removeTransMessage(state, { sentenceId }) {
     const newTranslationMessages = new Map(state._translationMessages);
 
     // Deletes the key from Map once a final message arrives.
-    newTranslationMessages.delete(participantId);
+    newTranslationMessages.delete(sentenceId);
 
     return {
         ...state,

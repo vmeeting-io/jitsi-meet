@@ -112,10 +112,12 @@ function _constructTranslations(state: Object): Map<string, string> {
     for (const [ id, translationMessage ] of _translationMessages) {
         if (translationMessage) {
 
-            let text = `${translationMessage.name}: `;
+           // let text = `${translationMessage.name}: `;
+           let text = '';
 
             if (translationMessage.final) {
-                text += translationMessage.final;
+                // text += translationMessage.final;
+                text += `(${translationMessage.final})`
             }
 
             translations.set(id, text);

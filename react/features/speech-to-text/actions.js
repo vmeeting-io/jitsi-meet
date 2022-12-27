@@ -62,35 +62,35 @@ export function updateRecorder(recorder: Object) {
     }
 }
 
-export function updateSTTMessage(participantId: string,
+export function updateSTTMessage(sentenceId: string,
     newSTTMessage: Object) {
     return {
         type: UPDATE_STT_MESSAGE,
-        participantId,
+        sentenceId,
         newSTTMessage
     };
 }
 
-export function removeSTTMessage(participantId: string) {
+export function removeSTTMessage(sentenceId: string) {
     return {
         type: REMOVE_STT_MESSAGE,
-        participantId
+        sentenceId
     };
 }
 
-export function updateTransMessage(participantId: string,
+export function updateTransMessage(sentenceId: string,
     newSTTMessage: Object) {
     return {
         type: UPDATE_TRANS_MESSAGE,
-        participantId,
+        sentenceId,
         newSTTMessage
     };
 }
 
-export function removeTransMessage(participantId: string) {
+export function removeTransMessage(sentenceId: string) {
     return {
         type: REMOVE_TRANS_MESSAGE,
-        participantId
+        sentenceId
     };
 }
 

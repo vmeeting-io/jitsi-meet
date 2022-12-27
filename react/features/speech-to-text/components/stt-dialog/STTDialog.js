@@ -30,6 +30,8 @@ type Props = {
 
     _targetLanguage: String,
 
+    _fontSize: String,
+
     t: function,
 
     dispatch: function,
@@ -47,12 +49,13 @@ function STTDialog({
     _isLocalModerator,
     _sttOn,
     _targetLanguage,
+    _fontSize,
     t,
     dispatch
 }: Props) {
     const [enabled, setEnabled] = useState(_sttEnabled);
     const [targetLanguage, setTargetLanguage] = useState(_targetLanguage || i18next.language);
-    const [fontSize, setFontSize] = useState('small');
+    const [fontSize, setFontSize] = useState(_fontSize || 'small');
     const [translationEnabled, setTranslationEnabled] = useState(_translationEnabled || false);
 
     const onToggleEnable = () => {
@@ -212,6 +215,7 @@ function mapStateToProps(state) {
         _sttEnabled,
         _recorder,
         _targetLanguage,
+        _fontSize,
         _translationEnabled
     } = state['features/stt'];
     const isModerator = isLocalParticipantModerator(state);
@@ -221,7 +225,8 @@ function mapStateToProps(state) {
         _translationEnabled: _translationEnabled,
         _isLocalModerator: isModerator,
         _sttOn: _recorder? true : false,
-        _targetLanguage: _targetLanguage
+        _targetLanguage: _targetLanguage,
+        _fontSize: _fontSize
     };
 }
 

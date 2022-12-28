@@ -1,5 +1,5 @@
 // @flow
-import { openDialog } from '../base/dialog';
+import { openDialog, hideDialog } from '../base/dialog';
 import { STTDialog } from './components/stt-dialog';
 import { 
     STT_TOGGLE_MESSAGE,

@@ -1557,8 +1557,9 @@
     },
     "stt": {
         "buttonTooltip": "Open Speech-to-Text menu",
-        "featureDesc": "You can choose whether to enable subtitles (Speech-to-Text) and detail options.",
-        "featureDescP": "You can choose detail options of subtitles (Speech-to-Text feature.",
+        "featureDesc": "You can choose whether to enable subtitles (Speech-to-Text) and detail options. Meeting log will be recorded automatically when subtitle is on.",
+        "featureDescP": "You can choose detail options of subtitles (Speech-to-Text feature. Meeting log will be recorded automatically when subtitle is on.",
+        "modDesc": "Only moderators can enable/disable this feature.",
         "header": "Speech-to-Text Options",
         "toggleLabel": "Enable Subtitles",
         "toggleTranslation": "Enable Translation",

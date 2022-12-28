@@ -66,7 +66,8 @@ function STTDialog({
     const onToggleEnable = () => {
         const targetValue = !enabled;
         setEnabled(targetValue);
-        _conference.sendCommandOnce(STT_COMMAND, { value: targetValue });
+        if(_isLocalModerator)
+            _conference.sendCommandOnce(STT_COMMAND, { value: targetValue });
     }
 
     const onChangeTargetLanguage = (e) => {
@@ -106,7 +107,6 @@ function STTDialog({
                         role = 'banner'>
                         { _isLocalModerator? t('stt.featureDesc') : t('stt.featureDescP') }
                     </p>
-                    { _isLocalModerator && 
                     <div className = 'control-row'>
                         <label htmlFor = 'stt-enable-section-switch'>
                             { t('stt.toggleLabel') }
@@ -114,11 +114,19 @@ function STTDialog({
                         <Switch
                             id = 'stt-enable-section-switch'
                             onValueChange = { onToggleEnable }
-                            value = { enabled } />
-                    </div>}
+                            value = { enabled } 
+                            disabled={!_isLocalModerator}/>
+                    </div>
+                    { !_isLocalModerator &&
+                            <p
+                            className = 'description'
+                            role = 'banner'>
+                            {t('stt.modDesc') }
+                            </p>
+                    }
                 </div>
                 {
-                    enabled?
+                    _sttEnabled?
                         _sttOn? 
                         <div className = 'stt-section'>
                             <div className = 'control-row-sub'>
@@ -222,12 +230,13 @@ function STTDialog({
                                     </DropdownMenu>
                                 </div>
                             }
-                        </div> : 
+                        </div> :
+                        _sttEnabled? 
                         <div className = 'stt-spinner'>
                             <Spinner
                                 isCompleting = { false }
                                 size = 'medium' />
-                        </div>
+                        </div> : null
                      : null
                 }
             </div>

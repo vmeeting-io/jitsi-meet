@@ -63,6 +63,13 @@ function STTDialog({
     const [translationEnabled, setTranslationEnabled] = useState(_translationEnabled || false);
     const [targetTransLanguage, setTargetTransLanguage] = useState(_targetTransLanguage || i18next.language);
 
+    const availableTransLanguageList = [
+        {'translationCode': 'ko', 'vmLangCode': 'ko'},
+        {'translationCode': 'en', 'vmLangCode': 'en'},
+        {'translationCode': 'ja', 'vmLangCode': 'ja'},
+        {'translationCode': 'vi', 'vmLangCode': 'vi'},
+    ];
+
     const onToggleEnable = () => {
         const targetValue = !enabled;
         setEnabled(targetValue);
@@ -205,27 +212,23 @@ function STTDialog({
                                     </label>
                                     <DropdownMenu
                                         shouldFitContainer = { true }
-                                        trigger = {targetTransLanguage === 'ko'? '한국어' : 'English'}
+                                        trigger = { t(`languages:${availableTransLanguageList.find(e => e.translationCode === targetTransLanguage).vmLangCode}`) }
                                         triggerButtonProps = {{
                                             shouldFitContainer: true,
                                             id: 'stt-dropdown-id'
                                         }}
                                         triggerType = 'button'>
                                         <DropdownItemGroup>
-                                            <DropdownItem
-                                                data-translang='ko'
-                                                key='ko'
-                                                isSelected = {'ko' === targetTransLanguage}
-                                                onClick={onChangeTargetTransLanguage}>
-                                                한국어
-                                            </DropdownItem>
-                                            <DropdownItem
-                                                data-translang='en'
-                                                key='en'
-                                                isSelected = {'en' === targetTransLanguage}
-                                                onClick={onChangeTargetTransLanguage}>
-                                                English
-                                            </DropdownItem>
+                                            {
+                                                availableTransLanguageList.map(({translationCode, vmLangCode}, idx) => (<DropdownItem
+                                                    data-translang={translationCode}
+                                                    key={translationCode}
+                                                    isSelected = {{translationCode} === targetTransLanguage}
+                                                    onClick={onChangeTargetTransLanguage}>
+                                                    { t(`languages:${vmLangCode}`) }
+                                                    </DropdownItem>
+                                                ))
+                                            }
                                         </DropdownItemGroup>
                                     </DropdownMenu>
                                 </div>

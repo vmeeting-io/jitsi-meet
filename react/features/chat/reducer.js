@@ -12,7 +12,8 @@ import {
     OPEN_CHAT,
     FILE_UPLOADED_PERCENTAGE_STATUS,
     SET_PRIVATE_MESSAGE_RECIPIENT,
-    SET_IS_POLL_TAB_FOCUSED
+    SET_IS_POLL_TAB_FOCUSED,
+    SET_IS_STT_TAB_FOCUSED
 } from './actionTypes';
 
 const DEFAULT_STATE = {
@@ -21,6 +22,7 @@ const DEFAULT_STATE = {
     fileUploadPercentage: 0,
     isOpen: false,
     isPollsTabFocused: false,
+    isSTTTabFocused: false,
     lastReadMessage: undefined,
     lastReadPoll: undefined,
     messages: [],
@@ -134,7 +136,14 @@ ReducerRegistry.register('features/chat', (state = DEFAULT_STATE, action) => {
             isPollsTabFocused: action.isPollsTabFocused,
             nbUnreadMessages: 0
         }; }
+    case SET_IS_STT_TAB_FOCUSED: {
+        return {
+            ...state,
+            isSTTTabFocused: action.isSTTTabFocused,
+            nbUnreadMessages: 0
+        }; }
     }
+
 
     return state;
 });

@@ -110,6 +110,7 @@
         "smileysPanel": "Emoji panel",
         "tabs": {
             "chat": "Chat",
+            "stt": "Subtitle",
             "polls": "Polls"
         },
         "title": "Chat",

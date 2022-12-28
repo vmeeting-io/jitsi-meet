@@ -110,6 +110,7 @@
         "smileysPanel": "이모지 패널",
         "tabs": {
             "chat": "채팅",
+            "stt": "자막",
             "polls": "투표"
         },
         "title": "채팅",

@@ -30,7 +30,7 @@ import {
 } from '../toolbox/actions';
 
 
-import { ADD_MESSAGE, SEND_MESSAGE, OPEN_CHAT, CLOSE_CHAT, SET_IS_POLL_TAB_FOCUSED } from './actionTypes';
+import { ADD_MESSAGE, SEND_MESSAGE, OPEN_CHAT, CLOSE_CHAT, SET_IS_POLL_TAB_FOCUSED, SET_IS_STT_TAB_FOCUSED } from './actionTypes';
 import { addMessage, clearMessages } from './actions';
 import { closeChat } from './actions.any';
 import { ChatPrivacyDialog } from './components';
@@ -120,6 +120,10 @@ MiddlewareRegistry.register(store => next => action => {
         dispatch(resetNbUnreadPollsMessages());
         break;
     }
+
+    case SET_IS_STT_TAB_FOCUSED: {
+        break;
+      }
 
     case SEND_MESSAGE: {
         const state = store.getState();

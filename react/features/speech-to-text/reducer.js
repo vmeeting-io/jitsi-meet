@@ -1,3 +1,7 @@
+// @flow
+
+import { v4 as uuidv4 } from 'uuid';
+
 import { ReducerRegistry } from "../base/redux";
 
 import {
@@ -10,7 +14,8 @@ import {
     STT_CHANGE_TARGET_LANGUAGE,
     UPDATE_TRANS_MESSAGE,
     REMOVE_TRANS_MESSAGE,
-    CHANGE_SUBTITLE_FONT_SIZE
+    CHANGE_SUBTITLE_FONT_SIZE,
+    ADD_STT_HISTORY
 } from './actionTypes';
 
 /**
@@ -25,7 +30,8 @@ const defaultState = {
     _wsServer: undefined,
     _recorder: undefined,
     _targetLanguage: undefined,
-    _fontSize: 'small'
+    _fontSize: 'small',
+    _sttHistory: []
 };
 
 ReducerRegistry.register('features/stt', (
@@ -56,7 +62,7 @@ ReducerRegistry.register('features/stt', (
         return {
             ...state,
             _recorder: action.recorder
-        }
+        };
     case UPDATE_STT_MESSAGE:
         return _updateSTTMessage(state, action);
     case REMOVE_STT_MESSAGE:
@@ -69,6 +75,48 @@ ReducerRegistry.register('features/stt', (
         return {
             ...state,
             _fontSize: action.targetSize
+        };
+    case ADD_STT_HISTORY: {
+            let found = false;
+            const newMessage = {
+                displayName: action.displayName,
+                error: action.error,
+                id: action.id,
+                isReaction: action.isReaction,
+                messageId: action.sentenceId,
+                messageType: action.messageType,
+                message: action.message,
+                privateMessage: action.privateMessage,
+                recipient: action.recipient,
+                timestamp: action.timestamp
+            };
+
+            let messages = state._sttHistory.map(m => {
+                if (m.messageId === newMessage.messageId) {
+                    found = true;
+    
+                    return newMessage;
+                }
+    
+                return m;
+            });
+
+            if (!found){
+                messages = navigator.product === 'ReactNative'
+                ? [
+                    newMessage,
+                    ...state._sttHistory
+                ]
+                : [
+                    ...state._sttHistory,
+                    newMessage
+                ];
+            }
+
+            return {
+                ...state,
+                _sttHistory: messages
+            };
         }
     }
 

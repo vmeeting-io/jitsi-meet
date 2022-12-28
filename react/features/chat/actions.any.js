@@ -8,7 +8,8 @@ import {
     EDIT_MESSAGE,
     SEND_MESSAGE,
     SET_PRIVATE_MESSAGE_RECIPIENT,
-    SET_IS_POLL_TAB_FOCUSED
+    SET_IS_POLL_TAB_FOCUSED,
+    SET_IS_STT_TAB_FOCUSED
 } from './actionTypes';
 
 /**
@@ -143,3 +144,16 @@ export function setIsPollsTabFocused(isPollsTabFocused: boolean) {
         type: SET_IS_POLL_TAB_FOCUSED
     };
 }
+
+/**
+ * Set the value of _isPollsTabFocused.
+ *
+ * @param {boolean} isPollsTabFocused - The new value for _isPollsTabFocused.
+ * @returns {Function}
+ */
+export function setIsSTTTabFocused(isSTTTabFocused: boolean) {
+    return {
+        isSTTTabFocused,
+        type: SET_IS_STT_TAB_FOCUSED
+    };
+  }

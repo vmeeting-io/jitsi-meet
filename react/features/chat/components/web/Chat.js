@@ -29,6 +29,8 @@ import Mark from 'mark.js';
 import DragAndDrop from './DragAndDrop';
 import TouchmoveHack from './TouchmoveHack';
 
+import STTMessageContainer from '../../../speech-to-text/components/stt-pane/STTMessageContainer';
+
 declare var APP: Object;
 
 /**
@@ -65,12 +67,14 @@ class Chat extends AbstractChat<Props> {
         super(props);
 
         this._messageContainerRef = React.createRef();
+        this._STTmessageContainerRef = React.createRef();
 
         // Bind event handlers so they are only bound once for every instance.
         this._onChatTabKeyDown = this._onChatTabKeyDown.bind(this);
         this._onChatInputResize = this._onChatInputResize.bind(this);
         this._onEscClick = this._onEscClick.bind(this);
         this._onPollsTabKeyDown = this._onPollsTabKeyDown.bind(this);
+        this._onSTTTabKeyDown = this._onSTTTabKeyDown.bind(this);
         this._onToggleChat = this._onToggleChat.bind(this);
 
         this._onToggleSearch = this._onToggleSearch.bind(this);
@@ -88,6 +92,7 @@ class Chat extends AbstractChat<Props> {
      */
     componentDidMount() {
         this._scrollMessageContainerToBottom(true);
+        this._scrollSTTMessageContainerToBottom(true);
         document.addEventListener('keypress', this._handleKeyPress);
         document.addEventListener('keydown', this._handleKeyDown);
     }
@@ -100,8 +105,11 @@ class Chat extends AbstractChat<Props> {
     componentDidUpdate(prevProps) {
         if (this.props._messages !== prevProps._messages) {
             this._scrollMessageContainerToBottom(true);
+        } else if (this.props._STTmessages !== prevProps._STTmessages) {
+            this._scrollSTTMessageContainerToBottom(true);
         } else if (this.props._isOpen && !prevProps._isOpen) {
             this._scrollMessageContainerToBottom(false);
+            this._scrollSTTMessageContainerToBottom(false);
         }
     }
 
@@ -219,6 +227,23 @@ class Chat extends AbstractChat<Props> {
         }
     }
 
+    _onSTTTabKeyDown: (KeyboardEvent) => void;
+
+    /**
+     * Key press handler for the polls tab.
+     *
+     * @param {KeyboardEvent} event - The event.
+     * @returns {void}
+     */
+    _onSTTTabKeyDown(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            event.stopPropagation();
+            this._onToggleSTTTab();
+        }
+    }
+
+
     /**
      * Returns a React Element for showing chat messages and a form to send new
      * chat messages.
@@ -231,6 +256,8 @@ class Chat extends AbstractChat<Props> {
             _isFileDownloadEnabled,
             _isPollsEnabled,
             _isPollsTabFocused,
+            _isSTTEnabled,
+            _isSTTTabFocused,
             _showChatInput,
             _privateMessageRecipient,
             t
@@ -255,6 +282,25 @@ class Chat extends AbstractChat<Props> {
                         role = 'tabpanel'>
                         <PollsPane />
                     </div>
+                    <KeyboardAvoider />
+                </>
+            );
+        }
+
+        if (_isSTTTabFocused) {
+            return (
+                <>
+                    { this._renderTabs() }
+                    <div
+                        area-labelledby = 'stt-tab'
+                        id = 'stt-panel'
+                        role = 'tabpanel'>
+                    </div>
+                    <TouchmoveHack isModal = { this.props._isModal }>
+                        <STTMessageContainer
+                            messages = { this.props._STTmessages }
+                            ref = { this._STTmessageContainerRef } />
+                    </TouchmoveHack>
                     <KeyboardAvoider />
                 </>
             );
@@ -340,7 +386,7 @@ class Chat extends AbstractChat<Props> {
      * @returns {ReactElement}
      */
     _renderTabs() {
-        const { _isPollsEnabled, _isPollsTabFocused, _nbUnreadMessages, _nbUnreadPolls, t } = this.props;
+        const { _isPollsEnabled, _isPollsTabFocused, _isSTTEnabled, _isSTTTabFocused, _nbUnreadMessages, _nbUnreadPolls, t } = this.props;
 
         return (
             <div
@@ -352,7 +398,7 @@ class Chat extends AbstractChat<Props> {
                     aria-label = { t('chat.tabs.chat') }
                     aria-selected = { !_isPollsTabFocused }
                     className = { `chat-tab ${
-                        _isPollsTabFocused ? '' : 'chat-tab-focus'
+                        _isPollsTabFocused || _isSTTTabFocused ? '' : 'chat-tab-focus'
                     }` }
                     id = 'chat-tab'
                     onClick = { this._onToggleChatTab }
@@ -369,6 +415,22 @@ class Chat extends AbstractChat<Props> {
                             {_nbUnreadMessages}
                         </span>
                     )}
+                </div>
+                <div
+                    aria-controls = 'stt-panel'
+                    aria-label = {t('chat.tabs.stt')}
+                    aria-selected = { _isSTTTabFocused }
+                    className = { `chat-tab ${
+                        _isSTTTabFocused ? 'chat-tab-focus' : ''
+                    }` }
+                    id = 'stt-tab'
+                    onClick = { this._onToggleSTTTab }
+                    onKeyDown = { this._onSTTTabKeyDown }
+                    role = 'tab'
+                    tabIndex = '0'>
+                    <span className = { 'chat-tab-title' }>
+                        {t('chat.tabs.stt')}
+                    </span>
                 </div>
                 <div
                     aria-controls = 'polls-panel'
@@ -572,6 +634,13 @@ class Chat extends AbstractChat<Props> {
         }
     }
 
+    _scrollSTTMessageContainerToBottom(withAnimation) {
+        if (this._STTmessageContainerRef.current) {
+            this._STTmessageContainerRef.current.scrollToBottom(withAnimation);
+        }
+    }
+
+
     _onSendMessage: (string) => void;
 
     _onToggleChat: () => void;
@@ -585,6 +654,7 @@ class Chat extends AbstractChat<Props> {
         this.props.dispatch(toggleChat());
     }
     _onTogglePollsTab: () => void;
+    _onToggleSTTTab: () => void;
     _onToggleChatTab: () => void;
 
 }

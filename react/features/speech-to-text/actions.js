@@ -11,7 +11,8 @@ import {
     REMOVE_STT_MESSAGE,
     UPDATE_TRANS_MESSAGE,
     REMOVE_TRANS_MESSAGE,
-    CHANGE_SUBTITLE_FONT_SIZE
+    CHANGE_SUBTITLE_FONT_SIZE,
+    ADD_STT_HISTORY
 } from './actionTypes';
 
 /**
@@ -99,3 +100,11 @@ export function changeSubtitleFontSize(targetSize: string) {
         type: CHANGE_SUBTITLE_FONT_SIZE,
         targetSize
     };}
+
+export function addSTTMessageHistory(messageDetails: Object) {
+    return {
+        type: ADD_STT_HISTORY,
+        ...messageDetails
+    };}
+
+    

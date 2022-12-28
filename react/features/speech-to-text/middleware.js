@@ -1,7 +1,7 @@
 // @flow
 
 import { MiddlewareRegistry } from '../base/redux';
-import { getLocalParticipant, getParticipantDisplayName } from '../base/participants';
+import { getLocalParticipant, getParticipantById, getParticipantDisplayName } from '../base/participants';
 import RecordRTC from './RecordRTC';
 
 import { 
@@ -11,7 +11,8 @@ import {
     removeSTTMessage,
     toggleSTTTranslation,
     updateTransMessage,
-    removeTransMessage } from './actions';
+    removeTransMessage,
+    addSTTMessageHistory } from './actions';
 import {
     STT_TOGGLE_MESSAGE,
     ENDPOINT_MESSAGE_RECEIVED,
@@ -23,6 +24,11 @@ import { i18next } from '../base/i18n';
 
 import './subscriber';
 import { showNotification, NOTIFICATION_TIMEOUT_TYPE } from '../notifications';
+
+import {
+    MESSAGE_TYPE_LOCAL,
+    MESSAGE_TYPE_REMOTE
+} from '../chat/constants';
 
 const JSON_TYPE_STT_RESULT = 'stt-result';
 
@@ -144,7 +150,6 @@ function activateWS(soc, stream, pId, dispatch, getState) {
         else if (resultSTT['code'] === 'STTResult'){
             if(!resultSTT.data.result)
                 return;
-            console.log(resultSTT.data.st, resultSTT.data.result);
             // for me
             createSTTMessage(dispatch, getState, {
                 participantId: pId,
@@ -203,10 +208,32 @@ function createSTTMessage(dispatch, getState, json) {
         newSTTMessage.name = dispName;
         newSTTMessage.isTranslated = isTranslated;
 
-        if(isTranslated)
+        if (isTranslated)
             dispatch(updateTransMessage(sentenceId, newSTTMessage));
-        else
+        else {
             dispatch(updateSTTMessage(sentenceId, newSTTMessage));
+
+            const { isOpen: isChatOpen } = state['features/chat'];
+            const participant = getParticipantById(state, participantId) || {};
+            const localParticipant = getLocalParticipant(getState);
+            const displayName = participant.name || getParticipantDisplayName(state, id);
+            const hasRead = participant.local || isChatOpen;
+            const timestampToDate = json.st ? new Date(json.st) : new Date();
+            const millisecondsTimestamp = timestampToDate.getTime();
+
+            dispatch(addSTTMessageHistory({
+                displayName,
+                hasRead,
+                id: participantId,
+                messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
+                message: text,
+                privateMessage: false,
+                recipient: getParticipantDisplayName(state, localParticipant.id),
+                timestamp: millisecondsTimestamp,
+                isReaction: false,
+                sentenceId: json.sentenceId
+            }));
+        }
     }
     catch (error) {
         logger.error('Error occurred while updating stt\n', error);
@@ -226,7 +253,7 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
 
     // 번역 기능이 켜져있고 isComplete가 True이고, 현재 나와 언어가 다른 경우
     const myLang = i18next.language === 'ko'? 'ko' : 'en';
-    if(getState()['features/stt']._translationEnabled &&json.isComplete === 'True' && json.lang !== myLang){
+    if(getState()['features/stt']._translationEnabled && json.isComplete === 'True' && json.lang !== myLang){
         const param_data = {};
         param_data.SourceLanguage = json.lang;
         param_data.SourceContent = json.text;

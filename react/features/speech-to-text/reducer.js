@@ -3,7 +3,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import { ReducerRegistry } from "../base/redux";
-
+import { i18next } from '../base/i18n';
 import {
     STT_TOGGLE_MESSAGE,
     STT_TRANSLATION_TOGGLE_MESSAGE,
@@ -15,7 +15,8 @@ import {
     UPDATE_TRANS_MESSAGE,
     REMOVE_TRANS_MESSAGE,
     CHANGE_SUBTITLE_FONT_SIZE,
-    ADD_STT_HISTORY
+    ADD_STT_HISTORY,
+    STT_CHANGE_TARGET_TRANS_LANGUAGE
 } from './actionTypes';
 
 /**
@@ -30,6 +31,7 @@ const defaultState = {
     _wsServer: undefined,
     _recorder: undefined,
     _targetLanguage: undefined,
+    _targetTransLanguage: undefined,
     _fontSize: 'small',
     _sttHistory: []
 };
@@ -45,18 +47,24 @@ ReducerRegistry.register('features/stt', (
     case STT_CHANGE_TARGET_LANGUAGE:
         return {
             ...state,
-            _currentLanguage: action.targetLanguage
+            _targetLanguage: action.targetLanguage
         }
     case STT_TRANSLATION_TOGGLE_MESSAGE:
         return {
             ...state,
-            _translationEnabled: action.enabled
+            _translationEnabled: action.enabled,
+            _targetTransLanguage: action.enabled? action.targetLanguage || i18next.language : undefined
         };
+    case STT_CHANGE_TARGET_TRANS_LANGUAGE:
+        return {
+            ...state,
+            _targetTransLanguage: action.targetLanguage
+        }
     case STT_WS_SERVER_MESSAGE:
         return {
             ...state,
             _wsServer: action.wsSoc,
-            _currentLanguage: action.currentLanguage
+            _targetLanguage: action.currentTargetLanguage
         };
     case STT_RECORDER_MESSAGE:
         return {

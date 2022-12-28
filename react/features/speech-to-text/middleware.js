@@ -159,8 +159,7 @@ function activateWS(soc, stream, pId, dispatch, getState) {
                 sentenceId: pId + resultSTT.data.st
             });
 
-            const lang = i18next.language === 'ko'? 'ko' : 'en';
-        
+            const lang = getState()['features/stt']._targetLanguage === 'ko'? 'ko' : 'en';
             // for others
             if (conference.getParticipantCount(getState()) > 1){
                 conference.sendEndpointMessage('', {
@@ -252,12 +251,11 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
     createSTTMessage(dispatch, getState, json);
 
     // 번역 기능이 켜져있고 isComplete가 True이고, 현재 나와 언어가 다른 경우
-    const myLang = i18next.language === 'ko'? 'ko' : 'en';
-    if(getState()['features/stt']._translationEnabled && json.isComplete === 'True' && json.lang !== myLang){
+    if(getState()['features/stt']._translationEnabled && json.isComplete === 'True' && json.lang !== getState()['features/stt']._targetTransLanguage){
         const param_data = {};
         param_data.SourceLanguage = json.lang;
         param_data.SourceContent = json.text;
-        param_data.TargetLanguage = myLang;
+        param_data.TargetLanguage = getState()['features/stt']._targetTransLanguage;
         param_data.ssn = json.participantId;
         param_data.st = json.st;
         param_data.et = json.et;

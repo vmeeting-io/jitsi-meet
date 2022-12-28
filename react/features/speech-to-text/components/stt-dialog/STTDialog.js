@@ -15,6 +15,7 @@ import { isLocalParticipantModerator } from '../../../base/participants';
 import { 
     toggleSTTTranslation,
     changeSTTTargetLanguage,
+    changeSTTTargetTransLanguage,
     changeSubtitleFontSize
 } from '../../actions';
 import { STT_COMMAND } from '../../../base/conference';
@@ -29,6 +30,8 @@ type Props = {
     _sttOn: Boolean,
 
     _targetLanguage: String,
+
+    _targetTransLanguage: String,
 
     _fontSize: String,
 
@@ -49,6 +52,7 @@ function STTDialog({
     _isLocalModerator,
     _sttOn,
     _targetLanguage,
+    _targetTransLanguage,
     _fontSize,
     t,
     dispatch
@@ -57,6 +61,7 @@ function STTDialog({
     const [targetLanguage, setTargetLanguage] = useState(_targetLanguage || i18next.language);
     const [fontSize, setFontSize] = useState(_fontSize || 'small');
     const [translationEnabled, setTranslationEnabled] = useState(_translationEnabled || false);
+    const [targetTransLanguage, setTargetTransLanguage] = useState(_targetTransLanguage || i18next.language);
 
     const onToggleEnable = () => {
         const targetValue = !enabled;
@@ -80,6 +85,12 @@ function STTDialog({
         const targetValue = !translationEnabled;
         setTranslationEnabled(targetValue);
         dispatch(toggleSTTTranslation(targetValue));
+    }
+
+    const onChangeTargetTransLanguage = (e) => {
+        const target = e.currentTarget.getAttribute('data-translang');
+        setTargetTransLanguage(target);
+        dispatch(changeSTTTargetTransLanguage(target));
     }
 
     return (
@@ -110,7 +121,7 @@ function STTDialog({
                     enabled?
                         _sttOn? 
                         <div className = 'stt-section'>
-                            <div className = 'control-row'>
+                            <div className = 'control-row-sub'>
                                 <label htmlFor = 'stt-target-language'>
                                     { t('stt.currentTargetLanguage') }
                                 </label>
@@ -167,13 +178,6 @@ function STTDialog({
                                             onClick={onChangeFontSize}>
                                             {t('stt.font_medium')}
                                         </DropdownItem>
-                                        <DropdownItem
-                                            data-fontsize='large'
-                                            key='large'
-                                            isSelected = {'large' === fontSize}
-                                            onClick={onChangeFontSize}>
-                                            {t('stt.font_large')}
-                                        </DropdownItem>
                                     </DropdownItemGroup>
                                 </DropdownMenu>
                             </div>
@@ -186,6 +190,38 @@ function STTDialog({
                                     onValueChange = { onToggleTranslation }
                                     value = { translationEnabled }/>
                             </div>
+                            { translationEnabled &&
+                                <div className = 'control-row-sub'>
+                                    <label htmlFor = 'stt-target-trans-language'>
+                                        { t('stt.currentTransLanguage') }
+                                    </label>
+                                    <DropdownMenu
+                                        shouldFitContainer = { true }
+                                        trigger = {targetTransLanguage === 'ko'? '한국어' : 'English'}
+                                        triggerButtonProps = {{
+                                            shouldFitContainer: true,
+                                            id: 'stt-dropdown-id'
+                                        }}
+                                        triggerType = 'button'>
+                                        <DropdownItemGroup>
+                                            <DropdownItem
+                                                data-translang='ko'
+                                                key='ko'
+                                                isSelected = {'ko' === targetTransLanguage}
+                                                onClick={onChangeTargetTransLanguage}>
+                                                한국어
+                                            </DropdownItem>
+                                            <DropdownItem
+                                                data-translang='en'
+                                                key='en'
+                                                isSelected = {'en' === targetTransLanguage}
+                                                onClick={onChangeTargetTransLanguage}>
+                                                English
+                                            </DropdownItem>
+                                        </DropdownItemGroup>
+                                    </DropdownMenu>
+                                </div>
+                            }
                         </div> : 
                         <div className = 'stt-spinner'>
                             <Spinner
@@ -215,6 +251,7 @@ function mapStateToProps(state) {
         _sttEnabled,
         _recorder,
         _targetLanguage,
+        _targetTransLanguage,
         _fontSize,
         _translationEnabled
     } = state['features/stt'];
@@ -226,6 +263,7 @@ function mapStateToProps(state) {
         _isLocalModerator: isModerator,
         _sttOn: _recorder? true : false,
         _targetLanguage: _targetLanguage,
+        _targetTranslanguage: _targetTransLanguage,
         _fontSize: _fontSize
     };
 }

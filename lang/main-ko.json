@@ -1560,6 +1560,7 @@
         "toggleTranslation": "번역 활성화",
         "toggleMinutes": "회의록 활성화",
         "currentTargetLanguage": "현재 인식 언어",
+        "currentTransLanguage": "번역 언어",
         "fontSize": "자막 크기",
         "font_small": "작게",
         "font_medium": "중간",

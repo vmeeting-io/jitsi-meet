@@ -1564,6 +1564,7 @@
         "toggleTranslation": "Enable Translation",
         "toggleMinutes": "Enable Minutes",
         "currentTargetLanguage": "Current Target Language",
+        "currentTransLanguage": "Translation Language",
         "fontSize": "Subtitle Size",
         "font_small": "Small",
         "font_medium": "Medium",

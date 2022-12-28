@@ -5,6 +5,7 @@ import {
     STT_TOGGLE_MESSAGE,
     STT_CHANGE_TARGET_LANGUAGE,
     STT_TRANSLATION_TOGGLE_MESSAGE,
+    STT_CHANGE_TARGET_TRANS_LANGUAGE,
     STT_WS_SERVER_MESSAGE,
     STT_RECORDER_MESSAGE,
     UPDATE_STT_MESSAGE,
@@ -41,18 +42,26 @@ export function changeSTTTargetLanguage(targetLanguage: string){
     }
 }
 
-export function toggleSTTTranslation(enabled: boolean) {
+export function toggleSTTTranslation(enabled: boolean, targetLanguage: string = undefined) {
     return {
         type: STT_TRANSLATION_TOGGLE_MESSAGE,
-        enabled
+        enabled,
+        targetLanguage
     };
 }
 
-export function updateWSServer(wsSoc: Object, currentLanguage: string) {
+export function changeSTTTargetTransLanguage(targetLanguage: string){
+    return {
+        type: STT_CHANGE_TARGET_TRANS_LANGUAGE,
+        targetLanguage
+    }
+}
+
+export function updateWSServer(wsSoc: Object, currentTargetLanguage: string) {
     return {
         type: STT_WS_SERVER_MESSAGE,
         wsSoc,
-        currentLanguage
+        currentTargetLanguage
     }
 }
 

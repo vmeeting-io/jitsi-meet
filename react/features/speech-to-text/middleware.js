@@ -185,6 +185,32 @@ function createSTTMessage(dispatch, getState, json) {
         const isTranslated = json.isTranslated;
         let newSTTMessage;
 
+        if (!isTranslated) {
+            const { isOpen: isChatOpen } = state['features/chat'];
+            const participant = getParticipantById(state, participantId) || {};
+            const localParticipant = getLocalParticipant(getState);
+            const displayName = participant.name || getParticipantDisplayName(state, id);
+            const hasRead = participant.local || isChatOpen;
+            const timestampToDate = json.st ? new Date(json.st) : new Date();
+            const millisecondsTimestamp = timestampToDate.getTime();
+
+            dispatch(addSTTMessageHistory({
+                displayName,
+                hasRead,
+                id: participantId,
+                messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
+                message: text,
+                privateMessage: false,
+                recipient: getParticipantDisplayName(state, localParticipant.id),
+                timestamp: millisecondsTimestamp,
+                isReaction: false,
+                sentenceId: json.sentenceId
+            }));
+        }
+
+        if(!state['features/stt']._subtitleVisible)
+            return;
+
         if(isTranslated){
             newSTTMessage = {
                 ...state['features/stt']._translationMessages
@@ -211,27 +237,6 @@ function createSTTMessage(dispatch, getState, json) {
             dispatch(updateTransMessage(sentenceId, newSTTMessage));
         else {
             dispatch(updateSTTMessage(sentenceId, newSTTMessage));
-
-            const { isOpen: isChatOpen } = state['features/chat'];
-            const participant = getParticipantById(state, participantId) || {};
-            const localParticipant = getLocalParticipant(getState);
-            const displayName = participant.name || getParticipantDisplayName(state, id);
-            const hasRead = participant.local || isChatOpen;
-            const timestampToDate = json.st ? new Date(json.st) : new Date();
-            const millisecondsTimestamp = timestampToDate.getTime();
-
-            dispatch(addSTTMessageHistory({
-                displayName,
-                hasRead,
-                id: participantId,
-                messageType: participant.local ? MESSAGE_TYPE_LOCAL : MESSAGE_TYPE_REMOTE,
-                message: text,
-                privateMessage: false,
-                recipient: getParticipantDisplayName(state, localParticipant.id),
-                timestamp: millisecondsTimestamp,
-                isReaction: false,
-                sentenceId: json.sentenceId
-            }));
         }
     }
     catch (error) {

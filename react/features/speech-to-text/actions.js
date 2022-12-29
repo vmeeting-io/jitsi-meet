@@ -13,7 +13,8 @@ import {
     UPDATE_TRANS_MESSAGE,
     REMOVE_TRANS_MESSAGE,
     CHANGE_SUBTITLE_FONT_SIZE,
-    ADD_STT_HISTORY
+    ADD_STT_HISTORY,
+    CHANGE_SUBTITLE_VISIBILITY
 } from './actionTypes';
 
 /**
@@ -108,6 +109,12 @@ export function changeSubtitleFontSize(targetSize: string) {
     return {
         type: CHANGE_SUBTITLE_FONT_SIZE,
         targetSize
+    };}
+
+export function changeSubtitleVisibility(visible: boolean) {
+    return {
+        type: CHANGE_SUBTITLE_VISIBILITY,
+        visible
     };}
 
 export function addSTTMessageHistory(messageDetails: Object) {

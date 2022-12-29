@@ -1570,6 +1570,7 @@
         "font_small": "Small",
         "font_medium": "Medium",
         "font_large": "Large",
+        "subtitleVisibility": "Display Subtitle",
         "notifications": {
             "title": "Speech-to-Text",
             "enabled": "Speech-to-Text is enabled. You can make detailed settings in the \"More actions\" menu"

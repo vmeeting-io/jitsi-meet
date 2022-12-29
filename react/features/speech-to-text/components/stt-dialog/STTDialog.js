@@ -16,7 +16,8 @@ import {
     toggleSTTTranslation,
     changeSTTTargetLanguage,
     changeSTTTargetTransLanguage,
-    changeSubtitleFontSize
+    changeSubtitleFontSize,
+    changeSubtitleVisibility
 } from '../../actions';
 import { STT_COMMAND } from '../../../base/conference';
 
@@ -54,11 +55,13 @@ function STTDialog({
     _targetLanguage,
     _targetTransLanguage,
     _fontSize,
+    _subtitleVisible,
     t,
     dispatch
 }: Props) {
     const [enabled, setEnabled] = useState(_sttEnabled);
     const [targetLanguage, setTargetLanguage] = useState(_targetLanguage || i18next.language);
+    const [subtitleVisible, setSubtitleVisible] = useState(_subtitleVisible);
     const [fontSize, setFontSize] = useState(_fontSize || 'small');
     const [translationEnabled, setTranslationEnabled] = useState(_translationEnabled || false);
     const [targetTransLanguage, setTargetTransLanguage] = useState(_targetTransLanguage || i18next.language);
@@ -81,6 +84,12 @@ function STTDialog({
         const target = e.currentTarget.getAttribute('data-lang');
         setTargetLanguage(target);
         dispatch(changeSTTTargetLanguage(target));
+    }
+
+    const onToggleSubtitleVisibility = () => {
+        const targetValue = !subtitleVisible;
+        setSubtitleVisible(targetValue);
+        dispatch(changeSubtitleVisibility(targetValue));
     }
 
     const onChangeFontSize = (e) => {
@@ -170,6 +179,15 @@ function STTDialog({
                                         </DropdownItem>
                                     </DropdownItemGroup>
                                 </DropdownMenu>
+                            </div>
+                            <div className = 'control-row'>
+                                <label htmlFor = 'stt-subtitle-visibility'>
+                                    { t('stt.subtitleVisibility') }
+                                </label>
+                                <Switch
+                                    id = 'stt-subtitle-visible-section-switch'
+                                    onValueChange = { onToggleSubtitleVisibility }
+                                    value = { subtitleVisible }/>
                             </div>
                             <div className = 'control-row'>
                                 <label htmlFor = 'stt-target-language'>
@@ -287,6 +305,7 @@ function mapStateToProps(state) {
         _targetLanguage,
         _targetTransLanguage,
         _fontSize,
+        _subtitleVisible,
         _translationEnabled
     } = state['features/stt'];
     const isModerator = isLocalParticipantModerator(state);
@@ -298,7 +317,8 @@ function mapStateToProps(state) {
         _sttOn: _recorder? true : false,
         _targetLanguage: _targetLanguage,
         _targetTransLanguage: _targetTransLanguage,
-        _fontSize: _fontSize
+        _fontSize: _fontSize,
+        _subtitleVisible: _subtitleVisible
     };
 }
 

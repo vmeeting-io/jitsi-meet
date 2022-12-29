@@ -16,7 +16,8 @@ import {
     REMOVE_TRANS_MESSAGE,
     CHANGE_SUBTITLE_FONT_SIZE,
     ADD_STT_HISTORY,
-    STT_CHANGE_TARGET_TRANS_LANGUAGE
+    STT_CHANGE_TARGET_TRANS_LANGUAGE,
+    CHANGE_SUBTITLE_VISIBILITY
 } from './actionTypes';
 
 /**
@@ -33,6 +34,7 @@ const defaultState = {
     _targetLanguage: undefined,
     _targetTransLanguage: undefined,
     _fontSize: 'small',
+    _subtitleVisible: true,
     _sttHistory: []
 };
 
@@ -84,6 +86,8 @@ ReducerRegistry.register('features/stt', (
             ...state,
             _fontSize: action.targetSize
         };
+    case CHANGE_SUBTITLE_VISIBILITY:
+        return _onVisibilityChangeMessage(state, action);
     case ADD_STT_HISTORY: {
             let found = false;
             const newMessage = {
@@ -179,4 +183,24 @@ function _removeTransMessage(state, { sentenceId }) {
         ...state,
         _translationMessages: newTranslationMessages
     };
+}
+
+function _onVisibilityChangeMessage(state, action){
+    if(action.visible){
+        return {
+            ...state,
+            _subtitleVisible: action.visible
+        }
+    }
+    else {
+        const emptySTTMessages = new Map();
+        const emptyTransMessages = new Map();
+    
+        return {
+            ...state,
+            _subtitleVisible: action.visible,
+            _transcriptMessages: emptySTTMessages,
+            _translationMessages: emptyTransMessages
+        };
+    }
 }

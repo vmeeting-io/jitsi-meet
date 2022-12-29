@@ -145,7 +145,8 @@ function STTDialog({
                                     trigger = {targetLanguage === 'ko'? '한국어' : 'English'}
                                     triggerButtonProps = {{
                                         shouldFitContainer: true,
-                                        id: 'stt-dropdown-id'
+                                        id: 'stt-dropdown-id',
+                                        className: 'stt-dropdown-label'
                                     }}
                                     triggerType = 'button'>
                                     <DropdownItemGroup>
@@ -154,14 +155,18 @@ function STTDialog({
                                             key='ko'
                                             isSelected = {'ko' === targetLanguage}
                                             onClick={onChangeTargetLanguage}>
+                                            <span className='stt-dropdown-label'>
                                             { t('languages:ko') }
+                                            </span>
                                         </DropdownItem>
                                         <DropdownItem
                                             data-lang='en'
                                             key='en'
                                             isSelected = {'en' === targetLanguage}
                                             onClick={onChangeTargetLanguage}>
+                                            <span className='stt-dropdown-label'>
                                             { t('languages:en') }
+                                            </span>
                                         </DropdownItem>
                                     </DropdownItemGroup>
                                 </DropdownMenu>
@@ -175,7 +180,8 @@ function STTDialog({
                                     trigger = {t(`stt.font_${fontSize}`)}
                                     triggerButtonProps = {{
                                         shouldFitContainer: true,
-                                        id: 'stt-fs-dropdown-id'
+                                        id: 'stt-fs-dropdown-id',
+                                        className: 'stt-dropdown-label'
                                     }}
                                     triggerType = 'button'>
                                     <DropdownItemGroup>
@@ -184,21 +190,27 @@ function STTDialog({
                                             key='small'
                                             isSelected = {'small' === fontSize}
                                             onClick={onChangeFontSize}>
+                                            <span className='stt-dropdown-label'>
                                             {t('stt.font_small')}
+                                            </span>
                                         </DropdownItem>
                                         <DropdownItem
                                             data-fontsize='medium'
                                             key='medium'
                                             isSelected = {'medium' === fontSize}
                                             onClick={onChangeFontSize}>
+                                            <span className='stt-dropdown-label'>
                                             {t('stt.font_medium')}
+                                            </span>
                                         </DropdownItem>
                                         <DropdownItem
                                             data-fontsize='large'
                                             key='large'
                                             isSelected = {'large' === fontSize}
                                             onClick={onChangeFontSize}>
+                                            <span className='stt-dropdown-label'>
                                             {t('stt.font_large')}
+                                            </span>
                                         </DropdownItem>
                                     </DropdownItemGroup>
                                 </DropdownMenu>
@@ -222,7 +234,8 @@ function STTDialog({
                                         trigger = { t(`languages:${availableTransLanguageList.find(e => e.translationCode === targetTransLanguage).vmLangCode}`) }
                                         triggerButtonProps = {{
                                             shouldFitContainer: true,
-                                            id: 'stt-dropdown-id'
+                                            id: 'stt-dropdown-id',
+                                            className: 'stt-dropdown-label'
                                         }}
                                         triggerType = 'button'>
                                         <DropdownItemGroup>
@@ -232,7 +245,9 @@ function STTDialog({
                                                     key={translationCode}
                                                     isSelected = {{translationCode} === targetTransLanguage}
                                                     onClick={onChangeTargetTransLanguage}>
+                                                    <span className='stt-dropdown-label'>
                                                     { t(`languages:${vmLangCode}`) }
+                                                    </span>
                                                     </DropdownItem>
                                                 ))
                                             }

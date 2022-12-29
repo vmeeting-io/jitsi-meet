@@ -38,6 +38,7 @@
         flex-direction: row;
         justify-content: space-between;
         margin-top: 15px;
+        font-size: 14px;
 
         &-sub {
             display: flex;
@@ -60,6 +61,14 @@
             font-weight: bold;
             margin-top: auto;
             margin-bottom: auto;
+        }
+    }
+
+    .stt-dropdown-label{
+        font-size: 14px;
+
+        &:hover {
+            font-size: 14px;
         }
     }
 }

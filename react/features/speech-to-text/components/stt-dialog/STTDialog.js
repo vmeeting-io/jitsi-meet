@@ -154,14 +154,14 @@ function STTDialog({
                                             key='ko'
                                             isSelected = {'ko' === targetLanguage}
                                             onClick={onChangeTargetLanguage}>
-                                            한국어
+                                            { t('languages:ko') }
                                         </DropdownItem>
                                         <DropdownItem
                                             data-lang='en'
                                             key='en'
                                             isSelected = {'en' === targetLanguage}
                                             onClick={onChangeTargetLanguage}>
-                                            English
+                                            { t('languages:en') }
                                         </DropdownItem>
                                     </DropdownItemGroup>
                                 </DropdownMenu>
@@ -192,6 +192,13 @@ function STTDialog({
                                             isSelected = {'medium' === fontSize}
                                             onClick={onChangeFontSize}>
                                             {t('stt.font_medium')}
+                                        </DropdownItem>
+                                        <DropdownItem
+                                            data-fontsize='large'
+                                            key='large'
+                                            isSelected = {'large' === fontSize}
+                                            onClick={onChangeFontSize}>
+                                            {t('stt.font_large')}
                                         </DropdownItem>
                                     </DropdownItemGroup>
                                 </DropdownMenu>
@@ -275,7 +282,7 @@ function mapStateToProps(state) {
         _isLocalModerator: isModerator,
         _sttOn: _recorder? true : false,
         _targetLanguage: _targetLanguage,
-        _targetTranslanguage: _targetTransLanguage,
+        _targetTransLanguage: _targetTransLanguage,
         _fontSize: _fontSize
     };
 }

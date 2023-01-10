@@ -77,7 +77,7 @@ function STTDialog({
         const targetValue = !enabled;
         setEnabled(targetValue);
         if(_isLocalModerator)
-            _conference.sendCommandOnce(STT_COMMAND, { value: targetValue });
+            _conference.sendCommand(STT_COMMAND, { value: targetValue });
     }
 
     const onChangeTargetLanguage = (e) => {

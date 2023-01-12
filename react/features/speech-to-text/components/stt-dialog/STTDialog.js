@@ -180,67 +180,84 @@ function STTDialog({
                                     </DropdownItemGroup>
                                 </DropdownMenu>
                             </div>
-                            <div className = 'control-row'>
-                                <label htmlFor = 'stt-subtitle-visibility'>
-                                    { t('stt.subtitleVisibility') }
-                                </label>
-                                <Switch
-                                    id = 'stt-subtitle-visible-section-switch'
-                                    onValueChange = { onToggleSubtitleVisibility }
-                                    value = { subtitleVisible }/>
+                            <div className = 'separator-line' />
+                            <div>
+                                <div className = 'control-row'>
+                                    <label htmlFor = 'stt-subtitle-visibility'>
+                                        { t('stt.subtitleVisibility') }
+                                    </label>
+                                    <Switch
+                                        id = 'stt-subtitle-visible-section-switch'
+                                        onValueChange = { onToggleSubtitleVisibility }
+                                        value = { subtitleVisible }/>
+                                </div>
+                                <div className= 'description'>
+                                    { t('stt.visibilityDesc') }
+                                </div>
                             </div>
-                            <div className = 'control-row'>
-                                <label htmlFor = 'stt-target-language'>
-                                    { t('stt.fontSize') }
-                                </label>
-                                <DropdownMenu
-                                    shouldFitContainer = { true }
-                                    trigger = {t(`stt.font_${fontSize}`)}
-                                    triggerButtonProps = {{
-                                        shouldFitContainer: true,
-                                        id: 'stt-fs-dropdown-id',
-                                        className: 'stt-dropdown-label'
-                                    }}
-                                    triggerType = 'button'>
-                                    <DropdownItemGroup>
-                                        <DropdownItem
-                                            data-fontsize='small'
-                                            key='small'
-                                            isSelected = {'small' === fontSize}
-                                            onClick={onChangeFontSize}>
-                                            <span className='stt-dropdown-label'>
-                                            {t('stt.font_small')}
-                                            </span>
-                                        </DropdownItem>
-                                        <DropdownItem
-                                            data-fontsize='medium'
-                                            key='medium'
-                                            isSelected = {'medium' === fontSize}
-                                            onClick={onChangeFontSize}>
-                                            <span className='stt-dropdown-label'>
-                                            {t('stt.font_medium')}
-                                            </span>
-                                        </DropdownItem>
-                                        <DropdownItem
-                                            data-fontsize='large'
-                                            key='large'
-                                            isSelected = {'large' === fontSize}
-                                            onClick={onChangeFontSize}>
-                                            <span className='stt-dropdown-label'>
-                                            {t('stt.font_large')}
-                                            </span>
-                                        </DropdownItem>
-                                    </DropdownItemGroup>
-                                </DropdownMenu>
+                            <div>
+                                <div className = 'control-row'>
+                                    <label htmlFor = 'stt-target-language'>
+                                        { t('stt.fontSize') }
+                                    </label>
+                                    <DropdownMenu
+                                        shouldFitContainer = { true }
+                                        trigger = {t(`stt.font_${fontSize}`)}
+                                        triggerButtonProps = {{
+                                            shouldFitContainer: true,
+                                            id: 'stt-fs-dropdown-id',
+                                            className: 'stt-dropdown-label'
+                                        }}
+                                        triggerType = 'button'>
+                                        <DropdownItemGroup>
+                                            <DropdownItem
+                                                data-fontsize='small'
+                                                key='small'
+                                                isSelected = {'small' === fontSize}
+                                                onClick={onChangeFontSize}>
+                                                <span className='stt-dropdown-label'>
+                                                {t('stt.font_small')}
+                                                </span>
+                                            </DropdownItem>
+                                            <DropdownItem
+                                                data-fontsize='medium'
+                                                key='medium'
+                                                isSelected = {'medium' === fontSize}
+                                                onClick={onChangeFontSize}>
+                                                <span className='stt-dropdown-label'>
+                                                {t('stt.font_medium')}
+                                                </span>
+                                            </DropdownItem>
+                                            <DropdownItem
+                                                data-fontsize='large'
+                                                key='large'
+                                                isSelected = {'large' === fontSize}
+                                                onClick={onChangeFontSize}>
+                                                <span className='stt-dropdown-label'>
+                                                {t('stt.font_large')}
+                                                </span>
+                                            </DropdownItem>
+                                        </DropdownItemGroup>
+                                    </DropdownMenu>
+                                </div>
+                                <div className= 'description'>
+                                    { t('stt.fontSizeDesc') }
+                                </div>
                             </div>
-                            <div className = 'control-row'>
-                                <label htmlFor = 'stt-translation-section-switch'>
-                                    { t('stt.toggleTranslation') }
-                                </label>
-                                <Switch
-                                    id = 'stt-translation-section-switch'
-                                    onValueChange = { onToggleTranslation }
-                                    value = { translationEnabled }/>
+                            <div className = 'separator-line' />
+                            <div>
+                                <div className = 'control-row'>
+                                    <label htmlFor = 'stt-translation-section-switch'>
+                                        { t('stt.toggleTranslation') }
+                                    </label>
+                                    <Switch
+                                        id = 'stt-translation-section-switch'
+                                        onValueChange = { onToggleTranslation }
+                                        value = { translationEnabled }/>
+                                </div>
+                                <div className= 'description'>
+                                    { t('stt.transDesc') }
+                                </div>
                             </div>
                             { translationEnabled &&
                                 <div className = 'control-row-sub'>

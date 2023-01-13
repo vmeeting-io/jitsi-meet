@@ -2539,7 +2539,11 @@ export default {
 
         room.addCommandListener(this.commands.defaults.STT_COMMAND,
             (data, from) => {
-                APP.store.dispatch(toggleSTT(data.value === 'true'? true : false));
+                const incomeValue = data.value === 'true'? true : false;
+                const existingValue = APP.store.getState()['features/stt']._sttEnabled;
+                if(incomeValue !== existingValue){
+                    APP.store.dispatch(toggleSTT(incomeValue));
+                }
             }
         );
 

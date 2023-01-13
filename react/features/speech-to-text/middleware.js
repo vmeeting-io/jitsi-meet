@@ -48,6 +48,7 @@ MiddlewareRegistry.register(store => next => action => {
         new_action.enabled = true;
         new_action.targetLanguage = action.targetLanguage;
         _setWSServer(store, new_action);
+        break;
     }
     return next(action);
 });

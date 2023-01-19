@@ -1,7 +1,10 @@
 import { StateListenerRegistry } from "../base/redux";
 import { getLocalJitsiAudioTrack } from "../base/tracks";
 import RecordRTC from './RecordRTC';
-import { updateRecorder } from "./actions";
+import { updateRecorder, toggleSTT } from "./actions";
+
+import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
+import { getCurrentConference } from '../base/conference';
 
 // Replace STT Recorder when audio track changes
 StateListenerRegistry.register(
@@ -40,3 +43,27 @@ StateListenerRegistry.register(
             dispatch(updateRecorder(newRecorder));
         }
     });
+
+StateListenerRegistry.register(
+    /* selector */ state => getCurrentConference(state),
+    /* listener */ (conference, store) => {
+        const receiveMessage = (_, data) => {
+            // console.log('message is received:', data);
+            const { type, ...payload } = data;
+            switch (type) {
+            case 'features/stt-enabled': {
+                const { sttenabled } = payload;
+                const { _sttEnabled } = store.getState()['features/stt'];
+                if (_sttEnabled !== sttenabled) {
+                    store.dispatch(toggleSTT(sttenabled));
+                }
+            }
+            }
+        };
+
+        if (conference) {
+            conference.on(JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED, receiveMessage);
+        }
+    }
+);
+    

@@ -59,8 +59,7 @@ import {
     nonParticipantMessageReceived,
     startRandomSelectionCountdown,
     Timer,
-    WHITEBOARD_COMMAND,
-    STT_COMMAND
+    WHITEBOARD_COMMAND
 } from './react/features/base/conference';
 import { getReplaceParticipant } from './react/features/base/config/functions';
 import {
@@ -226,8 +225,7 @@ const commands = {
     EMAIL: EMAIL_COMMAND,
     BIRTHDATE: BIRTHDATE_COMMAND,
     HATON: HAT_COMMAND,
-    WHITEBOARD: WHITEBOARD_COMMAND,
-    STT_COMMAND: STT_COMMAND
+    WHITEBOARD: WHITEBOARD_COMMAND
 };
 
 /**
@@ -2259,6 +2257,14 @@ export default {
         room.on(JitsiConferenceEvents.FACE_DETECT_ENABLED,
             value => APP.store.dispatch(updateSettings({ aiAttentionAnalysisEnabled: value })));
 
+        room.on(JitsiConferenceEvents.STT_ENABLED,
+            value => {
+                const incomeValue = value;
+                const existingValue = APP.store.getState()['features/stt']._sttEnabled;
+                if(incomeValue !== existingValue)
+                    APP.store.dispatch(toggleSTT(incomeValue));
+            });
+
         room.on(JitsiConferenceEvents.NOTIFY_BIRTHDAY_HAT_ON,
             (nick, from) => {
                 APP.store.dispatch(showNotification({
@@ -2534,16 +2540,6 @@ export default {
                         birthDate: data.value
                     })
                 );
-            }
-        );
-
-        room.addCommandListener(this.commands.defaults.STT_COMMAND,
-            (data, from) => {
-                const incomeValue = data.value === 'true'? true : false;
-                const existingValue = APP.store.getState()['features/stt']._sttEnabled;
-                if(incomeValue !== existingValue){
-                    APP.store.dispatch(toggleSTT(incomeValue));
-                }
             }
         );
 

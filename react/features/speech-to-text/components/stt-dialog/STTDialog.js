@@ -1,6 +1,7 @@
 // @flow
 
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Spinner from '@atlaskit/spinner';
 import DropdownMenu, {
     DropdownItem,
@@ -11,6 +12,7 @@ import { Switch } from '../../../base/react';
 import { connect } from '../../../base/redux';
 import { i18next, translate } from '../../../base/i18n';
 import { isLocalParticipantModerator } from '../../../base/participants';
+import { getAuthUrl } from '../../../../api/url';
 
 import { 
     toggleSTTTranslation,
@@ -19,7 +21,6 @@ import {
     changeSubtitleFontSize,
     changeSubtitleVisibility
 } from '../../actions';
-import { STT_COMMAND } from '../../../base/conference';
 
 type Props = {
     _conference: Object,
@@ -47,7 +48,6 @@ type Props = {
  * @returns {React$Element<any>}
  */
 function STTDialog({
-    _conference,
     _sttEnabled,
     _translationEnabled,
     _isLocalModerator,
@@ -56,6 +56,8 @@ function STTDialog({
     _targetTransLanguage,
     _fontSize,
     _subtitleVisible,
+    _roomInfo,
+    _apiBase,
     t,
     dispatch
 }: Props) {
@@ -76,8 +78,12 @@ function STTDialog({
     const onToggleEnable = () => {
         const targetValue = !enabled;
         setEnabled(targetValue);
-        if(_isLocalModerator)
-            _conference.sendCommand(STT_COMMAND, { value: targetValue });
+        const reqConfig = {
+            headers: { Authorization: `Bearer ${window._env_.VMEETING_API_TOKEN}`}
+        };
+        axios.patch(`${_apiBase}/conferences/${_roomInfo._id}`, {
+            stt_enabled: targetValue
+        }, reqConfig);
     }
 
     const onChangeTargetLanguage = (e) => {
@@ -131,7 +137,7 @@ function STTDialog({
                             id = 'stt-enable-section-switch'
                             onValueChange = { onToggleEnable }
                             value = { enabled } 
-                            disabled={!_isLocalModerator}/>
+                            disabled={!_isLocalModerator || (_sttEnabled && !_sttOn)}/>
                     </div>
                     { !_isLocalModerator &&
                             <p
@@ -314,9 +320,6 @@ function STTDialog({
  */
 function mapStateToProps(state) {
     const {
-        conference
-    } = state['features/base/conference'];
-    const {
         _sttEnabled,
         _recorder,
         _targetLanguage,
@@ -326,8 +329,8 @@ function mapStateToProps(state) {
         _translationEnabled
     } = state['features/stt'];
     const isModerator = isLocalParticipantModerator(state);
+
     return {
-        _conference: conference,
         _sttEnabled: _sttEnabled,
         _translationEnabled: _translationEnabled,
         _isLocalModerator: isModerator,
@@ -335,7 +338,9 @@ function mapStateToProps(state) {
         _targetLanguage: _targetLanguage,
         _targetTransLanguage: _targetTransLanguage,
         _fontSize: _fontSize,
-        _subtitleVisible: _subtitleVisible
+        _subtitleVisible: _subtitleVisible,
+        _roomInfo: state['features/base/conference']?.roomInfo,
+        _apiBase: getAuthUrl(state),
     };
 }
 

@@ -23,6 +23,32 @@
         height: 30px;
         margin-top: 8px;
     }
+
+    &-retry-desp {
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: auto;
+        margin-bottom: auto;
+        display: block;
+        text-align: center;
+    }
+
+    &-retry-button-container {
+        text-align: center;
+        margin-top: 32px;
+    }
+    
+    &-retry-button {
+        cursor: pointer;
+        border-radius: 5px;
+        display: inline-block;
+        text-align: center;
+        padding: 4px;
+
+        &:hover {
+            background: $overflowMenuItemHoverBG;
+        }
+    }
 }
 
 .stt-section {

@@ -13,13 +13,15 @@ import { connect } from '../../../base/redux';
 import { i18next, translate } from '../../../base/i18n';
 import { isLocalParticipantModerator } from '../../../base/participants';
 import { getAuthUrl } from '../../../../api/url';
+import { Icon, IconRefresh } from '../../../base/icons';
 
 import { 
     toggleSTTTranslation,
     changeSTTTargetLanguage,
     changeSTTTargetTransLanguage,
     changeSubtitleFontSize,
-    changeSubtitleVisibility
+    changeSubtitleVisibility,
+    retryRequest
 } from '../../actions';
 
 type Props = {
@@ -58,6 +60,7 @@ function STTDialog({
     _subtitleVisible,
     _roomInfo,
     _apiBase,
+    _shouldRetry,
     t,
     dispatch
 }: Props) {
@@ -114,6 +117,10 @@ function STTDialog({
         const target = e.currentTarget.getAttribute('data-translang');
         setTargetTransLanguage(target);
         dispatch(changeSTTTargetTransLanguage(target));
+    }
+
+    const onRetry = () => {
+        dispatch(retryRequest());
     }
 
     return (
@@ -297,12 +304,24 @@ function STTDialog({
                                 </div>
                             }
                         </div> :
-                        _sttEnabled? 
-                        <div className = 'stt-spinner'>
-                            <Spinner
-                                isCompleting = { false }
-                                size = 'medium' />
-                        </div> : null
+                        _sttEnabled?
+                            (_shouldRetry?
+                            <div className = 'stt-retry-button-container'>
+                                <div className = 'stt-retry-button' onClick={onRetry}>
+                                    <Icon size = { 48 } src = { IconRefresh } />
+                                </div>
+                                <span className='stt-retry-desp'>
+                                    {t('stt.retryDesc1')}
+                                </span>
+                                <span className='stt-retry-desp'>
+                                    {t('stt.retryDesc2')}
+                                </span>
+                            </div>:
+                            <div className = 'stt-spinner'>
+                                <Spinner
+                                    isCompleting = { false }
+                                    size = 'medium' />
+                            </div>) : null
                      : null
                 }
             </div>
@@ -326,9 +345,13 @@ function mapStateToProps(state) {
         _targetTransLanguage,
         _fontSize,
         _subtitleVisible,
-        _translationEnabled
+        _translationEnabled,
+        _wsServer,
+        _retryCheck
     } = state['features/stt'];
     const isModerator = isLocalParticipantModerator(state);
+
+    const shouldRetry = _sttEnabled && _wsServer && _retryCheck;
 
     return {
         _sttEnabled: _sttEnabled,
@@ -341,6 +364,7 @@ function mapStateToProps(state) {
         _subtitleVisible: _subtitleVisible,
         _roomInfo: state['features/base/conference']?.roomInfo,
         _apiBase: getAuthUrl(state),
+        _shouldRetry: shouldRetry
     };
 }
 

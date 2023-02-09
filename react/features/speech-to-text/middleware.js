@@ -6,6 +6,7 @@ import RecordRTC from './RecordRTC';
 
 import { 
     updateWSServer,
+    updateRetryCheck,
     updateRecorder,
     updateSTTMessage,
     removeSTTMessage,
@@ -16,7 +17,8 @@ import {
 import {
     STT_TOGGLE_MESSAGE,
     ENDPOINT_MESSAGE_RECEIVED,
-    STT_CHANGE_TARGET_LANGUAGE
+    STT_CHANGE_TARGET_LANGUAGE,
+    STT_RETRY_REQUEST
 } from './actionTypes';
 import logger from './logger';
 import { getLocalJitsiAudioTrack } from '../base/tracks';
@@ -49,7 +51,13 @@ MiddlewareRegistry.register(store => next => action => {
         new_action.targetLanguage = action.targetLanguage;
         _setWSServer(store, new_action);
         break;
+    case STT_RETRY_REQUEST:
+        _destorySTT(store.dispatch, store.getState);
+        const new_action_2 = {};
+        new_action_2.enabled = true;
+        _setWSServer(store, new_action_2);
     }
+
     return next(action);
 });
 
@@ -84,6 +92,9 @@ function _setWSServer({ dispatch, getState }, action) {
             wsSoc.send(JSON.stringify(data));
             activateWS(wsSoc, targetStream, pId, dispatch, getState);
         }
+        wsSoc.onclose = function (e) {
+            dispatch(updateRetryCheck(true));
+        }
     }
     else {
         wsSoc = state['features/stt']._wsServer;
@@ -96,9 +107,9 @@ function _setWSServer({ dispatch, getState }, action) {
             recorder.destroy();
         recorder = undefined;
         dispatch(toggleSTTTranslation(false));
+        dispatch(updateRecorder(recorder));
     }
     dispatch(updateWSServer(wsSoc, targetLanguage));
-    dispatch(updateRecorder(recorder));
     if(action.enabled && !action.targetLanguage){
         dispatch(showNotification({
             titleKey: 'stt.notifications.title',
@@ -131,21 +142,31 @@ function activateWS(soc, stream, pId, dispatch, getState) {
         const resultSTT = JSON.parse(event.data);
         if (resultSTT['code'] === 'EngineIsReady') {
             // 엔진이 준비되면 실행
-            const recorder = RecordRTC(stream, {
-                type: 'audio',
-                recorderType: RecordRTC.StereoAudioRecorder,
-                timeSlice: 100,
-                desiredSampRate: 16000,
-                numberOfAudioChannels: 1,
-                ondataavailable: function (blob) {
-                    const reader = new FileReader();
-                    reader.addEventListener('loadend', () => {
-                        soc.send(reader.result);
-                    });
-                    reader.readAsArrayBuffer(blob);
-                },
-            });
-            recorder.startRecording();
+            try {
+                const recorder = RecordRTC(stream, {
+                    type: 'audio',
+                    recorderType: RecordRTC.StereoAudioRecorder,
+                    timeSlice: 100,
+                    desiredSampRate: 16000,
+                    numberOfAudioChannels: 1,
+                    ondataavailable: function (blob) {
+                        try{
+                            const reader = new FileReader();
+                            reader.addEventListener('loadend', () => {
+                                soc.send(reader.result);
+                            });
+                            reader.readAsArrayBuffer(blob);
+                        }
+                        catch (e) {
+                            dispatch(updateRetryCheck(true));
+                        }
+                    },
+                });
+                recorder.startRecording();
+            }
+            catch (e){
+                dispatch(updateRetryCheck(true));
+            }
             dispatch(updateRecorder(recorder));
         }
         else if (resultSTT['code'] === 'STTResult'){

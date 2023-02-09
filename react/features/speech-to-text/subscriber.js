@@ -1,7 +1,7 @@
 import { StateListenerRegistry } from "../base/redux";
 import { getLocalJitsiAudioTrack } from "../base/tracks";
 import RecordRTC from './RecordRTC';
-import { updateRecorder, toggleSTT } from "./actions";
+import { updateRecorder, toggleSTT, updateRetryCheck } from "./actions";
 
 import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
 import { getCurrentConference } from '../base/conference';
@@ -25,21 +25,31 @@ StateListenerRegistry.register(
             oldRecorder.destroy();
             
             const targetStream = getLocalJitsiAudioTrack(state).stream;
-            const newRecorder = RecordRTC(targetStream, {
-                type: 'audio',
-                recorderType: RecordRTC.StereoAudioRecorder,
-                timeSlice: 100,
-                desiredSampRate: 16000,
-                numberOfAudioChannels: 1,
-                ondataavailable: function (blob) {
-                    const reader = new FileReader();
-                    reader.addEventListener('loadend', () => {
-                        soc.send(reader.result);
-                    });
-                    reader.readAsArrayBuffer(blob);
-                },
-            });
-            newRecorder.startRecording();
+            try{
+                const newRecorder = RecordRTC(targetStream, {
+                    type: 'audio',
+                    recorderType: RecordRTC.StereoAudioRecorder,
+                    timeSlice: 100,
+                    desiredSampRate: 16000,
+                    numberOfAudioChannels: 1,
+                    ondataavailable: function (blob) {
+                        try {
+                            const reader = new FileReader();
+                            reader.addEventListener('loadend', () => {
+                                soc.send(reader.result);
+                            });
+                            reader.readAsArrayBuffer(blob);
+                        }
+                        catch (e) {
+                            dispatch(updateRetryCheck(true));
+                        }
+                    },
+                });
+                newRecorder.startRecording();
+            }
+            catch(e) {
+                dispatch(updateRetryCheck(true));
+            }
             dispatch(updateRecorder(newRecorder));
         }
     });

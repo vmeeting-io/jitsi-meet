@@ -7,6 +7,8 @@ import {
     STT_TRANSLATION_TOGGLE_MESSAGE,
     STT_CHANGE_TARGET_TRANS_LANGUAGE,
     STT_WS_SERVER_MESSAGE,
+    STT_RETRY_CHECK,
+    STT_RETRY_REQUEST,
     STT_RECORDER_MESSAGE,
     UPDATE_STT_MESSAGE,
     REMOVE_STT_MESSAGE,
@@ -63,6 +65,19 @@ export function updateWSServer(wsSoc: Object, currentTargetLanguage: string) {
         type: STT_WS_SERVER_MESSAGE,
         wsSoc,
         currentTargetLanguage
+    }
+}
+
+export function retryRequest () {
+    return {
+        type: STT_RETRY_REQUEST
+    };
+}
+
+export function updateRetryCheck (retryCheck: boolean) {
+    return {
+        type: STT_RETRY_CHECK,
+        retryCheck
     }
 }
 

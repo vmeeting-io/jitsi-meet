@@ -8,6 +8,7 @@ import {
     STT_TOGGLE_MESSAGE,
     STT_TRANSLATION_TOGGLE_MESSAGE,
     STT_WS_SERVER_MESSAGE,
+    STT_RETRY_CHECK,
     STT_RECORDER_MESSAGE,
     UPDATE_STT_MESSAGE,
     REMOVE_STT_MESSAGE,
@@ -30,6 +31,7 @@ const defaultState = {
     _transcriptMessages: new Map(),
     _translationMessages: new Map(),
     _wsServer: undefined,
+    _retryCheck: true,
     _recorder: undefined,
     _targetLanguage: undefined,
     _targetTransLanguage: undefined,
@@ -66,8 +68,14 @@ ReducerRegistry.register('features/stt', (
         return {
             ...state,
             _wsServer: action.wsSoc,
-            _targetLanguage: action.currentTargetLanguage
+            _targetLanguage: action.currentTargetLanguage,
+            _retryCheck: action.wsSoc? false : true
         };
+    case STT_RETRY_CHECK:
+        return {
+            ...state,
+            _retryCheck: action.retryCheck
+        }
     case STT_RECORDER_MESSAGE:
         return {
             ...state,

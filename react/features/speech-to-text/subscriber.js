@@ -46,11 +46,11 @@ StateListenerRegistry.register(
                     },
                 });
                 newRecorder.startRecording();
+                dispatch(updateRecorder(newRecorder));
             }
             catch(e) {
                 dispatch(updateRetryCheck(true));
             }
-            dispatch(updateRecorder(newRecorder));
         }
     });
 

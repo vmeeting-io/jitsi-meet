@@ -78,6 +78,9 @@ function _setWSServer({ dispatch, getState }, action) {
             return;
     
         const wsURL = window._env_.STT_WS_SERVER;
+        const sttApiAccount = window._env_.STT_API_ACCOUNT;
+        const sttApiPwd = window._env_.STT_API_PWD
+
         const targetStream = getLocalJitsiAudioTrack(state).stream;
         targetLanguage = action.targetLanguage || (i18next.language === 'ko'? 'ko' : 'en');
 
@@ -87,7 +90,11 @@ function _setWSServer({ dispatch, getState }, action) {
             let data = {
                 'rsn': roomId,
                 'ssn': pId,
-                'el': targetLanguage
+                'config': {
+                    'auth': sttApiAccount,
+                    'pass': sttApiPwd,
+                    'el': targetLanguage
+                }
             }
             wsSoc.send(JSON.stringify(data));
             activateWS(wsSoc, targetStream, pId, dispatch, getState);
@@ -163,11 +170,11 @@ function activateWS(soc, stream, pId, dispatch, getState) {
                     },
                 });
                 recorder.startRecording();
+                dispatch(updateRecorder(recorder));
             }
             catch (e){
                 dispatch(updateRetryCheck(true));
             }
-            dispatch(updateRecorder(recorder));
         }
         else if (resultSTT['code'] === 'STTResult'){
             if(!resultSTT.data.result)

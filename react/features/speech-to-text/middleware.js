@@ -100,19 +100,21 @@ function _setWSServer({ dispatch, getState }, action) {
             activateWS(wsSoc, targetStream, pId, dispatch, getState);
         }
         wsSoc.onclose = function (e) {
-            dispatch(updateRetryCheck(true));
+            if(e.code != 1000)
+                dispatch(updateRetryCheck(true));
         }
     }
     else {
-        wsSoc = state['features/stt']._wsServer;
-        if(wsSoc)
-            wsSoc.close();
-        wsSoc = undefined;
-
         recorder = state['features/stt']._recorder;
         if(recorder)
             recorder.destroy();
         recorder = undefined;
+
+        wsSoc = state['features/stt']._wsServer;
+        if(wsSoc)
+            wsSoc.close(1000);
+        wsSoc = undefined;
+
         dispatch(toggleSTTTranslation(false));
         dispatch(updateRecorder(recorder));
     }
@@ -129,15 +131,16 @@ function _setWSServer({ dispatch, getState }, action) {
 
 function _destorySTT(dispatch, getState){
     const state = getState();
-    let wsSoc = state['features/stt']._wsServer;
-    if(wsSoc)
-        wsSoc.close();
-    wsSoc = undefined;
-
+    
     let recorder = state['features/stt']._recorder;
     if(recorder)
         recorder.destroy();
     recorder = undefined;
+
+    let wsSoc = state['features/stt']._wsServer;
+    if(wsSoc)
+        wsSoc.close(1000);
+    wsSoc = undefined;
 
     dispatch(updateWSServer(wsSoc));
     dispatch(updateRecorder(recorder));

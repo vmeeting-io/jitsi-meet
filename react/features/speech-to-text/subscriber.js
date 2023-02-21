@@ -10,7 +10,6 @@ import { getCurrentConference } from '../base/conference';
 StateListenerRegistry.register(
     /* selector */ state => {
         const currentAudioTrack = getLocalJitsiAudioTrack(state);
-
         return currentAudioTrack? currentAudioTrack : null;
     },
     /* listener */ (newSelectedValue, { dispatch, getState }) => {
@@ -22,7 +21,8 @@ StateListenerRegistry.register(
         if(stt_state._sttEnabled && stt_state._wsServer && stt_state._recorder){
             const soc = stt_state._wsServer;
             const oldRecorder = stt_state._recorder;
-            oldRecorder.destroy();
+            if(typeof oldRecorder.destroy !== "undefined")
+                oldRecorder.destroy();
             
             const targetStream = getLocalJitsiAudioTrack(state).stream;
             try{

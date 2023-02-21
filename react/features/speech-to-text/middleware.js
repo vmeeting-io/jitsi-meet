@@ -81,11 +81,13 @@ function _setWSServer({ dispatch, getState }, action) {
         const sttApiAccount = window._env_.STT_API_ACCOUNT;
         const sttApiPwd = window._env_.STT_API_PWD
 
-        const targetStream = getLocalJitsiAudioTrack(state).stream;
+        const currentAudioTrack = getLocalJitsiAudioTrack(state);
+        const targetStream = currentAudioTrack? currentAudioTrack.stream : null;
         targetLanguage = action.targetLanguage || (i18next.language === 'ko'? 'ko' : 'en');
 
         wsSoc = new WebSocket(wsURL);
         wsSoc.onopen = function () {
+            dispatch(updateWSServer(wsSoc, targetLanguage));
             //const targetLanguage = i18next.language === 'ko'? 'ko' : 'en';
             let data = {
                 'rsn': roomId,
@@ -93,7 +95,8 @@ function _setWSServer({ dispatch, getState }, action) {
                 'config': {
                     'auth': sttApiAccount,
                     'pass': sttApiPwd,
-                    'el': targetLanguage
+                    'el': targetLanguage,
+                    'mode': 'quality'
                 }
             }
             wsSoc.send(JSON.stringify(data));
@@ -117,8 +120,8 @@ function _setWSServer({ dispatch, getState }, action) {
 
         dispatch(toggleSTTTranslation(false));
         dispatch(updateRecorder(recorder));
+        dispatch(updateWSServer(wsSoc, targetLanguage));
     }
-    dispatch(updateWSServer(wsSoc, targetLanguage));
     if(action.enabled && !action.targetLanguage){
         dispatch(showNotification({
             titleKey: 'stt.notifications.title',
@@ -152,31 +155,37 @@ function activateWS(soc, stream, pId, dispatch, getState) {
         const resultSTT = JSON.parse(event.data);
         if (resultSTT['code'] === 'EngineIsReady') {
             // 엔진이 준비되면 실행
-            try {
-                const recorder = RecordRTC(stream, {
-                    type: 'audio',
-                    recorderType: RecordRTC.StereoAudioRecorder,
-                    timeSlice: 100,
-                    desiredSampRate: 16000,
-                    numberOfAudioChannels: 1,
-                    ondataavailable: function (blob) {
-                        try{
-                            const reader = new FileReader();
-                            reader.addEventListener('loadend', () => {
-                                soc.send(reader.result);
-                            });
-                            reader.readAsArrayBuffer(blob);
-                        }
-                        catch (e) {
-                            dispatch(updateRetryCheck(true));
-                        }
-                    },
-                });
-                recorder.startRecording();
+            if(!stream){
+                const recorder = 'update-later';
                 dispatch(updateRecorder(recorder));
             }
-            catch (e){
-                dispatch(updateRetryCheck(true));
+            else {
+                try {
+                    const recorder = RecordRTC(stream, {
+                        type: 'audio',
+                        recorderType: RecordRTC.StereoAudioRecorder,
+                        timeSlice: 100,
+                        desiredSampRate: 16000,
+                        numberOfAudioChannels: 1,
+                        ondataavailable: function (blob) {
+                            try{
+                                const reader = new FileReader();
+                                reader.addEventListener('loadend', () => {
+                                    soc.send(reader.result);
+                                });
+                                reader.readAsArrayBuffer(blob);
+                            }
+                            catch (e) {
+                                dispatch(updateRetryCheck(true));
+                            }
+                        },
+                    });
+                    recorder.startRecording();
+                    dispatch(updateRecorder(recorder));
+                }
+                catch (e){
+                    dispatch(updateRetryCheck(true));
+                }
             }
         }
         else if (resultSTT['code'] === 'STTResult'){

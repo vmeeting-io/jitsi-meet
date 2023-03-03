@@ -62,7 +62,7 @@ MiddlewareRegistry.register(store => next => action => {
 });
 
 function _setWSServer({ dispatch, getState }, action) {
-    let wsSoc, recorder, targetLanguage = undefined;
+    let preSoc, wsSoc, recorder, targetLanguage = undefined;
     const state = getState();
     const { conference } = state['features/base/conference'];
     if (!conference){
@@ -85,31 +85,48 @@ function _setWSServer({ dispatch, getState }, action) {
         const targetStream = currentAudioTrack? currentAudioTrack.stream : null;
         targetLanguage = action.targetLanguage || (i18next.language === 'ko'? 'ko' : 'en');
 
-        wsSoc = new WebSocket(wsURL);
-        wsSoc.onopen = function () {
-            dispatch(updateWSServer(wsSoc, targetLanguage));
-            //const targetLanguage = i18next.language === 'ko'? 'ko' : 'en';
+        preSoc = new WebSocket(wsURL);
+        preSoc.onopen = function () {
             let data = {
                 'rsn': roomId,
                 'ssn': pId,
                 'config': {
                     'auth': sttApiAccount,
                     'pass': sttApiPwd,
-                    'el': targetLanguage,
-                    'mode': 'quality'
+                    'el': targetLanguage
+                }
+            };
+            preSoc.send(JSON.stringify(data));
+            preSoc.onmessage = function (event) {
+                const response = JSON.parse(event.data);
+                //console.log('RESPONSE: ', response);
+                if (response['code'] === 'EngineInfo'){
+                    const connectUrl = response.data.connectionEngineURL;
+                    const setData = response.data.setData;
+                    const configData = response.data.configData;
+                    
+                    wsSoc = new WebSocket(connectUrl);
+                    wsSoc.onopen = function() {
+                        dispatch(updateWSServer(wsSoc, targetLanguage));
+                        wsSoc.send(setData);
+                        wsSoc.send(configData);
+                        activateWS(wsSoc, targetStream, pId, dispatch, getState);
+                    }
+                    wsSoc.onclose = function (e) {
+                        if(e.code != 1000)
+                            dispatch(updateRetryCheck(true));
+                    }
                 }
             }
-            wsSoc.send(JSON.stringify(data));
-            activateWS(wsSoc, targetStream, pId, dispatch, getState);
         }
-        wsSoc.onclose = function (e) {
+        preSoc.onclose = function (e) {
             if(e.code != 1000)
                 dispatch(updateRetryCheck(true));
         }
     }
     else {
         recorder = state['features/stt']._recorder;
-        if(recorder)
+        if(recorder && typeof recorder.destroy !== "undefined")
             recorder.destroy();
         recorder = undefined;
 
@@ -136,7 +153,7 @@ function _destorySTT(dispatch, getState){
     const state = getState();
     
     let recorder = state['features/stt']._recorder;
-    if(recorder)
+    if(recorder && typeof recorder.destroy !== "undefined")
         recorder.destroy();
     recorder = undefined;
 
@@ -153,7 +170,8 @@ function activateWS(soc, stream, pId, dispatch, getState) {
     const { conference } = getState()['features/base/conference'];
     soc.onmessage = function (event) {
         const resultSTT = JSON.parse(event.data);
-        if (resultSTT['code'] === 'EngineIsReady') {
+        //console.log('RESULT: ', resultSTT);
+        if (resultSTT['code'] === 'EngineActivate') {
             // 엔진이 준비되면 실행
             if(!stream){
                 const recorder = 'update-later';
@@ -292,6 +310,7 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
         && json.type === JSON_TYPE_STT_RESULT)) {
     return next(action);
     }
+    console.log('MESSAGE: ', json);
     json.isTranslated = false;
     json.sentenceId = json.participantId + json.st;
     createSTTMessage(dispatch, getState, json);

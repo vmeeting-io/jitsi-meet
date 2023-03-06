@@ -51,6 +51,10 @@ export default class STTMessageContainer extends AbstractSTTMessageContainer<Pro
         this._onChatScroll = this._onChatScroll.bind(this);
     }
 
+    componentDidMount() {
+        this.maybeUpdateBottomScroll();
+    }
+
     /**
      * Implements {@code Component#render}.
      *

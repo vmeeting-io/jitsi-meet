@@ -310,13 +310,13 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
         && json.type === JSON_TYPE_STT_RESULT)) {
     return next(action);
     }
-    console.log('MESSAGE: ', json);
+    //console.log('MESSAGE: ', json);
     json.isTranslated = false;
     json.sentenceId = json.participantId + json.st;
     createSTTMessage(dispatch, getState, json);
 
     // 번역 기능이 켜져있고 isComplete가 True이고, 현재 나와 언어가 다른 경우
-    if(getState()['features/stt']._translationEnabled && json.isComplete === 'True' && json.lang !== getState()['features/stt']._targetTransLanguage){
+    if(getState()['features/stt']._translationEnabled && json.isComplete && json.lang !== getState()['features/stt']._targetTransLanguage){
         const param_data = {};
         param_data.SourceLanguage = json.lang;
         param_data.SourceContent = json.text;

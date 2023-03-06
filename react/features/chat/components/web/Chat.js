@@ -45,6 +45,7 @@ class Chat extends AbstractChat<Props> {
      * scrolling to the end of the chat messages.
      */
     _messageContainerRef: Object;
+    _STTmessageContainerRef: Object;
 
     state = {
         chatHeaderMenuDialogOpen: false,

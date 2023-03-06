@@ -13,8 +13,12 @@ StateListenerRegistry.register(
         return currentAudioTrack? currentAudioTrack : null;
     },
     /* listener */ (newSelectedValue, { dispatch, getState }) => {
-        if(!newSelectedValue)
+        if(!newSelectedValue){
+            const recorder = 'update-later';
+            dispatch(updateRecorder(recorder));
+
             return;
+        }
 
         const state = getState();
         const stt_state = state['features/stt'];

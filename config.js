@@ -335,9 +335,6 @@ var config = {
     // Enables automatic turning on captions when recording is started
     // autoCaptionOnRecord: false,
 
-    // AirSound STT
-    sttEnabled: true,
-
     // Misc
 
     // Default value for the channel "last N" attribute. -1 for unlimited.
@@ -1373,3 +1370,6 @@ config.etherpad_base = 'https://jitsi-meet.example.com/boards/';
 
 config.disableJoinLeaveSounds = true;
 config.disableShortcuts = true;
+
+// AirSound STT
+config.sttEnabled = true;

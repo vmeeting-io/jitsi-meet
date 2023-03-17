@@ -35,7 +35,7 @@ import {
 const JSON_TYPE_STT_RESULT = 'stt-result';
 
 const RETRY_AFTER_MS = 3000;
-const REMOVE_AFTER_MS = 3000;
+const REMOVE_AFTER_MS = 5000;
 
 MiddlewareRegistry.register(store => next => action => {
     switch(action.type) {
@@ -99,7 +99,7 @@ function _setWSServer({ dispatch, getState }, action) {
             preSoc.send(JSON.stringify(data));
             preSoc.onmessage = function (event) {
                 const response = JSON.parse(event.data);
-                //console.log('RESPONSE: ', response);
+                console.log('RESPONSE: ', response);
                 if (response['code'] === 'EngineInfo'){
                     const connectUrl = response.data.connectionEngineURL;
                     const setData = response.data.setData;
@@ -170,7 +170,7 @@ function activateWS(soc, stream, pId, dispatch, getState) {
     const { conference } = getState()['features/base/conference'];
     soc.onmessage = function (event) {
         const resultSTT = JSON.parse(event.data);
-        //console.log('RESULT: ', resultSTT);
+        console.log('RESULT: ', resultSTT);
         if (resultSTT['code'] === 'EngineActivate') {
             // 엔진이 준비되면 실행
             if(!stream){

@@ -35,7 +35,7 @@ const defaultState = {
     _recorder: undefined,
     _targetLanguage: undefined,
     _targetTransLanguage: undefined,
-    _fontSize: 'small',
+    _fontSize: 'medium',
     _subtitleVisible: true,
     _sttHistory: []
 };

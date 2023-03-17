@@ -67,7 +67,7 @@ function STTDialog({
     const [enabled, setEnabled] = useState(_sttEnabled);
     const [targetLanguage, setTargetLanguage] = useState(_targetLanguage || i18next.language);
     const [subtitleVisible, setSubtitleVisible] = useState(_subtitleVisible);
-    const [fontSize, setFontSize] = useState(_fontSize || 'small');
+    const [fontSize, setFontSize] = useState(_fontSize || 'medium');
     const [translationEnabled, setTranslationEnabled] = useState(_translationEnabled || false);
     const [targetTransLanguage, setTargetTransLanguage] = useState(_targetTransLanguage || i18next.language);
 

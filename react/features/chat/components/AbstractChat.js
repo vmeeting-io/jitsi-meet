@@ -5,7 +5,7 @@ import type { Dispatch } from 'redux';
 import { isEnabledFromState } from '../../av-moderation/functions';
 
 import { getLocalParticipant, getParticipantDisplayName, PARTICIPANT_ROLE } from '../../base/participants';
-import { sendMessage, setIsPollsTabFocused } from '../actions';
+import { sendMessage, setIsPollsTabFocused, setIsSTTTabFocused } from '../actions';
 import { SMALL_WIDTH_THRESHOLD } from '../constants';
 
 /**
@@ -43,6 +43,8 @@ export type Props = {
      */
     _messages: Array<Object>,
 
+    _STTmessages: Array<Object>,
+
     /**
      * Number of unread chat messages.
      */
@@ -73,6 +75,8 @@ export type Props = {
      * @protected
      */
     _onTogglePollsTab: Function,
+
+    _onToggleSTTTab: Function,
 
     /**
      * Function to toggle the chat window.
@@ -113,6 +117,7 @@ export default class AbstractChat<P: Props> extends Component<P> {
         this._onSendMessage = this._onSendMessage.bind(this);
         this._onToggleChatTab = this._onToggleChatTab.bind(this);
         this._onTogglePollsTab = this._onTogglePollsTab.bind(this);
+        this._onToggleSTTTab = this._onToggleSTTTab.bind(this);
     }
 
     _onSendMessage: (string) => void;
@@ -139,6 +144,7 @@ export default class AbstractChat<P: Props> extends Component<P> {
      */
     _onToggleChatTab() {
         this.props.dispatch(setIsPollsTabFocused(false));
+        this.props.dispatch(setIsSTTTabFocused(false));
     }
 
     _onTogglePollsTab: () => void;
@@ -151,6 +157,20 @@ export default class AbstractChat<P: Props> extends Component<P> {
      */
     _onTogglePollsTab() {
         this.props.dispatch(setIsPollsTabFocused(true));
+        this.props.dispatch(setIsSTTTabFocused(false));
+    }
+
+    _onToggleSTTTab: () => void;
+
+    /**
+     * Display the Polls tab.
+     *
+     * @private
+     * @returns {void}
+     */
+    _onToggleSTTTab() {
+        this.props.dispatch(setIsPollsTabFocused(false));
+        this.props.dispatch(setIsSTTTabFocused(true));
     }
 }
 
@@ -169,7 +189,8 @@ export default class AbstractChat<P: Props> extends Component<P> {
 export function _mapStateToProps(state: Object) {
     const { 
         isOpen, 
-        isPollsTabFocused, 
+        isPollsTabFocused,
+        isSTTTabFocused, 
         messages, 
         nbUnreadMessages, 
         privateMessageRecipient, 
@@ -192,6 +213,8 @@ export function _mapStateToProps(state: Object) {
         fileUploadInProgress = true;
     }
 
+    const { _sttEnabled, _sttHistory } = state['features/stt'];
+
     return {
         _fileName: fileName,
         _fileSize: fileSize,
@@ -203,7 +226,10 @@ export function _mapStateToProps(state: Object) {
         _isOpen: isOpen,
         _isPollsEnabled: !disablePolls,
         _isPollsTabFocused: isPollsTabFocused,
+        _isSTTEnabled: _sttEnabled,
+        _isSTTTabFocused: isSTTTabFocused,
         _messages: messages,
+        _STTmessages: _sttHistory,
         _showChatInput: !chatModerationEnabled || _localParticipant?.role === PARTICIPANT_ROLE.MODERATOR,
         _nbUnreadMessages: nbUnreadMessages,
         _nbUnreadPolls: nbUnreadPolls,

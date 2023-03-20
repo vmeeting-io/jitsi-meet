@@ -211,6 +211,7 @@ export default [
     'toolbarButtons',
     'toolbarConfig',
     'transcribingEnabled',
+    'sttEnabled',
     'useHostPageLocalStorage',
     'useTurnUdp',
     'videoQuality',

@@ -123,6 +123,7 @@ export { default as IconRaisedHandHollow } from './raised-hand-hollow.svg';
 export { default as IconRec } from './rec.svg';
 export { default as IconRemoteControlStart } from './play.svg';
 export { default as IconRemoteControlStop } from './stop.svg';
+export { default as IconRefresh } from './refresh.svg';
 export { default as IconReply } from './reply.svg';
 export { default as IconRestore } from './restore.svg';
 export { default as IconRingGroup } from './icon-ring-group.svg';

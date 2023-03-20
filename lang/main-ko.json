@@ -110,6 +110,7 @@
         "smileysPanel": "이모지 패널",
         "tabs": {
             "chat": "채팅",
+            "stt": "자막",
             "polls": "투표"
         },
         "title": "채팅",
@@ -1328,6 +1329,7 @@
         "stopSharing": "공유 종료",
         "stopSubtitles": "자막 숨기기",
         "stopSharedVideo": "비디오 종료",
+        "stt": "자막 (Speech-to-Text) 옵션",
         "surprised": "놀람",
         "talkWhileMutedPopup": "음소거 상태입니다.",
         "tileViewSettings": "타일뷰 설정",
@@ -1550,5 +1552,30 @@
     },
     "whiteboard": {
         "title": "판서"
+    },
+    "stt": {
+        "buttonTooltip": "자막 (Speech-to-Text) 옵션",
+        "featureDesc": "자막 (Speech-to-Text) 활성화 여부 및 세부 옵션을 선택할 수 있습니다. 자막 활성화 시 회의록이 자동으로 생성됩니다.",
+        "featureDescP": "자막 (Speech-to-Text) 기능의 세부 옵션을 선택할 수 있습니다. 자막 활성화 시 회의록이 자동으로 생성됩니다.",
+        "modDesc": "이 기능은 방장만 활성화/비활성화 할 수 있습니다.",
+        "visibilityDesc": "회의 화면 하단에 표출되는 자막 표시 여부를 선택합니다.",
+        "fontSizeDesc": "회의 화면 하단에 표시되는 자막 크기를 선택합니다.",
+        "transDesc": "번역 언어로 번역되어 자막으로 표시됩니다.",
+        "header": "자막 (Speech-to-Text) 옵션",
+        "toggleLabel": "자막 활성화",
+        "toggleTranslation": "번역 활성화",
+        "currentTargetLanguage": "현재 인식 언어",
+        "currentTransLanguage": "번역 언어",
+        "fontSize": "자막 크기",
+        "font_small": "작게",
+        "font_medium": "중간",
+        "font_large": "크게",
+        "subtitleVisibility": "자막 표시",
+        "retryDesc1": "연결에 실패하였습니다.",
+        "retryDesc2": "재시도하려면 새로고침 버튼을 누르세요.",
+        "notifications": {
+            "title": "자막 (Speech-to-Text)",
+            "enabled": "자막이 활성화 되었습니다. \"추가 액션\" 메뉴에서 세부 설정이 가능합니다."
+        }
     }
 }

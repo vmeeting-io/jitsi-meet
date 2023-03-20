@@ -110,6 +110,7 @@
         "smileysPanel": "Emoji panel",
         "tabs": {
             "chat": "Chat",
+            "stt": "Subtitle",
             "polls": "Polls"
         },
         "title": "Chat",
@@ -1332,6 +1333,7 @@
         "stopSharing": "Stop sharing",
         "stopSubtitles": "Stop subtitles",
         "stopSharedVideo": "Stop video",
+        "stt": "Speech-to-Text",
         "surprised": "Surprised",
         "talkWhileMutedPopup": "Trying to speak? You are muted.",
         "tileViewSettings": "Tile view settings",
@@ -1554,5 +1556,30 @@
     },
     "whiteboard": {
         "title": "Whiteboard"
+    },
+    "stt": {
+        "buttonTooltip": "Open Speech-to-Text menu",
+        "featureDesc": "You can choose whether to enable subtitles (Speech-to-Text) and detail options. Meeting note will be recorded automatically when subtitle is on.",
+        "featureDescP": "You can choose detail options of subtitles (Speech-to-Text feature. Meeting log will be recorded automatically when subtitle is on.",
+        "modDesc": "Only moderators can enable/disable this feature.",
+        "visibilityDesc": "Toggle visibility of subtitles at the bottom.",
+        "fontSizeDesc": "Select the size of subtitles at the bottom.",
+        "transDesc": "Conversations are translated into the translation language.",
+        "header": "Speech-to-Text Options",
+        "toggleLabel": "Enable Subtitles",
+        "toggleTranslation": "Enable Translation",
+        "currentTargetLanguage": "Current Target Language",
+        "currentTransLanguage": "Translation Language",
+        "fontSize": "Subtitle Size",
+        "font_small": "Small",
+        "font_medium": "Medium",
+        "font_large": "Large",
+        "subtitleVisibility": "Display Subtitle",
+        "retryDesc1": "Failed to connect.",
+        "retryDesc2": "Press refresh button to retry.",
+        "notifications": {
+            "title": "Speech-to-Text",
+            "enabled": "Speech-to-Text is enabled. You can make detailed settings in the \"More actions\" menu"
+        }
     }
 }

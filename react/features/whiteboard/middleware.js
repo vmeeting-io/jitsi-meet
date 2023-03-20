@@ -94,7 +94,7 @@ StateListenerRegistry.register(
     state => getCurrentConference(state),
     (conference, { dispatch, getState }, previousConference) => {
         const receiveMessage = (_, data) => {
-            console.log('message is received:', data);
+            // console.log('message is received:', data);
             const { type, ...whiteboard } = data || {};
 
             if (typeof APP !== 'undefined' && type === 'whiteboard') {

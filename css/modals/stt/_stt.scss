@@ -1,0 +1,108 @@
+.stt {
+    &-dialog {
+        color: #fff;
+        font-size: 15px;
+        line-height: 24px;
+
+        .separator-line {
+            margin: 16px 0 0 0;
+            padding: 0 20px;
+            width: 90%;
+            height: 1px;
+            background: #5E6D7A;
+
+            &:last-child {
+                display: none;
+            }
+        }
+    }
+
+    &-spinner {
+        display: flex;
+        justify-content: center;
+        height: 30px;
+        margin-top: 8px;
+    }
+
+    &-retry-desp {
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: auto;
+        margin-bottom: auto;
+        display: block;
+        text-align: center;
+    }
+
+    &-retry-button-container {
+        text-align: center;
+        margin-top: 32px;
+    }
+    
+    &-retry-button {
+        cursor: pointer;
+        border-radius: 5px;
+        display: inline-block;
+        text-align: center;
+        padding: 4px;
+
+        &:hover {
+            background: $overflowMenuItemHoverBG;
+        }
+    }
+}
+
+.stt-section {
+    display: flex;
+    flex-direction: column;
+
+    .description {
+        font-size: 13px;
+    }
+
+    .control-row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        margin-top: 15px;
+        font-size: 14px;
+
+        &-sub {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin-top: 15px;
+
+            margin-left: 20px;
+
+            label {
+                font-size: 14px;
+                font-weight: bold;
+                margin-top: auto;
+                margin-bottom: auto;
+            }
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
+    }
+
+    .stt-dropdown-label{
+        font-size: 14px;
+
+        &:hover {
+            font-size: 14px;
+        }
+    }
+}
+
+.new-toolbox .toolbox-content .toolbox-icon.toggled.stt-toolbar-button {
+    border-width: 0;
+
+    &:not(:hover) {
+        background: unset;
+    }
+}

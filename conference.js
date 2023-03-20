@@ -162,6 +162,7 @@ import { toggleScreenshotCaptureSummary } from './react/features/screenshot-capt
 import { AudioMixerEffect } from './react/features/stream-effects/audio-mixer/AudioMixerEffect';
 import { createPresenterEffect } from './react/features/stream-effects/presenter';
 import { createRnnoiseProcessor } from './react/features/stream-effects/rnnoise';
+import { toggleSTT } from './react/features/speech-to-text';
 import { endpointMessageReceived } from './react/features/subtitles';
 import UIEvents from './service/UI/UIEvents';
 import { isHost } from './react/features/base/jwt';
@@ -2255,6 +2256,14 @@ export default {
 
         room.on(JitsiConferenceEvents.FACE_DETECT_ENABLED,
             value => APP.store.dispatch(updateSettings({ aiAttentionAnalysisEnabled: value })));
+
+        room.on(JitsiConferenceEvents.STT_ENABLED,
+            value => {
+                const incomeValue = value;
+                const existingValue = APP.store.getState()['features/stt']._sttEnabled;
+                if(incomeValue !== existingValue)
+                    APP.store.dispatch(toggleSTT(incomeValue));
+            });
 
         room.on(JitsiConferenceEvents.NOTIFY_BIRTHDAY_HAT_ON,
             (nick, from) => {

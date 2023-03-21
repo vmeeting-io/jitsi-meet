@@ -1,9 +1,12 @@
 // @flow
+import React from 'react';
 
 import { translate } from '../../../base/i18n';
 import { IconParticipants } from '../../../base/icons';
 import { connect } from '../../../base/redux';
 import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+
+import ParticipantsCounter from './ParticipantsCounter';
 
 /**
  * The type of the React {@code Component} props of {@link ParticipantsPaneButton}.
@@ -50,6 +53,23 @@ class ParticipantsPaneButton extends AbstractButton<Props, *> {
      */
     _isToggled() {
         return this.props._isOpen;
+    }
+
+    /**
+     * Overrides AbstractButton's {@link Component#render()}.
+     *
+     * @override
+     * @protected
+     * @returns {React$Node}
+     */
+    render() {
+        return (
+            <div
+                className = 'toolbar-button-with-badge'>
+                {super.render()}
+                <ParticipantsCounter />
+            </div>
+        );
     }
 }
 

@@ -120,6 +120,7 @@ export { default as IconPlane } from './paper-plane.svg';
 export { default as IconPresentation } from './presentation.svg';
 export { default as IconRaisedHand } from './raised-hand.svg';
 export { default as IconRaisedHandHollow } from './raised-hand-hollow.svg';
+export { default as IconRaisedHandClear } from './raised-hand-clear.svg';
 export { default as IconRec } from './rec.svg';
 export { default as IconRemoteControlStart } from './play.svg';
 export { default as IconRemoteControlStop } from './stop.svg';

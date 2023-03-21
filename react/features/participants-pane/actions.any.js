@@ -11,7 +11,9 @@ import {
     getRemoteParticipants
 } from '../base/participants';
 
-import { COMMAND_TIMER_END_TIME
+import {
+    COMMAND_CLEAR_RAISED_HANDS,
+    COMMAND_TIMER_END_TIME
 } from './constants';
 
 /**
@@ -96,3 +98,15 @@ export const notifyRandomSelectionCompleted = (selectedParticipantDisplayName, r
         conference.finalizeRandomSelection(selectedParticipantDisplayName, randomParticipantID);
     };
 }
+
+/**
+ * Action to clear raised hands
+ */
+export const clearRaisedHands = () => {
+    return function(_, getState) {
+        const { conference } = getState()['features/base/conference'];
+        
+        // Send message to XMPP module
+        conference.sendMessage({ type: COMMAND_CLEAR_RAISED_HANDS });
+    };
+};

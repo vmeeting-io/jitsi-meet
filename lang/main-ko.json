@@ -873,7 +873,8 @@
             "stopVideo": "카메라 끄기",
             "unblockEveryoneMicCamera": "마이크와 카메라 모두 차단 해제",
             "moreModerationControls": "방장 설정 더보기",
-            "whiteboardModeration": "문서 공유"
+            "whiteboardModeration": "문서 공유",
+            "clearRaisedHands": "손들기 끄기"
         },
         "search": "참가자 검색"
     },

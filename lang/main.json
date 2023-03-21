@@ -877,7 +877,8 @@
             "stopVideo": "Stop video",
             "unblockEveryoneMicCamera": "Unblock everyone's mic and camera",
             "moreModerationControls": "More moderation controls",
-            "whiteboardModeration": "Document share"
+            "whiteboardModeration": "Document share",
+            "clearRaisedHands": "Clear raised hands"
         },
         "search": "Search participants"
     },

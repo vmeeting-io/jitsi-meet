@@ -76,6 +76,7 @@ import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
 
 import { hasRaisedHand, raiseHand, setPinnedTiles } from '.';
 import { setTileViewMaxColumns } from '../../settings';
+import { COMMAND_CLEAR_RAISED_HANDS } from '../../participants-pane/constants';
 
 declare var APP: Object;
 
@@ -796,6 +797,14 @@ StateListenerRegistry.register(
                 }
                 if (tileview_max_columns && tileview_max_columns !== tileViewMaxColumns) {
                     store.dispatch(setTileViewMaxColumns(tileview_max_columns));
+                }
+                break;
+            }
+            case COMMAND_CLEAR_RAISED_HANDS: {
+                const state = store.getState();
+                const participant = getLocalParticipant(state);
+                if (hasRaisedHand(participant)) {
+                    store.dispatch(raiseHand(false));
                 }
                 break;
             }

@@ -20,6 +20,7 @@ import {
     IconAnnouncement,
     IconCheck,
     IconHorizontalPoints,
+    IconRaisedHandClear,
     IconStopWatch,
     IconVideoOff,
 } from '../../../base/icons';
@@ -36,6 +37,7 @@ import { MuteEveryonesVideoDialog } from '../../../video-menu/components';
 import {
     notifyRandomSelectionStarted,
     notifyRandomSelectionCompleted,
+    clearRaisedHands,
 } from '../../actions.any';
 import { randomlySelectFromAllParticipants } from '../../selectors';
 
@@ -111,6 +113,8 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
     const randomParticipantID = useSelector(randomlySelectFromAllParticipants);
     const conference = useSelector(state => state['features/base/conference'].conference);
     const roomInfo = useSelector(state => state['features/base/conference'].roomInfo);
+    const raisedHandsCount = useSelector(state =>
+        (state['features/base/participants'].raisedHandsQueue || []).length);
 
     // randomly selects a participant from allParticipants and get its display name
     const selectedParticipantDisplayName = useSelector(selectParticipantDisplayName(randomParticipantID));
@@ -139,6 +143,9 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
 
     const muteAllVideo = useCallback(
         () => dispatch(openDialog(MuteEveryonesVideoDialog)), [dispatch]);
+
+    const resetRaisedHands = useCallback(
+        () => dispatch(clearRaisedHands()), [dispatch]);
 
     const openModeratorSettings = () => dispatch(openSettingsDialog(SETTINGS_TABS.MODERATOR));
 
@@ -196,6 +203,15 @@ export const FooterContextMenu = ({ isOpen, onDrawerClose, onMouseLeave }: Props
             onClick: timerStarted ? _onEndTimerClick : _onStartTimerClick,
             text: label
         });
+    }
+    if (raisedHandsCount > 0) {
+        actions.push({
+            accessibilityLabel: t('participantsPane.actions.clearRaisedHands'),
+            id: 'participants-pane-context-menu-clear-raised-hands',
+            icon: IconRaisedHandClear,
+            onClick: resetRaisedHands,
+            text: t('participantsPane.actions.clearRaisedHands')
+        })
     }
 
     const moderationActions = [

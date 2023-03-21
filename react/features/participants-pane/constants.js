@@ -134,3 +134,4 @@ export const PresenterStateIcons = {
 };
 
 export const COMMAND_TIMER_END_TIME = 'timer-end-time';
+export const COMMAND_CLEAR_RAISED_HANDS = 'clear-raised-hands';

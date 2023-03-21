@@ -20,6 +20,7 @@ import {
     showParticipantJoinedNotification,
     showParticipantLeftNotification
 } from './actions';
+import { SHOW_NOTIFICATION } from './actionTypes';
 import { NOTIFICATION_TIMEOUT_TYPE } from './constants';
 import { joinLeaveNotificationsDisabled } from './functions.any';
 
@@ -93,6 +94,13 @@ MiddlewareRegistry.register(store => next => action => {
     }
     case PARTICIPANTS_PANE_OPEN: {
         store.dispatch(hideRaiseHandNotifications());
+        break;
+    }
+    case SHOW_NOTIFICATION: {
+        const state = store.getState();
+        if (state['features/base/config'].useSinglePopup) {
+            store.dispatch(clearNotifications());
+        }
         break;
     }
     }

@@ -2030,7 +2030,8 @@ export default {
                 }
             })
             .then(() => {
-                if (config.presenter.startEnabled) {
+                const { roomInfo } = APP.store.getState()['features/base/conference'];
+                if (roomInfo?.use_presenter_video) {
                     return this._mutePresenterVideo(false);
                 }
             })

@@ -94,7 +94,8 @@ import {
     setAudioUnmutePermissions,
     setVideoAvailable,
     setVideoMuted,
-    setVideoUnmutePermissions
+    setVideoUnmutePermissions,
+    VIDEO_MUTISM_AUTHORITY
 } from './react/features/base/media';
 import {
     dominantSpeakerChanged,
@@ -2026,6 +2027,11 @@ export default {
                         await room.replaceTrack(null, this._desktopAudioStream);
                     }
                     APP.store.dispatch(setScreenAudioShareState(true));
+                }
+            })
+            .then(() => {
+                if (config.presenter.startEnabled) {
+                    return this._mutePresenterVideo(false);
                 }
             })
             .then(() => {

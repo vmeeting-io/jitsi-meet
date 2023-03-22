@@ -144,7 +144,7 @@ class PasswordForm extends Component<Props, State> {
                         pattern = { digitPattern }
                         placeholder = { placeHolderText }
                         spellCheck = { 'false' }
-                        type = 'text'
+                        type = 'password'
                         value = { this.state.enteredPassword } />
                 </form>
             );

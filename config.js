@@ -1370,6 +1370,3 @@ config.etherpad_base = 'https://jitsi-meet.example.com/boards/';
 
 config.disableJoinLeaveSounds = true;
 config.disableShortcuts = true;
-
-// AirSound STT
-config.sttEnabled = true;

@@ -99,7 +99,7 @@ function _setWSServer({ dispatch, getState }, action) {
             preSoc.send(JSON.stringify(data));
             preSoc.onmessage = function (event) {
                 const response = JSON.parse(event.data);
-                console.log('RESPONSE: ', response);
+                //console.log('RESPONSE: ', response);
                 if (response['code'] === 'EngineInfo'){
                     const connectUrl = response.data.connectionEngineURL;
                     const setData = response.data.setData;
@@ -170,7 +170,7 @@ function activateWS(soc, stream, pId, dispatch, getState) {
     const { conference } = getState()['features/base/conference'];
     soc.onmessage = function (event) {
         const resultSTT = JSON.parse(event.data);
-        console.log('RESULT: ', resultSTT);
+        //console.log('RESULT: ', resultSTT);
         if (resultSTT['code'] === 'EngineActivate') {
             // 엔진이 준비되면 실행
             if(!stream){
@@ -270,13 +270,14 @@ function createSTTMessage(dispatch, getState, json) {
         if(!state['features/stt']._subtitleVisible)
             return;
 
+        const REMOVE_AFTER_MS = state['features/base/config'].stt.subtitleDuration;
         if(isTranslated){
             newSTTMessage = {
                 ...state['features/stt']._translationMessages
                 .get(sentenceId)
             || { sentenceId }
             };
-            _setClearerOnTransMessage(dispatch, sentenceId, newSTTMessage);
+            _setClearerOnTransMessage(dispatch, sentenceId, newSTTMessage, REMOVE_AFTER_MS);
         }
         else{
             newSTTMessage = {
@@ -284,7 +285,7 @@ function createSTTMessage(dispatch, getState, json) {
                 .get(sentenceId)
             || { sentenceId }
             };
-            _setClearerOnSTTMessage(dispatch, sentenceId, newSTTMessage);
+            _setClearerOnSTTMessage(dispatch, sentenceId, newSTTMessage, REMOVE_AFTER_MS);
         }
 
         const dispName = getParticipantDisplayName(state, participantId);
@@ -350,7 +351,8 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
 function _setClearerOnSTTMessage(
     dispatch,
     sentenceId,
-    STTMessage) {
+    STTMessage,
+    duration) {
     if (STTMessage.clearTimeOut) {
         clearTimeout(STTMessage.clearTimeOut);
     }
@@ -358,13 +360,14 @@ function _setClearerOnSTTMessage(
     STTMessage.clearTimeOut
         = setTimeout(
             () => dispatch(removeSTTMessage(sentenceId)),
-            REMOVE_AFTER_MS);
+            duration);
 }
 
 function _setClearerOnTransMessage(
     dispatch,
     sentenceId,
-    STTMessage) {
+    STTMessage,
+    duration) {
     if (STTMessage.clearTimeOut) {
         clearTimeout(STTMessage.clearTimeOut);
     }
@@ -372,5 +375,5 @@ function _setClearerOnTransMessage(
     STTMessage.clearTimeOut
         = setTimeout(
             () => dispatch(removeTransMessage(sentenceId)),
-            REMOVE_AFTER_MS);
+            duration);
 }

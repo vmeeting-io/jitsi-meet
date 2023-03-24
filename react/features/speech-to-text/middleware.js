@@ -35,7 +35,6 @@ import {
 const JSON_TYPE_STT_RESULT = 'stt-result';
 
 const RETRY_AFTER_MS = 3000;
-const REMOVE_AFTER_MS = 5000;
 
 MiddlewareRegistry.register(store => next => action => {
     switch(action.type) {
@@ -270,7 +269,7 @@ function createSTTMessage(dispatch, getState, json) {
         if(!state['features/stt']._subtitleVisible)
             return;
 
-        const REMOVE_AFTER_MS = state['features/base/config'].stt.subtitleDuration;
+        const REMOVE_AFTER_MS = 1000 * state['features/base/config'].stt.subtitleDuration;
         if(isTranslated){
             newSTTMessage = {
                 ...state['features/stt']._translationMessages

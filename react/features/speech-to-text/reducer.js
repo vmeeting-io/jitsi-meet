@@ -35,7 +35,7 @@ const defaultState = {
     _recorder: undefined,
     _targetLanguage: undefined,
     _targetTransLanguage: undefined,
-    _fontSize: 'medium',
+    _subtitleSize: '',
     _subtitleVisible: true,
     _sttHistory: []
 };
@@ -92,7 +92,7 @@ ReducerRegistry.register('features/stt', (
     case CHANGE_SUBTITLE_FONT_SIZE:
         return {
             ...state,
-            _fontSize: action.targetSize
+            _subtitleSize: action.targetSize
         };
     case CHANGE_SUBTITLE_VISIBILITY:
         return _onVisibilityChangeMessage(state, action);

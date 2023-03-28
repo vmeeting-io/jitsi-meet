@@ -90,7 +90,7 @@ function mapStateToProps(state) {
     const isTileView = isLayoutTileView(state);
     const largeVideoParticipant = getLargeVideoParticipant(state);
     const localParticipant = getLocalParticipant(state);
-    const subtitleSize = state['features/stt']._fontSize;
+    const subtitleSize = state['features/stt']._subtitleSize? state['features/stt']._subtitleSize : state['features/base/config'].stt.subtitleSize;
 
     return {
         ..._abstractMapStateToProps(state),

@@ -37,7 +37,7 @@ type Props = {
 
     _targetTransLanguage: String,
 
-    _fontSize: String,
+    _subtitleSize: String,
 
     t: function,
 
@@ -56,7 +56,7 @@ function STTDialog({
     _sttOn,
     _targetLanguage,
     _targetTransLanguage,
-    _fontSize,
+    _subtitleSize,
     _subtitleVisible,
     _roomInfo,
     _apiBase,
@@ -67,7 +67,7 @@ function STTDialog({
     const [enabled, setEnabled] = useState(_sttEnabled);
     const [targetLanguage, setTargetLanguage] = useState(_targetLanguage || i18next.language);
     const [subtitleVisible, setSubtitleVisible] = useState(_subtitleVisible);
-    const [fontSize, setFontSize] = useState(_fontSize || 'medium');
+    const [fontSize, setFontSize] = useState(_subtitleSize || 'medium');
     const [translationEnabled, setTranslationEnabled] = useState(_translationEnabled || false);
     const [targetTransLanguage, setTargetTransLanguage] = useState(_targetTransLanguage || i18next.language);
 
@@ -343,7 +343,7 @@ function mapStateToProps(state) {
         _recorder,
         _targetLanguage,
         _targetTransLanguage,
-        _fontSize,
+        _subtitleSize,
         _subtitleVisible,
         _translationEnabled,
         _wsServer,
@@ -352,6 +352,7 @@ function mapStateToProps(state) {
     const isModerator = isLocalParticipantModerator(state);
 
     const shouldRetry = _sttEnabled && _wsServer && _retryCheck;
+    const defaultSize = _subtitleSize? _subtitleSize : state['features/base/config'].stt.subtitleSize;
 
     return {
         _sttEnabled: _sttEnabled,
@@ -360,7 +361,7 @@ function mapStateToProps(state) {
         _sttOn: _recorder? true : false,
         _targetLanguage: _targetLanguage,
         _targetTransLanguage: _targetTransLanguage,
-        _fontSize: _fontSize,
+        _subtitleSize: defaultSize,
         _subtitleVisible: _subtitleVisible,
         _roomInfo: state['features/base/conference']?.roomInfo,
         _apiBase: getAuthUrl(state),

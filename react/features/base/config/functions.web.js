@@ -52,12 +52,13 @@ export function getReplaceParticipant(state: Object): string {
 export function getToolbarButtons(state: Object): Array<string> {
     const { toolbarButtons } = state['features/base/config'];
     const { whiteboard } = state['features/base/conference'].roomInfo || {};
-    const { use_recording } = state['features/base/conference'].site || {};
+    const { use_recording, use_stt } = state['features/base/conference'].site || {};
     
     let buttons = Array.isArray(toolbarButtons) ? toolbarButtons : TOOLBAR_BUTTONS;
 
     buttons = whiteboard?.use_yn ? without(buttons, 'desktop') : without(buttons, 'share');
     buttons = !use_recording ? without(buttons, 'recording', 'livestreaming') : buttons;
+    buttons = !use_stt ? without(buttons, 'stt') : buttons;
 
     return buttons;
 }

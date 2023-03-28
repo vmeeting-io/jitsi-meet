@@ -417,6 +417,7 @@ class Chat extends AbstractChat<Props> {
                         </span>
                     )}
                 </div>
+                { _isSTTEnabled && 
                 <div
                     aria-controls = 'stt-panel'
                     aria-label = {t('chat.tabs.stt')}
@@ -433,6 +434,7 @@ class Chat extends AbstractChat<Props> {
                         {t('chat.tabs.stt')}
                     </span>
                 </div>
+                }
                 <div
                     aria-controls = 'polls-panel'
                     aria-label = { t('chat.tabs.polls') }

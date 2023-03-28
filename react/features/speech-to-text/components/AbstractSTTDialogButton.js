@@ -3,6 +3,7 @@
 import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
 import { openSTTDialog } from '../actions';
 import { isLocalParticipantModerator } from '../../base/participants';
+import { getToolbarButtons } from '../../base/config/functions.web';
 
 export type AbstractProps = AbstractButtonProps & {
 
@@ -76,13 +77,19 @@ export class AbstractSTTDialogButton
  * }}
  */
 export function _abstractMapStateToProps(state: Object, ownProps: Object) {
-    const { sttEnabled } = state['features/base/config'];
+    //const { sttEnabled } = state['features/base/config'];
+    const toolbarButtons = getToolbarButtons(state);
 
     // if the participant is moderator, it can enable transcriptions and if
     // transcriptions are already started for the meeting, guests can just show them
     let { visible } = ownProps;
+
+    if (!toolbarButtons.includes('stt')){
+        visible = false;
+    }
+
     if (typeof visible === 'undefined'){
-        visible = sttEnabled;
+        visible = toolbarButtons.includes('stt');
     }
     
     return {

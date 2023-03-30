@@ -1343,6 +1343,8 @@ var config = {
 
     isOnpromise: false,
 
+    stt: {},
+
     // Allow all above example options to include a trailing comma and
     // prevent fear when commenting out the last value.
     makeJsonParserHappy: 'even if last key had a trailing comma'

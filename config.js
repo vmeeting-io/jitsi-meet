@@ -1341,6 +1341,8 @@ var config = {
     // Specifies whether the chat emoticons are disabled or not
     // disableChatSmileys: false,
 
+    isOnpromise: false,
+
     // Allow all above example options to include a trailing comma and
     // prevent fear when commenting out the last value.
     makeJsonParserHappy: 'even if last key had a trailing comma'

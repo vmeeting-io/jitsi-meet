@@ -318,6 +318,7 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
     // 번역 기능이 켜져있고 isComplete가 True이고, 현재 나와 언어가 다른 경우
     if(getState()['features/stt']._translationEnabled && json.isComplete && json.lang !== getState()['features/stt']._targetTransLanguage){
         const param_data = {};
+        param_data.service = window._env_.STT_API_SERVICE_NAME;
         param_data.SourceLanguage = json.lang;
         param_data.SourceContent = json.text;
         param_data.TargetLanguage = getState()['features/stt']._targetTransLanguage;

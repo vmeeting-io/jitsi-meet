@@ -15,6 +15,8 @@ import { isLocalParticipantModerator } from '../../../base/participants';
 import { getAuthUrl } from '../../../../api/url';
 import { Icon, IconRefresh } from '../../../base/icons';
 
+import { availableTransLanguageList } from './translationCode';
+
 import { 
     toggleSTTTranslation,
     changeSTTTargetLanguage,
@@ -70,13 +72,6 @@ function STTDialog({
     const [fontSize, setFontSize] = useState(_subtitleSize || 'medium');
     const [translationEnabled, setTranslationEnabled] = useState(_translationEnabled || false);
     const [targetTransLanguage, setTargetTransLanguage] = useState(_targetTransLanguage || i18next.language);
-
-    const availableTransLanguageList = [
-        {'translationCode': 'ko', 'vmLangCode': 'ko'},
-        {'translationCode': 'en', 'vmLangCode': 'en'},
-        {'translationCode': 'ja', 'vmLangCode': 'ja'},
-        {'translationCode': 'vi', 'vmLangCode': 'vi'},
-    ];
 
     const onToggleEnable = () => {
         const targetValue = !enabled;
@@ -162,36 +157,38 @@ function STTDialog({
                                 <label htmlFor = 'stt-target-language'>
                                     { t('stt.currentTargetLanguage') }
                                 </label>
-                                <DropdownMenu
-                                    shouldFitContainer = { true }
-                                    trigger = {targetLanguage === 'ko'? '한국어' : 'English'}
-                                    triggerButtonProps = {{
-                                        shouldFitContainer: true,
-                                        id: 'stt-dropdown-id',
-                                        className: 'stt-dropdown-label'
-                                    }}
-                                    triggerType = 'button'>
-                                    <DropdownItemGroup>
-                                        <DropdownItem
-                                            data-lang='ko'
-                                            key='ko'
-                                            isSelected = {'ko' === targetLanguage}
-                                            onClick={onChangeTargetLanguage}>
-                                            <span className='stt-dropdown-label'>
-                                            { t('languages:ko') }
-                                            </span>
-                                        </DropdownItem>
-                                        <DropdownItem
-                                            data-lang='en'
-                                            key='en'
-                                            isSelected = {'en' === targetLanguage}
-                                            onClick={onChangeTargetLanguage}>
-                                            <span className='stt-dropdown-label'>
-                                            { t('languages:en') }
-                                            </span>
-                                        </DropdownItem>
-                                    </DropdownItemGroup>
-                                </DropdownMenu>
+                                <div className = 'stt-dropdown'>
+                                    <DropdownMenu
+                                        shouldFitContainer = { true }
+                                        trigger = {targetLanguage === 'ko'? '한국어' : 'English'}
+                                        triggerButtonProps = {{
+                                            shouldFitContainer: true,
+                                            id: 'stt-dropdown-id',
+                                            className: 'stt-dropdown-label'
+                                        }}
+                                        triggerType = 'button'>
+                                        <DropdownItemGroup>
+                                            <DropdownItem
+                                                data-lang='ko'
+                                                key='ko'
+                                                isSelected = {'ko' === targetLanguage}
+                                                onClick={onChangeTargetLanguage}>
+                                                <span className='stt-dropdown-label'>
+                                                { t('languages:ko') }
+                                                </span>
+                                            </DropdownItem>
+                                            <DropdownItem
+                                                data-lang='en'
+                                                key='en'
+                                                isSelected = {'en' === targetLanguage}
+                                                onClick={onChangeTargetLanguage}>
+                                                <span className='stt-dropdown-label'>
+                                                { t('languages:en') }
+                                                </span>
+                                            </DropdownItem>
+                                        </DropdownItemGroup>
+                                    </DropdownMenu>
+                                </div>
                             </div>
                             <div className = 'separator-line' />
                             <div>
@@ -213,45 +210,47 @@ function STTDialog({
                                     <label htmlFor = 'stt-target-language'>
                                         { t('stt.fontSize') }
                                     </label>
-                                    <DropdownMenu
-                                        shouldFitContainer = { true }
-                                        trigger = {t(`stt.font_${fontSize}`)}
-                                        triggerButtonProps = {{
-                                            shouldFitContainer: true,
-                                            id: 'stt-fs-dropdown-id',
-                                            className: 'stt-dropdown-label'
-                                        }}
-                                        triggerType = 'button'>
-                                        <DropdownItemGroup>
-                                            <DropdownItem
-                                                data-fontsize='small'
-                                                key='small'
-                                                isSelected = {'small' === fontSize}
-                                                onClick={onChangeFontSize}>
-                                                <span className='stt-dropdown-label'>
-                                                {t('stt.font_small')}
-                                                </span>
-                                            </DropdownItem>
-                                            <DropdownItem
-                                                data-fontsize='medium'
-                                                key='medium'
-                                                isSelected = {'medium' === fontSize}
-                                                onClick={onChangeFontSize}>
-                                                <span className='stt-dropdown-label'>
-                                                {t('stt.font_medium')}
-                                                </span>
-                                            </DropdownItem>
-                                            <DropdownItem
-                                                data-fontsize='large'
-                                                key='large'
-                                                isSelected = {'large' === fontSize}
-                                                onClick={onChangeFontSize}>
-                                                <span className='stt-dropdown-label'>
-                                                {t('stt.font_large')}
-                                                </span>
-                                            </DropdownItem>
-                                        </DropdownItemGroup>
-                                    </DropdownMenu>
+                                    <div className = 'stt-dropdown'>
+                                        <DropdownMenu
+                                            shouldFitContainer = { true }
+                                            trigger = {t(`stt.font_${fontSize}`)}
+                                            triggerButtonProps = {{
+                                                shouldFitContainer: true,
+                                                id: 'stt-fs-dropdown-id',
+                                                className: 'stt-dropdown-label'
+                                            }}
+                                            triggerType = 'button'>
+                                            <DropdownItemGroup>
+                                                <DropdownItem
+                                                    data-fontsize='small'
+                                                    key='small'
+                                                    isSelected = {'small' === fontSize}
+                                                    onClick={onChangeFontSize}>
+                                                    <span className='stt-dropdown-label'>
+                                                    {t('stt.font_small')}
+                                                    </span>
+                                                </DropdownItem>
+                                                <DropdownItem
+                                                    data-fontsize='medium'
+                                                    key='medium'
+                                                    isSelected = {'medium' === fontSize}
+                                                    onClick={onChangeFontSize}>
+                                                    <span className='stt-dropdown-label'>
+                                                    {t('stt.font_medium')}
+                                                    </span>
+                                                </DropdownItem>
+                                                <DropdownItem
+                                                    data-fontsize='large'
+                                                    key='large'
+                                                    isSelected = {'large' === fontSize}
+                                                    onClick={onChangeFontSize}>
+                                                    <span className='stt-dropdown-label'>
+                                                    {t('stt.font_large')}
+                                                    </span>
+                                                </DropdownItem>
+                                            </DropdownItemGroup>
+                                        </DropdownMenu>
+                                    </div>
                                 </div>
                                 <div className= 'description'>
                                     { t('stt.fontSizeDesc') }
@@ -277,30 +276,32 @@ function STTDialog({
                                     <label htmlFor = 'stt-target-trans-language'>
                                         { t('stt.currentTransLanguage') }
                                     </label>
-                                    <DropdownMenu
-                                        shouldFitContainer = { true }
-                                        trigger = { t(`languages:${availableTransLanguageList.find(e => e.translationCode === targetTransLanguage).vmLangCode}`) }
-                                        triggerButtonProps = {{
-                                            shouldFitContainer: true,
-                                            id: 'stt-dropdown-id',
-                                            className: 'stt-dropdown-label'
-                                        }}
-                                        triggerType = 'button'>
-                                        <DropdownItemGroup>
-                                            {
-                                                availableTransLanguageList.map(({translationCode, vmLangCode}, idx) => (<DropdownItem
-                                                    data-translang={translationCode}
-                                                    key={translationCode}
-                                                    isSelected = {{translationCode} === targetTransLanguage}
-                                                    onClick={onChangeTargetTransLanguage}>
-                                                    <span className='stt-dropdown-label'>
-                                                    { t(`languages:${vmLangCode}`) }
-                                                    </span>
-                                                    </DropdownItem>
-                                                ))
-                                            }
-                                        </DropdownItemGroup>
-                                    </DropdownMenu>
+                                    <div className = 'stt-dropdown'>
+                                        <DropdownMenu
+                                            shouldFitContainer = { true }
+                                            trigger = { availableTransLanguageList.find(e => e.translationCode === targetTransLanguage)[i18next.language === 'ko'? 'name_ko' : 'name'] }
+                                            triggerButtonProps = {{
+                                                shouldFitContainer: true,
+                                                id: 'stt-dropdown-id',
+                                                className: 'stt-dropdown-label'
+                                            }}
+                                            triggerType = 'button'>
+                                            <DropdownItemGroup>
+                                                {
+                                                    availableTransLanguageList.map(({translationCode, name, name_ko }, idx) => (<DropdownItem
+                                                        data-translang={translationCode}
+                                                        key={translationCode}
+                                                        isSelected = {{translationCode} === targetTransLanguage}
+                                                        onClick={onChangeTargetTransLanguage}>
+                                                        <span className='stt-dropdown-label'>
+                                                        { i18next.language === 'ko'? name_ko : name }
+                                                        </span>
+                                                        </DropdownItem>
+                                                    ))
+                                                }
+                                            </DropdownItemGroup>
+                                        </DropdownMenu>
+                                    </div>
                                 </div>
                             }
                         </div> :

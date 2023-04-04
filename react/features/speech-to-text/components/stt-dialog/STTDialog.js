@@ -123,7 +123,7 @@ function STTDialog({
             hideCancelButton = { true }
             submitDisabled = { true }
             titleKey = 'stt.header'
-            width = { 'small' }>
+            width = { i18next.language === 'ko'? 'small' : 450 }>
             <div className = 'stt-dialog'>
                 <div className = 'stt-section'>
                     <p

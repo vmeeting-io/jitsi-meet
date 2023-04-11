@@ -1343,7 +1343,10 @@ var config = {
 
     isOnpromise: false,
 
-    stt: {},
+    stt: {
+        subtitleDuration: 5,
+        subtitleSize: 'medium',
+    },
 
     // Allow all above example options to include a trailing comma and
     // prevent fear when commenting out the last value.

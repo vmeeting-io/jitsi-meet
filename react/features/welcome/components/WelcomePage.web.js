@@ -35,7 +35,7 @@ import Tabs from './Tabs';
  * alphabet, number, korean and underscore are allowed
  * @type {string}
  */
-export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣_]+$';
+export const ROOM_NAME_VALIDATE_PATTERN_STR = 'a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣_';
 // export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[a-zA-Z0-9가-힣_]+$'; // this allows alphabet, numbers, underscore and completed korean
 // export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[a-zA-Z0-9_]+$'; // this allows alphabet, numbers and underscore only
 
@@ -577,7 +577,7 @@ class WelcomePage extends AbstractWelcomePage {
                                                 id = 'enter_room_field'
                                                 onChange = { this._onRoomChange }
                                                 onClick = { e => e.stopPropagation() }
-                                                pattern = { ROOM_NAME_VALIDATE_PATTERN_STR }
+                                                pattern = { `^[${config.meetingNamePattern || ROOM_NAME_VALIDATE_PATTERN_STR}]+$` }
                                                 placeholder = { this.state.roomPlaceholder }
                                                 ref = { this._setRoomInputRef }
                                                 title = { t('welcomepage.roomNameAllowedChars') }
@@ -706,7 +706,7 @@ class WelcomePage extends AbstractWelcomePage {
     _onRoomChange(event) {
         event.stopPropagation();
 
-        const forbiddenChars = /[^a-zA-Z0-9ㄱ-ㅎㅏ-ㅣ가-힣_]/ig;
+        const forbiddenChars = new RegExp(`[^${config.meetingNamePattern || ROOM_NAME_VALIDATE_PATTERN_STR}]`, 'ig');
         const replacedStr =  event.currentTarget.value.replaceAll(forbiddenChars, '');
         this._roomInputRef.value = replacedStr; // removes forbidden characters
 

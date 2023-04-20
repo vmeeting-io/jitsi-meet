@@ -392,7 +392,7 @@ export function _mapStateToProps(state: Object): $Shape<Props> {
     const inviteEnabledFlag = getFeatureFlag(state, INVITE_ENABLED, true);
     const { disableInviteFunctions } = state['features/base/config'];
     const { knocking, passwordJoinFailed } = state['features/lobby'];
-    const { iAmSipGateway } = state['features/base/config'];
+    // const { iAmSipGateway } = state['features/base/config'];
     const showCopyUrlButton = inviteEnabledFlag || !disableInviteFunctions;
     const deviceStatusVisible = isDeviceStatusVisible(state);
     const { membersOnly } = state['features/base/conference'];
@@ -406,7 +406,7 @@ export function _mapStateToProps(state: Object): $Shape<Props> {
         _participantId: participantId,
         _participantName: localParticipant?.name,
         _passwordJoinFailed: passwordJoinFailed,
-        _renderPassword: !iAmSipGateway,
+        // _renderPassword: !iAmSipGateway,
         showCopyUrlButton
     };
 }

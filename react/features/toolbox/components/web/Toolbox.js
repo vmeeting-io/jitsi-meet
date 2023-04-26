@@ -1430,7 +1430,7 @@ function _mapStateToProps(state, ownProps) {
             desktopSharingEnabled = haveParticipantWithScreenSharingFeature(state);
             desktopSharingDisabledTooltipKey = 'dialog.shareYourScreenDisabled';
         }
-    } else if (desktopSharingEnabled && Boolean(disableDesktopSharing)) {
+    } else if (desktopSharingEnabled && disableDesktopSharing) {
         desktopSharingEnabled = !(
             disableDesktopSharing === true ||
             (disableDesktopSharing === 'guest' && isGuest)

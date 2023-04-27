@@ -644,7 +644,7 @@ class Toolbox extends Component<Props> {
             group: 2
         };
 
-        const share = {
+        const share = this._showDesktopSharingButton() && {
             key: 'share',
             Content: ShareMenuButton,
             group: 2

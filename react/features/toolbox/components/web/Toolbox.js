@@ -758,7 +758,7 @@ class Toolbox extends Component<Props> {
         //     group: 2
         // };
 
-        const shareVideo = {
+        const shareVideo = this._showVideoSharingButton() && {
             key: 'sharedvideo',
             Content: SharedVideoButton,
             group: 3
@@ -1270,6 +1270,16 @@ class Toolbox extends Component<Props> {
         } = this.props;
 
         return _desktopSharingEnabled || _desktopSharingDisabledTooltipKey;
+    }
+
+    /**
+     * Returns true if the video sharing button should be visible and
+     * false otherwise.
+     *
+     * @returns {boolean}
+     */
+    _showVideoSharingButton() {
+        return this.props._desktopSharingEnabled;
     }
 
     /**

@@ -506,6 +506,7 @@ var config = {
 
     // If Lobby is enabled starts knocking automatically.
     // autoKnockLobby: false,
+    // autoLobbyEnabled: false,
 
     // Hides add breakout room button
     // hideAddRoomButton: false,

@@ -88,14 +88,14 @@ export default class AbstractSecurityDialogButton<P: Props, S:*>
  */
 export function _mapStateToProps(state: Object) {
     const { conference } = state['features/base/conference'];
-    const { hideLobbyButton } = state['features/base/config'];
+    const { hideLobbyButton, autoLobbyEnabled } = state['features/base/config'];
     const { locked } = state['features/base/conference'];
     const { lobbyEnabled } = state['features/lobby'];
     const lobbySupported = conference && conference.isLobbySupported();
     const lobby = lobbySupported && isLocalParticipantModerator(state) && !hideLobbyButton;
-    const enabledFlag = getFeatureFlag(state, SECURITY_OPTIONS_ENABLED, true);
-    const enabledLobbyModeFlag = getFeatureFlag(state, LOBBY_MODE_ENABLED, true) && lobby;
-    const enabledMeetingPassFlag = getFeatureFlag(state, MEETING_PASSWORD_ENABLED, true);
+    const enabledFlag = getFeatureFlag(state, SECURITY_OPTIONS_ENABLED, !Boolean(autoLobbyEnabled));
+    const enabledLobbyModeFlag = getFeatureFlag(state, LOBBY_MODE_ENABLED, !Boolean(autoLobbyEnabled)) && lobby;
+    const enabledMeetingPassFlag = getFeatureFlag(state, MEETING_PASSWORD_ENABLED, !Boolean(autoLobbyEnabled));
     const isBreakoutRoom = isInBreakoutRoom(state);
 
     return {

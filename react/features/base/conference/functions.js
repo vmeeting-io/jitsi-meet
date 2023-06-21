@@ -431,6 +431,7 @@ export function sendLocalParticipant(
         value: avatarURL
     });
     email && conference.sendCommand(EMAIL_COMMAND, {
+        attributes: { xmlns: `http://vmeeting.io/protocol/email` },
         value: email
     });
 

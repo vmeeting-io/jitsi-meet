@@ -349,7 +349,8 @@ class ConferenceConnector {
             // Schedule reconnect to check if someone else created the room.
             this.reconnectTimeout = setTimeout(() => {
                 APP.store.dispatch(conferenceWillJoin(room));
-                room.join(null, replaceParticipant);
+                const { password } = APP.store.getState()['features/base/config'];
+                room.join(password, replaceParticipant);
             }, 5000);
 
             const { password }
@@ -434,9 +435,17 @@ class ConferenceConnector {
      */
     connect() {
         const replaceParticipant = getReplaceParticipant(APP.store.getState());
+        const { roomInfo } = APP.store.getState()['features/base/conference'];
+        const config = APP.store.getState()['features/base/config'];
 
         // the local storage overrides here and in connection.js can be used by jibri
-        const password = jitsiLocalStorage.getItem('xmpp_conference_password_override');
+        let password = jitsiLocalStorage.getItem('xmpp_conference_password_override');
+        if (!password && roomInfo?.isHost && roomInfo?.password) {
+            password = roomInfo.password;
+        }
+        if (!password && config.password) {
+            password = config.password;
+        }
 
         room.join(password, replaceParticipant);
     }

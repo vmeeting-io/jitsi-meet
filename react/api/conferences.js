@@ -1,3 +1,4 @@
+import axios from 'axios';
 import BaseAPI from "./BaseApi";
 
 class Conference extends BaseAPI {
@@ -22,6 +23,15 @@ class Conference extends BaseAPI {
       this._query.site = value;
     }
     return this;
+  }
+
+  checkPassword = password => {
+    if (this._path === '') {
+      console.error('ERROR: conference id is needed.');
+      return this;
+    }
+
+    return axios.post(`${this.toString()}/check-password`, { password }, this._config);
   }
 }
 

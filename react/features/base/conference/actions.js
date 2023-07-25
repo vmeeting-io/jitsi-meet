@@ -551,12 +551,15 @@ export function createConference(overrideRoom?: string) {
  */
 export function checkIfCanJoin() {
     return (dispatch: Function, getState: Function) => {
-        const { authRequired, password }
+        let { authRequired, password }
             = getState()['features/base/conference'];
 
         const replaceParticipant = getReplaceParticipant(getState());
 
         authRequired && dispatch(_conferenceWillJoin(authRequired));
+        if (!password) {
+            password = getState()['features/base/config'].password;
+        }
         authRequired && authRequired.join(password, replaceParticipant);
     };
 }

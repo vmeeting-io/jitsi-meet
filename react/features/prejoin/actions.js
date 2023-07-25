@@ -275,7 +275,7 @@ export function setJoiningInProgress(value: boolean) {
  *
  * @returns {Function}
  */
-export function joinConferenceWithoutAudio() {
+export function joinConferenceWithoutAudio(options?: Object = {}) {
     return async function(dispatch: Function, getState: Function) {
         const state = getState();
         const { joiningInProgress } = state['features/prejoin'];
@@ -297,6 +297,7 @@ export function joinConferenceWithoutAudio() {
         }
 
         dispatch(joinConference({
+            ...options,
             startSilent: true
         }, true));
     };

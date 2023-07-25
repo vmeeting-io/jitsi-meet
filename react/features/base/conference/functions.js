@@ -218,6 +218,7 @@ export function getConferenceOptions(stateful: Function | Object) {
     const config = state['features/base/config'];
     const { locationURL } = state['features/base/connection'];
     const { tenant } = state['features/base/jwt'];
+    const { roomInfo } = state['features/base/conference'];
     const { email, name: nick, presence } = getLocalParticipant(state);
     const options = { ...config };
 
@@ -253,6 +254,10 @@ export function getConferenceOptions(stateful: Function | Object) {
         delete options.callStatsSecret;
     } else {
         options.getWiFiStatsMethod = getWiFiStatsMethod;
+    }
+
+    if (roomInfo?.isHost && roomInfo?.password) {
+        options.password = roomInfo.password;
     }
 
     return options;

@@ -5,7 +5,8 @@ import axios from 'axios';
 import React, { Component } from 'react';
 
 import { getAuthUrl } from '../../../api/url';
-import { getCurrentConference, getRoomName, STATUS_COMMAND } from '../../base/conference';
+import { conferences } from '../../../api/conferences';
+import { getCurrentConference, getRoomName, setRoomInfo, STATUS_COMMAND } from '../../base/conference';
 import { isNameReadOnly } from '../../base/config';
 import { translate } from '../../base/i18n';
 import { IconArrowDown, IconArrowUp, IconPhone, IconVolumeOff } from '../../base/icons';
@@ -161,6 +162,8 @@ const JOIN_STATE = {
     JOIN_AS_AWAY: 'joinAsAway',
     DETECTING_FACE: 'detectingFace',
     READY_TO_JOIN: 'readyToJoin',
+    PASSWORD_REQUIRED: 'passwordRequired',
+    CHECK_PASSWORD: 'checkPassword',
     JOINING: 'joining'
 };
 
@@ -181,11 +184,14 @@ class Prejoin extends Component<Props, State> {
             showJoinByPhoneButtons: false,
             showDID: undefined,
             completed: false,
-            joinState: JOIN_STATE.START
+            joinState: JOIN_STATE.START,
+            inputPassword: '',
         };
 
+        this._checkAndJoinConference = this._checkAndJoinConference.bind(this);
         this._closeDialog = this._closeDialog.bind(this);
         this._showDialog = this._showDialog.bind(this);
+        this._setPassword = this._setPassword.bind(this);
         this._onJoinButtonClick = this._onJoinButtonClick.bind(this);
         this._onDropdownClose = this._onDropdownClose.bind(this);
         this._onOptionsClick = this._onOptionsClick.bind(this);
@@ -215,7 +221,9 @@ class Prejoin extends Component<Props, State> {
             _attentionAnalysisEnabled,
             _attentionAnalysisReady,
             _didPermitted,
+            _passwordRequired,
             isVideoDisabled,
+            roomInfo,
             showCameraPreview,
         } = this.props;
         let { joinState, completed, showDID } = this.state;
@@ -223,7 +231,9 @@ class Prejoin extends Component<Props, State> {
         console.log('componentDidUpdate:', joinState, completed, _didPermitted, showDID);
         switch (joinState) {
         case JOIN_STATE.START:
-            if (!_attentionAnalysisEnabled
+            if (_passwordRequired) {
+                this.setState({ joinState: JOIN_STATE.PASSWORD_REQUIRED });
+            } else if (!_attentionAnalysisEnabled
                 || (!showDID && completed && !_didPermitted)) {
                 this.setState({ joinState: JOIN_STATE.READY_TO_JOIN });
             } else if (!completed || showDID) {
@@ -250,6 +260,16 @@ class Prejoin extends Component<Props, State> {
             } else if (_attentionAnalysisReady) {
                 this.props.startFaceDetect();
                 this.setState({ joinState: JOIN_STATE.READY_TO_JOIN });
+            }
+            break;
+        case JOIN_STATE.PASSWORD_REQUIRED:
+            if (this.state.inputPassword.length >= 4) {
+                this.setState({ joinState: JOIN_STATE.CHECK_PASSWORD });
+            }
+            break;
+        case JOIN_STATE.CHECK_PASSWORD:
+            if (this.state.inputPassword.length < 4) {
+                this.setState({ joinState: JOIN_STATE.PASSWORD_REQUIRED });
             }
             break;
         }
@@ -310,14 +330,14 @@ class Prejoin extends Component<Props, State> {
     _onJoinButtonClick() {
         if (this.props.showErrorOnJoin) {
             this.setState({
-                showError: true
+                showError: 'prejoin.errorMissingName'
             });
 
             return;
         }
 
         this.setState({ showError: false });
-        this.props.joinConference();
+        this._checkAndJoinConference();
     }
 
     _onJoinKeyPress: (Object) => void;
@@ -379,6 +399,12 @@ class Prejoin extends Component<Props, State> {
         });
     }
 
+    _setPassword: () => void;
+
+    _setPassword(inputPassword) {
+        this.setState({ inputPassword });
+    }
+
     _closeDialog: () => void;
 
     /**
@@ -432,7 +458,7 @@ class Prejoin extends Component<Props, State> {
             && (e.key === ' '
                 || e.key === 'Enter')) {
             e.preventDefault();
-            this.props.joinConferenceWithoutAudio();
+            this._checkAndJoinConference(true);
         }
     }
 
@@ -478,6 +504,54 @@ class Prejoin extends Component<Props, State> {
         this.setState({ showDID: false });
     }
 
+    _checkAndJoinConference: () => void;
+
+    async _checkAndJoinConference(withoutAudio) {
+        const { _passwordRequired, roomInfo, joinConference, joinConferenceWithoutAudio } = this.props;
+        const { inputPassword } = this.state;
+
+        if (!roomInfo?._id) {
+            if (withoutAudio) {
+                joinConferenceWithoutAudio({ password: inputPassword });
+            } else {
+                joinConference({ password: inputPassword });
+            }
+            return;
+        }
+
+        if (!roomInfo?.isHost && _passwordRequired) {
+            conferences()
+                .id(roomInfo._id)
+                .checkPassword(this.state.inputPassword)
+                .then(resp => {
+                    console.log('checkPassword response:', resp.data);
+                    this.setState({ showError: false });
+                    if (withoutAudio) {
+                        joinConferenceWithoutAudio({ password: inputPassword });
+                    } else {
+                        joinConference({ password: inputPassword });
+                    }
+                })
+                .catch(resp => {
+                    if (resp.response.status === 406) {
+                        this.setState({ showError: 'dialog.passwordNotMatch' });
+                    }
+                    console.error('checkPassword is failed:', resp.response.status, resp.response.data);
+                });
+        } else {
+            conferences()
+                .id(roomInfo._id)
+                .update({ password: inputPassword });
+            setRoomInfo({ ...roomInfo, password: inputPassword });
+            this.setState({ showError: false });
+            if (withoutAudio) {
+                joinConferenceWithoutAudio({ password: inputPassword });
+            } else {
+                joinConference({ password: inputPassword });
+            }
+        }
+    }
+
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -486,19 +560,18 @@ class Prejoin extends Component<Props, State> {
      */
     render() {
         const {
+            _passwordRequired,
             deviceStatusVisible,
-            joinConference,
             joinConferenceWithoutAudio,
             name,
             prejoinConfig,
             readOnlyName,
+            roomInfo,
             showCameraPreview,
             showDialog,
             t,
             videoTrack,
         } = this.props;
-        const { _closeDialog, _onDropdownClose, _onJoinButtonClick, _onJoinKeyPress,
-            _onOptionsClick, _setName } = this;
 
         const extraJoinButtons = this._getExtraJoinButtons();
         let extraButtonsToRender = Object.values(extraJoinButtons).filter((val: Object) =>
@@ -506,7 +579,7 @@ class Prejoin extends Component<Props, State> {
         );
 
         const hasExtraJoinButtons = Boolean(extraButtonsToRender.length);
-        const { joinState, showJoinByPhoneButtons, showError, showDID, completed } = this.state;
+        const { joinState, showJoinByPhoneButtons, showError, showDID, completed, inputPassword } = this.state;
 
         let buttonText = t('prejoin.preparingMeeting');
         let disabled = true;
@@ -523,6 +596,12 @@ class Prejoin extends Component<Props, State> {
             disabled = false;
         } else if (joinState === JOIN_STATE.JOINING) {
             buttonText = t('prejoin.joining');
+        } else if (joinState === JOIN_STATE.PASSWORD_REQUIRED) {
+            buttonText = t('prejoin.joinMeeting');
+            disabled = true;
+        } else if (joinState === JOIN_STATE.CHECK_PASSWORD) {
+            buttonText = t('prejoin.joinMeeting');
+            disabled = false;
         }
 
         return (
@@ -543,15 +622,21 @@ class Prejoin extends Component<Props, State> {
                         autoFocus = { true }
                         className = { showError ? 'error' : '' }
                         hasError = { showError }
-                        onChange = { _setName }
-                        onSubmit = { joinConference }
+                        onChange = { this._setName }
+                        onSubmit = { this._checkAndJoinConference }
                         placeHolder = { t('dialog.enterDisplayName') }
                         readOnly = { readOnlyName }
                         value = { name } />
 
+                    {_passwordRequired && <InputField
+                        onChange = { this._setPassword }
+                        type = 'password'
+                        placeHolder = { t('lobby.enterPasswordButton') }
+                        value = { inputPassword } />}
+
                     {showError && <div
                         className = 'prejoin-error'
-                        data-testid = 'prejoin.errorMessage'>{t('prejoin.errorMissingName')}</div>}
+                        data-testid = 'prejoin.errorMessage'>{t(showError)}</div>}
 
                     <div className = 'prejoin-preview-dropdown-container'>
                         <InlineDialog
@@ -563,7 +648,7 @@ class Prejoin extends Component<Props, State> {
                                 ))}
                             </div> }
                             isOpen = { showJoinByPhoneButtons }
-                            onClose = { _onDropdownClose }>
+                            onClose = { this._onDropdownClose }>
                             <ActionButton
                                 OptionsIcon = { showJoinByPhoneButtons ? IconArrowUp : IconArrowDown }
                                 ariaDropDownLabel = { t('prejoin.joinWithoutAudio') }
@@ -571,9 +656,9 @@ class Prejoin extends Component<Props, State> {
                                 ariaPressed = { showJoinByPhoneButtons }
                                 disabled = { disabled }
                                 hasOptions = { hasExtraJoinButtons }
-                                onClick = { _onJoinButtonClick }
-                                onKeyPress = { _onJoinKeyPress }
-                                onOptionsClick = { _onOptionsClick }
+                                onClick = { this._onJoinButtonClick }
+                                onKeyPress = { this._onJoinKeyPress }
+                                onOptionsClick = { this._onOptionsClick }
                                 role = 'button'
                                 tabIndex = { 0 }
                                 testId = 'prejoin.joinMeeting'
@@ -586,7 +671,7 @@ class Prejoin extends Component<Props, State> {
                 { showDialog && (
                     <JoinByPhoneDialog
                         joinConferenceWithoutAudio = { joinConferenceWithoutAudio }
-                        onClose = { _closeDialog } />
+                        onClose = { this._closeDialog } />
                 )}
             </PreMeetingScreen>}
             </div>
@@ -607,6 +692,7 @@ function mapStateToProps(state): Object {
     const _localParticipant = getLocalParticipant(state);
     const _user = state['features/base/jwt'].user;
     const { permissions = {} } = state['features/base/devices'];
+    const { passwordRequired = false } = state['features/base/config'];
     const isDisabled = isVideoSettingsButtonDisabled(state);
     const videoTrack = getLocalJitsiVideoTrack(state);
     const isVideoDisabled = (!permissions.video || isDisabled) && !Boolean(videoTrack);
@@ -618,6 +704,7 @@ function mapStateToProps(state): Object {
         _attentionAnalysisReady: getAttentionAnalysisReady(state),
         _didPermitted: state['features/did-consent'].permit,
         _localParticipant,
+        _passwordRequired: passwordRequired,
         _user,
         conference,
         name,

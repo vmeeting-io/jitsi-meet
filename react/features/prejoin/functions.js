@@ -143,6 +143,7 @@ export function isPrejoinPageVisible(state: Object): boolean {
         enableForcedReload,
         iAmRecorder,
         prejoinConfig,
+        passwordRequired
     } = state['features/base/config'];
     const { showPrejoin, skipPrejoinOnReload } = state['features/prejoin'] || {};
 
@@ -150,7 +151,8 @@ export function isPrejoinPageVisible(state: Object): boolean {
         && !iAmRecorder
         && (prejoinConfig?.enabled
             || isAttentionAnalysisEnabled(state)
-            || (isHost && chatOnlyGuestEnabled))
+            || (isHost && chatOnlyGuestEnabled)
+            || passwordRequired)
         && showPrejoin
         && !(enableForcedReload && skipPrejoinOnReload);
 }

@@ -1531,7 +1531,7 @@
         "enableDialogPasswordField": "Set password (optional)",
         "enableDialogSubmit": "Enable",
         "enableDialogText": "Lobby mode lets you protect your meeting by only allowing people to enter after a formal approval by a moderator.",
-        "enterPasswordButton": "Enter meeting password",
+        "enterPasswordButton": "Enter meeting password(4 or more)",
         "enterPasswordTitle": "Enter password to join meeting",
         "errorMissingPassword": "Please enter the meeting password",
         "invalidPassword": "Invalid password",

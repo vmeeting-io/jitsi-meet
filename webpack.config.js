@@ -5,6 +5,8 @@ const fs = require('fs');
 const { join } = require('path');
 const process = require('process');
 const webpack = require('webpack');
+const dotenv = require('dotenv');
+
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 /**
@@ -13,6 +15,21 @@ const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
  */
 const devServerProxyTarget
     = process.env.WEBPACK_DEV_SERVER_PROXY_TARGET || 'https://alpha.jitsi.net';
+
+const analyzeBundle = process.argv.indexOf('--analyze-bundle') !== -1;
+
+const minimize
+    = process.argv.indexOf('-p') !== -1
+        || process.argv.indexOf('--optimize-minimize') !== -1;
+
+const env = dotenv.config().parsed;
+
+// reduce it to a nice object, the same as before
+const envKeys = Object.keys(env).reduce((prev, next) => {
+    prev[`process.env.${next}`] = JSON.stringify(env[next]);
+
+    return prev;
+}, {});
 
 /**
  * Build a Performance configuration object for the given size.

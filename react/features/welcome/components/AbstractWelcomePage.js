@@ -46,6 +46,11 @@ export type Props = {
     _settings: Object,
 
     /**
+     * The current user.
+     */
+    _user: Object,
+
+    /**
      * The Redux dispatch Function.
      */
     dispatch: Dispatch<any>
@@ -272,6 +277,7 @@ export function _mapStateToProps(state: Object) {
         _moderatedRoomServiceUrl: state['features/base/config'].moderatedRoomServiceUrl,
         _recentListEnabled: isRecentListEnabled(),
         _room: state['features/base/conference'].room,
-        _settings: state['features/base/settings']
+        _settings: state['features/base/settings'],
+        _user: state['features/base/jwt'].user
     };
 }

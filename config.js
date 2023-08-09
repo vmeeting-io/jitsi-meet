@@ -462,9 +462,8 @@ var config = {
     // TCC sequence numbers starting from 0.
     // enableIceRestart: false,
 
-    // Enables forced reload of the client when the call is migrated as a result of
-    // the bridge going down.
-    // enableForcedReload: true,
+    // Use XEP-0215 to fetch STUN and TURN servers.
+    useStunTurn: true,
 
     // Use TURN/UDP servers for the jitsi-videobridge connection (by default
     // we filter out TURN/UDP because it is usually not needed since the

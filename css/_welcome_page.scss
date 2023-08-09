@@ -29,6 +29,11 @@ body.welcome-page {
             flex-direction: column;
             margin: $welcomePageHeaderContainerMargin;
             z-index: $zindex2;
+            margin-top: $watermarkHeight + $welcomePageHeaderTextMarginTop;
+            margin-bottom: $welcomePageHeaderTextMarginBottom;
+            max-width: calc(100% - 40px);
+            width: 650px;
+            // z-index: $zindex2;
         }
 
         .header-text-title {
@@ -70,6 +75,28 @@ body.welcome-page {
                 height: fit-content;
                 padding-right: 4px;
                 position: relative;
+                border-width: $welcomePageEnterRoomInputContainerBorderWidth;
+                border-style: $welcomePageEnterRoomInputContainerBorderStyle;
+                border-image: $welcomePageEnterRoomInputContainerBorderImage;
+
+                .enter-room-title-container {
+                    vertical-align: bottom;
+
+                    :first-child {
+                        margin-right: 10px;
+                    }
+
+                    .enter-room-login-required {
+                        color: $chatPrivateMessageBackgroundColor;
+                    }
+                }
+
+                .enter-room-title {
+                    display: inline-block;
+                    font-size: 18px;
+                    font-weight: bold;
+                    padding-bottom: 5px;
+                }
 
                 .enter-room-input {
                     border: 0;
@@ -199,14 +226,28 @@ body.welcome-page {
         border-radius: 3px;
         color: $welcomePageDescriptionColor;
         padding: 4px;
+
+        &.disabled {
+          color: rgba(0,0,0,0.65);
+          background: #f5f5f5;
+          border-color: #d9d9d9;
+          pointer-events: none;
+        }
+    }
+
+    .header-toolbars {
         position: absolute;
         top: 32px;
         right: 32px;
         z-index: $zindex2;
 
-        * {
-            cursor: pointer;
-            font-size: 32px;
+        .welcome-page-settings {
+            color: $welcomePageDescriptionColor;
+    
+            * {
+                cursor: pointer;
+                font-size: 32px;
+            }
         }
 
         .toolbox-icon {
@@ -308,5 +349,16 @@ body.welcome-page {
     .welcome-footer-row-1-text {
         max-width: 200px;
         margin-right: 16px;
+    }
+
+    .user-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+
+        // &:first-child {
+        //     margin-right: 10px;
+        // }
     }
 }

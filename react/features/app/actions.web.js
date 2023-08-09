@@ -25,6 +25,7 @@ import {
     showNotification
 } from '../notifications';
 import { setFatalError } from '../overlay';
+import { loadCurrentUser } from '../base/auth';
 
 import {
     redirectToStaticPage,
@@ -131,6 +132,9 @@ export function appNavigate(uri: ?string) {
 
         dispatch(setLocationURL(locationURL));
         dispatch(setConfig(config));
+
+        // Load current logged in user
+        dispatch(loadCurrentUser());
         dispatch(setRoom(room));
     };
 }

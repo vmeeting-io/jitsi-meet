@@ -49,7 +49,8 @@ import { REACTIONS } from '../../../reactions/constants';
 import { isReactionsEnabled } from '../../../reactions/functions.any';
 import {
     LiveStreamButton,
-    RecordButton
+    RecordButton,
+    getActiveSession
 } from '../../../recording';
 import { isSalesforceEnabled } from '../../../salesforce/functions';
 import {

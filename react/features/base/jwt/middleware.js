@@ -101,9 +101,11 @@ function _setConfigOrLocationURL({ dispatch, getState }, next, action) {
     const result = next(action);
 
     const { locationURL } = getState()['features/base/connection'];
+    const jwt = parseJWTFromURLParams(locationURL);
 
-    dispatch(
-        setJWT(locationURL ? parseJWTFromURLParams(locationURL) : undefined));
+    if (jwt) {
+        dispatch(setJWT(jwt));
+    }
 
     return result;
 }
@@ -224,7 +226,7 @@ function _undoOverwriteLocalParticipant(
  *     hidden-from-recorder: ?boolean
  * }}
  */
-function _user2participant({ avatar, avatarUrl, email, id, name, 'hidden-from-recorder': hiddenFromRecorder }) {
+function _user2participant({ avatar, avatarUrl, email, id, name, username, isAdmin }) {
     const participant = {};
 
     if (typeof avatarUrl === 'string') {
@@ -240,6 +242,12 @@ function _user2participant({ avatar, avatarUrl, email, id, name, 'hidden-from-re
     }
     if (typeof name === 'string') {
         participant.name = name.trim();
+    }
+    if (typeof isAdmin === 'boolean') {
+        participant.isAdmin = isAdmin;
+    }
+    if (typeof username === 'string') {
+        participant.username = username;
     }
 
     if (hiddenFromRecorder === 'true' || hiddenFromRecorder === true) {

@@ -288,6 +288,8 @@
         "lockRoom": "Add meeting $t(lockRoomPassword)",
         "lockTitle": "Lock failed",
         "login": "Login",
+        "loginFailed": "Login failed",
+        "logout": "Logout",
         "logoutQuestion": "Are you sure you want to logout and stop the conference?",
         "logoutTitle": "Logout",
         "maxUsersLimitReached": "The limit for maximum number of participants has been reached. The conference is full. Please contact the meeting owner or try again later!",
@@ -325,6 +327,8 @@
         "noDropboxToken": "No valid Dropbox token",
         "password": "Password",
         "passwordLabel": "The meeting has been locked by a participant. Please enter the $t(lockRoomPassword) to join.",
+        "passwordMsg": "Use 8 or more characters with a mix of letters, numbers & symbols.",
+        "passwordNotMatch": "The password does not match. Please keep checking back.",
         "passwordNotSupported": "Setting a meeting $t(lockRoomPassword) is not supported.",
         "passwordNotSupportedTitle": "$t(lockRoomPasswordUppercase) not supported",
         "passwordRequired": "$t(lockRoomPasswordUppercase) required",
@@ -338,7 +342,9 @@
         "recording": "Recording",
         "recordingDisabledBecauseOfActiveLiveStreamingTooltip": "Not possible while a live stream is active",
         "recordingDisabledTooltip": "Start recording disabled.",
+        "register": "Register",
         "rejoinNow": "Rejoin now",
+        "rememberMe": "Remember me",
         "remoteControlAllowedMessage": "{{user}} accepted your remote control request!",
         "remoteControlDeniedMessage": "{{user}} rejected your remote control request!",
         "remoteControlErrorMessage": "An error occurred while trying to request remote control permissions from {{user}}!",
@@ -1270,6 +1276,8 @@
             "roomname": "Enter room name"
         },
         "addMeetingName": "Add Meeting name",
+        "account": "Account Settings",
+        "adminConsole": "Admin Console",
         "appDescription": "Go ahead, video chat with the whole team. In fact, invite everyone you know. {{app}} is a fully encrypted, 100% open source video conferencing solution that you can use all day, every day, for free — with no account needed.",
         "audioVideoSwitch": {
             "audio": "Voice",
@@ -1305,11 +1313,12 @@
         "recentListEmpty": "Your recent list is currently empty. Chat with your team and you will find all your recent meetings here.",
         "reducedUIText": "Welcome to {{app}}!",
         "roomNameAllowedChars": "Meeting name should not contain any of these characters: ?, &, :, ', \", %, #.",
+        "register": "Register",
         "roomname": "Enter room name",
         "roomnameHint": "Enter the name or URL of the room you want to join. You may make a name up, just let the people you are meeting know it so that they enter the same name.",
         "sendFeedback": "Send feedback",
         "startMeeting": "Start meeting",
         "terms": "Terms",
-        "title": "Secure, fully featured, and completely free video conferencing"
+        "title": "Vmeeting: Secure and completely free video conferencing"
     }
 }

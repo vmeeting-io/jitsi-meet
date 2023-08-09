@@ -1,5 +1,11 @@
-/* global interfaceConfig */
+/* global interfaceConfig, process */
 
+import axios from 'axios';
+import Button, { ButtonGroup } from '@atlaskit/button';
+import DropdownMenu, {
+    DropdownItem,
+    DropdownItemGroup
+} from '@atlaskit/dropdown-menu';
 import React from 'react';
 
 import { isMobileBrowser } from '../../base/environment/utils';
@@ -9,10 +15,16 @@ import { Watermarks } from '../../base/react';
 import { connect } from '../../base/redux';
 import { CalendarList } from '../../calendar-sync';
 import { RecentList } from '../../recent-list';
-import { SettingsButton, SETTINGS_TABS } from '../../settings';
+import { SETTINGS_TABS } from '../../settings';
+import { openSettingsDialog } from '../../settings/actions';
+import { NotificationsContainer } from '../../notifications/components';
 
 import { AbstractWelcomePage, _mapStateToProps } from './AbstractWelcomePage';
 import Tabs from './Tabs';
+
+// import { setCurrentUser } from '../../base/auth';
+import jitsiLocalStorage from '../../../../modules/util/JitsiLocalStorage';
+import { setJWT } from '../../base/jwt';
 
 /**
  * The pattern used to validate room name.
@@ -20,6 +32,10 @@ import Tabs from './Tabs';
  * @type {string}
  */
 export const ROOM_NAME_VALIDATE_PATTERN_STR = '^[^?&:\u0022\u0027%#]+$';
+
+const AUTH_PAGE_BASE = process.env.REACT_APP_AUTH_PAGE_BASE;
+const AUTH_API_BASE = process.env.REACT_APP_AUTH_API_BASE;
+const AUTH_JWT_TOKEN = process.env.REACT_APP_JWT_TOKEN;
 
 /**
  * The Web container rendering the welcome page.
@@ -50,7 +66,8 @@ class WelcomePage extends AbstractWelcomePage {
 
             generateRoomnames:
                 interfaceConfig.GENERATE_ROOMNAMES_ON_WELCOME_PAGE,
-            selectedTab: 0
+            selectedTab: 0,
+            submitting: false
         };
 
         /**
@@ -63,6 +80,8 @@ class WelcomePage extends AbstractWelcomePage {
         this._additionalContentRef = null;
 
         this._roomInputRef = null;
+
+        this._redirectRoom = false;
 
         /**
          * The HTML Element used as the container for additional toolbar content. Used
@@ -166,6 +185,38 @@ class WelcomePage extends AbstractWelcomePage {
     }
 
     /**
+     * Logout handler.
+     *
+     * @inheritdoc
+     * @returns {void}
+     */
+    _onLogout() {
+        const { dispatch } = this.props;
+
+        this.setState({ submitting: true });
+
+        return axios.get(`${AUTH_API_BASE}/logout`).then(() => {
+            // dispatch(setCurrentUser());
+            jitsiLocalStorage.removeItem(AUTH_JWT_TOKEN);
+            dispatch(setJWT());
+            this.setState({ submitting: false });
+        });
+    }
+
+    /**
+     * Settings handler.
+     *
+     * @inheritdoc
+     * @returns {void}
+     */
+    _onOpenSettings() {
+        const { dispatch } = this.props;
+        const defaultTab = SETTINGS_TABS.DEVICES;
+
+        dispatch(openSettingsDialog(defaultTab));
+    }
+
+    /**
      * Implements React's {@link Component#render()}.
      *
      * @inheritdoc
@@ -189,15 +240,21 @@ class WelcomePage extends AbstractWelcomePage {
                 </div>
 
                 <div className = 'header'>
-                    <div className = 'welcome-page-settings'>
-                        <SettingsButton
-                            defaultTab = { SETTINGS_TABS.CALENDAR } />
-                        { showAdditionalToolbarContent
-                            ? <div
-                                className = 'settings-toolbar-content'
-                                ref = { this._setAdditionalToolbarContentRef } />
-                            : null
-                        }
+                    <div className = 'header-toolbars'>
+                        <ButtonGroup>
+                            { buttons }
+                            <Button
+                                appearance = 'subtle'
+                                onClick = { this._onOpenSettings }>
+                                { t('toolbar.Settings') }
+                            </Button>
+                            { showAdditionalToolbarContent
+                                ? <div
+                                    className = 'settings-toolbar-content'
+                                    ref = { this._setAdditionalToolbarContentRef } />
+                                : null
+                            }
+                        </ButtonGroup>
                     </div>
                     <div className = 'header-image' />
                     <div className = 'header-container'>

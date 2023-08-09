@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package org.jitsi.meet.sdk;
+package org.postech.vmeeting.sdk;
 
-import static org.jitsi.meet.sdk.NotificationChannels.ONGOING_CONFERENCE_CHANNEL_ID;
+import static org.postech.vmeeting.sdk.NotificationChannels.ONGOING_CONFERENCE_CHANNEL_ID;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -29,7 +29,7 @@ import android.os.Build;
 import androidx.annotation.StringRes;
 import androidx.core.app.NotificationCompat;
 
-import org.jitsi.meet.sdk.log.JitsiMeetLogger;
+import org.postech.vmeeting.sdk.log.JitsiMeetLogger;
 
 import java.util.Random;
 

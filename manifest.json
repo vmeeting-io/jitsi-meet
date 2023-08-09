@@ -1,14 +1,14 @@
 {
-  "android_package_name": "org.jitsi.meet",
+  "android_package_name": "org.postech.vmeeting",
   "prefer_related_applications": true,
   "related_applications": [
     {
-      "id": "org.jitsi.meet",
+      "id": "org.postech.vmeeting",
       "platform": "chromeos_play"
     }
   ],
-  "short_name": "Jitsi Meet",
-  "name": "Jitsi Meet",
+  "short_name": "Vmeeting",
+  "name": "Vmeeting",
   "icons": [
     {
       "src": "static/pwa/icons/icon192.png",

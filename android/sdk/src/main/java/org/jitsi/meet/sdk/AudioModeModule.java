@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jitsi.meet.sdk;
+package org.postech.vmeeting.sdk;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -31,7 +31,7 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.annotations.ReactModule;
 
-import org.jitsi.meet.sdk.log.JitsiMeetLogger;
+import org.postech.vmeeting.sdk.log.JitsiMeetLogger;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -118,7 +118,7 @@ class AudioModeModule extends ReactContextBaseJavaModule {
     /**
      * Device change event.
      */
-    private static final String DEVICE_CHANGE_EVENT = "org.jitsi.meet:features/audio-mode#devices-update";
+    private static final String DEVICE_CHANGE_EVENT = "org.postech.vmeeting:features/audio-mode#devices-update";
 
     /**
      * List of currently available audio devices.

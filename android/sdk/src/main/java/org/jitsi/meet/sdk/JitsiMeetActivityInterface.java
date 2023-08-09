@@ -1,4 +1,4 @@
-package org.jitsi.meet.sdk;
+package org.postech.vmeeting.sdk;
 
 import androidx.core.app.ActivityCompat;
 

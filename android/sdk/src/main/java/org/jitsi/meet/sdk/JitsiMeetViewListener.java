@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.jitsi.meet.sdk;
+package org.postech.vmeeting.sdk;
 
 import java.util.Map;
 
 /**
- * Interface for listening to events coming from Jitsi Meet.
+ * Interface for listening to events coming from Vmeeting.
  */
 @Deprecated
 public interface JitsiMeetViewListener {

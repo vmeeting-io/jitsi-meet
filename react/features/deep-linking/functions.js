@@ -24,16 +24,16 @@ export function generateDeepLinkingURL() {
     // appears to be a link with an app-specific scheme, not a Universal
     // Link.
 
-    const appScheme = interfaceConfig.APP_SCHEME || 'org.jitsi.meet';
+    const appScheme = interfaceConfig.APP_SCHEME || 'org.postech.vmeeting';
     const { href } = window.location;
     const regex = new RegExp(URI_PROTOCOL_PATTERN, 'gi');
 
     // Android: use an intent link, custom schemes don't work in all browsers.
     // https://developer.chrome.com/multidevice/android/intents
     if (Platform.OS === 'android') {
-        // https://meet.jit.si/foo -> meet.jit.si/foo
+        // https://vmeeting.io/foo -> meet.jit.si/foo
         const url = href.replace(regex, '').substr(2);
-        const pkg = interfaceConfig.ANDROID_APP_PACKAGE || 'org.jitsi.meet';
+        const pkg = interfaceConfig.ANDROID_APP_PACKAGE || 'org.postech.vmeeting';
 
         return `intent://${url}#Intent;scheme=${appScheme};package=${pkg};end`;
     }

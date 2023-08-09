@@ -44,7 +44,7 @@
         // Dropbox account for recording is not acceptable.
 #if DEBUG
         [builder setFeatureFlag:@"ios.recording.enabled" withBoolean:YES];
-        builder.serverURL = [NSURL URLWithString:@"https://meet.jit.si"];
+        builder.serverURL = [NSURL URLWithString:@"https://vmeeting.io"];
     }];
 
   [jitsiMeet application:application didFinishLaunchingWithOptions:launchOptions];

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jitsi.meet;
+package org.postech.vmeeting;
 
 import android.app.Application;
 import android.util.Log;
@@ -22,10 +22,10 @@ import android.util.Log;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
 
-import org.jitsi.meet.sdk.JitsiReactNativeHost;
+import org.postech.vmeeting.sdk.JitsiReactNativeHost;
 
 /**
- * Application class for Jitsi Meet. The only reason why this exists is for Detox
+ * Application class for Vmeeting. The only reason why this exists is for Detox
  * to believe our app is a "greenfield" app. SDK users need not use this.
  */
 public class MainApplication extends Application implements ReactApplication {

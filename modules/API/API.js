@@ -855,15 +855,15 @@ function sanitizeMouseEvent(event: MouseEvent) {
 
 /**
  * Implements API class that communicates with external API class and provides
- * interface to access Jitsi Meet features by external applications that embed
- * Jitsi Meet.
+ * interface to access Vmeeting features by external applications that embed
+ * Vmeeting.
  */
 class API {
     _enabled: boolean;
 
     /**
      * Initializes the API. Setups message event listeners that will receive
-     * information from external applications that embed Jitsi Meet. It also
+     * information from external applications that embed Vmeeting. It also
      * sends a message to the external application that API is initialized.
      *
      * @param {Object} options - Optional parameters.

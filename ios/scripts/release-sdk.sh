@@ -10,7 +10,7 @@ SDK_VERSION=${OVERRIDE_SDK_VERSION:-${DEFAULT_SDK_VERSION}}
 DO_GIT_TAG=${GIT_TAG:-0}
 
 
-echo "Releasing Jitsi Meet SDK ${SDK_VERSION}"
+echo "Releasing Vmeeting SDK ${SDK_VERSION}"
 
 ${THIS_DIR}/../../node_modules/react-native-webrtc/tools/downloadBitcode.sh
 

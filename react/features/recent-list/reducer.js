@@ -103,7 +103,7 @@ function _appWillMount(state) {
             return state;
         }
 
-        // In an enterprise/internal build of Jitsi Meet for Android and iOS we
+        // In an enterprise/internal build of Vmeeting for Android and iOS we
         // had recent-list's state as an object with property list.
         const { list } = state;
 

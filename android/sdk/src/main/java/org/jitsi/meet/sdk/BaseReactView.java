@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jitsi.meet.sdk;
+package org.postech.vmeeting.sdk;
 
 import android.app.Activity;
 import android.content.Context;
@@ -98,7 +98,7 @@ public abstract class BaseReactView<ListenerT>
 
     /**
      * The listener (e.g. {@link JitsiMeetViewListener}) instance for reporting
-     * events occurring in Jitsi Meet.
+     * events occurring in Vmeeting.
      */
     @Deprecated
     private ListenerT listener;

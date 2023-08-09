@@ -3,7 +3,7 @@
  * {@link https://github.com/Aleksandern/react-native-android-settings-library}.
  */
 
-package org.jitsi.meet.sdk;
+package org.postech.vmeeting.sdk;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;

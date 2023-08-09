@@ -1,4 +1,4 @@
-package org.jitsi.meet.sdk;
+package org.postech.vmeeting.sdk;
 
 import android.app.Application;
 
@@ -12,7 +12,7 @@ import java.util.List;
  * This is the minimal implementation of ReactNativeHost that will make things like the
  * Detox testing framework believe we are a "greenfield" app.
  *
- * Generally speaking, apps using the SDK (other than the Jitsi Meet app itself) should not
+ * Generally speaking, apps using the SDK (other than the Vmeeting app itself) should not
  * need to use this because the
  */
 public class JitsiReactNativeHost extends ReactNativeHost {

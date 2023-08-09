@@ -1,4 +1,4 @@
-package org.jitsi.meet.sdk;
+package org.postech.vmeeting.sdk;
 
 import java.util.ArrayList;
 import java.util.List;

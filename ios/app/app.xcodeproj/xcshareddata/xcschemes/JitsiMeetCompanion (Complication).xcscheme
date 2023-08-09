@@ -58,7 +58,7 @@
       <RemoteRunnable
          runnableDebuggingMode = "2"
          BundleIdentifier = "com.apple.Carousel"
-         RemotePath = "/Jitsi Meet">
+         RemotePath = "/Vmeeting">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0BEA5C241F7B8F73000D0AB4"
@@ -78,7 +78,7 @@
       <RemoteRunnable
          runnableDebuggingMode = "2"
          BundleIdentifier = "com.apple.Carousel"
-         RemotePath = "/Jitsi Meet">
+         RemotePath = "/Vmeeting">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "0BEA5C241F7B8F73000D0AB4"

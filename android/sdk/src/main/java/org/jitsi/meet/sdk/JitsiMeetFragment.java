@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jitsi.meet.sdk;
+package org.postech.vmeeting.sdk;
 
 import android.os.Bundle;
 import androidx.annotation.NonNull;
@@ -27,7 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 /**
- * Base {@link Fragment} for applications integrating Jitsi Meet at a higher level. It
+ * Base {@link Fragment} for applications integrating Vmeeting at a higher level. It
  * contains all the required wiring between the {@code JitsiMeetView} and
  * the Fragment lifecycle methods already implemented.
  *

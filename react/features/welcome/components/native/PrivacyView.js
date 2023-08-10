@@ -21,7 +21,7 @@ type Props = {
 /**
  * The URL at which the privacy policy is available to the user.
  */
-const PRIVACY_URL = 'https://jitsi.org/meet/privacy';
+const PRIVACY_URL = 'https://vmeeting.io/auth/page/privacy';
 
 const PrivacyView = ({ navigation }: Props) => {
 

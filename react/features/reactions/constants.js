@@ -125,13 +125,13 @@ export const REACTIONS = {
         soundId: LAUGH_SOUND_ID,
         soundFiles: LAUGH_SOUND_FILES
     },
-    surprised: {
-        message: ':face_with_open_mouth:',
-        emoji: '😮',
-        shortcutChar: 'O',
-        soundId: SURPRISE_SOUND_ID,
-        soundFiles: SURPRISE_SOUND_FILES
-    },
+    // surprised: {
+    //     message: ':face_with_open_mouth:',
+    //     emoji: '😮',
+    //     shortcutChar: 'O',
+    //     soundId: SURPRISE_SOUND_ID,
+    //     soundFiles: SURPRISE_SOUND_FILES
+    // },
     boo: {
         message: ':slightly_frowning_face:',
         emoji: '🙁',
@@ -145,5 +145,12 @@ export const REACTIONS = {
         shortcutChar: 'S',
         soundId: SILENCE_SOUND_ID,
         soundFiles: SILENCE_SOUND_FILES
+    },
+    birthday: {
+        message: ':partying_face:',
+        emoji: '🥳',
+        shortcutChar: 'P',
+        soundId: CLAP_SOUND_ID,
+        soundFiles: CLAP_SOUND_FILES
     }
 };

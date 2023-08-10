@@ -9,9 +9,8 @@ import { renderArrowBackButton }
     from '../../../mobile/navigation/components/welcome/functions';
 import { screen } from '../../../mobile/navigation/routes';
 import styles from '../styles';
+import { getHelpLink } from '../../functions';
 
-
-const DEFAULT_HELP_CENTRE_URL = 'https://web-cdn.jitsi.net/faq/meet-faq.html';
 
 type Props = {
 
@@ -74,6 +73,7 @@ class HelpView extends PureComponent<Props> {
  * @returns {Props}
  */
 function _mapStateToProps(state) {
+    DEFAULT_HELP_CENTRE_URL = getHelpLink();
     return {
         _url: state['features/base/config'].helpCentreURL || DEFAULT_HELP_CENTRE_URL
     };

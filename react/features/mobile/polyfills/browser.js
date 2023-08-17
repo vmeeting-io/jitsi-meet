@@ -278,6 +278,14 @@ function _visitNode(node, callback) {
 
     // Performance API
 
+    const now = () => Date.now();
+
+    if (!global.performance) {
+        global.performance = {};
+    }
+
+    global.performance.now = now;
+
     // RN only provides the now() method, since the polyfill refers the global
     // performance object itself we extract it here to avoid infinite recursion.
     const performanceNow = global.performance.now;

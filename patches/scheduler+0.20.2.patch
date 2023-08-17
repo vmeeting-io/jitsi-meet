@@ -1,0 +1,14 @@
+diff --git a/node_modules/scheduler/cjs/scheduler.development.js b/node_modules/scheduler/cjs/scheduler.development.js
+index 200e838..421b99d 100644
+--- a/node_modules/scheduler/cjs/scheduler.development.js
++++ b/node_modules/scheduler/cjs/scheduler.development.js
+@@ -20,7 +20,8 @@ var requestHostCallback;
+ var requestHostTimeout;
+ var cancelHostTimeout;
+ var requestPaint;
+-var hasPerformanceNow = typeof performance === 'object' && typeof performance.now === 'function';
++// var hasPerformanceNow = typeof performance === 'object' && typeof performance.now === 'function';
++var hasPerformanceNow = false;
+ 
+ if (hasPerformanceNow) {
+   var localPerformance = performance;

@@ -250,9 +250,5 @@ function _user2participant({ avatar, avatarUrl, email, id, name, username, isAdm
         participant.username = username;
     }
 
-    if (hiddenFromRecorder === 'true' || hiddenFromRecorder === true) {
-        participant.hiddenFromRecorder = true;
-    }
-
     return Object.keys(participant).length ? participant : undefined;
 }

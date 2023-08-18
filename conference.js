@@ -2678,14 +2678,6 @@ export default {
 
         dispatch(conferenceJoined(room));
 
-        const jwt = APP.store.getState()['features/base/jwt'];
-
-        if (jwt?.user?.hiddenFromRecorder) {
-            dispatch(muteLocal(true, MEDIA_TYPE.AUDIO));
-            dispatch(muteLocal(true, MEDIA_TYPE.VIDEO));
-            dispatch(setAudioUnmutePermissions(true, true));
-            dispatch(setVideoUnmutePermissions(true, true));
-        }
     },
 
     /**

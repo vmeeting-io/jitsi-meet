@@ -14,6 +14,10 @@ import { translate } from '../../../base/i18n';
 import { JitsiConnectionErrors } from '../../../base/lib-jitsi-meet';
 import type { StyleType } from '../../../base/styles';
 import { authenticateAndUpgradeRole, cancelLogin } from '../../actions.native';
+import LoginWebView from '../../../../components/LoginWebView/LoginWebView';
+import tokenLocalStorage from '../../../../api/tokenLocalStorage';
+import { getLocationURL } from '../../../../api/url';
+import { reloadNow } from '../../../app/actions.native';
 
 // Register styles.
 import './styles';
@@ -143,6 +147,7 @@ class LoginDialog extends Component<Props, State> {
         this._onLogin = this._onLogin.bind(this);
         this._onPasswordChange = this._onPasswordChange.bind(this);
         this._onUsernameChange = this._onUsernameChange.bind(this);
+        this._onLoginWithToken = this._onLoginWithToken.bind(this);
     }
 
     /**
@@ -152,44 +157,8 @@ class LoginDialog extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const {
-            _connecting: connecting,
-            t,
-            visible
-        } = this.props;
-
         return (
-            <View>
-                <Dialog.Container
-                    visible = { visible }>
-                    <Dialog.Title>
-                        { t('dialog.login') }
-                    </Dialog.Title>
-                    <Dialog.Input
-                        autoCapitalize = { 'none' }
-                        autoCorrect = { false }
-                        onChangeText = { this._onUsernameChange }
-                        placeholder = { 'user@domain.com' }
-                        spellCheck = { false }
-                        value = { this.state.username } />
-                    <Dialog.Input
-                        autoCapitalize = { 'none' }
-                        onChangeText = { this._onPasswordChange }
-                        placeholder = { t('dialog.userPassword') }
-                        secureTextEntry = { true }
-                        value = { this.state.password } />
-                    <Dialog.Description>
-                        { this._renderMessage() }
-                    </Dialog.Description>
-                    <Dialog.Button
-                        label = { t('dialog.Cancel') }
-                        onPress = { this._onCancel } />
-                    <Dialog.Button
-                        disabled = { connecting }
-                        label = { t('dialog.Ok') }
-                        onPress = { this._onLogin } />
-                </Dialog.Container>
-            </View>
+            <LoginWebView onReceiveToken = { this._onLoginWithToken } />
         );
     }
 
@@ -326,6 +295,29 @@ class LoginDialog extends Component<Props, State> {
 
         return r;
     }
+
+    _onLoginWithToken: (string) => void;
+
+    /**
+     * Notifies this LoginDialog that it has been received token.
+     *
+     * @private
+     * @param {string} token - Login token.
+     * @returns {void}
+     */
+    _onLoginWithToken(token) {
+        console.log('_onLoginWithToken:', token);
+
+        // If there's a conference it means that the connection has succeeded,
+        // but authentication is required in order to join the room.
+        if (this.props._conference) {
+            this.props._setToken(token);
+            this.props.dispatch(reloadNow());
+        } else {
+            this.props.dispatch(setJWT());
+            this.props.dispatch(reloadNow());
+        }
+    }
 }
 
 /**
@@ -356,6 +348,8 @@ function _mapStateToProps(state) {
         _connecting: Boolean(connecting) || Boolean(thenableWithCancel),
         _error: connectionError || authenticateAndUpgradeRoleError,
         _progress: progress,
+        // _setToken: token => tokenLocalStorage.setItemByURL(getLocationURL(state), token),
+        _setToken: token => tokenLocalStorage.setItemByURL("https://vmeeting.io", token),
         _styles: ColorSchemeRegistry.get(state, 'LoginDialog')
     };
 }

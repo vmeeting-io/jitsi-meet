@@ -1,8 +1,19 @@
 // @flow
 
+/* global interfaceConfig, process */
+
+import { jitsiLocalStorage } from '@jitsi/js-utils';
+import axios from 'axios';
+import { has, omit, size } from 'lodash';
+import qs from 'query-string';
 import type { Dispatch } from 'redux';
 
+import { API_ID } from '../../../modules/API/constants';
+import tokenLocalStorage from '../../api/tokenLocalStorage';
+import { getLocationURL, getAuthUrl } from '../../api/url';
+import { loadCurrentUser } from '../base/auth';
 import { setRoom } from '../base/conference';
+import { navigateRoot } from '../mobile/navigation/rootNavigationContainerRef';
 import {
     configWillLoad,
     createFakeConfig,
@@ -13,21 +24,46 @@ import {
 } from '../base/config';
 import { connect, disconnect, setLocationURL } from '../base/connection';
 import { loadConfig } from '../base/lib-jitsi-meet/functions.native';
-import { createDesiredLocalTracks } from '../base/tracks';
+import { setJWT } from '../base/jwt';
+import { browser } from '../base/lib-jitsi-meet';
+import { MEDIA_TYPE } from '../base/media';
+import { toState } from '../base/redux';
+import { createDesiredLocalTracks, isLocalCameraTrackMuted, isLocalTrackMuted } from '../base/tracks';
 import {
+    addHashParamsToURL,
     getBackendSafeRoomName,
+    getLocationContextRoot,
     parseURIString,
     toURLString
 } from '../base/util';
-import { navigateRoot } from '../mobile/navigation/rootNavigationContainerRef';
 import { screen } from '../mobile/navigation/routes';
+import { isVpaasMeeting } from '../jaas/functions';
+import { NOTIFICATION_TIMEOUT_TYPE, clearNotifications, saveErrorNotification, showNotification } from '../notifications';
 import { setFatalError } from '../overlay';
 
-import { getDefaultURL } from './functions';
+import {
+    getDefaultURL,
+    getName
+} from './functions';
+
 import { addTrackStateToURL } from './functions.native';
 import logger from './logger';
 
 export * from './actions.any';
+
+// eslint-disable-next-line require-jsdoc
+function getParams(uri: string) {
+    const regex = /[?&]([^=#]+)=([^&#]*)/g;
+    const params = {};
+    let match;
+
+    // eslint-disable-next-line no-cond-assign
+    while (match = regex.exec(uri)) {
+        params[match[1]] = match[2];
+    }
+
+    return params;
+}
 
 /**
  * Triggers an in-app navigation to a specific route. Allows navigation to be
@@ -43,6 +79,7 @@ export function appNavigate(uri: ?string) {
 
     return async (dispatch: Dispatch<any>, getState: Function) => {
         let location = parseURIString(uri);
+        const params = getParams(uri);
 
         // If the specified location (URI) does not identify a host, use the app's
         // default.
@@ -65,7 +102,7 @@ export function appNavigate(uri: ?string) {
         }
 
         location.protocol || (location.protocol = 'https:');
-        const { contextRoot, host, room } = location;
+        const { contextRoot, host, room, tenant } = location;
         const locationURL = new URL(location.toString());
 
         if (room) {
@@ -124,6 +161,23 @@ export function appNavigate(uri: ?string) {
 
         dispatch(setLocationURL(locationURL));
         dispatch(setConfig(config));
+
+        if (!room) {
+            dispatch(setJWT());
+        }
+
+        const willAuthenticateURL = getLocationURL(getState());
+        if (locationURL) {
+            dispatch(setJWT());
+            const savedToken = tokenLocalStorage.getItemByURL(willAuthenticateURL);
+            if (savedToken) {
+                dispatch(setJWT(savedToken));
+            } else if (params.token && tokenLocalStorage.validateToken(null, params.token)) {
+                tokenLocalStorage.setItemByURL(willAuthenticateURL, params.token);
+                dispatch(setJWT(params.token));
+            }
+        }
+
         dispatch(setRoom(room));
 
         if (room) {
@@ -150,7 +204,7 @@ export function reloadNow() {
         const newURL = addTrackStateToURL(locationURL, state);
 
         logger.info(`Reloading the conference using URL: ${locationURL}`);
-
+        
         dispatch(appNavigate(toURLString(newURL)));
     };
 }

@@ -102,7 +102,7 @@
     "js-md5": "0.6.1",
     "jwt-decode": "2.2.0",
     "kalidokit": "github:tu-nv/kalidokit",
-    "lib-jitsi-meet": "github:vmeeting-io/lib-jitsi-meet#056f90bc20bd864177e2fa5edc1ecfcf212408db",
+    "lib-jitsi-meet": "github:vmeeting-io/lib-jitsi-meet#8f331828a5b0e7611d6b02d4c6ea9da325d5c8df",
     "libflacjs": "github:mmig/libflac.js#93d37e7f811f01cf7d8b6a603e38bd3c3810907d",
     "lodash": "4.17.21",
     "mark.js": "^8.11.1",

@@ -447,7 +447,7 @@ class WelcomePage extends AbstractWelcomePage {
                 </div>
             );
         } else {
-            if (!config.disableUserRegistration) {
+            if (config.useRegistration) {
                 buttons.push(
                     <Button
                         appearance = 'subtle'
@@ -458,15 +458,17 @@ class WelcomePage extends AbstractWelcomePage {
                     </Button>
                 );
             }
-            buttons.push(
-                <Button
-                    appearance = 'subtle'
-                    className = 'button'
-                    href = { `${AUTH_PAGE_BASE}/login` }
-                    key = 'login'>
-                    {t('toolbar.login')}
-                </Button>
-            );
+            if (config.useLogin) {
+                buttons.push(
+                    <Button
+                        appearance = 'subtle'
+                        className = 'button'
+                        href = { `${AUTH_PAGE_BASE}/login` }
+                        key = 'login'>
+                        {t('toolbar.login')}
+                    </Button>
+                );
+            }
         }
 
         return (

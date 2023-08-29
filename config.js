@@ -1252,7 +1252,6 @@ var config = {
 
     // disableRemoteMute: true,
     // disableSortable: false,
-    // disableUserRegistration: true,
     // hideSelectBackground: 'guest',     // true, false, 'guest'
 
     // showFramerateSelect: true,
@@ -1378,3 +1377,5 @@ config.etherpad_base = 'https://jitsi-meet.example.com/boards/';
 
 config.disableJoinLeaveSounds = true;
 config.disableShortcuts = true;
+config.useRegistration = true;
+config.useLogin = true;

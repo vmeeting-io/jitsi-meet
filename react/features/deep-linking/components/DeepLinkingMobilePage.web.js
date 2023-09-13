@@ -7,6 +7,7 @@ import type { Dispatch } from 'redux';
 import Div100vh from '../../../components/Div100vh';
 import { createDeepLinkingPageEvent, sendAnalytics } from '../../analytics';
 import { isSupportedMobileBrowser } from '../../base/environment';
+import { isMobileBrowser } from '../../base/environment/utils';
 import { translate } from '../../base/i18n';
 import { Platform } from '../../base/react';
 import { connect } from '../../base/redux';
@@ -82,6 +83,16 @@ class DeepLinkingMobilePage extends Component<Props> {
         sendAnalytics(
             createDeepLinkingPageEvent(
                 'displayed', 'DeepLinkingMobile', { isMobileBrowser: true }));
+
+        if (isMobileBrowser()) { // mobile
+            const launchWebApp
+                = typeof interfaceConfig === 'object'
+                    && interfaceConfig.MOBILE_APP_PROMO === 'web';
+
+            if (launchWebApp) {
+                this.props.dispatch(openWebApp());
+            }
+        }
     }
 
     /**
@@ -117,6 +128,16 @@ class DeepLinkingMobilePage extends Component<Props> {
             ? '/images/playstore.png'
             : '/images/appstore.png';
 
+        if (isMobileBrowser()) { // mobile
+            const launchWebApp
+                = typeof interfaceConfig === 'object'
+                    && interfaceConfig.MOBILE_APP_PROMO === 'web';
+    
+            if (launchWebApp) {
+                return null;
+            }
+        }
+        
         return (
             <Div100vh className = 'deep-linking-mobile-page'>
                 <Helmet>

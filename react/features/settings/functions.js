@@ -202,7 +202,7 @@ export function getProfileTabProps(stateful: Object | Function) {
         authLogin,
         conference
     } = state['features/base/conference'];
-    const { hideEmailInSettings } = state['features/base/config'];
+    const { hideEmailInSettings, useLogin } = state['features/base/config'];
     const localParticipant = getLocalParticipant(state);
     const language = i18next.language || DEFAULT_LANGUAGE;
 
@@ -214,7 +214,8 @@ export function getProfileTabProps(stateful: Object | Function) {
         email: localParticipant.email,
         birthDate: localParticipant.birthDate,
         readOnlyName: isNameReadOnly(state),
-        hideEmailInSettings
+        hideEmailInSettings,
+        useLogin
     };
 }
 

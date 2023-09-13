@@ -253,8 +253,8 @@ class ProfileTab extends AbstractDialogTab<Props> {
      */
     _renderAuth() {
         const {
-            authLogin,
-            t
+            t,
+            useLogin
         } = this.props;
 
         const loggedIn = tokenLocalStorage.getItem(APP.store.getState());
@@ -269,7 +269,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
                     && <div className = 'auth-name'>
                         { t('settings.loggedIn', { name: loggedInName }) }
                     </div> }
-                { !loggedIn && <Button
+                { !loggedIn && useLogin && <Button
                     appearance = 'primary'
                     id = 'login_button'
                     onClick = { this._onAuthToggle }

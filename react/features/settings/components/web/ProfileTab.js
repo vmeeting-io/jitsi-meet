@@ -19,6 +19,7 @@ import { getLocalParticipant} from '../../../base/participants';
 import tokenLocalStorage from '../../../../api/tokenLocalStorage';
 import DatePicker from '../../../../components/DatePicker';
 import ko from '../../../../components/DatePicker/locale/ko_KR';
+import filterXSS from '../../../../utils/filterXSS';
 
 import { DEFAULT_BIRTHDATE } from '../../../base/participants/constants';
 
@@ -119,7 +120,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
      * @returns {void}
      */
     _onDisplayNameChange({ target: { value } }) {
-        super._onChange({ displayName: value });
+        super._onChange({ displayName: filterXSS(value) });
     }
 
     _onEmailChange: (Object) => void;
@@ -132,7 +133,7 @@ class ProfileTab extends AbstractDialogTab<Props> {
      * @returns {void}
      */
     _onEmailChange({ target: { value } }) {
-        super._onChange({ email: value });
+        super._onChange({ email: filterXSS(value) });
     }
 
     _onBirthDateChange: (Object) => void;

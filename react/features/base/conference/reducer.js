@@ -48,7 +48,7 @@ const DEFAULT_STATE = {
 
 const STORE_NAME = 'features/base/conference';
 
-PersistenceRegistry.register(STORE_NAME, { site: true }, DEFAULT_STATE);
+PersistenceRegistry.register(STORE_NAME, { site: true, roomInfo: true }, DEFAULT_STATE);
 
 /**
  * Listen for actions that contain the conference object, so that it can be

@@ -229,8 +229,9 @@ class WelcomePage extends AbstractWelcomePage {
      * @returns None
      *  */
     _getManualDownloadLink(){
-        const krLink = window.config.features.download.krLink;
-        const enLink = window.config.features.download.enLink;
+        const { _features } = this.props;
+        const krLink = _features.download.krLink;
+        const enLink = _features.download.enLink;
         const selectedLang =  localStorage.language == "ko" ? krLink:enLink;
 
         var a = document.createElement('A');
@@ -247,8 +248,9 @@ class WelcomePage extends AbstractWelcomePage {
      * @returns None
      *  */
     _getSiteLink(){
-        const krLink = window.config.features.learnMore.krLink;
-        const enLink = window.config.features.learnMore.enLink;
+        const { _features } = this.props;
+        const krLink = _features.learnMore.krLink;
+        const enLink = _features.learnMore.enLink;
         const selectedLang =  localStorage.language == "ko" ? krLink:enLink;
         window.open(selectedLang);
     }
@@ -312,6 +314,7 @@ class WelcomePage extends AbstractWelcomePage {
         const {
             _defaultLogoUrl,
             _disableIntroVideo,
+            _features,
             _moderatedRoomServiceUrl,
             _jwt,
             _user,
@@ -367,17 +370,21 @@ class WelcomePage extends AbstractWelcomePage {
                         }
                         triggerType = 'button'>
                         <DropdownItemGroup className = 'menu-container'>
-                            <DropdownItem
-                                className = 'menu-item mobile'
-                                onClick = { this._getSiteLink }>
-                                { t('toolbar.features.learnMore') }
-                            </DropdownItem>
+                            { _features?.learnMore && (
+                                <DropdownItem
+                                    className = 'menu-item mobile'
+                                    onClick = { this._getSiteLink }>
+                                    { t('toolbar.features.learnMore') }
+                                </DropdownItem>
+                            )}
 
-                            <DropdownItem
-                                className = 'menu-item mobile'
-                                onClick = { this._getManualDownloadLink }>
-                                { t('toolbar.features.downloadManual') }
-                            </DropdownItem>
+                            { _features?.download && (
+                                <DropdownItem
+                                    className = 'menu-item mobile'
+                                    onClick = { this._getManualDownloadLink }>
+                                    { t('toolbar.features.downloadManual') }
+                                </DropdownItem>
+                            )}
 
                             <DropdownItem
                                 className = 'menu-item mobile'
@@ -495,18 +502,20 @@ class WelcomePage extends AbstractWelcomePage {
                                     }
                                     triggerType = 'button'>
                                     <DropdownItemGroup className = 'menu-container'>
-                                        <DropdownItem
-                                            className = 'menu-item'
-                                            onClick = { this._getSiteLink }>
-                                            { t('toolbar.features.learnMore') }
-                                        </DropdownItem>
-
-                                        <DropdownItem
-                                            className = 'menu-item'
-                                            onClick = { this._getManualDownloadLink }>
-                                            { t('toolbar.features.downloadManual') }
-                                        </DropdownItem>
-
+                                        { _features?.learnMore && (
+                                            <DropdownItem
+                                                className = 'menu-item'
+                                                onClick = { this._getSiteLink }>
+                                                { t('toolbar.features.learnMore') }
+                                            </DropdownItem>
+                                        )}
+                                        { _features?.download && (
+                                            <DropdownItem
+                                                className = 'menu-item'
+                                                onClick = { this._getManualDownloadLink }>
+                                                { t('toolbar.features.downloadManual') }
+                                            </DropdownItem>
+                                        )}
 
                                         <DropdownItem
                                             className = 'menu-item'

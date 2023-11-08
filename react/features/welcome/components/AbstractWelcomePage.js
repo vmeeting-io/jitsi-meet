@@ -287,6 +287,7 @@ export function _mapStateToProps(state: Object) {
     const {
         disableIntroVideo,
         enableInsecureRoomNameWarning,
+        features,
         logoUrl,
         moderatedRoomServiceUrl,
         toolbarButtons = []
@@ -297,6 +298,7 @@ export function _mapStateToProps(state: Object) {
         _defaultLogoUrl: logoUrl,
         _disableIntroVideo: disableIntroVideo,
         _enableInsecureRoomNameWarning: enableInsecureRoomNameWarning || false,
+        _features: features,
         _moderatedRoomServiceUrl: moderatedRoomServiceUrl,
         _recentListEnabled: isRecentListEnabled(),
         _room: state['features/base/conference'].room,

@@ -10,8 +10,8 @@ var config = {
             krLink : "https://sites.google.com/kedutech.kr/ko-vmeeting-guide-v2"
         },
         download:{
-            krLink : "/static/doc/manual/Vmeeting_Manual_KO_v2.3.pdf",
-            enLink : "/static/doc/manual/Vmeeting_Manual_EN_v2.3.pdf"
+            krLink : "/static/doc/manual/Vmeeting_Manual_KO_v2.5.pdf",
+            enLink : "/static/doc/manual/Vmeeting_Manual_EN_v2.5.pdf"
         }
     },
     DID:{

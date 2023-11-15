@@ -101,6 +101,8 @@ import VideoSettingsButton from './VideoSettingsButton';
 import { setShareMenuVisible } from '../../actions.web';
 import ShareDesktopButton from './ShareDesktopButton';
 
+import { PoseDemoButton } from '../../../pose-demo';
+
 /**
  * The type of the React {@code Component} props of {@link Toolbox}.
  */
@@ -789,6 +791,12 @@ class Toolbox extends Component<Props> {
             group: 3
         };
 
+        const poseDemo = !_screenSharing && {
+            key: 'pose-demo',
+            Content: PoseDemoButton,
+            group: 3
+        }
+
         // const speakerStats = {
         //     key: 'stats',
         //     Content: SpeakerStatsButton,
@@ -864,6 +872,7 @@ class Toolbox extends Component<Props> {
             // whiteboard,
             virtualBackground,
             virtualAvatar,
+            poseDemo,
             // speakerStats,
             settings,
             shortcuts,

@@ -1200,6 +1200,7 @@
             "pip": "PIP 모드 토글",
             "privateMessage": "개인메시지 보내기",
             "profile": "프로필 편집",
+            "posedemo": "자세 인식 데모",
             "raiseHand": "말하기 요청 토글",
             "reactionsMenu": "리액션 메뉴 열기 / 닫기",
             "recording": "레코딩 토글",
@@ -1299,6 +1300,7 @@
         "pip": "PIP 모드 시작",
         "privateMessage": "개인메시지 보내기",
         "profile": "프로필 편집",
+        "posedemo": "자세 인식 데모",
         "raiseHand": "말하기 요청/취소",
         "raiseYourHand": "말하기 요청",
         "Register": "회원가입",
@@ -1578,5 +1580,13 @@
             "title": "자막 (Speech-to-Text)",
             "enabled": "자막이 활성화 되었습니다. \"추가 액션\" 메뉴에서 세부 설정이 가능합니다."
         }
+    },
+    "posedemo": {
+        "title": "자세 인식 데모",
+        "enableDialogText": "자세 인식 데모를 활성화합니다.",
+        "toggleLabel": "자세 인식 활성화",
+        "toggle3DLabel": "3D 자세 표시",
+        "toggleOnCamLabel": "카메라 위에 표시",
+        "apply": "적용"
     }
 }

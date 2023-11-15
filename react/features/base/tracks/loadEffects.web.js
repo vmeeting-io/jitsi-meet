@@ -4,6 +4,7 @@ import { getAuthUrl } from '../../../api/url';
 import { createVirtualBackgroundEffect } from '../../stream-effects/virtual-background';
 import { createVirtualAvatarEffect } from '../../stream-effects/virtual-avatar';
 import { createAREffect } from '../../stream-effects/ar-effect';
+import { createPoseEffect } from '../../stream-effects/pose-effect';
 
 import logger from './logger';
 
@@ -18,6 +19,7 @@ export default function loadEffects(store: Object): Promise<any> {
     const virtualBackground = state['features/virtual-background'];
     const virtualAvatar = state['features/virtual-avatar'];
     const ar = state['features/ar-effect'];
+    const pose = state['features/posedemo'];
     const apiBase = getAuthUrl(state);
 
     const virtualAvatarPromise = virtualAvatar.virtualAvatarEffectEnabled
@@ -47,5 +49,14 @@ export default function loadEffects(store: Object): Promise<any> {
             })
         : Promise.resolve();
 
-    return Promise.all([ virtualAvatarPromise, backgroundPromise, arPromise ]);
+    const posePromise = pose.enabled
+        ? createPoseEffect({ ...pose, apiBase })
+            .catch(error => {
+                logger.error('Failed to obtain the pose effect instance with error: ', error);
+
+                return Promise.resolve();
+            })
+        : Promise.resolve();
+
+    return Promise.all([ posePromise, virtualAvatarPromise, backgroundPromise, arPromise ]);
 }

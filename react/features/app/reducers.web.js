@@ -18,4 +18,5 @@ import '../shared-video/reducer';
 import '../talk-while-muted/reducer';
 import '../virtual-background/reducer';
 import '../virtual-avatar/reducer';
+import '../pose-demo/reducer';
 import './reducers.any';

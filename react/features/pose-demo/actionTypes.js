@@ -1,0 +1,5 @@
+export const TOGGLE_POSEDEMO = 'TOGGLE_POSEDEMO';
+
+export const TOGGLE_3D_VIEW = 'TOGGLE_3D_VIEW';
+
+export const TOGGLE_VIEW_ON_CAM = 'TOGGLE_VIEW_ON_CAM';

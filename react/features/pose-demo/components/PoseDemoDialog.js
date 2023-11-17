@@ -1,19 +1,17 @@
 // @flow
 
 import Spinner from '@atlaskit/spinner';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
-import { Dialog, hideDialog, openDialog } from '../../base/dialog';
+import { Dialog, hideDialog } from '../../base/dialog';
 import { translate } from '../../base/i18n';
 import { connect } from '../../base/redux';
 import { Switch } from '../../base/react';
 import { getLocalVideoTrack } from '../../base/tracks';
-import { toggle3DView, togglePoseEffect, toggleViewOnCam } from '../actions';
+import { togglePoseEffect } from '../actions';
 
 
 type Props = {
-    conference: Object,
-
     _enabled: Boolean,
 
     _viewOnCam: Boolean,
@@ -42,7 +40,6 @@ const onError = event => {
  * @returns {ReactElement}
  */
 function PoseDemo({
-    conference,
     _enabled,
     _viewOnCam,
     _view3D,
@@ -67,21 +64,12 @@ function PoseDemo({
     }, [ dispatch ]);
 
     const applyPoseDemo = (() => {
-        if(enabled !== _enabled){
+        if (enabled !== _enabled || view3D !== _view3D || viewOnCam !== _viewOnCam) {
             dispatch(togglePoseEffect({
                 enabled: enabled,
                 view3D: view3D,
                 viewOnCam: viewOnCam
             }, _jitsiTrack));
-        }
-        else {
-            if(enabled && view3D !== _view3D) {
-                dispatch(toggle3DView(view3D));
-            }
-
-            if(enabled && viewOnCam !== _viewOnCam) {
-                dispatch(toggleViewOnCam(viewOnCam));
-            }
         }
 
         dispatch(hideDialog());
@@ -142,21 +130,21 @@ function PoseDemo({
                         <div className = 'stt-section'>
                             <div className = 'control-row'>
                                 <label htmlFor = 'posedemo-section-switch'>
-                                    { t('posedemo.toggle3DLabel') }
-                                </label>
-                                <Switch
-                                    id = 'posedemo-section-switch'
-                                    onValueChange = { onToggleView3D }
-                                    value = { view3D } />
-                            </div>
-                            <div className = 'control-row'>
-                                <label htmlFor = 'posedemo-section-switch'>
                                     { t('posedemo.toggleOnCamLabel') }
                                 </label>
                                 <Switch
                                     id = 'posedemo-section-switch'
                                     onValueChange = { onToggleViewOnCam }
                                     value = { viewOnCam } />
+                            </div>
+                            <div className = 'control-row'>
+                                <label htmlFor = 'posedemo-section-switch'>
+                                    { t('posedemo.toggle3DLabel') }
+                                </label>
+                                <Switch
+                                    id = 'posedemo-section-switch'
+                                    onValueChange = { onToggleView3D }
+                                    value = { view3D } />
                             </div>
                         </div> : null
                     }
@@ -176,13 +164,11 @@ function PoseDemo({
  * @returns {Object}
  */
 function _mapStateToProps(state) {
-    const conference = state['features/base/conference'].conference;
     const enabled = state['features/posedemo'].enabled;
     const viewOnCam = state['features/posedemo'].viewOnCam;
     const view3D = state['features/posedemo'].view3D;
 
     return {
-        conference: conference,
         _enabled: enabled,
         _viewOnCam: viewOnCam,
         _view3D: view3D,

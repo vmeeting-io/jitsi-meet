@@ -1,9 +1,7 @@
 // @flow
 
 import * as poseDetection from '@tensorflow-models/pose-detection';
-
 import * as tf from '@tensorflow/tfjs';
-import '@tensorflow/tfjs-backend-webgl';
 
 import JitsiStreamPoseEffect from './JitsiStreamPoseEffect';
 
@@ -24,26 +22,28 @@ export async function createPoseEffect(pose: Object, dispatch: Function) {
 
     console.time('initialize');
     await tf.ready();
-    // tf.setBackend('webgl');
     console.log('TensorFlow backend:', tf.getBackend());
 
     const pose_model = poseDetection.SupportedModels.BlazePose;
-    // const detectorConfig = {
-    //   runtime: 'tfjs', //'mediapipe' or 'tfjs'
-    //   modelType: 'lite'
-    // };
 
+    let _flipHorizontal = false;
     const detectorConfig = {
-        runtime: 'mediapipe', //'mediapipe' or 'tfjs'
-        modelType: 'lite',
+        runtime: 'mediapipe',  //'mediapipe' or 'tfjs'
+        modelType: 'full',
         solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/pose'
-      };
-
+    };
     const model = await poseDetection.createDetector(pose_model, detectorConfig);
     console.timeEnd('initialize');
 
+    if(detectorConfig.runtime === 'tfjs')
+        _flipHorizontal = true;
+
     const options = {
-        flipHorizontal: true,
+        flipHorizontal: _flipHorizontal,
+        width: 640,
+        height: 360,
+        view3Dsize: 300,
+        poseThres: 0.5,
         pose
     };
 

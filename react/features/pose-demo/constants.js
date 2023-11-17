@@ -1,1 +1,0 @@
-export const REFRESH_TIMEOUT = 3000;

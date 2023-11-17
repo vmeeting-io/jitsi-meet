@@ -1,6 +1,5 @@
 // @flow
 
-import { getAuthUrl } from '../../api/url';
 import { JitsiTrackEvents } from '../base/lib-jitsi-meet';
 import { updateSettings } from '../base/settings';
 
@@ -17,7 +16,9 @@ import { togglePoseEffect } from './actions';
  */
 export function localTrackStopped(dispatch: Function, desktopTrack: Object, currentLocalTrack: Object) {
     const noneOptions = {
-        enabled: false
+        enabled: false,
+        view3D: false,
+        viewOnCam: false
     };
 
     desktopTrack

@@ -5,7 +5,6 @@ import { translate } from '../../base/i18n';
 import { IconModerator } from '../../base/icons';
 import { connect } from '../../base/redux';
 import { AbstractButton } from '../../base/toolbox/components';
-import { isLocalParticipantModerator } from '../../base/participants';
 import type { AbstractButtonProps } from '../../base/toolbox/components';
 
 

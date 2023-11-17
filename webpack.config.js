@@ -358,7 +358,7 @@ module.exports = (_env, argv) => {
                     process: 'process/browser'
                 })
             ],
-            performance: getPerformanceHints(perfHintOptions, 7 * 1024 * 1024)
+            performance: getPerformanceHints(perfHintOptions, 8 * 1024 * 1024)
         }),
         Object.assign({}, config, {
             entry: {

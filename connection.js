@@ -84,7 +84,7 @@ function getUserCredentials(state) {
         const { jwt = '', user = {} } = state['features/base/jwt'];
         const { isHost } = state['features/base/conference'].roomInfo || {};
         
-        if (user.isAdmin || isHost) {
+        if (/* user.isAdmin ||*/ isHost) {
             credentials = jwt;
         }
     } catch (e) {
@@ -130,7 +130,7 @@ export async function connect(id, password, roomName) {
         connectionConfig.websocketKeepAliveUrl += `?room=${roomName}`;
     }
 
-    if (user.isAdmin || isHost) {
+    if (/* user.isAdmin ||*/ isHost) {
         if (tenant) {
             serviceUrl += `&tenant=${tenant}`;
             if (connectionConfig.websocketKeepAliveUrl) {

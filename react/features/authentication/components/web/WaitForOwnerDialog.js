@@ -101,6 +101,7 @@ class WaitForOwnerDialog extends PureComponent<Props> {
     render() {
         const {
             _room: room,
+            _user,
             description,
             t,
             useLogin,
@@ -120,14 +121,14 @@ class WaitForOwnerDialog extends PureComponent<Props> {
                 hideCloseIconButton = { true }
                 onCancel = { this._onCancelWaitForOwner }
                 onSubmit = { this._onSubmit }
-                submitDisabled = { !useLogin }
+                submitDisabled = { !useLogin || _user }
                 titleKey = { 'dialog.WaitingForHost' }
                 width = { 'small' }
                 {...dialogProps}>
                 <span>
                     { translateToHTML(
                         t,
-                        'dialog.WaitForHostMsg',
+                        _user ? 'dialog.WaitingRoomMsg' : 'dialog.WaitForHostMsg',
                         { room: decodeURI(room) }) }
                 </span>
             </Dialog>
@@ -146,6 +147,7 @@ class WaitForOwnerDialog extends PureComponent<Props> {
 function mapStateToProps(state) {
     const { authRequired } = state['features/base/conference'];
     const { waitOnlyGuestEnabled, useLogin } = state['features/base/config'];
+    const { user } = state['features/base/jwt'];
     const isAuthenticated = Boolean(getCurrentUser(state));
     let submitDisabled;
     let cancelDisabled;
@@ -166,7 +168,8 @@ function mapStateToProps(state) {
         description,
         submitDisabled,
         useLogin,
-        _room: authRequired && safeDecodeURIComponent(authRequired.getName())
+        _room: authRequired && safeDecodeURIComponent(authRequired.getName()),
+        _user: user,
     };
 }
 

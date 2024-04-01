@@ -149,6 +149,7 @@ class WelcomePage extends AbstractWelcomePage {
         this._onOpenChange = this._onOpenChange.bind(this);
         this._onOpenSettings = this._onOpenSettings.bind(this);
         this._handleKeyPress = this._handleKeyPress.bind(this);
+        this._getManualDownloadLink = this._getManualDownloadLink.bind(this);
     }
 
     /**

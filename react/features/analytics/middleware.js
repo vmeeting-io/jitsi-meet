@@ -4,20 +4,27 @@ import {
     CONFERENCE_JOINED,
     CONFERENCE_WILL_LEAVE,
     SET_ROOM
-} from '../base/conference';
-import { SET_CONFIG } from '../base/config';
-import { SET_NETWORK_INFO } from '../base/net-info';
-import { MiddlewareRegistry } from '../base/redux';
+} from '../base/conference/actionTypes';
+import { SET_CONFIG } from '../base/config/actionTypes';
+import { SET_NETWORK_INFO } from '../base/net-info/actionTypes';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 import {
-    getLocalAudioTrack,
-    getLocalVideoTrack,
     TRACK_ADDED,
     TRACK_REMOVED,
     TRACK_UPDATED
-} from '../base/tracks';
+} from '../base/tracks/actionTypes';
+import {
+    getLocalAudioTrack,
+    getLocalVideoTrack
+} from '../base/tracks/functions';
+import { SET_LOBBY_VISIBILITY } from '../lobby/actionTypes';
+import { getIsLobbyVisible } from '../lobby/functions';
+import { I_AM_VISITOR_MODE } from '../visitors/actionTypes';
+import { iAmVisitor } from '../visitors/functions';
 
 import { createLocalTracksDurationEvent, createNetworkInfoEvent } from './AnalyticsEvents';
-import { UPDATE_LOCAL_TRACKS_DURATION } from './actionTypes';
+import { SET_INITIALIZED, UPDATE_LOCAL_TRACKS_DURATION } from './actionTypes';
+import { setPermanentProperty } from './actions';
 import { createHandlers, initAnalytics, resetAnalytics, sendAnalytics } from './functions';
 
 /**
@@ -80,12 +87,31 @@ function calculateLocalTrackDuration(state) {
  */
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
+    case I_AM_VISITOR_MODE: {
+        const oldIAmVisitor = iAmVisitor(store.getState());
+        const result = next(action);
+        const newIAmVisitor = iAmVisitor(store.getState());
+
+        store.dispatch(setPermanentProperty({
+            isVisitor: newIAmVisitor,
+            isPromotedFromVisitor: oldIAmVisitor && !newIAmVisitor
+        }));
+
+        return result;
+    }
     case SET_CONFIG:
         if (navigator.product === 'ReactNative') {
             // Resetting the analytics is currently not needed for web because
             // the user will be redirected to another page and new instance of
             // Analytics will be created and initialized.
             resetAnalytics();
+
+            const { dispatch } = store;
+
+            dispatch({
+                type: SET_INITIALIZED,
+                value: false
+            });
         }
         break;
     case SET_ROOM: {
@@ -96,7 +122,12 @@ MiddlewareRegistry.register(store => next => action => {
         const result = next(action);
 
         createHandlersPromise.then(handlers => {
-            initAnalytics(store, handlers);
+            if (initAnalytics(store, handlers)) {
+                store.dispatch({
+                    type: SET_INITIALIZED,
+                    value: true
+                });
+            }
         });
 
         return result;
@@ -143,6 +174,14 @@ MiddlewareRegistry.register(store => next => action => {
         });
         break;
     }
+    case SET_LOBBY_VISIBILITY:
+        if (getIsLobbyVisible(store.getState())) {
+            store.dispatch(setPermanentProperty({
+                wasLobbyVisible: true
+            }));
+        }
+
+        break;
     case SET_NETWORK_INFO:
         sendAnalytics(
             createNetworkInfoEvent({
@@ -158,10 +197,9 @@ MiddlewareRegistry.register(store => next => action => {
         const state = getState();
         const { localTracksDuration } = state['features/analytics'];
 
-        if (localTracksDuration.conference.startedTime === -1 || action.mediaType === 'presenter') {
+        if (localTracksDuration.conference.startedTime === -1) {
             // We don't want to track the media duration if the conference is not joined yet because otherwise we won't
             // be able to compare them with the conference duration (from conference join to conference will leave).
-            // Also, do not track media duration for presenter tracks.
             break;
         }
         dispatch({

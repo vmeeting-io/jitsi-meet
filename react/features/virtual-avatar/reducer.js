@@ -1,6 +1,7 @@
 // @flow
 
-import { PersistenceRegistry, ReducerRegistry } from '../base/redux';
+import PersistenceRegistry from '../base/redux/PersistenceRegistry';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import { VIRTUAL_AVATAR_ENABLED, SET_VIRTUAL_AVATAR } from './actionTypes';
 

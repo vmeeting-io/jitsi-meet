@@ -1,6 +1,6 @@
 // @flow
 
-import { ReducerRegistry } from '../base/redux';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     START_FACE_DETECT,

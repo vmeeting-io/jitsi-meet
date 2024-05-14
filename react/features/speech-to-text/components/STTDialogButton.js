@@ -1,8 +1,8 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { translate } from '../../base/i18n';
-import { IconClosedCaption } from '../../base/icons';
-import { connect } from '../../base/redux';
+import { translate } from '../../base/i18n/functions';
+import { IconSubtitles } from '../../base/icons/svg';
 
 import {
     AbstractSTTDialogButton,
@@ -12,11 +12,9 @@ import {
 /**
  * A button which starts/stops the transcriptions.
  */
-class STTDialogButton
-    extends AbstractSTTDialogButton {
-
+class STTDialogButton extends AbstractSTTDialogButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.cc';
-    icon = IconClosedCaption;
+    icon = IconSubtitles;
     tooltip = 'stt.buttonTooltip';
     label = 'toolbar.stt';
 }

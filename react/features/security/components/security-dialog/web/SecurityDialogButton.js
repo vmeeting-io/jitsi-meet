@@ -1,7 +1,7 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { translate } from '../../../../base/i18n';
-import { connect } from '../../../../base/redux';
+import { translate } from '../../../../base/i18n/functions';
 import { toggleSecurityDialog } from '../../../actions';
 import AbstractSecurityDialogButton, {
     _mapStateToProps as _abstractMapStateToProps,

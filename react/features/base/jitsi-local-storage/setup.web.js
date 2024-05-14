@@ -1,29 +1,13 @@
 // @flow
-
-import Bourne from '@hapi/bourne';
 import { jitsiLocalStorage } from '@jitsi/js-utils/jitsi-local-storage';
+import { safeJsonParse } from '@jitsi/js-utils/json';
 
 import { browser } from '../lib-jitsi-meet';
+import { inIframe } from '../util/iframeUtils';
 import { parseURLParams } from '../util/parseURLParams';
 
 import logger from './logger';
 
-declare var APP: Object;
-declare var config: Object;
-
-/**
- * Checks whether we are loaded in an iframe.
- *
- * @returns {boolean} Returns {@code true} if loaded in iframe.
- * @private
- */
-function _inIframe() {
-    try {
-        return window.self !== window.top;
-    } catch (e) {
-        return true;
-    }
-}
 
 /**
  * Handles changes of the fake local storage.
@@ -31,7 +15,7 @@ function _inIframe() {
  * @returns {void}
  */
 function onFakeLocalStorageChanged() {
-    APP.API.notifyLocalStorageChanged(jitsiLocalStorage.serialize());
+    APP.API.notifyLocalStorageChanged(jitsiLocalStorage.serialize([ 'jitsiLocalStorage' ]));
 }
 
 /**
@@ -55,7 +39,7 @@ function shouldUseHostPageLocalStorage(urlParams) {
         return true;
     }
 
-    if (browser.isWebKitBased() && _inIframe()) {
+    if (browser.isWebKitBased() && inIframe()) {
         // WebKit browsers don't persist local storage for third-party iframes.
 
         return true;
@@ -74,7 +58,14 @@ function setupJitsiLocalStorage() {
 
     if (shouldUseHostPageLocalStorage(urlParams)) {
         try {
-            const localStorageContent = Bourne.parse(urlParams['appData.localStorageContent']);
+            const localStorageContent = safeJsonParse(urlParams['appData.localStorageContent']);
+
+            // We need to disable the local storage before setting the data in case the browser local storage doesn't
+            // throw exception (in some cases when this happens the local storage may be cleared for every session.
+            // Example: when loading meet from cross-domain with the IFrame API with Brave with the default
+            // configuration). Otherwise we will set the data in the browser local storage and then switch to the dummy
+            // local storage from jitsiLocalStorage and we will loose the data.
+            jitsiLocalStorage.setLocalStorageDisabled(true);
 
             if (typeof localStorageContent === 'object') {
                 Object.keys(localStorageContent).forEach(key => {

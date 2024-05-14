@@ -3,13 +3,13 @@
 import React, { PureComponent } from 'react';
 import { View } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { connect } from 'react-redux';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { translate } from '../../../base/i18n';
 import { IconArrowBack } from '../../../base/icons';
 import JitsiScreen from '../../../base/modal/components/JitsiScreen';
 import { LoadingIndicator } from '../../../base/react';
-import { connect } from '../../../base/redux';
 import { goBack } from '../../../conference/components/native/ConferenceNavigationContainerRef';
 import HeaderNavigationButton
     from '../../../conference/components/native/HeaderNavigationButton';

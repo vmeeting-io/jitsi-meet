@@ -8,23 +8,37 @@ import amplitude from './amplitude/lib';
  * Analytics handler for Amplitude.
  */
 export default class AmplitudeHandler extends AbstractHandler {
+    _deviceId: string;
+    _userId: Object;
+
     /**
      * Creates new instance of the Amplitude analytics handler.
      *
-     * @param {Object} options -
-     * @param {string} options.amplitudeAPPKey - The Amplitude app key required
-     * by the Amplitude API.
+     * @param {Object} options - The amplitude options.
+     * @param {string} options.amplitudeAPPKey - The Amplitude app key required by the Amplitude API.
+     * @param {boolean} options.amplitudeIncludeUTM - Whether to include UTM parameters
+     * in the Amplitude events.
      */
-    constructor(options) {
+    constructor(options: any) {
         super(options);
 
-        const { amplitudeAPPKey, user } = options;
+        const {
+            amplitudeAPPKey,
+            amplitudeIncludeUTM: includeUtm = true,
+            user
+        } = options;
 
         this._enabled = true;
 
         const onError = e => {
             logger.error('Error initializing Amplitude', e);
             this._enabled = false;
+        };
+
+        // Forces sending all events on exit (flushing) via sendBeacon
+        const onExitPage = () => {
+            // @ts-ignore
+            amplitude.getInstance().sendEvents();
         };
 
         if (navigator.product === 'ReactNative') {
@@ -38,7 +52,10 @@ export default class AmplitudeHandler extends AbstractHandler {
         } else {
             const amplitudeOptions = {
                 includeReferrer: true,
-                onError
+                includeUtm,
+                saveParamsReferrerOncePerSession: false,
+                onError,
+                onExitPage
             };
 
             amplitude.getInstance().init(amplitudeAPPKey, undefined, amplitudeOptions);
@@ -76,7 +93,8 @@ export default class AmplitudeHandler extends AbstractHandler {
             return;
         }
 
-        amplitude.getInstance().logEvent(this._extractName(event), event);
+        // @ts-ignore
+        amplitude.getInstance().logEvent(this._extractName(event) ?? '', event);
     }
 
     /**

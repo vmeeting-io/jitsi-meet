@@ -1,17 +1,13 @@
 // @flow
 
-import {
-    createConnectionEvent,
-    inIframe,
-    sendAnalytics
-} from '../analytics';
-import { SET_ROOM } from '../base/conference';
-import {
-    CONNECTION_ESTABLISHED,
-    CONNECTION_FAILED,
-    getURLWithoutParams
-} from '../base/connection';
-import { MiddlewareRegistry } from '../base/redux';
+import { createConnectionEvent } from '../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../analytics/functions';
+import { appWillNavigate } from '../base/app/actions';
+import { SET_ROOM } from '../base/conference/actionTypes';
+import { CONNECTION_ESTABLISHED, CONNECTION_FAILED } from '../base/connection/actionTypes';
+import { getURLWithoutParams } from '../base/connection/utils';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { inIframe } from '../base/util/iframeUtils';
 
 import { reloadNow } from './actions';
 import { _getRouteToRender } from './getRouteToRender';
@@ -124,11 +120,15 @@ function _isMaybeSplitBrainError(getState, action) {
  * @private
  * @returns {void}
  */
-function _navigate({ getState }) {
+function _navigate({ dispatch, getState }) {
     const state = getState();
     const { app } = state['features/base/app'];
 
-    _getRouteToRender(state).then(route => app?._navigate(route));
+    _getRouteToRender(state).then(route => {
+        dispatch(appWillNavigate(app, route));
+
+        return app?._navigate(route);
+    });
 }
 
 /**

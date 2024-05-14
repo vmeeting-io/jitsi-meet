@@ -1,10 +1,10 @@
-import { StateListenerRegistry } from "../base/redux";
-import { getLocalJitsiAudioTrack } from "../base/tracks";
+import StateListenerRegistry from "../base/redux/StateListenerRegistry";
+import { getLocalJitsiAudioTrack } from "../base/tracks/functions";
 import RecordRTC from './RecordRTC';
 import { updateRecorder, toggleSTT, updateRetryCheck } from "./actions";
 
 import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
-import { getCurrentConference } from '../base/conference';
+import { getCurrentConference } from '../base/conference/functions';
 
 // Replace STT Recorder when audio track changes
 StateListenerRegistry.register(

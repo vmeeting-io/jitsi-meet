@@ -1,13 +1,13 @@
 // @flow
 
-import { ReducerRegistry } from '../base/redux';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
-    TOGGLE_REACTIONS_VISIBLE,
-    SET_REACTION_QUEUE,
     ADD_REACTION_BUFFER,
     FLUSH_REACTION_BUFFER,
-    SHOW_SOUNDS_NOTIFICATION
+    SET_REACTION_QUEUE,
+    SHOW_SOUNDS_NOTIFICATION,
+    TOGGLE_REACTIONS_VISIBLE
 } from './actionTypes';
 
 /**
@@ -24,38 +24,10 @@ import {
  */
 function _getInitialState() {
     return {
-        /**
-         * The indicator that determines whether the reactions menu is visible.
-         *
-         * @type {boolean}
-         */
         visible: false,
-
-        /**
-         * An array that contains the reactions buffer to be sent.
-         *
-         * @type {Array}
-         */
         buffer: [],
-
-        /**
-         * A number, non-zero value which identifies the timer created by a call
-         * to setTimeout().
-         *
-         * @type {number|null}
-         */
         timeoutID: null,
-
-        /**
-         * The array of reactions to animate.
-         *
-         * @type {Array}
-         */
         queue: [],
-
-        /**
-         * Whether or not the disable reaction sounds notification was shown.
-         */
         notificationDisplayed: false
     };
 }
@@ -74,8 +46,8 @@ ReducerRegistry.register(
         case ADD_REACTION_BUFFER:
             return {
                 ...state,
-                buffer: action.buffer,
-                timeoutID: action.timeoutID
+                buffer: action.buffer ?? [],
+                timeoutID: action.timeoutID ?? null
             };
 
         case FLUSH_REACTION_BUFFER:
@@ -88,7 +60,7 @@ ReducerRegistry.register(
         case SET_REACTION_QUEUE: {
             return {
                 ...state,
-                queue: action.value
+                queue: action.queue ?? []
             };
         }
 

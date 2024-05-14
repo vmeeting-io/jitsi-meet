@@ -1,15 +1,21 @@
 // @flow
 
-import { ReducerRegistry, set } from '../base/redux';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
+import { set } from '../base/redux/functions';
 
 import {
     CLEAR_TOOLBOX_TIMEOUT,
     FULL_SCREEN_CHANGED,
+    SET_BUTTONS_WITH_NOTIFY_CLICK,
+    SET_HANGUP_MENU_VISIBLE,
     SET_OVERFLOW_DRAWER,
     SET_OVERFLOW_MENU_VISIBLE,
     SET_SHARE_MENU_VISIBLE,
+    SET_PARTICIPANT_MENU_BUTTONS_WITH_NOTIFY_CLICK,
+    SET_TOOLBAR_BUTTONS,
     SET_TOOLBAR_HOVERED,
     SET_TOOLBOX_ENABLED,
+    SET_TOOLBOX_SHIFT_UP,
     SET_TOOLBOX_TIMEOUT,
     SET_TOOLBOX_VISIBLE,
     TOGGLE_TOOLBOX_VISIBLE
@@ -19,6 +25,7 @@ import {
  * Initial state of toolbox's part of Redux store.
  */
 const INITIAL_STATE = {
+    buttonsWithNotifyClick: new Map(),
 
     /**
      * The indicator which determines whether the Toolbox is enabled.
@@ -28,12 +35,21 @@ const INITIAL_STATE = {
     enabled: true,
 
     /**
+     * The indicator which determines whether the hangup menu is visible.
+     *
+     * @type {boolean}
+     */
+    hangupMenuVisible: false,
+
+    /**
      * The indicator which determines whether a Toolbar in the Toolbox is
      * hovered.
      *
      * @type {boolean}
      */
     hovered: false,
+
+    participantMenuButtonsWithNotifyClick: new Map(),
 
     /**
      * The indicator which determines whether the overflow menu(s) are to be displayed as drawers.
@@ -50,6 +66,11 @@ const INITIAL_STATE = {
     overflowMenuVisible: false,
 
     /**
+     * Whether to shift the toolbar up (in case it overlaps the tiles names).
+     */
+    shiftUp: false,
+
+    /**
      * The indicator which determines whether the ShareMenu is visible.
      * 
      * @type {boolean}
@@ -63,6 +84,14 @@ const INITIAL_STATE = {
      * @type {number|null}
      */
     timeoutID: null,
+
+    /**
+     * The list of enabled toolbar buttons.
+     *
+     * @type {Array<string>}
+     */
+    toolbarButtons: [],
+
 
     /**
      * The indicator that determines whether the Toolbox is visible.
@@ -88,6 +117,12 @@ ReducerRegistry.register(
                 fullScreen: action.fullScreen
             };
 
+        case SET_HANGUP_MENU_VISIBLE:
+            return {
+                ...state,
+                hangupMenuVisible: action.visible
+            };
+
         case SET_OVERFLOW_DRAWER:
             return {
                 ...state,
@@ -98,6 +133,17 @@ ReducerRegistry.register(
             return {
                 ...state,
                 overflowMenuVisible: action.visible
+            };
+
+        case SET_TOOLBAR_BUTTONS:
+            return {
+                ...state,
+                toolbarButtons: action.toolbarButtons
+            };
+        case SET_BUTTONS_WITH_NOTIFY_CLICK:
+            return {
+                ...state,
+                buttonsWithNotifyClick: action.buttonsWithNotifyClick
             };
 
         case SET_SHARE_MENU_VISIBLE:
@@ -125,8 +171,20 @@ ReducerRegistry.register(
                 timeoutMS: action.timeoutMS
             };
 
+        case SET_TOOLBOX_SHIFT_UP:
+            return {
+                ...state,
+                shiftUp: action.shiftUp
+            };
+
         case SET_TOOLBOX_VISIBLE:
             return set(state, 'visible', action.visible);
+
+        case SET_PARTICIPANT_MENU_BUTTONS_WITH_NOTIFY_CLICK:
+            return {
+                ...state,
+                participantMenuButtonsWithNotifyClick: action.participantMenuButtonsWithNotifyClick
+            };
 
         case TOGGLE_TOOLBOX_VISIBLE:
             return set(state, 'visible', !state.visible);

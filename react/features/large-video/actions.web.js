@@ -1,12 +1,9 @@
-// @flow
-
-import type { Dispatch } from 'redux';
-
+// @ts-expect-error
 import VideoLayout from '../../../modules/UI/videolayout/VideoLayout';
-import { MEDIA_TYPE } from '../base/media';
-import { getTrackByMediaTypeAndParticipant } from '../base/tracks';
+import { getParticipantById } from '../base/participants/functions';
+import { getVideoTrackByParticipant } from '../base/tracks/functions.web';
 
-import { UPDATE_LAST_LARGE_VIDEO_MEDIA_EVENT } from './actionTypes';
+import { SET_SEE_WHAT_IS_BEING_SHARED } from './actionTypes';
 
 export * from './actions.any';
 
@@ -16,19 +13,20 @@ export * from './actions.any';
 * @returns {Function}
 */
 export function captureLargeVideoScreenshot() {
-    return (dispatch: Dispatch<any>, getState: Function): Promise<string> => {
+    return (dispatch, getState) => {
         const state = getState();
         const largeVideo = state['features/large-video'];
         const promise = Promise.resolve();
 
-        if (!largeVideo) {
+        if (!largeVideo?.participantId) {
             return promise;
         }
-        const tracks = state['features/base/tracks'];
-        const participantTrack = getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.VIDEO, largeVideo.participantId);
+
+        const participant = getParticipantById(state, largeVideo.participantId);
+        const participantTrack = getVideoTrackByParticipant(state, participant);
 
         // Participants that join the call video muted do not have a jitsiTrack attached.
-        if (!(participantTrack && participantTrack.jitsiTrack)) {
+        if (!participantTrack?.jitsiTrack) {
             return promise;
         }
         const videoStream = participantTrack.jitsiTrack.getOriginalStream();
@@ -39,7 +37,7 @@ export function captureLargeVideoScreenshot() {
 
         // Get the video element for the large video, cast HTMLElement to HTMLVideoElement to make flow happy.
         /* eslint-disable-next-line no-extra-parens*/
-        const videoElement = ((document.getElementById('largeVideo'): any): HTMLVideoElement);
+        const videoElement = (document.getElementById('largeVideo'));
 
         if (!videoElement) {
             return promise;
@@ -54,11 +52,11 @@ export function captureLargeVideoScreenshot() {
         canvasElement.style.display = 'none';
         canvasElement.height = parseInt(height, 10);
         canvasElement.width = parseInt(width, 10);
-        ctx.drawImage(videoElement, 0, 0);
+        ctx?.drawImage(videoElement, 0, 0);
         const dataURL = canvasElement.toDataURL('image/png', 1.0);
 
         // Cleanup.
-        ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        ctx?.clearRect(0, 0, canvasElement.width, canvasElement.height);
         canvasElement.remove();
 
         return Promise.resolve(dataURL);
@@ -72,8 +70,8 @@ export function captureLargeVideoScreenshot() {
  * @param {number} height - Height that needs to be applied on the large video container.
  * @returns {Function}
  */
-export function resizeLargeVideo(width: number, height: number) {
-    return (dispatch: Dispatch<any>, getState: Function) => {
+export function resizeLargeVideo(width, height) {
+    return (dispatch, getState) => {
         const state = getState();
         const largeVideo = state['features/large-video'];
 
@@ -87,17 +85,17 @@ export function resizeLargeVideo(width: number, height: number) {
 }
 
 /**
- * Updates the last media event received for the large video.
+ * Updates the value used to display what is being shared.
  *
- * @param {string} name - The current media event name for the video.
+ * @param {boolean} seeWhatIsBeingShared - The current value.
  * @returns {{
- *     type: UPDATE_LAST_LARGE_VIDEO_MEDIA_EVENT,
- *     name: string
+ *     type: SET_SEE_WHAT_IS_BEING_SHARED,
+ *     seeWhatIsBeingShared: boolean
  * }}
  */
-export function updateLastLargeVideoMediaEvent(name: String) {
+export function setSeeWhatIsBeingShared(seeWhatIsBeingShared) {
     return {
-        type: UPDATE_LAST_LARGE_VIDEO_MEDIA_EVENT,
-        name
+        type: SET_SEE_WHAT_IS_BEING_SHARED,
+        seeWhatIsBeingShared
     };
 }

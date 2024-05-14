@@ -1,55 +1,15 @@
-// @flow
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 
-import React, { useState, useEffect } from 'react';
-
-import { setPassword as setPass } from '../../../../base/conference';
-import { Dialog } from '../../../../base/dialog';
-import { isLocalParticipantModerator } from '../../../../base/participants';
-import { connect } from '../../../../base/redux';
-import { E2EESection } from '../../../../e2ee/components';
-import { LobbySection } from '../../../../lobby';
+import { setPassword as setPass } from '../../../../base/conference/actions';
+import { getSecurityUiConfig } from '../../../../base/config/functions.any';
+import { isLocalParticipantModerator } from '../../../../base/participants/functions';
+import Dialog from '../../../../base/ui/components/web/Dialog';
+import E2EESection from '../../../../e2ee/components/E2EESection';
+import LobbySection from '../../../../lobby/components/web/LobbySection';
+import { isEnablingLobbyAllowed } from '../../../../lobby/functions';
 
 import PasswordSection from './PasswordSection';
-
-type Props = {
-
-    /**
-     * Whether or not the current user can modify the current password.
-     */
-    _canEditPassword: boolean,
-
-    /**
-     * The JitsiConference for which to display a lock state and change the
-     * password.
-     */
-    _conference: Object,
-
-    /**
-     * The value for how the conference is locked (or undefined if not locked)
-     * as defined by room-lock constants.
-     */
-    _locked: string,
-
-    /**
-     * The current known password for the JitsiConference.
-     */
-    _password: string,
-
-    /**
-     * The number of digits to be used in the password.
-     */
-    _passwordNumberOfDigits: ?number,
-
-    /**
-     * Indicates whether e2ee will be displayed or not.
-     */
-    _showE2ee: boolean,
-
-    /**
-     * Action that sets the conference password.
-     */
-    setPassword: Function
-};
 
 /**
  * Component that renders the security options dialog.
@@ -59,12 +19,14 @@ type Props = {
 function SecurityDialog({
     _canEditPassword,
     _conference,
+    _disableLobbyPassword,
+    _isEnablingLobbyAllowed,
     _locked,
     _password,
     _passwordNumberOfDigits,
     _showE2ee,
     setPassword
-}: Props) {
+}) {
     const [ passwordEditEnabled, setPasswordEditEnabled ] = useState(false);
 
     useEffect(() => {
@@ -75,24 +37,32 @@ function SecurityDialog({
 
     return (
         <Dialog
-            hideCancelButton = { true }
-            submitDisabled = { true }
-            titleKey = 'security.header'
-            width = { 'small' }>
+            cancel = {{ hidden: true }}
+            ok = {{ hidden: true }}
+            titleKey = 'security.title'>
             <div className = 'security-dialog'>
-                <LobbySection />
-                <PasswordSection
-                    canEditPassword = { _canEditPassword }
-                    conference = { _conference }
-                    locked = { _locked }
-                    password = { _password }
-                    passwordEditEnabled = { passwordEditEnabled }
-                    passwordNumberOfDigits = { _passwordNumberOfDigits }
-                    setPassword = { setPassword }
-                    setPasswordEditEnabled = { setPasswordEditEnabled } />
+                {
+                    _isEnablingLobbyAllowed && <LobbySection />
+                }
+                {
+                    !_disableLobbyPassword && (
+                        <>
+                            { _isEnablingLobbyAllowed && <div className = 'separator-line' /> }
+                            <PasswordSection
+                                canEditPassword = { _canEditPassword }
+                                conference = { _conference }
+                                locked = { _locked }
+                                password = { _password }
+                                passwordEditEnabled = { passwordEditEnabled }
+                                passwordNumberOfDigits = { _passwordNumberOfDigits }
+                                setPassword = { setPassword }
+                                setPasswordEditEnabled = { setPasswordEditEnabled } />
+                        </>
+                    )
+                }
                 {
                     _showE2ee ? <>
-                        <div className = 'separator-line' />
+                        { (_isEnablingLobbyAllowed || !_disableLobbyPassword) && <div className = 'separator-line' /> }
                         <E2EESection />
                     </> : null
                 }
@@ -108,7 +78,7 @@ function SecurityDialog({
  *
  * @param {Object} state - The Redux state.
  * @private
- * @returns {Props}
+ * @returns {IProps}
  */
 function mapStateToProps(state) {
     const {
@@ -118,6 +88,8 @@ function mapStateToProps(state) {
         password
     } = state['features/base/conference'];
     const { roomPasswordNumberOfDigits } = state['features/base/config'];
+    const { disableLobbyPassword } = getSecurityUiConfig(state);
+    const _isEnablingLobbyAllowed = isEnablingLobbyAllowed(state);
 
     const showE2ee = Boolean(e2eeSupported) && isLocalParticipantModerator(state);
 
@@ -125,6 +97,8 @@ function mapStateToProps(state) {
         _canEditPassword: isLocalParticipantModerator(state),
         _conference: conference,
         _dialIn: state['features/invite'],
+        _disableLobbyPassword: disableLobbyPassword,
+        _isEnablingLobbyAllowed,
         _locked: locked,
         _password: password,
         _passwordNumberOfDigits: roomPasswordNumberOfDigits,

@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { LocalVideoMenuTriggerButton, RemoteVideoMenuTriggerButton } from '../../../video-menu';
+import LocalVideoMenuTriggerButton from '../../../video-menu/components/web/LocalVideoMenuTriggerButton';
+import RemoteVideoMenuTriggerButton from '../../../video-menu/components/web/RemoteVideoMenuTriggerButton';
 
 type Props = {
 
@@ -41,9 +42,10 @@ type Props = {
 const VideoMenuTriggerButton = ({
     hidePopover,
     local,
-    participantId,
+    participantId = '',
     popoverVisible,
     showPopover,
+    thumbnailType,
     visible
 }: Props) => local
     ? (
@@ -52,7 +54,8 @@ const VideoMenuTriggerButton = ({
                 buttonVisible = { visible }
                 hidePopover = { hidePopover }
                 popoverVisible = { popoverVisible }
-                showPopover = { showPopover } />
+                showPopover = { showPopover }
+                thumbnailType = { thumbnailType } />
         </span>
     )
     : (
@@ -62,7 +65,8 @@ const VideoMenuTriggerButton = ({
                 hidePopover = { hidePopover }
                 participantID = { participantId }
                 popoverVisible = { popoverVisible }
-                showPopover = { showPopover } />
+                showPopover = { showPopover }
+                thumbnailType = { thumbnailType } />
         </span>
     );
 

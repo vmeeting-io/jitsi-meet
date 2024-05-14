@@ -3,20 +3,20 @@
 import throttle from 'lodash/throttle';
 import type { Dispatch } from 'redux';
 
-import { NOTIFICATIONS_ENABLED, getFeatureFlag } from '../base/flags';
+import { NOTIFICATIONS_ENABLED } from '../base/flags/constants';
+import { getFeatureFlag } from '../base/flags/functions';
 import { getParticipantCount } from '../base/participants/functions';
 
 import {
     CLEAR_NOTIFICATIONS,
     HIDE_NOTIFICATION,
-    HIDE_RAISE_HAND_NOTIFICATIONS,
     SET_NOTIFICATIONS_ENABLED,
     SHOW_NOTIFICATION
 } from './actionTypes';
 import {
     NOTIFICATION_ICON,
-    NOTIFICATION_TIMEOUT_TYPE,
     NOTIFICATION_TIMEOUT,
+    NOTIFICATION_TIMEOUT_TYPE,
     NOTIFICATION_TYPE,
     SILENT_JOIN_THRESHOLD,
     SILENT_LEFT_THRESHOLD
@@ -72,19 +72,6 @@ export function hideNotification(uid: string) {
 }
 
 /**
- * Removes the raise hand notifications.
- *
- * @returns {{
- *     type: HIDE_RAISE_HAND_NOTIFICATIONS
- * }}
- */
-export function hideRaiseHandNotifications() {
-    return {
-        type: HIDE_RAISE_HAND_NOTIFICATIONS
-    };
-}
-
-/**
  * Stops notifications from being displayed.
  *
  * @param {boolean} enabled - Whether or not notifications should display.
@@ -115,28 +102,50 @@ export function showErrorNotification(props: Object, type: ?string) {
 }
 
 /**
- * Queues a notification for display.
+ * Queues a success notification for display.
  *
  * @param {Object} props - The props needed to show the notification component.
  * @param {string} type - Notification type.
+* @returns {Object}
+ */
+export function showSuccessNotification(props: Object, type?: string) {
+    return showNotification({
+        ...props,
+        appearance: NOTIFICATION_TYPE.SUCCESS
+    }, type);
+}
+
+/**
+ * Queues a notification for display.
+ *
+ * @param {Object} props - The props needed to show the notification component.
+ * @param {string} type - Timeout type.
  * @returns {Function}
  */
 export function showNotification(props: Object = {}, type: ?string) {
     return function(dispatch: Function, getState: Function) {
-        const { notifications, notificationTimeouts } = getState()['features/base/config'];
+        const { disabledNotifications = [], notifications, notificationTimeouts } = getState()['features/base/config'];
         const enabledFlag = getFeatureFlag(getState(), NOTIFICATIONS_ENABLED, true);
 
+        const { descriptionKey, titleKey } = props;
+
         const shouldDisplay = enabledFlag
+            && !(disabledNotifications.includes(descriptionKey ?? '')
+                || disabledNotifications.includes(titleKey ?? ''))
             && (!notifications
-                || notifications.includes(props.descriptionKey)
-                || notifications.includes(props.titleKey));
+                || notifications.includes(descriptionKey ?? '')
+                || notifications.includes(titleKey ?? ''));
+
+        if (typeof APP !== 'undefined') {
+            APP.API.notifyNotificationTriggered(titleKey, descriptionKey);
+        }
 
         if (shouldDisplay) {
             return dispatch({
                 type: SHOW_NOTIFICATION,
                 props,
                 timeout: getNotificationTimeout(type, notificationTimeouts),
-                uid: props.uid || window.Date.now().toString()
+                uid: props.uid || Date.now().toString()
             });
         }
     };
@@ -327,5 +336,6 @@ export function showParticipantJoinedNotification(displayName: string) {
 export function showParticipantLeftNotification(displayName: string) {
     leftParticipantsNames.push(displayName);
 
-    return (dispatch: Dispatch<any>, getState: Function) => _throttledNotifyParticipantLeft(dispatch, getState);
+    return (dispatch: Dispatch<any>, getState: Function) =>
+        _throttledNotifyParticipantLeft(dispatch, getState);
 }

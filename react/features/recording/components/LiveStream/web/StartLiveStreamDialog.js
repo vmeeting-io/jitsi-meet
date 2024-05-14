@@ -1,37 +1,25 @@
-// @flow
-
-import Spinner from '@atlaskit/spinner';
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { Dialog } from '../../../../base/dialog';
-import { translate } from '../../../../base/i18n';
-import { connect } from '../../../../base/redux';
+import { translate } from '../../../../base/i18n/functions';
+import Dialog from '../../../../base/ui/components/web/Dialog';
+import Spinner from '../../../../base/ui/components/web/Spinner';
 import {
-    GOOGLE_API_STATES,
-    GoogleSignInButton,
     loadGoogleAPI,
     requestAvailableYouTubeBroadcasts,
     requestLiveStreamsForYouTubeBroadcast,
     showAccountSelection,
     signIn,
     updateProfile
-} from '../../../../google-api';
+} from '../../../../google-api/actions';
+import GoogleSignInButton from '../../../../google-api/components/GoogleSignInButton.web';
+import { GOOGLE_API_STATES } from '../../../../google-api/constants';
 import AbstractStartLiveStreamDialog, {
-    _mapStateToProps as _abstractMapStateToProps,
-    type Props as AbstractProps
+    _mapStateToProps as _abstractMapStateToProps
 } from '../AbstractStartLiveStreamDialog';
 
 import StreamKeyForm from './StreamKeyForm';
 import StreamKeyPicker from './StreamKeyPicker';
-
-type Props = AbstractProps & {
-
-    /**
-     * The ID for the Google client application used for making stream key
-     * related requests.
-     */
-    _googleApiApplicationClientID: string
-}
 
 /**
  * A React Component for requesting a YouTube stream key to use for live
@@ -40,15 +28,15 @@ type Props = AbstractProps & {
  * @augments Component
  */
 class StartLiveStreamDialog
-    extends AbstractStartLiveStreamDialog<Props> {
+    extends AbstractStartLiveStreamDialog {
 
     /**
      * Initializes a new {@code StartLiveStreamDialog} instance.
      *
-     * @param {Props} props - The React {@code Component} props to initialize
+     * @param {IProps} props - The React {@code Component} props to initialize
      * the new {@code StartLiveStreamDialog} instance with.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // Bind event handlers so they are only bound once per instance.
@@ -85,30 +73,22 @@ class StartLiveStreamDialog
 
         return (
             <Dialog
-                cancelKey = 'dialog.Cancel'
-                okKey = 'dialog.startLiveStreaming'
+                ok = {{ translationKey: 'dialog.startLiveStreaming' }}
                 onCancel = { this._onCancel }
                 onSubmit = { this._onSubmit }
-                titleKey = 'liveStreaming.start'
-                width = { 'small' }>
+                titleKey = 'liveStreaming.start'>
                 <div className = 'live-stream-dialog'>
                     { _googleApiApplicationClientID
                         ? this._renderYouTubePanel() : null }
                     <StreamKeyForm
                         onChange = { this._onStreamKeyChange }
                         value = {
-                            this.state.streamKey || this.props._streamKey
+                            this.state.streamKey || this.props._streamKey || ''
                         } />
                 </div>
             </Dialog>
         );
     }
-
-    _onCancel: () => boolean;
-
-    _onSubmit: () => boolean;
-
-    _onInitializeGoogleApi: () => void;
 
     /**
      * Loads the Google web client application used for fetching stream keys.
@@ -120,7 +100,7 @@ class StartLiveStreamDialog
      */
     _onInitializeGoogleApi() {
         this.props.dispatch(loadGoogleAPI())
-        .catch(response => this._parseErrorFromResponse(response));
+        .catch((response) => this._parseErrorFromResponse(response));
     }
 
     /**
@@ -137,8 +117,6 @@ class StartLiveStreamDialog
         }
     }
 
-    _onGetYouTubeBroadcasts: () => void;
-
     /**
      * Asks the user to sign in, if not already signed in, and then requests a
      * list of the user's YouTube broadcasts.
@@ -148,10 +126,10 @@ class StartLiveStreamDialog
      */
     _onGetYouTubeBroadcasts() {
         this.props.dispatch(updateProfile())
-            .catch(response => this._parseErrorFromResponse(response));
+            .catch((response) => this._parseErrorFromResponse(response));
 
         this.props.dispatch(requestAvailableYouTubeBroadcasts())
-            .then(broadcasts => {
+            .then((broadcasts) => {
                 this._setStateIfMounted({
                     broadcasts
                 });
@@ -162,10 +140,8 @@ class StartLiveStreamDialog
                     this._onYouTubeBroadcastIDSelected(broadcast.boundStreamID);
                 }
             })
-            .catch(response => this._parseErrorFromResponse(response));
+            .catch((response) => this._parseErrorFromResponse(response));
     }
-
-    _onGoogleSignIn: () => Object;
 
     /**
      * Forces the Google web client application to prompt for a sign in, such as
@@ -176,10 +152,8 @@ class StartLiveStreamDialog
      */
     _onGoogleSignIn() {
         this.props.dispatch(signIn())
-            .catch(response => this._parseErrorFromResponse(response));
+            .catch((response) => this._parseErrorFromResponse(response));
     }
-
-    _onRequestGoogleSignIn: () => Object;
 
     /**
      * Forces the Google web client application to prompt for a sign in, such as
@@ -199,10 +173,6 @@ class StartLiveStreamDialog
                 }))
             .then(() => this._onGetYouTubeBroadcasts());
     }
-
-    _onStreamKeyChange: string => void;
-
-    _onYouTubeBroadcastIDSelected: (string) => Object;
 
     /**
      * Fetches the stream key for a YouTube broadcast and updates the internal
@@ -236,17 +206,17 @@ class StartLiveStreamDialog
      */
     _parseErrorFromResponse(response) {
 
-        if (!response || !response.result) {
+        if (!response?.result) {
             return;
         }
 
         const result = response.result;
         const error = result.error;
-        const errors = error && error.errors;
-        const firstError = errors && errors[0];
+        const errors = error?.errors;
+        const firstError = errors?.[0];
 
         this._setStateIfMounted({
-            errorType: (firstError && firstError.reason) || null
+            errorType: firstError?.reason || null
         });
     }
 
@@ -286,11 +256,9 @@ class StartLiveStreamDialog
                         selectedBoundStreamID = { selectedBoundStreamID } />
                 );
             } else {
-                googleContent = (
-                    <Spinner
-                        isCompleting = { false }
-                        size = 'medium' />
-                );
+                googleContent
+                    = <Spinner />
+                ;
             }
 
             /**
@@ -312,11 +280,9 @@ class StartLiveStreamDialog
 
         case GOOGLE_API_STATES.NEEDS_LOADING:
         default:
-            googleContent = (
-                <Spinner
-                    isCompleting = { false }
-                    size = 'medium' />
-            );
+            googleContent
+                = <Spinner />
+            ;
 
             break;
         }
@@ -340,8 +306,6 @@ class StartLiveStreamDialog
             </div>
         );
     }
-
-    _setStateIfMounted: Object => void;
 
     /**
      * Returns the error message to display for the current error state.
@@ -375,7 +339,7 @@ class StartLiveStreamDialog
  *     _googleApiApplicationClientID: string
  * }}
 */
-function _mapStateToProps(state: Object) {
+function _mapStateToProps(state) {
     return {
         ..._abstractMapStateToProps(state),
         _googleApiApplicationClientID:

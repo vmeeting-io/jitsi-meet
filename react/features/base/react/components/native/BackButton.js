@@ -2,10 +2,10 @@
 
 import React, { Component } from 'react';
 import { TouchableOpacity } from 'react-native';
+import { connect } from 'react-redux';
 
 import { ColorSchemeRegistry } from '../../../color-scheme';
 import { Icon, IconArrowBack } from '../../../icons';
-import { connect } from '../../../redux';
 
 /**
  * The type of the React {@code Component} props of {@link BackButton}.

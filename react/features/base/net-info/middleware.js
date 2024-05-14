@@ -1,14 +1,11 @@
-// @flow
-
-import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../app';
-import { MiddlewareRegistry } from '../redux';
+import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../app/actionTypes';
+import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 
 import NetworkInfoService from './NetworkInfoService';
 import { _storeNetworkInfoCleanup, setNetworkInfo } from './actions';
 import { STORE_NAME } from './constants';
 import { ONLINE_STATE_CHANGED_EVENT } from './events';
 import logger from './logger';
-import type { NetworkInfo } from './types';
 
 /**
  * Middleware for 'base/net-info' feature.
@@ -16,7 +13,6 @@ import type { NetworkInfo } from './types';
  * @param {Store} store - The redux store.
  * @returns {Function}
  */
-// eslint-disable-next-line no-unused-vars
 MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
     const result = next(action);
 
@@ -26,12 +22,15 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
             const networkInfoService = new NetworkInfoService();
             const stop = () => {
                 networkInfoService.stop();
+
+                // @ts-ignore
                 networkInfoService.removeAllListeners();
             };
 
+            // @ts-ignore
             networkInfoService.addListener(
                 ONLINE_STATE_CHANGED_EVENT,
-                ({ isOnline, networkType, details }: NetworkInfo) => {
+                ({ isOnline, networkType, details }) => {
                     logger.info('Network changed', JSON.stringify({
                         isOnline,
                         details,

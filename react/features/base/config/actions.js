@@ -3,18 +3,18 @@
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import type { Dispatch } from 'redux';
 
-import { addKnownDomains } from '../known-domains';
-import { parseURIString } from '../util';
+import { addKnownDomains } from '../known-domains/actions';
+import { parseURIString } from '../util/uri';
 
 import {
     CONFIG_WILL_LOAD,
     LOAD_CONFIG_ERROR,
+    OVERWRITE_CONFIG,
     SET_CONFIG,
-    UPDATE_CONFIG,
-    OVERWRITE_CONFIG
+    UPDATE_CONFIG
 } from './actionTypes';
 import { _CONFIG_STORE_PREFIX } from './constants';
-import { setConfigFromURLParams } from './functions';
+import { setConfigFromURLParams } from './functions.any';
 
 
 /**
@@ -96,37 +96,51 @@ export function overwriteConfig(config: Object) {
  *
  * @param {Object} config - The configuration to be represented by the feature
  * base/config.
+ * @param {URL} locationURL - The URL of the location which necessitated the
+ * loading of a configuration.
  * @returns {Function}
  */
-export function setConfig(config: Object = {}) {
-    return (dispatch: Dispatch<any>, getState: Function) => {
-        const { locationURL } = getState()['features/base/connection'];
+export function setConfig(config: Object = {}, locationURL) {
+    // Now that the loading of the config was successful override the values
+    // with the parameters passed in the hash part of the location URI.
+    // TODO We're still in the middle ground between old Web with config,
+    // and interfaceConfig used via global variables and new
+    // Web and mobile reading the respective values from the redux store.
+    // Only the config will be overridden on React Native, as the other
+    // globals will be undefined here. It's intentional - we do not care to
+    // override those configs yet.
+    locationURL
+        && setConfigFromURLParams(
 
-        // Now that the loading of the config was successful override the values
-        // with the parameters passed in the hash part of the location URI.
-        // TODO We're still in the middle ground between old Web with config,
-        // interfaceConfig, and loggingConfig used via global variables and new
-        // Web and mobile reading the respective values from the redux store.
-        // On React Native there's no interfaceConfig at all yet and
-        // loggingConfig is not loaded but there's a default value in the redux
-        // store.
-        // Only the config will be overridden on React Native, as the other
-        // globals will be undefined here. It's intentional - we do not care to
-        // override those configs yet.
-        locationURL
-            && setConfigFromURLParams(
+            // On Web the config also comes from the window.config global,
+            // but it is resolved in the loadConfig procedure.
+            config,
+            window.interfaceConfig,
+            locationURL);
 
-                // On Web the config also comes from the window.config global,
-                // but it is resolved in the loadConfig procedure.
-                config,
-                window.interfaceConfig,
-                window.loggingConfig,
-                locationURL);
+    let { bosh } = config;
 
-        dispatch({
-            type: SET_CONFIG,
-            config
-        });
+    if (bosh) {
+        // Normalize the BOSH URL.
+        if (bosh.startsWith('//')) {
+            // By default our config.js doesn't include the protocol.
+            bosh = `${locationURL?.protocol}${bosh}`;
+        } else if (bosh.startsWith('/')) {
+            // Handle relative URLs, which won't work on mobile.
+            const {
+                protocol,
+                host,
+                contextRoot
+            } = parseURIString(locationURL?.href);
+
+            bosh = `${protocol}//${host}${contextRoot || '/'}${bosh.substr(1)}`;
+        }
+        config.bosh = bosh;
+    }
+
+    return {
+        type: SET_CONFIG,
+        config
     };
 }
 
@@ -157,7 +171,7 @@ export function storeConfig(baseURL: string, config: Object) {
         // If base/config knows a domain, then the app knows it.
         if (b) {
             try {
-                dispatch(addKnownDomains(parseURIString(baseURL).host));
+                dispatch(addKnownDomains(parseURIString(baseURL)?.host));
             } catch (e) {
                 // Ignore the error because the fiddling with "known domains" is
                 // a side effect here.

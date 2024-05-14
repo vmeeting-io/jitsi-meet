@@ -1,10 +1,10 @@
 // @flow
 
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import Filmstrip from '../../../../../modules/UI/videolayout/Filmstrip';
 import { getLocalParticipant } from '../../../base/participants';
-import { connect } from '../../../base/redux';
 import { getToolboxHeight } from '../../../toolbox/functions.web';
 
 import VideoManager from './VideoManager';

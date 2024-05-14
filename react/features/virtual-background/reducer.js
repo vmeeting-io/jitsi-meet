@@ -1,9 +1,9 @@
 // @flow
 
-import { PersistenceRegistry, ReducerRegistry } from '../base/redux';
+import PersistenceRegistry from '../base/redux/PersistenceRegistry';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import { BACKGROUND_ENABLED, SET_VIRTUAL_BACKGROUND } from './actionTypes';
-import { VIRTUAL_BACKGROUND_TYPE } from './constants';
 
 const STORE_NAME = 'features/virtual-background';
 
@@ -24,7 +24,7 @@ ReducerRegistry.register(STORE_NAME, (state = {}, action) => {
     /**
      * Sets up the persistence of the feature {@code virtual-background}.
      */
-    PersistenceRegistry.register(STORE_NAME, state.backgroundType !== VIRTUAL_BACKGROUND_TYPE.DESKTOP_SHARE);
+    PersistenceRegistry.register(STORE_NAME);
 
     switch (action.type) {
     case SET_VIRTUAL_BACKGROUND: {

@@ -1,26 +1,18 @@
-// @flow
+import { connect } from 'react-redux';
 
-import { createToolbarEvent, sendAnalytics } from '../../analytics';
-import { getFeatureFlag, HELP_BUTTON_ENABLED } from '../../base/flags';
-import { translate } from '../../base/i18n';
-import { IconHelp } from '../../base/icons';
-import { connect } from '../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
-import { openURLInBrowser } from '../../base/util';
-import { isVpaasMeeting } from '../../jaas/functions';
-
-type Props = AbstractButtonProps & {
-
-    /**
-     * The URL to the user documentation.
-     */
-    _userDocumentationURL: string
-};
+import { createToolbarEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { HELP_BUTTON_ENABLED } from '../../base/flags/constants';
+import { getFeatureFlag } from '../../base/flags/functions';
+import { translate } from '../../base/i18n/functions';
+import { IconHelp } from '../../base/icons/svg';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
+import { openURLInBrowser } from '../../base/util/openURLInBrowser';
 
 /**
  * Implements an {@link AbstractButton} to open the user documentation in a new window.
  */
-class HelpButton extends AbstractButton<Props, *> {
+class HelpButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.help';
     icon = IconHelp;
     label = 'toolbar.help';
@@ -33,13 +25,7 @@ class HelpButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { _userDocumentationURL, handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
+        const { _userDocumentationURL } = this.props;
 
         sendAnalytics(createToolbarEvent('help.pressed'));
         openURLInBrowser(_userDocumentationURL);
@@ -53,13 +39,13 @@ class HelpButton extends AbstractButton<Props, *> {
  * @param {Object} state - The redux store/state.
  * @returns {Object}
  */
-function _mapStateToProps(state: Object) {
+function _mapStateToProps(state) {
     const { userDocumentationURL } = state['features/base/config'].deploymentUrls || {};
     const enabled = getFeatureFlag(state, HELP_BUTTON_ENABLED, true);
-    const visible = typeof userDocumentationURL === 'string' && enabled && !isVpaasMeeting(state);
+    const visible = typeof userDocumentationURL === 'string' && enabled;
 
     return {
-        _userDocumentationURL: userDocumentationURL,
+        _userDocumentationURL: userDocumentationURL ?? '',
         visible
     };
 }

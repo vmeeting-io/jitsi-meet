@@ -1,32 +1,17 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { toggleAudioOnly } from '../../../base/audio-only';
-import { AUDIO_ONLY_BUTTON_ENABLED, getFeatureFlag } from '../../../base/flags';
-import { translate } from '../../../base/i18n';
-import { IconAudioOnly, IconAudioOnlyOff } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-
-/**
- * The type of the React {@code Component} props of {@link AudioOnlyButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * Whether the current conference is in audio only mode or not.
-     */
-    _audioOnly: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
+import { toggleAudioOnly } from '../../../base/audio-only/actions';
+import { AUDIO_ONLY_BUTTON_ENABLED } from '../../../base/flags/constants';
+import { getFeatureFlag } from '../../../base/flags/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconAudioOnly, IconAudioOnlyOff } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 
 /**
  * An implementation of a button for toggling the audio-only mode.
  */
-class AudioOnlyButton extends AbstractButton<Props, *> {
+class AudioOnlyButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.audioOnly';
     icon = IconAudioOnly;
     label = 'toolbar.audioOnlyOn';

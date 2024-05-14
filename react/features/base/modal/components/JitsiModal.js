@@ -2,10 +2,10 @@
 
 import React, { PureComponent } from 'react';
 import { KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
+import { connect } from 'react-redux';
 
 import { ColorSchemeRegistry } from '../../color-scheme';
 import { HeaderWithNavigation, SlidingView } from '../../react';
-import { connect } from '../../redux';
 import { StyleType } from '../../styles';
 import { setActiveModalId } from '../actions';
 

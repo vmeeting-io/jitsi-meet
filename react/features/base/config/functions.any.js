@@ -1,21 +1,27 @@
 // @flow
 
-import Bourne from '@hapi/bourne';
 import { jitsiLocalStorage } from '@jitsi/js-utils';
+import { safeJsonParse } from '@jitsi/js-utils/json';
 import _ from 'lodash';
 
 import { isEnabledFromState } from '../../av-moderation/functions';
 import { isLocalParticipantModerator } from '../participants';
 
-import { parseURLParams } from '../util';
+import { parseURLParams } from '../util/parseURLParams';
 
 import CONFIG_WHITELIST from './configWhitelist';
-import { _CONFIG_STORE_PREFIX, FEATURE_FLAGS } from './constants';
+import {
+    DEFAULT_HELP_CENTRE_URL,
+    DEFAULT_PRIVACY_URL,
+    DEFAULT_TERMS_URL,
+    FEATURE_FLAGS,
+    _CONFIG_STORE_PREFIX
+} from './constants';
 import INTERFACE_CONFIG_WHITELIST from './interfaceConfigWhitelist';
 import logger from './logger';
 
 // XXX The function getRoomName is split out of
-// functions.js because it is bundled in both app.bundle and
+// functions.any.js because it is bundled in both app.bundle and
 // do_external_connect, webpack 1 does not support tree shaking, and we don't
 // want all functions to be bundled in do_external_connect.
 export { default as getRoomName } from './getRoomName';
@@ -53,13 +59,13 @@ export function getMeetingRegion(state: Object) {
 }
 
 /**
- * Selector used to get the sourceNameSignaling feature flag.
+ * Selector used to get the SSRC-rewriting feature flag.
  *
  * @param {Object} state - The global state.
  * @returns {boolean}
  */
-export function getSourceNameSignalingFeatureFlag(state: Object) {
-    return getFeatureFlag(state, FEATURE_FLAGS.SOURCE_NAME_SIGNALING);
+export function getSsrcRewritingFeatureFlag(state: Object) {
+    return getFeatureFlag(state, FEATURE_FLAGS.SSRC_REWRITING) ?? true;
 }
 
 /**
@@ -72,7 +78,7 @@ export function getSourceNameSignalingFeatureFlag(state: Object) {
 export function getFeatureFlag(state: Object, featureFlag: string) {
     const featureFlags = state['features/base/config']?.flags || {};
 
-    return Boolean(featureFlags[featureFlag]);
+    return featureFlags[featureFlag];
 }
 
 /**
@@ -104,8 +110,6 @@ export function getRecordingSharingUrl(state: Object) {
  * properties.
  * @param {Object} interfaceConfig - The interfaceConfig Object in which we'll
  * be overriding properties.
- * @param {Object} loggingConfig - The loggingConfig Object in which we'll be
- * overriding properties.
  * @param {Object} json - Object containing configuration properties.
  * Destination object is selected based on root property name:
  * {
@@ -114,16 +118,11 @@ export function getRecordingSharingUrl(state: Object) {
  *     },
  *     interfaceConfig: {
  *         // interface_config.js properties here
- *     },
- *     loggingConfig: {
- *         // logging_config.js properties here
  *     }
  * }.
  * @returns {void}
  */
-export function overrideConfigJSON(
-        config: ?Object, interfaceConfig: ?Object, loggingConfig: ?Object,
-        json: Object) {
+export function overrideConfigJSON(config: ?Object, interfaceConfig: any, json: any) {
     for (const configName of Object.keys(json)) {
         let configObj;
 
@@ -131,8 +130,6 @@ export function overrideConfigJSON(
             configObj = config;
         } else if (configName === 'interfaceConfig') {
             configObj = interfaceConfig;
-        } else if (configName === 'loggingConfig') {
-            configObj = loggingConfig;
         }
         if (configObj) {
             const configJSON
@@ -158,12 +155,10 @@ export function overrideConfigJSON(
 /* eslint-enable max-params, no-shadow */
 
 /**
- * Apply whitelist filtering for configs with whitelists, skips this for others
- * configs (loggingConfig).
+ * Apply whitelist filtering for configs with whitelists.
  * Only extracts overridden values for keys we allow to be overridden.
  *
- * @param {string} configName - The config name, one of config,
- * interfaceConfig, loggingConfig.
+ * @param {string} configName - The config name, one of config or interfaceConfig.
  * @param {Object} configJSON - The object with keys and values to override.
  * @returns {Object} - The result object only with the keys
  * that are whitelisted.
@@ -185,11 +180,20 @@ export function getWhitelistedJSON(configName: string, configJSON: Object): Obje
  * @returns {boolean}
  */
 export function isNameReadOnly(state: Object): boolean {
-    return state['features/base/config'].disableProfile
+    return Boolean(state['features/base/config'].disableProfile
         || state['features/base/config'].readOnlyName
-        || (isEnabledFromState('name', state) && !isLocalParticipantModerator(state));
+        || (isEnabledFromState('name', state) && !isLocalParticipantModerator(state)));
 }
 
+/**
+ * Selector for determining if the display name is visible.
+ *
+ * @param {Object} state - The state of the app.
+ * @returns {boolean}
+ */
+export function isDisplayNameVisible(state: Object): boolean {
+    return !state['features/base/config'].hideDisplayName;
+}
 
 /**
  * Restores a Jitsi Meet config.js from {@code localStorage} if it was
@@ -208,7 +212,7 @@ export function restoreConfig(baseURL: string): ?Object {
 
     if (config) {
         try {
-            return Bourne.parse(config) || undefined;
+            return safeJsonParse(config) || undefined;
         } catch (e) {
             // Somehow incorrect data ended up in the storage. Clean it up.
             jitsiLocalStorage.removeItem(key);
@@ -224,7 +228,7 @@ export function restoreConfig(baseURL: string): ?Object {
  * Inspects the hash part of the location URI and overrides values specified
  * there in the corresponding config objects given as the arguments. The syntax
  * is: {@code https://server.com/room#config.debug=true
- * &interfaceConfig.showButton=false&loggingConfig.something=1}.
+ * &interfaceConfig.showButton=false}.
  *
  * In the hash part each parameter will be parsed to JSON and then the root
  * object will be matched with the corresponding config object given as the
@@ -232,15 +236,11 @@ export function restoreConfig(baseURL: string): ?Object {
  *
  * @param {Object} config - This is the general config.
  * @param {Object} interfaceConfig - This is the interface config.
- * @param {Object} loggingConfig - The logging config.
  * @param {URI} location - The new location to which the app is navigating to.
  * @returns {void}
  */
 export function setConfigFromURLParams(
-        config: ?Object,
-        interfaceConfig: ?Object,
-        loggingConfig: ?Object,
-        location: Object) {
+        config: ?Object, interfaceConfig: any, location: string | URL) {
     const params = parseURLParams(location);
     const json = {};
 
@@ -262,12 +262,11 @@ export function setConfigFromURLParams(
     // }
     config && (json.config = {});
     interfaceConfig && (json.interfaceConfig = {});
-    loggingConfig && (json.loggingConfig = {});
 
     for (const param of Object.keys(params)) {
         let base = json;
         const names = param.split('.');
-        const last = names.pop();
+        const last = names.pop() ?? '';
 
         for (const name of names) {
             base = base[name] = base[name] || {};
@@ -276,7 +275,58 @@ export function setConfigFromURLParams(
         base[last] = params[param];
     }
 
-    overrideConfigJSON(config, interfaceConfig, loggingConfig, json);
+    overrideConfigJSON(config, interfaceConfig, json);
 }
 
 /* eslint-enable max-params */
+
+/**
+ * Returns the dial out url.
+ *
+ * @param {Object} state - The state of the app.
+ * @returns {string}
+ */
+export function getDialOutStatusUrl(state: Object) {
+    return state['features/base/config'].guestDialOutStatusUrl;
+}
+
+/**
+ * Returns the dial out status url.
+ *
+ * @param {Object} state - The state of the app.
+ * @returns {string}
+ */
+export function getDialOutUrl(state: Object) {
+    return state['features/base/config'].guestDialOutUrl;
+}
+
+/**
+ * Selector to return the security UI config.
+ *
+ * @param {Object} state - State object.
+ * @returns {Object}
+ */
+export function getSecurityUiConfig(state: Object) {
+    return state['features/base/config']?.securityUi || {};
+}
+
+/**
+ * Returns the terms, privacy and help centre URL's.
+ *
+ * @param {Object} state - The state of the application.
+ * @returns {{
+ *  privacy: string,
+ *  helpCentre: string,
+ *  terms: string
+ * }}
+ */
+export function getLegalUrls(state: Object) {
+    const helpCentreURL = state['features/base/config']?.helpCentreURL;
+    const configLegalUrls = state['features/base/config']?.legalUrls;
+
+    return {
+        privacy: configLegalUrls?.privacy || DEFAULT_PRIVACY_URL,
+        helpCentre: helpCentreURL || configLegalUrls?.helpCentre || DEFAULT_HELP_CENTRE_URL,
+        terms: configLegalUrls?.terms || DEFAULT_TERMS_URL
+    };
+}

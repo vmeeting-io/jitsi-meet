@@ -1,16 +1,14 @@
-// @flow
-
-import { makeStyles } from '@material-ui/styles';
 import React from 'react';
+import { makeStyles } from 'tss-react/mui';
 
-import { Icon, IconRaisedHandHollow } from '../../../base/icons';
-import BaseTheme from '../../../base/ui/components/BaseTheme';
+import Icon from '../../../base/icons/components/Icon';
+import { IconRaiseHand } from '../../../base/icons/svg';
 
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles()(theme => {
     return {
         indicator: {
             backgroundColor: theme.palette.warning02,
-            borderRadius: `${theme.shape.borderRadius / 2}px`,
+            borderRadius: `${Number(theme.shape.borderRadius) / 2}px`,
             height: '24px',
             width: '24px'
         }
@@ -18,14 +16,14 @@ const useStyles = makeStyles(theme => {
 });
 
 export const RaisedHandIndicator = () => {
-    const styles = useStyles();
+    const { classes: styles, theme } = useStyles();
 
     return (
         <div className = { styles.indicator }>
             <Icon
-                color = { BaseTheme.palette.uiBackground }
+                color = { theme.palette.icon04 }
                 size = { 16 }
-                src = { IconRaisedHandHollow } />
+                src = { IconRaiseHand } />
         </div>
     );
 };

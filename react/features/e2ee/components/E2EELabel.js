@@ -1,47 +1,44 @@
-// @flow
+import React from 'react';
+import { connect } from 'react-redux';
 
-import React, { Component } from 'react';
-
-import { translate } from '../../base/i18n';
-import { IconE2EE } from '../../base/icons';
-import { Label } from '../../base/label';
+import { translate } from '../../base/i18n/functions';
+import { IconE2EE } from '../../base/icons/svg';
+import Label from '../../base/label/components/web/Label';
 import { COLORS } from '../../base/label/constants';
-import { connect } from '../../base/redux';
-import { Tooltip } from '../../base/tooltip';
+import Tooltip from '../../base/tooltip/components/Tooltip';
 
-import { _mapStateToProps, type Props } from './AbstractE2EELabel';
 
+const E2EELabel = ({ _e2eeLabels, _showLabel, t }) => {
+    if (!_showLabel) {
+        return null;
+    }
+    const content = _e2eeLabels?.tooltip || t('e2ee.labelToolTip');
+
+    return (
+        <Tooltip
+            content = { content }
+            position = { 'bottom' }>
+            <Label
+                color = { COLORS.green }
+                icon = { IconE2EE } />
+        </Tooltip>
+    );
+};
 
 /**
- * React {@code Component} for displaying a label when everyone has E2EE enabled in a conferene.
+ * Maps (parts of) the redux state to the associated props of this {@code Component}.
  *
- * @augments Component
+ * @param {Object} state - The redux state.
+ * @private
+ * @returns {IProps}
  */
-class E2EELabel extends Component<Props> {
+export function _mapStateToProps(state) {
+    const { e2ee = {} } = state['features/base/config'];
 
-    /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
-    render() {
-        if (!this.props._showLabel) {
-            return null;
-        }
-        const { _e2eeLabels, t } = this.props;
-        const content = _e2eeLabels?.labelToolTip || t('e2ee.labelToolTip');
-
-        return (
-            <Tooltip
-                content = { content }
-                position = { 'bottom' }>
-                <Label
-                    color = { COLORS.green }
-                    icon = { IconE2EE } />
-            </Tooltip>
-        );
-    }
+    return {
+        _e2eeLabels: e2ee.labels,
+        _showLabel: state['features/base/participants'].numberOfParticipantsDisabledE2EE === 0
+    };
 }
 
 export default translate(connect(_mapStateToProps)(E2EELabel));

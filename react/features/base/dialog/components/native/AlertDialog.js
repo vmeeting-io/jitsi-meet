@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { Text } from 'react-native';
+import { connect } from 'react-redux';
 
 import { translate } from '../../../i18n';
-import { connect } from '../../../redux';
 import { _abstractMapStateToProps } from '../../functions';
 
 import { type Props as AbstractProps } from './BaseDialog';

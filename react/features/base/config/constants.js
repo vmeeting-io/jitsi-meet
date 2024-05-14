@@ -8,48 +8,6 @@
 export const _CONFIG_STORE_PREFIX = 'config.js';
 
 /**
- * The list of all possible UI buttons.
- *
- * @protected
- * @type Array<string>
- */
-export const TOOLBAR_BUTTONS = [
-    'camera',
-    'chat',
-    'closedcaptions',
-    'desktop',
-    'download',
-    'embedmeeting',
-    'whiteboard',
-    'feedback',
-    'filmstrip',
-    'fullscreen',
-    'hangup',
-    'help',
-    'invite',
-    'livestreaming',
-    'microphone',
-    'mute-everyone',
-    'mute-video-everyone',
-    'participants',
-    'profile',
-    'raisehand',
-    'recording',
-    'security',
-    'select-background',
-    'settings',
-    'share',
-    'shareaudio',
-    'sharedvideo',
-    'shortcuts',
-    'stats',
-    'stt',
-    'tileview',
-    'toggle-camera',
-    'videoquality'
-];
-
-/**
  * The toolbar buttons to show on premeeting screens.
  */
 export const PREMEETING_BUTTONS = [ 'microphone', 'camera', 'select-background', 'invite', 'settings' ];
@@ -74,5 +32,20 @@ export const DEFAULT_METAS = {
  */
 
 export const FEATURE_FLAGS = {
-    SOURCE_NAME_SIGNALING: 'sourceNameSignaling'
+    SSRC_REWRITING: 'ssrcRewritingEnabled'
 };
+
+/**
+ * The URL at which the terms (of service/use) are available to the user.
+ */
+export const DEFAULT_TERMS_URL = 'https://jitsi.org/meet/terms';
+
+/**
+ * The URL at which the privacy policy is available to the user.
+ */
+export const DEFAULT_PRIVACY_URL = 'https://jitsi.org/meet/privacy';
+
+/**
+ * The URL at which the help centre is available to the user.
+ */
+export const DEFAULT_HELP_CENTRE_URL = 'https://web-cdn.jitsi.net/faq/meet-faq.html';

@@ -1,58 +1,23 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { openDialog } from '../../base/dialog';
-import { translate } from '../../base/i18n';
-import { IconVirtualBackground } from '../../base/icons';
-import { connect } from '../../base/redux';
-import { AbstractButton } from '../../base/toolbox/components';
-import type { AbstractButtonProps } from '../../base/toolbox/components';
-import { checkBlurSupport } from '../functions';
+import { openDialog } from '../../base/dialog/actions';
+import { translate } from '../../base/i18n/functions';
+import { IconImage } from '../../base/icons/svg';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
+import { isScreenVideoShared } from '../../screen-share/functions';
+import { checkBlurSupport, checkVirtualAvatarEnabled } from '../functions';
 
-import { VirtualAvatarDialog } from './index';
-
-/**
- * The type of the React {@code Component} props of {@link VirtualAvatarButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * True if the video background is blurred or false if it is not.
-     */
-    _isVirtualAvatarEnabled: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
+import VirtualAvatarDialog from './VirtualAvatarDialog';
 
 /**
  * An abstract implementation of a button that toggles the video background dialog.
  */
-class VirtualAvatarButton extends AbstractButton<Props, *> {
+class VirtualAvatarButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.selectVirtualAvatar';
-    icon = IconVirtualBackground;
+    icon = IconImage;
     label = 'toolbar.selectVirtualAvatar';
     tooltip = 'toolbar.selectVirtualAvatar';
-
-    /**
-     * Handles clicking / pressing the button, and toggles the virtual background dialog
-     * state accordingly.
-     *
-     * @protected
-     * @returns {void}
-     */
-    _handleClick() {
-        const { dispatch, handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
-
-        dispatch(openDialog(VirtualAvatarDialog));
-    }
 
     /**
      * Returns {@code boolean} value indicating if the background effect is
@@ -63,6 +28,19 @@ class VirtualAvatarButton extends AbstractButton<Props, *> {
      */
     _isToggled() {
         return this.props._isVirtualAvatarEnabled;
+    }
+
+    /**
+     * Handles clicking / pressing the button, and toggles the virtual background dialog
+     * state accordingly.
+     *
+     * @protected
+     * @returns {void}
+     */
+    _handleClick() {
+        const { dispatch } = this.props;
+
+        dispatch(openDialog(VirtualAvatarDialog));
     }
 }
 
@@ -81,6 +59,8 @@ function _mapStateToProps(state): Object {
     return {
         _isVirtualAvatarEnabled: Boolean(state['features/virtual-avatar'].virtualAvatarEffectEnabled),
         visible: checkBlurSupport()
+            && !isScreenVideoShared(state)
+            && checkVirtualAvatarEnabled(state)
     };
 }
 

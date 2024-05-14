@@ -8,7 +8,8 @@
  *     participant: {
  *         conference: JitsiConference,
  *         id: string,
- *         previousSpeakers: Array<string>
+ *         previousSpeakers: Array<string>,
+ *         silence: boolean
  *     }
  * }
  */
@@ -117,6 +118,18 @@ export const PARTICIPANT_KICKED = 'PARTICIPANT_KICKED';
 export const PARTICIPANT_LEFT = 'PARTICIPANT_LEFT';
 
 /**
+ * Action to handle case when the sources attached to a participant are updated.
+ *
+ * {
+ *      type: PARTICIPANT_SOURCES_UPDATED,
+ *      participant: {
+ *          id: string
+ *      }
+ * }
+ */
+export const PARTICIPANT_SOURCES_UPDATED = 'PARTICIPANT_SOURCES_UPDATED';
+
+/**
  * Action to handle case when info about participant changes.
  *
  * {
@@ -174,12 +187,31 @@ export const HIDDEN_PARTICIPANT_LEFT = 'HIDDEN_PARTICIPANT_LEFT';
 export const SET_LOADABLE_AVATAR_URL = 'SET_LOADABLE_AVATAR_URL';
 
 /**
+ * The type of Redux action which notifies that the screenshare participant's display name has changed.
+ *
+ * {
+ *     type: SCREENSHARE_PARTICIPANT_NAME_CHANGED,
+ *     id: string,
+ *     name: string
+ * }
+ */
+ export const SCREENSHARE_PARTICIPANT_NAME_CHANGED = 'SCREENSHARE_PARTICIPANT_NAME_CHANGED';
+
+/**
  * Raises hand for the local participant.
  * {
  *     type: LOCAL_PARTICIPANT_RAISE_HAND
  * }
  */
 export const LOCAL_PARTICIPANT_RAISE_HAND = 'LOCAL_PARTICIPANT_RAISE_HAND';
+
+/**
+ * Clear the raise hand queue.
+ * {
+ *     type: RAISE_HAND_CLEAR
+ * }
+ */
+export const RAISE_HAND_CLEAR = 'RAISE_HAND_CLEAR';
 
 /**
  * Updates participant in raise hand queue.
@@ -192,6 +224,44 @@ export const LOCAL_PARTICIPANT_RAISE_HAND = 'LOCAL_PARTICIPANT_RAISE_HAND';
  * }
  */
 export const RAISE_HAND_UPDATED = 'RAISE_HAND_UPDATED';
+
+/**
+ * The type of Redux action which notifies that the local participant has changed the audio levels.
+ * {
+ *     type: LOCAL_PARTICIPANT_AUDIO_LEVEL_CHANGED
+ *     level: number
+ * }
+ */
+export const LOCAL_PARTICIPANT_AUDIO_LEVEL_CHANGED = 'LOCAL_PARTICIPANT_AUDIO_LEVEL_CHANGED'
+
+/**
+ * The type of Redux action which overwrites the name of a participant.
+ * {
+ *     type: OVERWRITE_PARTICIPANT_NAME,
+ *     id: string,
+ *     name: string
+ * }
+ */
+export const OVERWRITE_PARTICIPANT_NAME = 'OVERWRITE_PARTICIPANT_NAME';
+
+/**
+ * The type of Redux action which overwrites the names of multiple participants.
+ * {
+ *     type: OVERWRITE_PARTICIPANTS_NAMES,
+ *     participantsList: Array<Object>,
+ * }
+ */
+export const OVERWRITE_PARTICIPANTS_NAMES = 'OVERWRITE_PARTICIPANTS_NAMES';
+
+/**
+ * Updates participants local recording status.
+ * {
+ *     type: SET_LOCAL_PARTICIPANT_RECORDING_STATUS,
+ *     recording: boolean,
+ *     onlySelf: boolean
+ * }
+ */
+export const SET_LOCAL_PARTICIPANT_RECORDING_STATUS = 'SET_LOCAL_PARTICIPANT_RECORDING_STATUS';
 
 export const PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED = 'PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED';
 

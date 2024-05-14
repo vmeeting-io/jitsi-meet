@@ -14,14 +14,14 @@ import logger from './logger';
  */
 export function toggleBackgroundEffect(options: Object, jitsiTrack: Object) {
     return async function(dispatch: Object => Object, getState: () => any) {
-        await dispatch(backgroundEnabled(options.enabled));
+        await dispatch(backgroundEnabled(options.backgroundEffectEnabled));
         await dispatch(setVirtualBackground(options));
         const state = getState();
         const virtualBackground = state['features/virtual-background'];
 
         if (jitsiTrack) {
             try {
-                if (options.enabled) {
+                if (options.backgroundEffectEnabled) {
                     await jitsiTrack.setEffect(await createVirtualBackgroundEffect(virtualBackground, dispatch));
                 } else {
                     await jitsiTrack.setEffect(undefined);
@@ -49,7 +49,7 @@ export function toggleBackgroundEffect(options: Object, jitsiTrack: Object) {
 export function setVirtualBackground(options: Object) {
     return {
         type: SET_VIRTUAL_BACKGROUND,
-        virtualSource: options?.url,
+        virtualSource: options?.virtualSource,
         blurValue: options?.blurValue,
         backgroundType: options?.backgroundType,
         selectedThumbnail: options?.selectedThumbnail

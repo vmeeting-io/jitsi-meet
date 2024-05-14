@@ -1,4 +1,5 @@
 // @flow
+import { connect } from 'react-redux';
 
 import { translate } from '../../../base/i18n';
 import {
@@ -6,7 +7,6 @@ import {
     type Props as AbstractProps
 } from '../../../base/label';
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
-import { connect } from '../../../base/redux';
 import { getSessionStatusToShow } from '../../functions';
 
 import { LIVE_LABEL_COLOR, REC_LABEL_COLOR } from './styles';

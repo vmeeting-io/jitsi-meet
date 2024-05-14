@@ -1,22 +1,23 @@
 // @flow
 
 import type { Dispatch } from 'redux';
-
-import { overwriteConfig } from '../base/config';
+import { overwriteConfig } from '../base/config/actions';
 import { isMobileBrowser } from '../base/environment/utils';
+import { isLayoutTileView } from '../video-layout/functions.any';
 
 import {
     CLEAR_TOOLBOX_TIMEOUT,
     FULL_SCREEN_CHANGED,
     SET_FULL_SCREEN,
+    SET_HANGUP_MENU_VISIBLE,
     SET_OVERFLOW_DRAWER,
     SET_OVERFLOW_MENU_VISIBLE,
     SET_SHARE_MENU_VISIBLE,
     SET_TOOLBAR_HOVERED,
     SET_TOOLBOX_TIMEOUT
 } from './actionTypes';
-import { setToolboxVisible } from './actions';
-import { getToolbarTimeout } from './functions';
+import { setToolboxVisible } from './actions.web';
+import { getToolbarTimeout } from './functions.web';
 
 export * from './actions.any';
 
@@ -26,7 +27,7 @@ export * from './actions.any';
  * @param {boolean} dock - True if dock, false otherwise.
  * @returns {Function}
  */
-export function dockToolbox(dock: boolean): Function {
+export function dockToolbox(dock: boolean) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const state = getState();
         const { visible } = state['features/toolbox'];
@@ -72,10 +73,12 @@ export function fullScreenChanged(fullScreen: boolean) {
  * caring about the extended toolbar side panels.
  * @returns {Function}
  */
-export function hideToolbox(force: boolean = false): Function {
+export function hideToolbox(force = false) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const state = getState();
-        const { toolbarConfig: { alwaysVisible } } = state['features/base/config'];
+        const { toolbarConfig } = state['features/base/config'];
+        const alwaysVisible = toolbarConfig?.alwaysVisible;
+        const autoHideWhileChatIsOpen = toolbarConfig?.autoHideWhileChatIsOpen;
         const { hovered } = state['features/toolbox'];
         const toolbarTimeout = getToolbarTimeout(state);
 
@@ -85,13 +88,16 @@ export function hideToolbox(force: boolean = false): Function {
 
         dispatch(clearToolboxTimeout());
 
-        const focusSelector = '.toolbox-content-items:focus-within,.filmstrip:focus-within,.remotevideomenu:hover';
+        const hoverSelector = isLayoutTileView(state)
+            ? '.remotevideomenu:hover'
+            : '.filmstrip:hover,.remotevideomenu:hover';
+        const hoveredElem = document.querySelector(hoverSelector);
 
         if (!force
                 && (hovered
                     || state['features/invite'].calleeInfoVisible
-                    || state['features/chat'].isOpen
-                    || document.querySelector(focusSelector))) {
+                    || (state['features/chat'].isOpen && !autoHideWhileChatIsOpen)
+                    || hoveredElem)) {
             dispatch(
                 setToolboxTimeout(
                     () => dispatch(hideToolbox()),
@@ -124,14 +130,13 @@ export function setFullScreen(fullScreen: boolean) {
  * @param {number} timeout - Timeout for showing the toolbox.
  * @returns {Function}
  */
-export function showToolbox(timeout: number = 0): Object {
+export function showToolbox(timeout = 0) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const state = getState();
-        const {
-            toolbarConfig: { initialTimeout, alwaysVisible },
-            toolbarConfig
-        } = state['features/base/config'];
+        const { toolbarConfig } = state['features/base/config'];
         const toolbarTimeout = getToolbarTimeout(state);
+        const initialTimeout = toolbarConfig?.initialTimeout;
+        const alwaysVisible = toolbarConfig?.alwaysVisible;
 
         const {
             enabled,
@@ -183,9 +188,25 @@ export function setOverflowDrawer(displayAsDrawer: boolean) {
  *     type: CLEAR_TOOLBOX_TIMEOUT
  * }}
  */
-export function clearToolboxTimeout(): Object {
+export function clearToolboxTimeout() {
     return {
         type: CLEAR_TOOLBOX_TIMEOUT
+    };
+}
+
+/**
+ * Shows/hides the hangup menu.
+ *
+ * @param {boolean} visible - True to show it or false to hide it.
+ * @returns {{
+ *     type: SET_HANGUP_MENU_VISIBLE,
+ *     visible: boolean
+ * }}
+ */
+export function setHangupMenuVisible(visible: boolean) {
+    return {
+        type: SET_HANGUP_MENU_VISIBLE,
+        visible
     };
 }
 
@@ -198,7 +219,7 @@ export function clearToolboxTimeout(): Object {
  *     visible: boolean
  * }}
  */
-export function setOverflowMenuVisible(visible: boolean): Object {
+export function setOverflowMenuVisible(visible: boolean) {
     return {
         type: SET_OVERFLOW_MENU_VISIBLE,
         visible
@@ -230,7 +251,7 @@ export function setShareMenuVisible(visible: boolean): Object {
  *     hovered: boolean
  * }}
  */
-export function setToolbarHovered(hovered: boolean): Object {
+export function setToolbarHovered(hovered: boolean) {
     return {
         type: SET_TOOLBAR_HOVERED,
         hovered
@@ -249,7 +270,7 @@ export function setToolbarHovered(hovered: boolean): Object {
  *     timeoutMS: number
  * }}
  */
-export function setToolboxTimeout(handler: Function, timeoutMS: number): Object {
+export function setToolboxTimeout(handler: Function, timeoutMS: number) {
     return function(dispatch) {
         if (isMobileBrowser()) {
             return;
@@ -260,5 +281,19 @@ export function setToolboxTimeout(handler: Function, timeoutMS: number): Object 
             handler,
             timeoutMS
         });
+    };
+}
+
+/**
+     * Closes the overflow menu if opened.
+     *
+     * @private
+     * @returns {void}
+     */
+export function closeOverflowMenuIfOpen() {
+    return (dispatch: Dispatch<any>, getState: Function) => {
+        const { overflowMenuVisible } = getState()['features/toolbox'];
+
+        overflowMenuVisible && dispatch(setOverflowMenuVisible(false));
     };
 }

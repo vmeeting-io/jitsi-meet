@@ -1,3 +1,1 @@
-// @flow
-
-export * from './native';
+export { default as NotificationsContainer } from './native/NotificationsContainer';

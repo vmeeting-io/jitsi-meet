@@ -1,47 +1,41 @@
-// @flow
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 
-import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { translate } from '../../../base/i18n';
-import { IconInfo } from '../../../base/icons';
-import { connect } from '../../../base/redux';
+import { IconInfoCircle } from '../../../base/icons/svg';
+import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 import { renderConnectionStatus } from '../../actions.web';
 
-type Props = {
-
-    /**
-     * The Redux dispatch function.
-     */
-    dispatch: Function,
-
-    /**
-     * The ID of the participant for which to show connection stats.
-     */
-    participantId: string,
-
-    /**
-     * The function to be used to translate i18n labels.
-     */
-    t: Function
-};
-
-
+/**
+ * Implements a React {@link Component} which displays a button that shows
+ * the connection status for the given participant.
+ *
+ * @returns {JSX.Element}
+ */
 const ConnectionStatusButton = ({
-    dispatch,
-    t
-}: Props) => {
-    const onClick = useCallback(e => {
+    notifyClick,
+    notifyMode
+}) => {
+    const { t } = useTranslation();
+    const dispatch = useDispatch();
+
+    const handleClick = useCallback(e => {
         e.stopPropagation();
+        notifyClick?.();
+        if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
+            return;
+        }
         dispatch(renderConnectionStatus(true));
-    }, [ dispatch ]);
+    }, [ dispatch, notifyClick, notifyMode ]);
 
     return (
         <ContextMenuItem
             accessibilityLabel = { t('videothumbnail.connectionInfo') }
-            icon = { IconInfo }
-            onClick = { onClick }
+            icon = { IconInfoCircle }
+            onClick = { handleClick }
             text = { t('videothumbnail.connectionInfo') } />
     );
 };
 
-export default translate(connect()(ConnectionStatusButton));
+export default ConnectionStatusButton;

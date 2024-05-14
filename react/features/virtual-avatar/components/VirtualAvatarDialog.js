@@ -1,36 +1,32 @@
 // @flow
 
-import Spinner from '@atlaskit/spinner';
+import axios from 'axios';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-
-import { getAuthUrl } from '../../../api/url';
-import { Dialog, hideDialog, openDialog } from '../../base/dialog';
-import { translate } from '../../base/i18n';
-import { connect } from '../../base/redux';
-import { updateSettings } from '../../base/settings';
-import { Tooltip } from '../../base/tooltip';
-import { VIDEO_TYPE } from '../../base/media';
-import { getLocalVideoTrack } from '../../base/tracks';
-import TouchmoveHack from '../../chat/components/web/TouchmoveHack';
-import { Icon, IconCancelSelection, IconPlusCircle, IconShareDesktop } from '../../base/icons';
-import {
-    virtualAvatarEnabled,
-    setVirtualAvatar,
-    toggleVirtualAvatarEffect,
-    virtualAvatarTrackChanged
-} from '../actions';
-import { DEFAULT_STATE } from '../reducer';
-import { toDataURL, toggleAvatarAndBackgroundEffects } from '../functions';
-import logger from '../logger';
-
+import { connect } from 'react-redux';
 import * as THREE from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment';
 
-import VirtualAvatarPreview from './VirtualAvatarPreview';
-import axios from 'axios';
-import {images as backgroundImages} from '../../virtual-background/components/VirtualBackgroundDialog';
+import { getAuthUrl } from '../../../api/url';
+import { hideDialog } from '../../base/dialog/actions';
+import { translate } from '../../base/i18n/functions';
+import { updateSettings } from '../../base/settings/actions';
+import Tooltip from '../../base/tooltip/components/Tooltip';
+import { getLocalVideoTrack } from '../../base/tracks/functions';
+import Icon from '../../base/icons/components/Icon';
+import { IconCancel, IconPlus } from '../../base/icons/svg';
+import Dialog from '../../base/ui/components/web/Dialog'
+import Spinner from '../../base/ui/components/web/Spinner';
+import { IMAGES as backgroundImages } from '../../virtual-background/constants';
+
+import { virtualAvatarTrackChanged } from '../actions';
+import { toDataURL, toggleAvatarAndBackgroundEffects } from '../functions';
+import logger from '../logger';
+import { DEFAULT_STATE } from '../reducer';
+
 import {getRemoteImageUrl} from '../../virtual-background/functions';
+
+import VirtualAvatarPreview from './VirtualAvatarPreview';
 
 const prebuildAvatars = [
     {
@@ -239,7 +235,6 @@ function VirtualAvatar({
 
     const applyVirtualAvatar = useCallback(async () => {
         setLoading(true);
-        // await dispatch(toggleVirtualAvatarEffect(options, _jitsiTrack));
         await toggleAvatarAndBackgroundEffects(dispatch, options, _jitsiTrack);
         setLoading(false);
 
@@ -454,149 +449,147 @@ function VirtualAvatar({
                                     <Icon
                                         className={'add-background'}
                                         size={20}
-                                        src={IconPlusCircle} />
+                                        src={IconPlus} />
                                     {t('dialog.customAvatars')}
                                 </label>}
 
-                                <TouchmoveHack isModal = { true } style = {{ overflow: 'visible' }}>
-                                    <div
-                                        className = 'virtual-background-dialog'
-                                        role = 'radiogroup'
-                                        tabIndex = '-1'>
+                                <div
+                                    className = 'virtual-background-dialog'
+                                    role = 'radiogroup'
+                                    tabIndex = '-1'>
+                                    <Tooltip
+                                        content = { t('virtualAvatar.removeVirtualAvatar') }
+                                        position = { 'top' }>
+                                        <div
+                                            aria-checked = { options.selectedVirtualAvatarUrl === 'none' }
+                                            aria-label = { t('virtualAvatar.removeVirtualAvatar') }
+                                            className = { options.selectedVirtualAvatarUrl === 'none' ? 'background-option none-selected'
+                                                : 'background-option virtual-background-none' }
+                                            onClick = { removeVirtualAvatar }
+                                            role = 'radio'
+                                            tabIndex = { 0 } >
+                                            {t('virtualAvatar.none')}
+                                        </div>
+                                    </Tooltip>
+                                    {rpThumnailUrl && <Tooltip
+                                        content={t('virtualAvatar.readyplayerAvatar')}
+                                        position={'top'}>
+                                        <img
+                                            aria-checked={options.virtualAvatarType === 'readyplayer'}
+                                            aria-label={t('virtualAvatar.readyplayerAvatar')}
+                                            className={options.selectedVirtualAvatarUrl === rpVirtualAvatarUrl ? 'background-option thumbnail-selected' : 'background-option thumbnail'}
+                                            onClick={setReadyplayerAvatar}
+                                            role='radio'
+                                            src={rpThumnailUrl}
+                                            ref={e => {rpAvatarEl.current = e}}
+                                            tabIndex={0} />
+                                    </Tooltip>}
+                                    {prebuildAvatars.map((avatar, index) => (
                                         <Tooltip
-                                            content = { t('virtualAvatar.removeVirtualAvatar') }
+                                            content = { avatar.tooltip && t(`virtualAvatar.${avatar.tooltip}`) }
+                                            key = { avatar.id }
                                             position = { 'top' }>
-                                            <div
-                                                aria-checked = { options.selectedVirtualAvatarUrl === 'none' }
-                                                aria-label = { t('virtualAvatar.removeVirtualAvatar') }
-                                                className = { options.selectedVirtualAvatarUrl === 'none' ? 'background-option none-selected'
-                                                    : 'background-option virtual-background-none' }
-                                                onClick = { removeVirtualAvatar }
+                                            <img
+                                                alt = { avatar.tooltip && t(`virtualAvatar.${avatar.tooltip}`) }
+                                                aria-checked={options.selectedVirtualAvatarUrl === avatar.modelUrl
+                                                    && options.virtualAvatarType === "avatar" }
+                                                className = {
+                                                    (options.selectedVirtualAvatarUrl === avatar.modelUrl && options.virtualAvatarType === "avatar")
+                                                        ? 'background-option thumbnail-selected' : 'background-option thumbnail' }
+                                                data-imageid = { avatar.id }
+                                                onClick={ setPreviewVirtualAvatar }
+                                                onError = { onError }
                                                 role = 'radio'
-                                                tabIndex = { 0 } >
-                                                {t('virtualAvatar.none')}
-                                            </div>
+                                                src = { avatar.src }
+                                                tabIndex = { 0 } />
                                         </Tooltip>
-                                        {rpThumnailUrl && <Tooltip
-                                            content={t('virtualAvatar.readyplayerAvatar')}
+                                    ))}
+                                </div>
+                                <div>
+                                    {previewIsLoaded && <label
+                                        aria-label={t('virtualBackground.uploadImage')}
+                                        className='file-upload-label'
+                                        htmlFor='file-upload'
+                                        tabIndex={0} >
+                                        <Icon
+                                            className={'add-background'}
+                                            size={20}
+                                            src={IconPlus} />
+                                        {t('virtualBackground.addBackground')}
+                                    </label>}
+                                    <input
+                                        accept='image/*'
+                                        className='file-upload-btn'
+                                        id='file-upload'
+                                        onChange={uploadImage}
+                                        type='file' />
+                                </div>
+                                {/* background */}
+                                <div className='virtual-background-dialog'
+                                    role='radiogroup'
+                                    tabIndex='-1'>
+                                    <Tooltip
+                                        content={t('virtualBackground.removeBackground')}
+                                        position={'top'}>
+                                        <div
+                                                aria-checked={options.selectedBackgroundId === 'none'}
+                                            aria-label={t('virtualBackground.removeBackground')}
+                                                className={options.selectedBackgroundId === 'none' ? 'background-option none-selected'
+                                                : 'background-option virtual-background-none'}
+                                            onClick={removeAvatarBackground}
+                                            role='radio'
+                                            tabIndex={0} >
+                                            {t('virtualBackground.none')}
+                                        </div>
+                                    </Tooltip>
+                                    {backgroundImages.map((image, index) => (
+                                        <Tooltip
+                                            content={image.tooltip && t(`virtualBackground.${image.tooltip}`)}
+                                            key={image.id}
                                             position={'top'}>
                                             <img
-                                                aria-checked={options.virtualAvatarType === 'readyplayer'}
-                                                aria-label={t('virtualAvatar.readyplayerAvatar')}
-                                                className={options.selectedVirtualAvatarUrl === rpVirtualAvatarUrl ? 'background-option thumbnail-selected' : 'background-option thumbnail'}
-                                                onClick={setReadyplayerAvatar}
-                                                role='radio'
-                                                src={rpThumnailUrl}
-                                                ref={e => {rpAvatarEl.current = e}}
-                                                tabIndex={0} />
-                                        </Tooltip>}
-                                        {prebuildAvatars.map((avatar, index) => (
-                                            <Tooltip
-                                                content = { avatar.tooltip && t(`virtualAvatar.${avatar.tooltip}`) }
-                                                key = { avatar.id }
-                                                position = { 'top' }>
-                                                <img
-                                                    alt = { avatar.tooltip && t(`virtualAvatar.${avatar.tooltip}`) }
-                                                    aria-checked={options.selectedVirtualAvatarUrl === avatar.modelUrl
-                                                        && options.virtualAvatarType === "avatar" }
-                                                    className = {
-                                                        (options.selectedVirtualAvatarUrl === avatar.modelUrl && options.virtualAvatarType === "avatar")
-                                                            ? 'background-option thumbnail-selected' : 'background-option thumbnail' }
-                                                    data-imageid = { avatar.id }
-                                                    onClick={ setPreviewVirtualAvatar }
-                                                    onError = { onError }
-                                                    role = 'radio'
-                                                    src = { avatar.src }
-                                                    tabIndex = { 0 } />
-                                            </Tooltip>
-                                        ))}
-                                    </div>
-                                    <div>
-                                        {previewIsLoaded && <label
-                                            aria-label={t('virtualBackground.uploadImage')}
-                                            className='file-upload-label'
-                                            htmlFor='file-upload'
-                                            tabIndex={0} >
-                                            <Icon
-                                                className={'add-background'}
-                                                size={20}
-                                                src={IconPlusCircle} />
-                                            {t('virtualBackground.addBackground')}
-                                        </label>}
-                                        <input
-                                            accept='image/*'
-                                            className='file-upload-btn'
-                                            id='file-upload'
-                                            onChange={uploadImage}
-                                            type='file' />
-                                    </div>
-                                    {/* background */}
-                                    <div className='virtual-background-dialog'
-                                        role='radiogroup'
-                                        tabIndex='-1'>
-                                        <Tooltip
-                                            content={t('virtualBackground.removeBackground')}
-                                            position={'top'}>
-                                            <div
-                                                    aria-checked={options.selectedBackgroundId === 'none'}
-                                                aria-label={t('virtualBackground.removeBackground')}
-                                                    className={options.selectedBackgroundId === 'none' ? 'background-option none-selected'
-                                                    : 'background-option virtual-background-none'}
-                                                onClick={removeAvatarBackground}
-                                                role='radio'
-                                                tabIndex={0} >
-                                                {t('virtualBackground.none')}
-                                            </div>
-                                        </Tooltip>
-                                        {backgroundImages.map((image, index) => (
-                                            <Tooltip
-                                                content={image.tooltip && t(`virtualBackground.${image.tooltip}`)}
-                                                key={image.id}
-                                                position={'top'}>
-                                                <img
-                                                    alt={image.tooltip && t(`virtualBackground.${image.tooltip}`)}
-                                                    aria-checked={options.selectedBackgroundId === image.id}
-                                                    className={
-                                                        options.selectedBackgroundId === image.id
-                                                            ? 'background-option thumbnail-selected' : 'background-option thumbnail'}
-                                                    data-imageid={image.id}
-                                                    onClick={setImageBackground}
-                                                    onError={onError}
-                                                    role='radio'
-                                                    src={image.src}
-                                                    tabIndex={0} />
-                                            </Tooltip>
-                                        ))}
-                                        {remoteImages.map((image, index) => (
-                                            <div
-                                                className={'thumbnail-container'}
-                                                key={image._id}>
-                                                <img
-                                                    alt={t('virtualBackground.uploadedImage', { index: index + 1 })}
-                                                    aria-checked={options.selectedBackgroundId === image._id}
-                                                    className={options.selectedBackgroundId === image._id
+                                                alt={image.tooltip && t(`virtualBackground.${image.tooltip}`)}
+                                                aria-checked={options.selectedBackgroundId === image.id}
+                                                className={
+                                                    options.selectedBackgroundId === image.id
                                                         ? 'background-option thumbnail-selected' : 'background-option thumbnail'}
+                                                data-imageid={image.id}
+                                                onClick={setImageBackground}
+                                                onError={onError}
+                                                role='radio'
+                                                src={image.src}
+                                                tabIndex={0} />
+                                        </Tooltip>
+                                    ))}
+                                    {remoteImages.map((image, index) => (
+                                        <div
+                                            className={'thumbnail-container'}
+                                            key={image._id}>
+                                            <img
+                                                alt={t('virtualBackground.uploadedImage', { index: index + 1 })}
+                                                aria-checked={options.selectedBackgroundId === image._id}
+                                                className={options.selectedBackgroundId === image._id
+                                                    ? 'background-option thumbnail-selected' : 'background-option thumbnail'}
+                                                data-imageid={image._id}
+                                                onClick={setUploadedImageBackground}
+                                                onError={onError}
+                                                role='radio'
+                                                src={getRemoteImageUrl(image, 'ld')}
+                                                tabIndex={0} />
+                                            {!image.isPublic && (
+                                                <Icon
+                                                    ariaLabel={t('virtualBackground.deleteImage')}
+                                                    className={'delete-image-icon'}
                                                     data-imageid={image._id}
-                                                    onClick={setUploadedImageBackground}
-                                                    onError={onError}
-                                                    role='radio'
-                                                    src={getRemoteImageUrl(image, 'ld')}
+                                                    onClick={removeBackground}
+                                                    role='button'
+                                                    size={15}
+                                                    src={IconCancel}
                                                     tabIndex={0} />
-                                                {!image.isPublic && (
-                                                    <Icon
-                                                        ariaLabel={t('virtualBackground.deleteImage')}
-                                                        className={'delete-image-icon'}
-                                                        data-imageid={image._id}
-                                                        onClick={removeBackground}
-                                                        role='button'
-                                                        size={15}
-                                                        src={IconCancelSelection}
-                                                        tabIndex={0} />
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </TouchmoveHack>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>

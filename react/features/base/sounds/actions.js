@@ -1,14 +1,14 @@
 // @flow
 
-import type { AudioElement } from '../media';
+import { AudioElement } from '../media/components/AbstractAudio';
 
 import {
-    _ADD_AUDIO_ELEMENT,
-    _REMOVE_AUDIO_ELEMENT,
     PLAY_SOUND,
     REGISTER_SOUND,
     STOP_SOUND,
-    UNREGISTER_SOUND
+    UNREGISTER_SOUND,
+    _ADD_AUDIO_ELEMENT,
+    _REMOVE_AUDIO_ELEMENT
 } from './actionTypes';
 import { getSoundsPath } from './functions';
 import { getDisabledSounds } from './functions.any';

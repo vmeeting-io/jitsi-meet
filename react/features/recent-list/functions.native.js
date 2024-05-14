@@ -1,9 +1,9 @@
 import {
     getLocalizedDateFormatter,
     getLocalizedDurationFormatter
-} from '../base/i18n';
-import { NavigateSectionList } from '../base/react';
-import { parseURIString, safeDecodeURIComponent } from '../base/util';
+} from '../base/i18n/dateUtil';
+import NavigateSectionList from '../base/react/components/native/NavigateSectionList';
+import { parseURIString, safeDecodeURIComponent } from '../base/util/uri';
 
 /**
  * Creates a displayable list item of a recent list entry.

@@ -1,3 +1,2 @@
-// @flow
-
-export * from './native';
+// @ts-ignore
+export { default as ChatPrivacyDialog } from './native/ChatPrivacyDialog';

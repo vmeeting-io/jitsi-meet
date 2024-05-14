@@ -2,9 +2,9 @@
 
 import React, { PureComponent, type Node } from 'react';
 import { SafeAreaView, StatusBar, View } from 'react-native';
+import { connect } from 'react-redux';
 
 import { ColorSchemeRegistry } from '../../../color-scheme';
-import { connect } from '../../../redux';
 import { isDarkColor } from '../../../styles';
 
 // Register style

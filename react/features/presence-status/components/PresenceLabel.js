@@ -1,51 +1,11 @@
-/* @flow */
-
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { translate } from '../../base/i18n';
-import { getParticipantById } from '../../base/participants';
-import { Text } from '../../base/react';
-import { connect } from '../../base/redux';
+import { translate } from '../../base/i18n/functions';
+import { getParticipantById } from '../../base/participants/functions';
+import { Text } from '../../base/react/components/index';
 import { STATUS_TO_I18N_KEY } from '../constants';
 import { presenceStatusDisabled } from '../functions';
-
-/**
- * The type of the React {@code Component} props of {@link PresenceLabel}.
- */
-type Props = {
-
-    /**
-     * The current present status associated with the passed in participantID
-     * prop.
-     */
-    _presence: string,
-
-    /**
-     * Class name for the presence label.
-     */
-    className: string,
-
-    /**
-     * Default presence status that will be displayed if user's presence status
-     * is not available.
-     */
-    defaultPresence: string,
-
-    /**
-     * The ID of the participant whose presence status should display.
-     */
-    participantID: string,
-
-    /**
-     * Styles for the presence label.
-     */
-    style: Object,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
 
 /**
  * React {@code Component} for displaying the current presence status of a
@@ -53,7 +13,7 @@ type Props = {
  *
  * @augments Component
  */
-class PresenceLabel extends Component<Props> {
+class PresenceLabel extends Component {
     /**
      * The default values for {@code PresenceLabel} component's property types.
      *
@@ -79,11 +39,12 @@ class PresenceLabel extends Component<Props> {
         const { style, className } = this.props;
 
         return (
-            <Text
+            <Text // @ts-ignore
                 className = { className }
                 { ...style }>
                 { text }
-            </Text>);
+            </Text>
+        );
     }
 
     /**

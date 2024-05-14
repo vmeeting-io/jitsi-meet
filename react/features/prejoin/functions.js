@@ -1,9 +1,15 @@
 // @flow
 
-import { getRoomName } from '../base/conference';
-import { getDialOutStatusUrl, getDialOutUrl } from '../base/config/functions';
-import { isAudioMuted, isVideoMutedByUser } from '../base/media';
-import { isAttentionAnalysisEnabled } from '../face-detect/functions';
+import { getRoomName } from '../base/conference/functions';
+import { getDialOutStatusUrl, getDialOutUrl } from '../base/config/functions.any';
+import {
+    MEETING_NAME_ENABLED,
+    UNSAFE_ROOM_WARNING
+} from '../base/flags/constants';
+import { getFeatureFlag } from '../base/flags/functions';
+import { isAudioMuted, isVideoMutedByUser } from '../base/media/functions';
+import { getLobbyConfig } from '../lobby/functions';
+
 
 /**
  * Selector for the visibility of the 'join by phone' button.
@@ -33,8 +39,28 @@ export function isDeviceStatusVisible(state: Object): boolean {
  * @returns {boolean}
  */
 export function isDisplayNameRequired(state: Object): boolean {
-    return state['features/prejoin'].isDisplayNameRequired
-        || state['features/base/config'].requireDisplayName;
+    return Boolean(state['features/lobby']?.isDisplayNameRequiredError
+        || state['features/base/config']?.requireDisplayName);
+}
+
+/**
+ * Selector for determining if the prejoin page is enabled in config. Defaults to `true`.
+ *
+ * @param {IReduxState} state - The state of the app.
+ * @returns {boolean}
+ */
+export function isPrejoinEnabledInConfig(state: Object): boolean {
+    return state['features/base/config'].prejoinConfig?.enabled ?? true;
+}
+
+/**
+ * Selector for determining if the prejoin display name field is visible.
+ *
+ * @param {IReduxState} state - The state of the app.
+ * @returns {boolean}
+ */
+export function isPrejoinDisplayNameVisible(state: Object): boolean {
+    return !state['features/base/config'].prejoinConfig?.hideDisplayName;
 }
 
 /**
@@ -64,7 +90,7 @@ export function getDeviceStatusType(state: Object): string {
  * @returns {string}
  */
 export function getDialOutConferenceUrl(state: Object): string {
-    return `${getRoomName(state)}@${state['features/base/config'].hosts.muc}`;
+    return `${getRoomName(state)}@${state['features/base/config'].hosts?.muc}`;
 }
 
 /**
@@ -131,30 +157,18 @@ export function isJoinByPhoneDialogVisible(state: Object): boolean {
 }
 
 /**
- * Returns true if the prejoin page is visible & active.
+ * Returns true if the prejoin page is enabled and no flag
+ * to bypass showing the page is present.
  *
  * @param {Object} state - The state of the app.
  * @returns {boolean}
  */
 export function isPrejoinPageVisible(state: Object): boolean {
-    const { isHost } = state['features/base/conference']?.roomInfo || {};
-    const {
-        chatOnlyGuestEnabled,
-        enableForcedReload,
-        iAmRecorder,
-        prejoinConfig,
-        passwordRequired
-    } = state['features/base/config'];
-    const { showPrejoin, skipPrejoinOnReload } = state['features/prejoin'] || {};
-
-    return navigator.product !== 'ReactNative'
-        && !iAmRecorder
-        && (prejoinConfig?.enabled
-            || isAttentionAnalysisEnabled(state)
-            || (isHost && chatOnlyGuestEnabled)
-            || passwordRequired)
-        && showPrejoin
-        && !(enableForcedReload && skipPrejoinOnReload);
+    return Boolean(navigator.product !== 'ReactNative'
+        && !state['features/base/config']?.iAmRecorder
+        && isPrejoinEnabledInConfig(state)
+        && state['features/prejoin']?.showPrejoin
+        && !(state['features/base/config'].enableForcedReload && state['features/prejoin'].skipPrejoinOnReload));
 }
 
 /**
@@ -164,8 +178,36 @@ export function isPrejoinPageVisible(state: Object): boolean {
  * @returns {boolean}
  */
 export function shouldAutoKnock(state: Object): boolean {
-    const { iAmRecorder, iAmSipGateway, autoKnockLobby } = state['features/base/config'];
+    const { iAmRecorder, iAmSipGateway } = state['features/base/config'];
+    const { userSelectedSkipPrejoin } = state['features/base/settings'];
+    const { autoKnock } = getLobbyConfig(state);
 
-    return (isPrejoinPageVisible(state) || autoKnockLobby || (iAmRecorder && iAmSipGateway))
-        && !state['features/lobby'].knocking;
+    return Boolean(((isPrejoinEnabledInConfig(state) && !userSelectedSkipPrejoin)
+            || autoKnock || (iAmRecorder && iAmSipGateway))
+        && !state['features/lobby'].knocking);
+}
+
+/**
+ * Returns true if the unsafe room warning flag is enabled.
+ *
+ * @param {IReduxState} state - The state of the app.
+ * @returns {boolean}
+ */
+export function isUnsafeRoomWarningEnabled(state: Object): boolean {
+    const { enableInsecureRoomNameWarning = false } = state['features/base/config'];
+
+    return getFeatureFlag(state, UNSAFE_ROOM_WARNING, enableInsecureRoomNameWarning);
+}
+
+/**
+ * Returns true if the room name is enabled.
+ *
+ * @param {IReduxState} state - The state of the app.
+ * @returns {boolean}
+ */
+export function isRoomNameEnabled(state: Object): boolean {
+    const { hideConferenceSubject = false } = state['features/base/config'];
+
+    return getFeatureFlag(state, MEETING_NAME_ENABLED, true)
+        || !hideConferenceSubject;
 }

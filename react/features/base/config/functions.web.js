@@ -1,5 +1,5 @@
 // @flow
-import { without } from 'lodash';
+import JitsiMeetJS from '../../base/lib-jitsi-meet';
 import { TOOLBAR_BUTTONS } from './constants';
 
 export * from './functions.any';
@@ -7,30 +7,11 @@ export * from './functions.any';
 /**
  * Removes all analytics related options from the given configuration, in case of a libre build.
  *
- * @param {*} config - The configuration which needs to be cleaned up.
+ * @param {*} _config - The configuration which needs to be cleaned up.
  * @returns {void}
  */
 export function _cleanupConfig(config: Object) { // eslint-disable-line no-unused-vars
-}
-
-/**
- * Returns the dial out url.
- *
- * @param {Object} state - The state of the app.
- * @returns {string}
- */
-export function getDialOutStatusUrl(state: Object): string {
-    return state['features/base/config'].guestDialOutStatusUrl;
-}
-
-/**
- * Returns the dial out status url.
- *
- * @param {Object} state - The state of the app.
- * @returns {string}
- */
-export function getDialOutUrl(state: Object): string {
-    return state['features/base/config'].guestDialOutUrl;
+    return;
 }
 
 /**
@@ -39,40 +20,74 @@ export function getDialOutUrl(state: Object): string {
  * @param {Object} state - The state of the app.
  * @returns {boolean}
  */
-export function getReplaceParticipant(state: Object): string {
+export function getReplaceParticipant(state: Object): string | undefined {
     return state['features/base/config'].replaceParticipant;
 }
 
 /**
- * Returns the list of enabled toolbar buttons.
+ * Returns the configuration value of web-hid feature.
  *
- * @param {Object} state - The redux state.
- * @returns {Array<string>} - The list of enabled toolbar buttons.
+ * @param {Object} state - The state of the app.
+ * @returns {boolean} True if web-hid feature should be enabled, otherwise false.
  */
-export function getToolbarButtons(state: Object): Array<string> {
-    const { toolbarButtons } = state['features/base/config'];
-    const { whiteboard } = state['features/base/conference'].roomInfo || {};
-    const { use_recording, use_stt } = state['features/base/conference'].site || {};
-    
-    let buttons = Array.isArray(toolbarButtons) ? toolbarButtons : TOOLBAR_BUTTONS;
-
-    buttons = whiteboard?.use_yn ? without(buttons, 'desktop') : without(buttons, 'share');
-    buttons = !use_recording ? without(buttons, 'recording', 'livestreaming') : buttons;
-    buttons = !use_stt ? without(buttons, 'stt') : buttons;
-
-    return buttons;
+export function getWebHIDFeatureConfig(state: Object): boolean {
+    return state['features/base/config'].enableWebHIDFeature || false;
 }
 
 /**
- * Checks if the specified button is enabled.
+ * Returns whether audio level measurement is enabled or not.
  *
- * @param {string} buttonName - The name of the button.
- * {@link interfaceConfig}.
- * @param {Object|Array<string>} state - The redux state or the array with the enabled buttons.
- * @returns {boolean} - True if the button is enabled and false otherwise.
+ * @param {Object} state - The state of the app.
+ * @returns {boolean}
  */
-export function isToolbarButtonEnabled(buttonName: string, state: Object | Array<string>) {
-    const buttons = Array.isArray(state) ? state : getToolbarButtons(state);
+export function areAudioLevelsEnabled(state: Object): boolean {
+    return !state['features/base/config'].disableAudioLevels && JitsiMeetJS.isCollectingLocalStats();
+}
 
-    return buttons.includes(buttonName);
+/**
+ * Sets the defaults for deeplinking.
+ *
+ * @param {IDeeplinkingConfig} deeplinking - The deeplinking config.
+ * @returns {void}
+ */
+export function _setDeeplinkingDefaults(deeplinking: Object) {
+    deeplinking.desktop = deeplinking.desktop || {};
+    deeplinking.android = deeplinking.android || {};
+    deeplinking.ios = deeplinking.ios || {};
+
+    const { android, desktop, ios } = deeplinking;
+
+    desktop.appName = desktop.appName || 'Jitsi Meet';
+    desktop.appScheme = desktop.appScheme || 'jitsi-meet';
+    desktop.download = desktop.download || {};
+    desktop.download.windows = desktop.download.windows
+        || 'https://github.com/jitsi/jitsi-meet-electron/releases/latest/download/jitsi-meet.exe';
+    desktop.download.macos = desktop.download.macos
+        || 'https://github.com/jitsi/jitsi-meet-electron/releases/latest/download/jitsi-meet.dmg';
+    desktop.download.linux = desktop.download.linux
+        || 'https://github.com/jitsi/jitsi-meet-electron/releases/latest/download/jitsi-meet-x86_64.AppImage';
+
+    ios.appName = ios.appName || 'Jitsi Meet';
+    ios.appScheme = ios.appScheme || 'org.jitsi.meet';
+    ios.downloadLink = ios.downloadLink
+        || 'https://itunes.apple.com/us/app/jitsi-meet/id1165103905';
+    if (ios.dynamicLink) {
+        ios.dynamicLink.apn = ios.dynamicLink.apn || 'org.jitsi.meet';
+        ios.dynamicLink.appCode = ios.dynamicLink.appCode || 'w2atb';
+        ios.dynamicLink.ibi = ios.dynamicLink.ibi || 'com.atlassian.JitsiMeet.ios';
+        ios.dynamicLink.isi = ios.dynamicLink.isi || '1165103905';
+    }
+
+    android.appName = android.appName || 'Jitsi Meet';
+    android.appScheme = android.appScheme || 'org.jitsi.meet';
+    android.downloadLink = android.downloadLink
+        || 'https://play.google.com/store/apps/details?id=org.jitsi.meet';
+    android.appPackage = android.appPackage || 'org.jitsi.meet';
+    android.fDroidUrl = android.fDroidUrl || 'https://f-droid.org/en/packages/org.jitsi.meet/';
+    if (android.dynamicLink) {
+        android.dynamicLink.apn = android.dynamicLink.apn || 'org.jitsi.meet';
+        android.dynamicLink.appCode = android.dynamicLink.appCode || 'w2atb';
+        android.dynamicLink.ibi = android.dynamicLink.ibi || 'com.atlassian.JitsiMeet.ios';
+        android.dynamicLink.isi = android.dynamicLink.isi || '1165103905';
+    }
 }

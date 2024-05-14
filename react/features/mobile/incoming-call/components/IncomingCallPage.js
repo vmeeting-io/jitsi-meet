@@ -2,10 +2,10 @@
 
 import React, { Component } from 'react';
 import { Image, Text, View } from 'react-native';
+import { connect } from 'react-redux';
 
 import { Avatar } from '../../../base/avatar';
 import { translate } from '../../../base/i18n';
-import { connect } from '../../../base/redux';
 
 import AnswerButton from './AnswerButton';
 import DeclineButton from './DeclineButton';

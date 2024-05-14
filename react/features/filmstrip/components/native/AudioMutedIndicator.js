@@ -1,9 +1,7 @@
-// @flow
-
 import React, { Component } from 'react';
 
-import { IconMicDisabled } from '../../../base/icons';
-import { BaseIndicator } from '../../../base/react';
+import { IconMicSlash } from '../../../base/icons/svg';
+import BaseIndicator from '../../../base/react/components/native/BaseIndicator';
 
 /**
  * Thumbnail badge for displaying the audio mute status of a participant.
@@ -16,9 +14,7 @@ export default class AudioMutedIndicator extends Component<{}> {
      */
     render() {
         return (
-            <BaseIndicator
-                highlight = { false }
-                icon = { IconMicDisabled } />
+            <BaseIndicator icon = { IconMicSlash } />
         );
     }
 }

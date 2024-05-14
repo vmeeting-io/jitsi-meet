@@ -2,7 +2,7 @@
 
 import _ from 'lodash';
 
-import { ReducerRegistry } from '../redux';
+import ReducerRegistry from '../redux/ReducerRegistry';
 
 import { UPDATE_FLAGS } from './actionTypes';
 

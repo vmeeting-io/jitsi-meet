@@ -1,32 +1,20 @@
 // @flow
 
 import _ from 'lodash';
+import { connect } from 'react-redux';
 
-import { createToolbarEvent, sendAnalytics } from '../../analytics';
-import { appNavigate } from '../../app/actions';
-import { disconnect } from '../../base/connection';
-import { translate } from '../../base/i18n';
-import { connect } from '../../base/redux';
-import { AbstractHangupButton } from '../../base/toolbox/components';
-import type { AbstractButtonProps } from '../../base/toolbox/components';
-
-/**
- * The type of the React {@code Component} props of {@link HangupButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
+import { createToolbarEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { leaveConference } from '../../base/conference/actions';
+import { translate } from '../../base/i18n/functions';
+import AbstractHangupButton from '../../base/toolbox/components/AbstractHangupButton';
 
 /**
  * Component that renders a toolbar button for leaving the current conference.
  *
  * @augments AbstractHangupButton
  */
-class HangupButton extends AbstractHangupButton<Props, *> {
+class HangupButton extends AbstractHangupButton {
     _hangup: Function;
 
     accessibilityLabel = 'toolbar.accessibilityLabel.hangup';
@@ -39,18 +27,12 @@ class HangupButton extends AbstractHangupButton<Props, *> {
      * @param {Props} props - The read-only properties with which the new
      * instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this._hangup = _.once(() => {
             sendAnalytics(createToolbarEvent('hangup'));
-
-            // FIXME: these should be unified.
-            if (navigator.product === 'ReactNative') {
-                this.props.dispatch(appNavigate(undefined));
-            } else {
-                this.props.dispatch(disconnect(true));
-            }
+            this.props.dispatch(leaveConference());
         });
     }
 

@@ -1,38 +1,13 @@
-// @flow
-
 import React, { Component } from 'react';
 
-import { translate } from '../../base/i18n';
-
-
-/**
- * The type of the React {@code Component} props of
- * {@link MicrosoftSignInButton}.
- */
-type Props = {
-
-    /**
-     * The callback to invoke when {@code MicrosoftSignInButton} is clicked.
-     */
-    onClick: Function,
-
-    /**
-     * The text to display within {@code MicrosoftSignInButton}.
-     */
-    text: string,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
+import { translate } from '../../base/i18n/functions';
 
 /**
  * A React Component showing a button to sign in with Microsoft.
  *
  * @augments Component
  */
-class MicrosoftSignInButton extends Component<Props> {
+class MicrosoftSignInButton extends Component {
     /**
      * Implements React's {@link Component#render()}.
      *

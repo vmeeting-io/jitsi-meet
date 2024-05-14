@@ -1,7 +1,7 @@
 /**
  * Styles errors and links in the AddPeopleDialog.
  */
-.modal-dialog-form {
+ .modal-dialog-form {
     .add-people-form-wrap {
         margin-top: 8px;
 
@@ -40,11 +40,4 @@
             }
         }
     }
-}
-
-/**
- * Styles errors in the MultiSelectAutocomplete.
- */
-.autocomplete-error {
-    min-width: 260px;
 }

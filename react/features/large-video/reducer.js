@@ -1,11 +1,11 @@
-// @flow
-
-import { PARTICIPANT_ID_CHANGED } from '../base/participants';
-import { ReducerRegistry } from '../base/redux';
+import { PARTICIPANT_ID_CHANGED } from '../base/participants/actionTypes';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     SELECT_LARGE_VIDEO_PARTICIPANT,
-    UPDATE_KNOWN_LARGE_VIDEO_RESOLUTION, UPDATE_LAST_LARGE_VIDEO_MEDIA_EVENT
+    SET_LARGE_VIDEO_DIMENSIONS,
+    SET_SEE_WHAT_IS_BEING_SHARED,
+    UPDATE_KNOWN_LARGE_VIDEO_RESOLUTION
 } from './actionTypes';
 
 ReducerRegistry.register('features/large-video', (state = {}, action) => {
@@ -31,16 +31,23 @@ ReducerRegistry.register('features/large-video', (state = {}, action) => {
             participantId: action.participantId
         };
 
+    case SET_LARGE_VIDEO_DIMENSIONS:
+        return {
+            ...state,
+            height: action.height,
+            width: action.width
+        };
+
     case UPDATE_KNOWN_LARGE_VIDEO_RESOLUTION:
         return {
             ...state,
             resolution: action.resolution
         };
 
-    case UPDATE_LAST_LARGE_VIDEO_MEDIA_EVENT:
+    case SET_SEE_WHAT_IS_BEING_SHARED:
         return {
             ...state,
-            lastMediaEvent: action.name
+            seeWhatIsBeingShared: action.seeWhatIsBeingShared
         };
 
     }

@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import { Text, View } from 'react-native';
 import { withTheme } from 'react-native-paper';
+import { connect } from 'react-redux';
 
 
 import { Avatar } from '../../../base/avatar';
@@ -12,7 +13,6 @@ import { translate } from '../../../base/i18n';
 import { IconArrowDownLarge, IconArrowUpLarge } from '../../../base/icons';
 import { getParticipantDisplayName } from '../../../base/participants';
 import { BaseIndicator } from '../../../base/react';
-import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import statsEmitter from '../../../connection-indicator/statsEmitter';
 

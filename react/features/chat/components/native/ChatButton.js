@@ -1,36 +1,22 @@
-// @flow
+import { connect } from 'react-redux';
 
-import { CHAT_ENABLED, getFeatureFlag } from '../../../base/flags';
-import { IconChat, IconChatUnread } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import {
-    AbstractButton,
-    type AbstractButtonProps
-} from '../../../base/toolbox/components';
-import { navigate } from '../../../conference/components/native/ConferenceNavigationContainerRef';
-import { screen } from '../../../conference/components/native/routes';
+import { CHAT_ENABLED } from '../../../base/flags/constants';
+import { getFeatureFlag } from '../../../base/flags/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconChatUnread, IconMessage } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import { arePollsDisabled } from '../../../conference/functions.any';
+import { navigate } from '../../../mobile/navigation/components/conference/ConferenceNavigationContainerRef';
+import { screen } from '../../../mobile/navigation/routes';
+import { getUnreadPollCount } from '../../../polls/functions';
 import { getUnreadCount } from '../../functions';
-
-
-type Props = AbstractButtonProps & {
-
-    /**
-     * True if the polls feature is disabled.
-     */
-    _isPollsDisabled: boolean,
-
-    /**
-     * The unread message count.
-     */
-    _unreadMessageCount: number
-};
 
 /**
  * Implements an {@link AbstractButton} to open the chat screen on mobile.
  */
-class ChatButton extends AbstractButton<Props, *> {
+class ChatButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.chat';
-    icon = IconChat;
+    icon = IconMessage;
     label = 'toolbar.chat';
     toggledIcon = IconChatUnread;
 
@@ -62,18 +48,19 @@ class ChatButton extends AbstractButton<Props, *> {
  *
  * @param {Object} state - The Redux state.
  * @param {Object} ownProps - The properties explicitly passed to the component instance.
- * @returns {Props}
+ * @returns {IProps}
  */
 function _mapStateToProps(state, ownProps) {
     const enabled = getFeatureFlag(state, CHAT_ENABLED, true);
-    const { disablePolls } = state['features/base/config'];
     const { visible = enabled } = ownProps;
 
     return {
-        _isPollsDisabled: disablePolls,
-        _unreadMessageCount: getUnreadCount(state),
+        _isPollsDisabled: arePollsDisabled(state),
+
+        // The toggled icon should also be available for new polls
+        _unreadMessageCount: getUnreadCount(state) || getUnreadPollCount(state),
         visible
     };
 }
 
-export default connect(_mapStateToProps)(ChatButton);
+export default translate(connect(_mapStateToProps)(ChatButton));

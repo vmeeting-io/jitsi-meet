@@ -1,80 +1,71 @@
-/* @flow */
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { makeStyles } from 'tss-react/mui';
 
-import Button from '@atlaskit/button/standard-button';
-import React, { Component } from 'react';
+import { withPixelLineHeight } from '../../../styles/functions.web';
+import Button from '../../../ui/components/web/Button';
 
-import { translate } from '../../../i18n';
-
-declare var interfaceConfig: Object;
-
-/**
- * The type of the React {@code Component} props of {@link InlineDialogFailure}.
- */
-type Props = {
-
-    /**
-     * Allows to retry the call that previously didn't succeed.
-     */
-    onRetry: Function,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function,
-
-    /**
-     * Indicates whether the support link should be shown in case of an error.
-     */
-     showSupportLink: Boolean,
-};
+const useStyles = makeStyles()(theme => {
+    return {
+        dialog: {
+            backgroundColor: theme.palette.ui01,
+            border: `1px solid ${theme.palette.ui04}`,
+            borderRadius: `${Number(theme.shape.borderRadius)}px`,
+            boxShadow: '0px 1px 2px rgba(41, 41, 41, 0.25)',
+            color: theme.palette.text01,
+            ...withPixelLineHeight(theme.typography.bodyShortRegular),
+            padding: `${theme.spacing(3)} 10`,
+            '& .retry-button': {
+                margin: '16px auto 0 auto'
+            }
+        }
+    };
+});
 
 /**
  * Inline dialog that represents a failure and allows a retry.
+ *
+ * @returns {Element}
  */
-class InlineDialogFailure extends Component<Props> {
-    /**
-     * Renders the content of this component.
-     *
-     * @returns {ReactElement}
-     */
-    render() {
-        const { t, showSupportLink } = this.props;
+const InlineDialogFailure = ({
+    onRetry,
+    showSupportLink
+}) => {
+    const { t } = useTranslation();
+    const { classes } = useStyles();
 
-        const supportLink = interfaceConfig.SUPPORT_URL;
-        const supportString = t('inlineDialogFailure.supportMsg');
-        const supportLinkElem
-            = supportLink && showSupportLink
-                ? (
-                    <div className = 'inline-dialog-error-text'>
-                        <span>{ supportString.padEnd(supportString.length + 1) }
-                        </span>
-                        <span>
-                            <a
-                                href = { supportLink }
-                                rel = 'noopener noreferrer'
-                                target = '_blank'>
-                                { t('inlineDialogFailure.support') }
-                            </a>
-                        </span>
-                        <span>.</span>
-                    </div>
-                )
-                : null;
-
-        return (
-            <div className = 'inline-dialog-error'>
-                <div className = 'inline-dialog-error-text'>
-                    { t('inlineDialogFailure.msg') }
-                </div>
-                { supportLinkElem }
-                <Button
-                    className = 'inline-dialog-error-button'
-                    onClick = { this.props.onRetry } >
-                    { t('inlineDialogFailure.retry') }
-                </Button>
+    const supportLink = interfaceConfig.SUPPORT_URL;
+    const supportString = t('inlineDialogFailure.supportMsg');
+    const supportLinkElem = supportLink && showSupportLink
+        ? (
+            <div>
+                <span>{ supportString.padEnd(supportString.length + 1) }
+                </span>
+                <span>
+                    <a
+                        href = { supportLink }
+                        rel = 'noopener noreferrer'
+                        target = '_blank'>
+                        { t('inlineDialogFailure.support') }
+                    </a>
+                </span>
+                <span>.</span>
             </div>
-        );
-    }
-}
+        )
+        : null;
 
-export default translate(InlineDialogFailure);
+    return (
+        <div className = { classes.dialog }>
+            <div>
+                { t('inlineDialogFailure.msg') }
+            </div>
+            { supportLinkElem }
+            <Button
+                className = 'retry-button'
+                label = { t('inlineDialogFailure.retry') }
+                onClick = { onRetry } />
+        </div>
+    );
+};
+
+export default InlineDialogFailure;

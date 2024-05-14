@@ -1,11 +1,11 @@
-// @flow
-
+// @ts-expect-error
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import _ from 'lodash';
 
 import { APP_WILL_MOUNT } from '../app/actionTypes';
-import { PersistenceRegistry, ReducerRegistry } from '../redux';
-import { assignIfDefined } from '../util';
+import PersistenceRegistry from '../redux/PersistenceRegistry';
+import ReducerRegistry from '../redux/ReducerRegistry';
+import { assignIfDefined } from '../util/helpers';
 
 import { SETTINGS_UPDATED } from './actionTypes';
 
@@ -18,26 +18,27 @@ const DEFAULT_STATE = {
     audioOutputDeviceId: undefined,
     avatarURL: undefined,
     cameraDeviceId: undefined,
-    disableCallIntegration: true,
+    disableCallIntegration: undefined,
     disableCrashReporting: undefined,
     disableP2P: undefined,
     disableSelfView: false,
     displayName: undefined,
     email: undefined,
-    birthDate: undefined,
     localFlipX: true,
+    maxStageParticipants: 1,
     micDeviceId: undefined,
-    serverURL: 'https://vmeeting.io',
+    serverURL: undefined,
     hideShareAudioHelper: false,
     soundsIncomingMessage: true,
-    soundsParticipantJoined: false,
-    soundsParticipantLeft: false,
+    soundsParticipantJoined: true,
+    soundsParticipantKnocking: true,
+    soundsParticipantLeft: true,
     soundsTalkWhileMuted: true,
     soundsReactions: true,
     startAudioOnly: false,
+    startCarMode: false,
     startWithAudioMuted: false,
     startWithVideoMuted: false,
-    aiAttentionAnalysisEnabled: false,
     userSelectedAudioOutputDeviceId: undefined,
     userSelectedCameraDeviceId: undefined,
     userSelectedMicDeviceId: undefined,
@@ -59,19 +60,18 @@ const filterSubtree = {};
 
 // start with the default state
 Object.keys(DEFAULT_STATE).forEach(key => {
-    filterSubtree[key] = true;
+    const key1 = key;
+
+    // @ts-ignore
+    filterSubtree[key1] = true;
 });
 
 // we want to filter these props, to not be stored as they represent
 // what is currently opened/used as devices
+// @ts-ignore
 filterSubtree.audioOutputDeviceId = false;
 filterSubtree.cameraDeviceId = false;
 filterSubtree.micDeviceId = false;
-filterSubtree.soundsReactions = false;
-filterSubtree.soundsIncomingMessage = false;
-filterSubtree.soundsParticipantJoined = false;
-filterSubtree.soundsParticipantLeft = false;
-filterSubtree.aiAttentionAnalysisEnabled = false; // keep it true for persistent storage
 
 PersistenceRegistry.register(STORE_NAME, filterSubtree, DEFAULT_STATE);
 
@@ -96,7 +96,7 @@ ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
  *   - Old Settings.js style data.
  *
  * @private
- * @param {Object} featureState - The current state of the feature.
+ * @param {ISettingsState} featureState - The current state of the feature.
  * @returns {Object}
  */
 function _initSettings(featureState) {

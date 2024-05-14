@@ -1,21 +1,29 @@
-// @flow
-
 import React from 'react';
-import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { JitsiParticipantConnectionStatus } from '../../../base/lib-jitsi-meet';
-import { MEDIA_TYPE } from '../../../base/media';
-import { getLocalParticipant, getParticipantById } from '../../../base/participants';
-import { connect } from '../../../base/redux';
-import { getTrackByMediaTypeAndParticipant } from '../../../base/tracks';
-import { ConnectionStatsTable } from '../../../connection-stats';
-import { saveLogs } from '../../actions';
+import { openDialog } from '../../../base/dialog/actions';
+import { translate } from '../../../base/i18n/functions';
+import { MEDIA_TYPE } from '../../../base/media/constants';
+import {
+    getLocalParticipant,
+    getParticipantById,
+    isScreenShareParticipant
+} from '../../../base/participants/functions';
+import {
+    getTrackByMediaTypeAndParticipant,
+    getVirtualScreenshareParticipantTrack
+} from '../../../base/tracks/functions.web';
+import ConnectionStatsTable from '../../../connection-stats/components/ConnectionStatsTable';
+import { saveLogs } from '../../actions.web';
+import {
+    isTrackStreamingStatusInactive,
+    isTrackStreamingStatusInterrupted
+} from '../../functions';
 import AbstractConnectionIndicator, {
-    INDICATOR_DISPLAY_THRESHOLD,
-    type Props as AbstractProps,
-    type State as AbstractState
+    INDICATOR_DISPLAY_THRESHOLD
 } from '../AbstractConnectionIndicator';
+
+import BandwidthSettingsDialog from './BandwidthSettingsDialog';
 
 /**
  * An array of display configurations for the connection indicator and its bars.
@@ -24,7 +32,7 @@ import AbstractConnectionIndicator, {
  *
  * @type {Object[]}
  */
-const QUALITY_TO_WIDTH: Array<Object> = [
+const QUALITY_TO_WIDTH = [
 
     // Full (3 bars)
     {
@@ -54,99 +62,19 @@ const QUALITY_TO_WIDTH: Array<Object> = [
 ];
 
 /**
- * The type of the React {@code Component} props of {@link ConnectionIndicator}.
- */
-type Props = AbstractProps & {
-
-    /**
-     * The audio SSRC of this client.
-     */
-     _audioSsrc: number,
-
-    /**
-     * The current condition of the user's connection, matching one of the
-     * enumerated values in the library.
-     */
-    _connectionStatus: string,
-
-    /**
-     * Whether or not should display the "Show More" link in the local video
-     * stats table.
-     */
-    _disableShowMoreStats: boolean,
-
-    /**
-     * Whether or not should display the "Save Logs" link in the local video
-     * stats table.
-     */
-    _enableSaveLogs: boolean,
-
-    /**
-     * Whether or not the displays stats are for local video.
-     */
-    _isLocalVideo: boolean,
-
-    /**
-     * Invoked to save the conference logs.
-     */
-    _onSaveLogs: Function,
-
-    /**
-     * The region reported by the participant.
-     */
-    _region: String,
-
-    /**
-     * The video SSRC of this client.
-     */
-    _videoSsrc: number,
-
-    /**
-     * Css class to apply on container.
-     */
-    className: string,
-
-    /**
-     * The Redux dispatch function.
-     */
-    dispatch: Dispatch<any>,
-
-    /**
-     * Optional param for passing existing connection stats on component instantiation.
-     */
-    inheritedStats: Object,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
-
-/**
- * The type of the React {@code Component} state of {@link ConnectionIndicator}.
- */
-type State = AbstractState & {
-
-    /**
-     * Whether or not the popover content should display additional statistics.
-     */
-    showMoreStats: boolean
-};
-
-/**
  * Implements a React {@link Component} which displays the current connection
  * quality percentage and has a popover to show more detailed connection stats.
  *
  * @augments {Component}
  */
-class ConnectionIndicatorContent extends AbstractConnectionIndicator<Props, State> {
+class ConnectionIndicatorContent extends AbstractConnectionIndicator {
     /**
      * Initializes a new {@code ConnectionIndicator} instance.
      *
      * @param {Object} props - The read-only properties with which the new
      * instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -172,7 +100,6 @@ class ConnectionIndicatorContent extends AbstractConnectionIndicator<Props, Stat
             bitrate,
             bridgeCount,
             codec,
-            e2eRtt,
             framerate,
             maxEnabledResolution,
             packetLoss,
@@ -190,16 +117,20 @@ class ConnectionIndicatorContent extends AbstractConnectionIndicator<Props, Stat
                 codec = { codec }
                 connectionSummary = { this._getConnectionStatusTip() }
                 disableShowMoreStats = { this.props._disableShowMoreStats }
-                e2eRtt = { e2eRtt }
+                e2eeVerified = { this.props._isE2EEVerified }
+                enableAssumedBandwidth = { this.props._enableAssumedBandwidth }
                 enableSaveLogs = { this.props._enableSaveLogs }
                 framerate = { framerate }
                 isLocalVideo = { this.props._isLocalVideo }
+                isNarrowLayout = { this.props._isNarrowLayout }
+                isVirtualScreenshareParticipant = { this.props._isVirtualScreenshareParticipant }
                 maxEnabledResolution = { maxEnabledResolution }
+                onOpenBandwidthDialog = { this.props._onOpenBandwidthDialog }
                 onSaveLogs = { this.props._onSaveLogs }
                 onShowMore = { this._onToggleShowMore }
                 packetLoss = { packetLoss }
                 participantId = { this.props.participantId }
-                region = { this.props._region }
+                region = { this.props._region ?? '' }
                 resolution = { resolution }
                 serverRegion = { serverRegion }
                 shouldShowMore = { this.state.showMoreStats }
@@ -217,12 +148,14 @@ class ConnectionIndicatorContent extends AbstractConnectionIndicator<Props, Stat
     _getConnectionStatusTip() {
         let tipKey;
 
-        switch (this.props._connectionStatus) {
-        case JitsiParticipantConnectionStatus.INTERRUPTED:
+        const { _isConnectionStatusInactive, _isConnectionStatusInterrupted } = this.props;
+
+        switch (true) {
+        case _isConnectionStatusInterrupted:
             tipKey = 'connectionindicator.quality.lost';
             break;
 
-        case JitsiParticipantConnectionStatus.INACTIVE:
+        case _isConnectionStatusInactive:
             tipKey = 'connectionindicator.quality.inactive';
             break;
 
@@ -256,12 +189,9 @@ class ConnectionIndicatorContent extends AbstractConnectionIndicator<Props, Stat
      * @private
      * @returns {Object}
      */
-    _getDisplayConfiguration(percent: number): Object {
-        return QUALITY_TO_WIDTH.find(x => percent >= x.percent) || {};
+    _getDisplayConfiguration(percent: number) {
+        return QUALITY_TO_WIDTH.find(x => percent >= x.percent) || { tip: '' };
     }
-
-
-    _onToggleShowMore: () => void;
 
     /**
      * Callback to invoke when the show more link in the popover content is
@@ -284,7 +214,7 @@ class ConnectionIndicatorContent extends AbstractConnectionIndicator<Props, Stat
  * }}
  * @private
  */
-export function _mapDispatchToProps(dispatch: Dispatch<any>) {
+export function _mapDispatchToProps(dispatch) {
     return {
         /**
          * Saves the conference logs.
@@ -293,6 +223,15 @@ export function _mapDispatchToProps(dispatch: Dispatch<any>) {
          */
         _onSaveLogs() {
             dispatch(saveLogs());
+        },
+
+        /**
+         * Opens the bandwidth settings dialog.
+         *
+         * @returns {void}
+         */
+        _onOpenBandwidthDialog() {
+            dispatch(openDialog(BandwidthSettingsDialog));
         }
     };
 }
@@ -302,35 +241,40 @@ export function _mapDispatchToProps(dispatch: Dispatch<any>) {
  * Maps part of the Redux state to the props of this component.
  *
  * @param {Object} state - The Redux state.
- * @param {Props} ownProps - The own props of the component.
- * @returns {Props}
+ * @param {IProps} ownProps - The own props of the component.
+ * @returns {IProps}
  */
-export function _mapStateToProps(state: Object, ownProps: Props) {
+export function _mapStateToProps(state, ownProps) {
     const { participantId } = ownProps;
     const conference = state['features/base/conference'].conference;
     const participant
         = participantId ? getParticipantById(state, participantId) : getLocalParticipant(state);
-    const props = {
-        _connectionStatus: participant?.connectionStatus,
-        _enableSaveLogs: state['features/base/config'].enableSaveLogs,
-        _disableShowMoreStats: state['features/base/config'].disableShowMoreStats,
-        _isLocalVideo: participant?.local,
-        _region: participant?.region
-    };
+    const { isNarrowLayout } = state['features/base/responsive-ui'];
+    const tracks = state['features/base/tracks'];
+    const audioTrack = getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.AUDIO, participantId);
+    let videoTrack = getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.VIDEO, participantId);
 
-    if (conference) {
-        const firstVideoTrack = getTrackByMediaTypeAndParticipant(
-            state['features/base/tracks'], MEDIA_TYPE.VIDEO, participantId);
-        const firstAudioTrack = getTrackByMediaTypeAndParticipant(
-            state['features/base/tracks'], MEDIA_TYPE.AUDIO, participantId);
-
-        return {
-            ...props,
-            _audioSsrc: firstAudioTrack ? conference.getSsrcByTrack(firstAudioTrack.jitsiTrack) : undefined,
-            _videoSsrc: firstVideoTrack ? conference.getSsrcByTrack(firstVideoTrack.jitsiTrack) : undefined
-        };
+    if (isScreenShareParticipant(participant)) {
+        videoTrack = getVirtualScreenshareParticipantTrack(tracks, participant?.id ?? '');
     }
 
-    return props;
+    const _isConnectionStatusInactive = isTrackStreamingStatusInactive(videoTrack);
+    const _isConnectionStatusInterrupted = isTrackStreamingStatusInterrupted(videoTrack);
+
+    return {
+        _audioSsrc: audioTrack ? conference?.getSsrcByTrack(audioTrack.jitsiTrack) : undefined,
+        _disableShowMoreStats: Boolean(state['features/base/config'].disableShowMoreStats),
+        _enableAssumedBandwidth: state['features/base/config'].testing?.assumeBandwidth,
+        _enableSaveLogs: Boolean(state['features/base/config'].enableSaveLogs),
+        _isConnectionStatusInactive,
+        _isConnectionStatusInterrupted,
+        _isE2EEVerified: Boolean(participant?.e2eeVerified),
+        _isNarrowLayout: isNarrowLayout,
+        _isVirtualScreenshareParticipant: isScreenShareParticipant(participant),
+        _isLocalVideo: Boolean(participant?.local),
+        _region: participant?.region,
+        _videoSsrc: videoTrack ? conference?.getSsrcByTrack(videoTrack.jitsiTrack) : undefined
+    };
 }
+
 export default translate(connect(_mapStateToProps, _mapDispatchToProps)(ConnectionIndicatorContent));

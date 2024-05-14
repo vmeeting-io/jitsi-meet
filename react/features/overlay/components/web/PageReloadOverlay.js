@@ -1,14 +1,11 @@
-// @flow
-
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { connect } from '../../../base/redux';
+import { translate } from '../../../base/i18n/functions';
+
 import AbstractPageReloadOverlay, {
-    abstractMapStateToProps,
-    type Props
-} from '../AbstractPageReloadOverlay';
-
+    abstractMapStateToProps
+} from './AbstractPageReloadOverlay';
 import OverlayFrame from './OverlayFrame';
 
 /**
@@ -16,7 +13,7 @@ import OverlayFrame from './OverlayFrame';
  * conference is reloaded. Shows a warning message and counts down towards the
  * reload.
  */
-class PageReloadOverlay extends AbstractPageReloadOverlay<Props> {
+class PageReloadOverlay extends AbstractPageReloadOverlay {
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -51,10 +48,6 @@ class PageReloadOverlay extends AbstractPageReloadOverlay<Props> {
             </OverlayFrame>
         );
     }
-
-    _renderButton: () => React$Element<*>;
-
-    _renderProgressBar: () => React$Element<*>;
 }
 
 export default translate(connect(abstractMapStateToProps)(PageReloadOverlay));

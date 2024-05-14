@@ -1,16 +1,25 @@
-// @flow
-
 import React from 'react';
-import { Text, View, TouchableOpacity, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
+import { connect } from 'react-redux';
 
-import { Avatar } from '../../../base/avatar';
-import { translate } from '../../../base/i18n';
-import { Icon, IconEdit } from '../../../base/icons';
+import { getConferenceName } from '../../../base/conference/functions';
+import { translate } from '../../../base/i18n/functions';
 import JitsiScreen from '../../../base/modal/components/JitsiScreen';
-import { LoadingIndicator } from '../../../base/react';
-import { connect } from '../../../base/redux';
-import AbstractLobbyScreen, { _mapStateToProps } from '../AbstractLobbyScreen';
+import LoadingIndicator from '../../../base/react/components/native/LoadingIndicator';
+import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
+import BaseTheme from '../../../base/ui/components/BaseTheme.native';
+import Button from '../../../base/ui/components/native/Button';
+import Input from '../../../base/ui/components/native/Input';
+import { BUTTON_TYPES } from '../../../base/ui/constants.native';
+import BrandingImageBackground from '../../../dynamic-branding/components/native/BrandingImageBackground';
+import LargeVideo from '../../../large-video/components/LargeVideo.native';
+import { navigate }
+    from '../../../mobile/navigation/components/lobby/LobbyNavigationContainerRef';
+import { screen } from '../../../mobile/navigation/routes';
+import { preJoinStyles } from '../../../prejoin/components/native/styles';
+import AudioMuteButton from '../../../toolbox/components/native/AudioMuteButton';
+import VideoMuteButton from '../../../toolbox/components/native/VideoMuteButton';
+import AbstractLobbyScreen, { _mapStateToProps as abstractMapStateToProps } from '../AbstractLobbyScreen';
 
 import styles from './styles';
 
@@ -24,45 +33,53 @@ class LobbyScreen extends AbstractLobbyScreen {
      * @inheritdoc
      */
     render() {
-        const { _meetingName, t } = this.props;
+        const { _aspectRatio, _roomName } = this.props;
+        let contentWrapperStyles;
+        let contentContainerStyles;
+        let largeVideoContainerStyles;
+
+        if (_aspectRatio === ASPECT_RATIO_NARROW) {
+            contentWrapperStyles = preJoinStyles.contentWrapper;
+            largeVideoContainerStyles = preJoinStyles.largeVideoContainer;
+            contentContainerStyles = styles.contentContainer;
+        } else {
+            contentWrapperStyles = preJoinStyles.contentWrapperWide;
+            largeVideoContainerStyles = preJoinStyles.largeVideoContainerWide;
+            contentContainerStyles = preJoinStyles.contentContainerWide;
+        }
 
         return (
             <JitsiScreen
-                style = { styles.contentWrapper }>
-                <SafeAreaView>
-                    <Text style = { styles.dialogTitle }>
-                        { t(this._getScreenTitleKey()) }
-                    </Text>
-                    <Text style = { styles.secondaryText }>
-                        { _meetingName }
-                    </Text>
+                safeAreaInsets = { [ 'right' ] }
+                style = { contentWrapperStyles }>
+                <BrandingImageBackground />
+                <View style = { largeVideoContainerStyles }>
+                    <View style = { preJoinStyles.displayRoomNameBackdrop }>
+                        <Text
+                            numberOfLines = { 1 }
+                            style = { preJoinStyles.preJoinRoomName }>
+                            { _roomName }
+                        </Text>
+                    </View>
+                    <LargeVideo />
+                </View>
+                <View style = { contentContainerStyles }>
+                    { this._renderToolbarButtons() }
                     { this._renderContent() }
-                </SafeAreaView>
+                </View>
             </JitsiScreen>
         );
     }
 
-    _getScreenTitleKey: () => string;
-
-    _onAskToJoin: () => void;
-
-    _onCancel: () => boolean;
-
-    _onChangeDisplayName: Object => void;
-
-    _onChangeEmail: Object => void;
-
-    _onChangePassword: Object => void;
-
-    _onEnableEdit: () => void;
-
-    _onJoinWithPassword: () => void;
-
-    _onSwitchToKnockMode: () => void;
-
-    _onSwitchToPasswordMode: () => void;
-
-    _renderContent: () => React$Element<*>;
+    /**
+     * Navigates to the lobby chat screen.
+     *
+     * @private
+     * @returns {void}
+     */
+    _onNavigateToLobbyChat() {
+        navigate(screen.lobby.chat);
+    }
 
     /**
      * Renders the joining (waiting) fragment of the screen.
@@ -71,15 +88,18 @@ class LobbyScreen extends AbstractLobbyScreen {
      */
     _renderJoining() {
         return (
-            <>
+            <View style = { styles.lobbyWaitingFragmentContainer }>
+                <Text style = { styles.lobbyTitle }>
+                    { this.props.t('lobby.joiningTitle') }
+                </Text>
                 <LoadingIndicator
-                    color = 'black'
+                    color = { BaseTheme.palette.icon01 }
                     style = { styles.loadingIndicator } />
                 <Text style = { styles.joiningMessage }>
                     { this.props.t('lobby.joiningMessage') }
                 </Text>
                 { this._renderStandardButtons() }
-            </>
+            </View>
         );
     }
 
@@ -90,25 +110,14 @@ class LobbyScreen extends AbstractLobbyScreen {
      */
     _renderParticipantForm() {
         const { t } = this.props;
-        const { displayName, email } = this.state;
+        const { displayName } = this.state;
 
         return (
-            <View style = { styles.formWrapper }>
-                <Text style = { styles.fieldLabel }>
-                    { t('lobby.nameField') }
-                </Text>
-                <TextInput
-                    onChangeText = { this._onChangeDisplayName }
-                    style = { styles.field }
-                    value = { displayName } />
-                <Text style = { styles.fieldLabel }>
-                    { t('lobby.emailField') }
-                </Text>
-                <TextInput
-                    onChangeText = { this._onChangeEmail }
-                    style = { styles.field }
-                    value = { email } />
-            </View>
+            <Input
+                customStyles = {{ input: preJoinStyles.customInput }}
+                onChange = { this._onChangeDisplayName }
+                placeholder = { t('lobby.nameField') }
+                value = { displayName } />
         );
     }
 
@@ -118,28 +127,7 @@ class LobbyScreen extends AbstractLobbyScreen {
      * @inheritdoc
      */
     _renderParticipantInfo() {
-        const { displayName, email } = this.state;
-
-        return (
-            <View style = { styles.participantBox }>
-                <TouchableOpacity
-                    onPress = { this._onEnableEdit }
-                    style = { styles.editButton }>
-                    <Icon
-                        src = { IconEdit }
-                        style = { styles.editIcon } />
-                </TouchableOpacity>
-                <Avatar
-                    participantId = { this.props._participantId }
-                    size = { 64 } />
-                <Text style = { styles.displayNameText }>
-                    { displayName }
-                </Text>
-                { Boolean(email) && <Text style = { styles.secondaryText }>
-                    { email }
-                </Text> }
-            </View>
-        );
+        return this._renderParticipantForm();
     }
 
     /**
@@ -151,21 +139,14 @@ class LobbyScreen extends AbstractLobbyScreen {
         const { _passwordJoinFailed, t } = this.props;
 
         return (
-            <View style = { styles.formWrapper }>
-                <Text style = { styles.fieldLabel }>
-                    { this.props.t('lobby.passwordField') }
-                </Text>
-                <TextInput
-                    autoCapitalize = 'none'
-                    autoCompleteType = 'off'
-                    onChangeText = { this._onChangePassword }
-                    secureTextEntry = { true }
-                    style = { styles.field }
-                    value = { this.state.password } />
-                { _passwordJoinFailed && <Text style = { styles.fieldError }>
-                    { t('lobby.invalidPassword') }
-                </Text> }
-            </View>
+            <Input
+                autoCapitalize = 'none'
+                customStyles = {{ input: styles.customInput }}
+                error = { _passwordJoinFailed }
+                onChange = { this._onChangePassword }
+                placeholder = { t('lobby.enterPasswordButton') }
+                secureTextEntry = { true }
+                value = { this.state.password } />
         );
     }
 
@@ -175,32 +156,38 @@ class LobbyScreen extends AbstractLobbyScreen {
      * @inheritdoc
      */
     _renderPasswordJoinButtons() {
-        const { t } = this.props;
-
         return (
-            <>
-                <TouchableOpacity
+            <View style = { styles.passwordJoinButtons }>
+                <Button
+                    accessibilityLabel = 'lobby.passwordJoinButton'
                     disabled = { !this.state.password }
-                    onPress = { this._onJoinWithPassword }
-                    style = { [
-                        styles.button,
-                        styles.primaryButton
-                    ] }>
-                    <Text style = { styles.primaryButtonText }>
-                        { t('lobby.passwordJoinButton') }
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress = { this._onSwitchToKnockMode }
-                    style = { [
-                        styles.button,
-                        styles.secondaryButton
-                    ] }>
-                    <Text>
-                        { t('lobby.backToKnockModeButton') }
-                    </Text>
-                </TouchableOpacity>
-            </>
+                    labelKey = { 'lobby.passwordJoinButton' }
+                    onClick = { this._onJoinWithPassword }
+                    style = { preJoinStyles.joinButton }
+                    type = { BUTTON_TYPES.PRIMARY } />
+                <Button
+                    accessibilityLabel = 'lobby.backToKnockModeButton'
+                    labelKey = 'lobby.backToKnockModeButton'
+                    onClick = { this._onSwitchToKnockMode }
+                    style = { preJoinStyles.joinButton }
+                    type = { BUTTON_TYPES.TERTIARY } />
+            </View>
+        );
+    }
+
+    /**
+     * Renders the toolbar buttons menu.
+     *
+     * @inheritdoc
+     */
+    _renderToolbarButtons() {
+        return (
+            <View style = { preJoinStyles.toolboxContainer }>
+                <AudioMuteButton
+                    styles = { preJoinStyles.buttonStylesBorderless } />
+                <VideoMuteButton
+                    styles = { preJoinStyles.buttonStylesBorderless } />
+            </View>
         );
     }
 
@@ -210,41 +197,59 @@ class LobbyScreen extends AbstractLobbyScreen {
      * @inheritdoc
      */
     _renderStandardButtons() {
-        const { _knocking, _renderPassword, t } = this.props;
+        const { _knocking, _renderPassword, _isLobbyChatActive } = this.props;
+        const { displayName } = this.state;
 
         return (
-            <>
-                { _knocking || <TouchableOpacity
-                    disabled = { !this.state.displayName }
-                    onPress = { this._onAskToJoin }
-                    style = { [
-                        styles.button,
-                        styles.primaryButton
-                    ] }>
-                    <Text style = { styles.primaryButtonText }>
-                        { t('lobby.knockButton') }
-                    </Text>
-                </TouchableOpacity> }
-                { _renderPassword && <TouchableOpacity
-                    onPress = { this._onSwitchToPasswordMode }
-                    style = { [
-                        styles.button,
-                        styles.secondaryButton
-                    ] }>
-                    <Text>
-                        { t('lobby.enterPasswordButton') }
-                    </Text>
-                </TouchableOpacity> }
-                <TouchableOpacity
-                    onPress = { this._onCancel }
-                    style = { styles.cancelButton }>
-                    <Text>
-                        { t('dialog.Cancel') }
-                    </Text>
-                </TouchableOpacity>
-            </>
+            <View style = { styles.formWrapper }>
+                {
+                    _knocking && _isLobbyChatActive
+                    && <Button
+                        accessibilityLabel = 'toolbar.openChat'
+                        labelKey = 'toolbar.openChat'
+                        onClick = { this._onNavigateToLobbyChat }
+                        style = { preJoinStyles.joinButton }
+                        type = { BUTTON_TYPES.PRIMARY } />
+                }
+                {
+                    _knocking
+                    || <Button
+                        accessibilityLabel = 'lobby.knockButton'
+                        disabled = { !displayName }
+                        labelKey = 'lobby.knockButton'
+                        onClick = { this._onAskToJoin }
+                        style = { preJoinStyles.joinButton }
+                        type = { BUTTON_TYPES.PRIMARY } />
+                }
+                {
+                    _renderPassword
+                    && <Button
+                        accessibilityLabel = 'lobby.enterPasswordButton'
+                        labelKey = 'lobby.enterPasswordButton'
+                        onClick = { this._onSwitchToPasswordMode }
+                        style = { preJoinStyles.joinButton }
+                        type = { BUTTON_TYPES.PRIMARY } />
+                }
+            </View>
         );
     }
+}
+
+/**
+ * Maps part of the Redux state to the props of this component.
+ *
+ * @param {Object} state - The Redux state.
+ * @param {IProps} ownProps - The own props of the component.
+ * @returns {{
+ *     _aspectRatio: Symbol
+ * }}
+ */
+function _mapStateToProps(state) {
+    return {
+        ...abstractMapStateToProps(state),
+        _aspectRatio: state['features/base/responsive-ui'].aspectRatio,
+        _roomName: getConferenceName(state)
+    };
 }
 
 export default translate(connect(_mapStateToProps)(LobbyScreen));

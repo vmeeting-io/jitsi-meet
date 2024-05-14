@@ -1,7 +1,8 @@
 // @flow
 
 import { PureComponent } from 'react';
-import { getLocalParticipant, updateParticipantBirthdayHatFlag } from '../base/participants';
+import { updateParticipantBirthdayHatFlag } from '../base/participants/actions';
+import { getLocalParticipant } from '../base/participants/functions';
 import { arApprovalDialog } from './actions';
 import { enableARHat } from './functions';
 

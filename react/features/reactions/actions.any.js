@@ -6,7 +6,8 @@ import {
     FLUSH_REACTION_BUFFER,
     PUSH_REACTIONS,
     SEND_REACTIONS,
-    SET_REACTION_QUEUE
+    SET_REACTION_QUEUE,
+    SHOW_SOUNDS_NOTIFICATION
 } from './actionTypes';
 import { type ReactionEmojiProps } from './constants';
 
@@ -16,10 +17,10 @@ import { type ReactionEmojiProps } from './constants';
  * @param {Array} value - The new queue.
  * @returns {Function}
  */
-export function setReactionQueue(value: Array<ReactionEmojiProps>) {
+export function setReactionQueue(queue: Array<ReactionEmojiProps>) {
     return {
         type: SET_REACTION_QUEUE,
-        value
+        queue
     };
 }
 
@@ -42,9 +43,7 @@ export function removeReaction(uid: number) {
 /**
  * Sends the reactions buffer to everyone in the conference.
  *
- * @returns {{
- *     type: SEND_REACTION
- * }}
+ * @returns {IReactionsAction}
  */
 export function sendReactions() {
     return {
@@ -56,10 +55,7 @@ export function sendReactions() {
  * Adds a reaction to the local buffer.
  *
  * @param {string} reaction - The reaction to be added.
- * @returns {{
- *     type: ADD_REACTION_BUFFER,
- *     reaction: string
- * }}
+ * @returns {IReactionsAction}
  */
 export function addReactionToBuffer(reaction: string) {
     return {
@@ -71,9 +67,7 @@ export function addReactionToBuffer(reaction: string) {
 /**
  * Clears the reaction buffer.
  *
- * @returns {{
- *     type: FLUSH_REACTION_BUFFER
- * }}
+ * @returns {IReactionsAction}
  */
 export function flushReactionBuffer() {
     return {
@@ -85,10 +79,7 @@ export function flushReactionBuffer() {
  * Adds a reaction message to the chat.
  *
  * @param {string} message - The reaction message.
- * @returns {{
- *     type: ADD_REACTION_MESSAGE,
- *     message: string
- * }}
+ * @returns {IReactionsAction}
  */
 export function addReactionsToChat(message: string) {
     return {
@@ -101,14 +92,22 @@ export function addReactionsToChat(message: string) {
  * Adds reactions to the animation queue.
  *
  * @param {Array} reactions - The reactions to be animated.
- * @returns {{
- *     type: PUSH_REACTIONS,
- *     reactions: Array
- * }}
+ * @returns {IReactionsAction}
  */
 export function pushReactions(reactions: Array<string>) {
     return {
         type: PUSH_REACTIONS,
         reactions
+    };
+}
+
+/**
+ * Displays the disable sounds notification.
+ *
+ * @returns {void}
+ */
+export function displayReactionSoundsNotification() {
+    return {
+        type: SHOW_SOUNDS_NOTIFICATION
     };
 }

@@ -1,11 +1,10 @@
-// @flow
-
 import React, { Component } from 'react';
 
 // We need to reference these files directly to avoid loading things that are not available
 // in this environment (e.g. JitsiMeetJS or interfaceConfig)
 import StatelessAvatar from '../base/avatar/components/web/StatelessAvatar';
 import { getAvatarColor, getInitials } from '../base/avatar/functions';
+import { IconUser } from '../base/icons/svg';
 
 import Toolbar from './Toolbar';
 
@@ -17,26 +16,13 @@ const { api } = window.alwaysOnTop;
 const TOOLBAR_TIMEOUT = 4000;
 
 /**
- * The type of the React {@code Component} state of {@link AlwaysOnTop}.
- */
-type State = {
-    avatarURL: string,
-    customAvatarBackgrounds: Array<string>,
-    displayName: string,
-    formattedDisplayName: string,
-    isVideoDisplayed: boolean,
-    userID: string,
-    visible: boolean
-};
-
-/**
  * Represents the always on top page.
  *
  * @class AlwaysOnTop
  * @augments Component
  */
-export default class AlwaysOnTop extends Component<*, State> {
-    _hovered: boolean;
+export default class AlwaysOnTop extends Component {
+    _hovered;
 
     /**
      * Initializes a new {@code AlwaysOnTop} instance.
@@ -44,7 +30,7 @@ export default class AlwaysOnTop extends Component<*, State> {
      * @param {*} props - The read-only properties with which the new instance
      * is to be initialized.
      */
-    constructor(props: *) {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -61,14 +47,12 @@ export default class AlwaysOnTop extends Component<*, State> {
         this._avatarChangedListener = this._avatarChangedListener.bind(this);
         this._displayNameChangedListener
             = this._displayNameChangedListener.bind(this);
-        this._largeVideoChangedListener
-            = this._largeVideoChangedListener.bind(this);
+        this._videoChangedListener
+            = this._videoChangedListener.bind(this);
         this._mouseMove = this._mouseMove.bind(this);
         this._onMouseOut = this._onMouseOut.bind(this);
         this._onMouseOver = this._onMouseOver.bind(this);
     }
-
-    _avatarChangedListener: () => void;
 
     /**
      * Handles avatar changed api events.
@@ -81,8 +65,6 @@ export default class AlwaysOnTop extends Component<*, State> {
             this.setState({ avatarURL });
         }
     }
-
-    _displayNameChangedListener: () => void;
 
     /**
      * Handles display name changed api events.
@@ -118,19 +100,17 @@ export default class AlwaysOnTop extends Component<*, State> {
             TOOLBAR_TIMEOUT);
     }
 
-    _largeVideoChangedListener: () => void;
-
     /**
      * Handles large video changed api events.
      *
      * @returns {void}
      */
-    _largeVideoChangedListener() {
+    _videoChangedListener() {
         const userID = api._getOnStageParticipant();
         const avatarURL = api.getAvatarURL(userID);
         const displayName = api.getDisplayName(userID);
         const formattedDisplayName = api._getFormattedDisplayName(userID);
-        const isVideoDisplayed = Boolean(api._getLargeVideo());
+        const isVideoDisplayed = Boolean(api._getPrejoinVideo?.() || api._getLargeVideo());
 
         this.setState({
             avatarURL,
@@ -141,8 +121,6 @@ export default class AlwaysOnTop extends Component<*, State> {
         });
     }
 
-    _mouseMove: () => void;
-
     /**
      * Handles mouse move events.
      *
@@ -152,8 +130,6 @@ export default class AlwaysOnTop extends Component<*, State> {
         this.state.visible || this.setState({ visible: true });
     }
 
-    _onMouseOut: () => void;
-
     /**
      * Toolbar mouse out handler.
      *
@@ -162,8 +138,6 @@ export default class AlwaysOnTop extends Component<*, State> {
     _onMouseOut() {
         this._hovered = false;
     }
-
-    _onMouseOver: () => void;
 
     /**
      * Toolbar mouse over handler.
@@ -185,8 +159,7 @@ export default class AlwaysOnTop extends Component<*, State> {
             customAvatarBackgrounds,
             displayName,
             formattedDisplayName,
-            isVideoDisplayed,
-            userID
+            isVideoDisplayed
         } = this.state;
 
         if (isVideoDisplayed) {
@@ -197,7 +170,8 @@ export default class AlwaysOnTop extends Component<*, State> {
             <div id = 'videoNotAvailableScreen'>
                 <div id = 'avatarContainer'>
                     <StatelessAvatar
-                        color = { getAvatarColor(userID, customAvatarBackgrounds) }
+                        color = { getAvatarColor(displayName, customAvatarBackgrounds) }
+                        iconUser = { IconUser }
                         id = 'avatar'
                         initials = { getInitials(displayName) }
                         url = { avatarURL } />)
@@ -220,15 +194,17 @@ export default class AlwaysOnTop extends Component<*, State> {
     componentDidMount() {
         api.on('avatarChanged', this._avatarChangedListener);
         api.on('displayNameChange', this._displayNameChangedListener);
-        api.on('largeVideoChanged', this._largeVideoChangedListener);
+        api.on('largeVideoChanged', this._videoChangedListener);
+        api.on('prejoinVideoChanged', this._videoChangedListener);
+        api.on('videoConferenceJoined', this._videoChangedListener);
 
-        this._largeVideoChangedListener();
+        this._videoChangedListener();
 
         window.addEventListener('mousemove', this._mouseMove);
 
         this._hideToolbarAfterTimeout();
         api.getCustomAvatarBackgrounds()
-            .then(res =>
+            .then((res) =>
                 this.setState({
                     customAvatarBackgrounds: res.avatarBackgrounds || []
                 }))
@@ -241,7 +217,7 @@ export default class AlwaysOnTop extends Component<*, State> {
      * @inheritdoc
      * @returns {void}
      */
-    componentDidUpdate(prevProps: *, prevState: State) {
+    componentDidUpdate(_prevProps, prevState) {
         if (!prevState.visible && this.state.visible) {
             this._hideToolbarAfterTimeout();
         }
@@ -260,7 +236,13 @@ export default class AlwaysOnTop extends Component<*, State> {
             this._displayNameChangedListener);
         api.removeListener(
             'largeVideoChanged',
-            this._largeVideoChangedListener);
+            this._videoChangedListener);
+        api.removeListener(
+            'prejoinVideoChanged',
+            this._videoChangedListener);
+        api.removeListener(
+            'videoConferenceJoined',
+            this._videoChangedListener);
 
         window.removeEventListener('mousemove', this._mouseMove);
     }

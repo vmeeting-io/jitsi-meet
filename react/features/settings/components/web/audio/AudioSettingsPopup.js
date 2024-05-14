@@ -1,48 +1,35 @@
-// @flow
+import React, { ReactNode } from 'react';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import InlineDialog from '@atlaskit/inline-dialog';
-import React from 'react';
-
+import { areAudioLevelsEnabled } from '../../../../base/config/functions.web';
 import {
-    getAudioInputDeviceData,
-    getAudioOutputDeviceData,
     setAudioInputDeviceAndUpdateSettings,
     setAudioOutputDevice as setAudioOutputDeviceAction
-} from '../../../../base/devices';
-import { connect } from '../../../../base/redux';
+} from '../../../../base/devices/actions.web';
+import {
+    getAudioInputDeviceData,
+    getAudioOutputDeviceData
+} from '../../../../base/devices/functions.web';
+import Popover from '../../../../base/popover/components/Popover.web';
 import { SMALL_MOBILE_WIDTH } from '../../../../base/responsive-ui/constants';
 import {
     getCurrentMicDeviceId,
     getCurrentOutputDeviceId
-} from '../../../../base/settings';
+} from '../../../../base/settings/functions.web';
 import { toggleAudioSettings } from '../../../actions';
-import { getAudioSettingsVisibility } from '../../../functions';
+import { getAudioSettingsVisibility } from '../../../functions.web';
 
-import AudioSettingsContent, { type Props as AudioSettingsContentProps } from './AudioSettingsContent';
+import AudioSettingsContent from './AudioSettingsContent';
 
 
-type Props = AudioSettingsContentProps & {
-
-   /**
-    * Component's children (the audio button).
-    */
-    children: React$Node,
-
-   /**
-    * Flag controlling the visibility of the popup.
-    */
-    isOpen: boolean,
-
-   /**
-    * Callback executed when the popup closes.
-    */
-    onClose: Function,
-
-    /**
-     * The popup placement enum value.
-     */
-    popupPlacement: string
-}
+const useStyles = makeStyles()(() => {
+    return {
+        container: {
+            display: 'inline-block'
+        }
+    };
+});
 
 /**
  * Popup with audio settings.
@@ -59,23 +46,30 @@ function AudioSettingsPopup({
     setAudioOutputDevice,
     onClose,
     outputDevices,
-    popupPlacement
-}: Props) {
+    popupPlacement,
+    measureAudioLevels
+}) {
+    const { classes, cx } = useStyles();
+
     return (
-        <div className = 'audio-preview'>
-            <InlineDialog
+        <div className = { cx(classes.container, 'audio-preview') }>
+            <Popover
+                allowClick = { true }
                 content = { <AudioSettingsContent
                     currentMicDeviceId = { currentMicDeviceId }
                     currentOutputDeviceId = { currentOutputDeviceId }
+                    measureAudioLevels = { measureAudioLevels }
                     microphoneDevices = { microphoneDevices }
                     outputDevices = { outputDevices }
                     setAudioInputDevice = { setAudioInputDevice }
                     setAudioOutputDevice = { setAudioOutputDevice } /> }
-                isOpen = { isOpen }
-                onClose = { onClose }
-                placement = { popupPlacement }>
+                headingId = 'audio-settings-button'
+                onPopoverClose = { onClose }
+                position = { popupPlacement }
+                trigger = 'click'
+                visible = { isOpen }>
                 {children}
-            </InlineDialog>
+            </Popover>
         </div>
     );
 }
@@ -90,12 +84,13 @@ function mapStateToProps(state) {
     const { clientWidth } = state['features/base/responsive-ui'];
 
     return {
-        popupPlacement: clientWidth <= SMALL_MOBILE_WIDTH ? 'auto' : 'top-start',
+        popupPlacement: clientWidth <= Number(SMALL_MOBILE_WIDTH) ? 'auto' : 'top-end',
         currentMicDeviceId: getCurrentMicDeviceId(state),
         currentOutputDeviceId: getCurrentOutputDeviceId(state),
-        isOpen: getAudioSettingsVisibility(state),
-        microphoneDevices: getAudioInputDeviceData(state),
-        outputDevices: getAudioOutputDeviceData(state)
+        isOpen: Boolean(getAudioSettingsVisibility(state)),
+        microphoneDevices: getAudioInputDeviceData(state) ?? [],
+        outputDevices: getAudioOutputDeviceData(state) ?? [],
+        measureAudioLevels: areAudioLevelsEnabled(state)
     };
 }
 

@@ -1,27 +1,16 @@
-/* @flow */
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { AudioTrack, MEDIA_TYPE } from '../../../base/media';
-import { connect } from '../../../base/redux';
-
-/**
- * The type of the React {@code Component} props of {@link AudioTracksContainer}.
- */
-type Props = {
-
-    /**
-     * All media tracks stored in redux.
-     */
-    _tracks: Array<Object>
-};
+import AudioTrack from '../../../base/media/components/web/AudioTrack';
+import { MEDIA_TYPE } from '../../../base/media/constants';
 
 /**
  * A container for the remote tracks audio elements.
  *
- * @param {Props} props - The props of the component.
+ * @param {IProps} props - The props of the component.
  * @returns {Array<ReactElement>}
  */
-function AudioTracksContainer(props: Props) {
+function AudioTracksContainer(props) {
     const { _tracks } = props;
     const remoteAudioTracks = _tracks.filter(t => !t.local && t.mediaType === MEDIA_TYPE.AUDIO);
 
@@ -30,7 +19,7 @@ function AudioTracksContainer(props: Props) {
             {
                 remoteAudioTracks.map(t => {
                     const { jitsiTrack, participantId } = t;
-                    const audioTrackId = jitsiTrack && jitsiTrack.getId();
+                    const audioTrackId = jitsiTrack?.getId();
                     const id = `remoteAudio_${audioTrackId || ''}`;
 
                     return (
@@ -38,10 +27,12 @@ function AudioTracksContainer(props: Props) {
                             audioTrack = { t }
                             id = { id }
                             key = { id }
-                            participantId = { participantId } />);
+                            participantId = { participantId } />
+                    );
                 })
             }
-        </div>);
+        </div>
+    );
 }
 
 /**
@@ -49,14 +40,14 @@ function AudioTracksContainer(props: Props) {
  *
  * @param {Object} state - The Redux state.
  * @private
- * @returns {Props}
+ * @returns {IProps}
  */
 function _mapStateToProps(state) {
     // NOTE: The disadvantage of this approach is that the component will re-render on any track change.
     // One way to solve the problem would be to pass only the participant ID to the AudioTrack component and
     // find the corresponding track inside the AudioTrack's mapStateToProps. But currently this will be very
     // inefficient because features/base/tracks is an array and in order to find a track by participant ID
-    // we need to go trough the array. Introducing a map participantID -> track could be beneficial in this case.
+    // we need to go through the array. Introducing a map participantID -> track could be beneficial in this case.
     return {
         _tracks: state['features/base/tracks']
     };

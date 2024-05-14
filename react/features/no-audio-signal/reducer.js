@@ -1,6 +1,7 @@
 // @flow
 
-import { ReducerRegistry, set } from '../base/redux';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
+import { set } from '../base/redux/functions';
 
 import { SET_NO_AUDIO_SIGNAL_NOTIFICATION_UID } from './actionTypes';
 

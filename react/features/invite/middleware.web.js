@@ -1,10 +1,10 @@
 // @flow
 
-import { hideDialog, openDialog } from '../base/dialog';
-import { MiddlewareRegistry } from '../base/redux';
+import { hideDialog, openDialog } from '../base/dialog/actions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 
 import { BEGIN_ADD_PEOPLE, HIDE_ADD_PEOPLE_DIALOG } from './actionTypes';
-import { AddPeopleDialog } from './components';
+import AddPeopleDialog from './components/add-people-dialog/web/AddPeopleDialog';
 import './middleware.any';
 
 /**

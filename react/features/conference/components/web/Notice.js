@@ -1,62 +1,41 @@
-/* @flow */
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import React, { Component } from 'react';
+const useStyles = makeStyles()(theme => {
+    return {
+        notice: {
+            position: 'absolute',
+            left: '50%',
+            zIndex: 3,
+            marginTop: theme.spacing(2),
+            transform: 'translateX(-50%)'
+        },
 
-import { translate } from '../../../base/i18n';
-import { connect } from '../../../base/redux';
+        message: {
+            backgroundColor: theme.palette.uiBackground,
+            color: theme.palette.text01,
+            padding: '3px',
+            borderRadius: '5px'
+        }
+    };
+});
 
-declare var config: Object;
+const Notice = () => {
+    const message = useSelector((state) => state['features/base/config'].noticeMessage);
+    const { classes } = useStyles();
 
-type Props = {
-    _message?: string,
+    if (!message) {
+        return null;
+    }
+
+    return (
+        <div className = { classes.notice }>
+            <span className = { classes.message } >
+                {message}
+            </span>
+        </div>
+    );
 };
 
-/**
- * Notice react component.
- *
- * @class Notice
- */
-class Notice extends Component<Props> {
-
-    /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
-    render() {
-        if (!this.props._message) {
-            return null;
-        }
-
-        return (
-            <div className = 'notice'>
-                <span className = 'notice__message' >
-                    { this.props._message }
-                </span>
-            </div>
-        );
-    }
-}
-
-/**
- * Maps (parts of) the Redux state to the associated
- * {@code Notice}'s props.
- *
- * @param {Object} state - The Redux state.
- * @private
- * @returns {{
- *     _message: string,
- * }}
- */
-function _mapStateToProps(state) {
-    let noticeMessage = state['features/base/conference'].noticeMessage;
-    noticeMessage = typeof noticeMessage !== 'undefined'
-        ? noticeMessage
-        : state['features/base/config'].noticeMessage;
-
-    return {
-        _message: noticeMessage ? decodeURIComponent(noticeMessage) : ''
-    };
-}
-export default translate(connect(_mapStateToProps)(Notice));
+export default Notice;

@@ -1,34 +1,20 @@
-// @flow
+import React, { Component } from 'react';
 
 // We need to reference these files directly to avoid loading things that are not available
 // in this environment (e.g. JitsiMeetJS or interfaceConfig)
-import type { Props } from '../base/toolbox/components/AbstractButton';
-import AbstractVideoMuteButton from '../base/toolbox/components/AbstractVideoMuteButton';
+import { IconVideo, IconVideoOff } from '../base/icons/svg';
+
+import ToolbarButton from './ToolbarButton';
 
 const { api } = window.alwaysOnTop;
 
 /**
- * The type of the React {@code Component} state of {@link VideoMuteButton}.
- */
-type State = {
-
-    /**
-     * Whether video is available is not.
-     */
-    videoAvailable: boolean,
-
-    /**
-     * Whether video is muted or not.
-     */
-    videoMuted: boolean
-};
-
-/**
  * Stateless "mute/unmute video" button for the Always-on-Top windows.
  */
-export default class VideoMuteButton
-    extends AbstractVideoMuteButton<Props, State> {
+export default class VideoMuteButton extends Component {
 
+    icon = IconVideo;
+    toggledIcon = IconVideoOff;
     accessibilityLabel = 'Video mute';
 
     /**
@@ -37,7 +23,7 @@ export default class VideoMuteButton
      * @param {Props} props - The React {@code Component} props to initialize
      * the new {@code VideoMuteButton} instance with.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -49,6 +35,7 @@ export default class VideoMuteButton
         this._videoAvailabilityListener
             = this._videoAvailabilityListener.bind(this);
         this._videoMutedListener = this._videoMutedListener.bind(this);
+        this._onClick = this._onClick.bind(this);
     }
 
     /**
@@ -114,15 +101,13 @@ export default class VideoMuteButton
      * Changes the muted state.
      *
      * @override
-     * @param {boolean} videoMuted - Whether video should be muted or not.
+     * @param {boolean} _videoMuted - Whether video should be muted or not.
      * @protected
      * @returns {void}
      */
-    _setVideoMuted(videoMuted: boolean) { // eslint-disable-line no-unused-vars
-        this.state.videoAvailable && api.executeCommand('toggleVideo');
+    _setVideoMuted(_videoMuted) {
+        this.state.videoAvailable && api.executeCommand('toggleVideo', false, true);
     }
-
-    _videoAvailabilityListener: ({ available: boolean }) => void;
 
     /**
      * Handles video available api events.
@@ -134,8 +119,6 @@ export default class VideoMuteButton
         this.setState({ videoAvailable: available });
     }
 
-    _videoMutedListener: ({ muted: boolean }) => void;
-
     /**
      * Handles video muted api events.
      *
@@ -144,5 +127,35 @@ export default class VideoMuteButton
      */
     _videoMutedListener({ muted }) {
         this.setState({ videoMuted: muted });
+    }
+
+    /**
+     * Handles clicking / pressing the button, and toggles the video mute state
+     * accordingly.
+     *
+     * @protected
+     * @returns {void}
+     */
+    _onClick() {
+        this._setVideoMuted(!this._isVideoMuted());
+    }
+
+    /**
+     * Implements React's {@link Component#render()}.
+     *
+     * @inheritdoc
+     * @returns {ReactElement}
+     */
+    render() {
+        const toggled = this._isVideoMuted();
+
+        return (
+            <ToolbarButton
+                accessibilityLabel = { this.accessibilityLabel }
+                disabled = { this._isDisabled() }
+                icon = { toggled ? this.toggledIcon : this.icon }
+                onClick = { this._onClick }
+                toggled = { toggled } />
+        );
     }
 }

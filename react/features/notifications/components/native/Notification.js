@@ -1,104 +1,212 @@
-// @flow
+import React, { useCallback, useContext, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Animated, Text, TextStyle, View, ViewStyle } from 'react-native';
 
-import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-
-import { translate } from '../../../base/i18n';
-import { Icon, IconClose } from '../../../base/icons';
+import Icon from '../../../base/icons/components/Icon';
+import {
+    IconCloseLarge,
+    IconInfoCircle,
+    IconUsers,
+    IconWarning
+} from '../../../base/icons/svg';
+import { colors } from '../../../base/ui/Tokens';
+import BaseTheme from '../../../base/ui/components/BaseTheme.native';
+import Button from '../../../base/ui/components/native/Button';
+import IconButton from '../../../base/ui/components/native/IconButton';
+import { BUTTON_MODES, BUTTON_TYPES } from '../../../base/ui/constants.native';
 import { replaceNonUnicodeEmojis } from '../../../chat/functions';
-import AbstractNotification, {
-    type Props
-} from '../AbstractNotification';
+import { NOTIFICATION_ICON, NOTIFICATION_TYPE } from '../../constants';
+import { NotificationsTransitionContext } from '../NotificationsTransition';
 
 import styles from './styles';
 
-/**
- * Default value for the maxLines prop.
- *
- * @type {number}
- */
-const DEFAULT_MAX_LINES = 1;
 
 /**
- * Implements a React {@link Component} to display a notification.
+ * Secondary colors for notification icons.
  *
- * @augments Component
+ * @type {{error, info, normal, success, warning}}
  */
-class Notification extends AbstractNotification<Props> {
-    /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
-    render() {
-        const { isDismissAllowed } = this.props;
 
-        return (
-            <View
-                pointerEvents = 'box-none'
-                style = { styles.notification }>
-                <View style = { styles.contentColumn }>
-                    <View
-                        pointerEvents = 'box-none'
-                        style = { styles.notificationContent }>
-                        {
-                            this._renderContent()
-                        }
-                    </View>
-                </View>
+const ICON_COLOR = {
+    error: colors.error06,
+    normal: colors.primary06,
+    success: colors.success05,
+    warning: colors.warning05
+};
+
+
+const Notification = ({
+    appearance = NOTIFICATION_TYPE.NORMAL,
+    customActionHandler,
+    customActionNameKey,
+    customActionType,
+    description,
+    descriptionArguments,
+    descriptionKey,
+    icon,
+    onDismissed,
+    title,
+    titleArguments,
+    titleKey,
+    uid
+}) => {
+    const { t } = useTranslation();
+    const notificationOpacityAnimation = useRef(new Animated.Value(0)).current;
+    const { unmounting } = useContext(NotificationsTransitionContext);
+
+    useEffect(() => {
+        Animated.timing(
+            notificationOpacityAnimation,
+            {
+                toValue: 1,
+                duration: 200,
+                useNativeDriver: true
+            })
+            .start();
+    }, []);
+
+    useEffect(() => {
+        if (unmounting.get(uid ?? '')) {
+            Animated.timing(
+                notificationOpacityAnimation,
                 {
-                    isDismissAllowed
-                    && <TouchableOpacity onPress = { this._onDismissed }>
-                        <Icon
-                            src = { IconClose }
-                            style = { styles.dismissIcon } />
-                    </TouchableOpacity>
-                }
-            </View>
-        );
-    }
-
-    /**
-     * Renders the notification's content. If the title or title key is present
-     * it will be just the title. Otherwise it will fallback to description.
-     *
-     * @returns {Array<ReactElement>}
-     * @private
-     */
-    _renderContent() {
-        const { maxLines = DEFAULT_MAX_LINES, t, title, titleArguments, titleKey, concatText } = this.props;
-        const titleText = title || (titleKey && t(titleKey, titleArguments));
-        const description = this._getDescription();
-        const titleConcat = [];
-
-        if (concatText) {
-            titleConcat.push(titleText);
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true
+                })
+                .start();
         }
+    }, [ unmounting ]);
 
-        if (description && description.length) {
-            return [ ...titleConcat, ...description ].map((line, index) => (
-                <Text
+    const onDismiss = useCallback(() => {
+        onDismissed(uid);
+    }, [ onDismissed, uid ]);
+
+    const mapAppearanceToButtons = () => {
+        if (customActionNameKey?.length && customActionHandler?.length && customActionType?.length) {
+            return customActionNameKey?.map((customAction: string, index: number) => (
+                <Button
+                    accessibilityLabel = { customAction }
                     key = { index }
-                    numberOfLines = { maxLines }
-                    style = { styles.contentText }>
-                    { replaceNonUnicodeEmojis(line) }
-                </Text>
+                    labelKey = { customAction }
+                    mode = { BUTTON_MODES.TEXT }
+                    // eslint-disable-next-line react/jsx-no-bind
+                    onClick = { () => {
+                        if (customActionHandler[index]()) {
+                            onDismiss();
+                        }
+                    } }
+                    style = { styles.btn }
+
+                    // @ts-ignore
+                    type = { customActionType[index] } />
             ));
         }
 
+        return [];
+    };
+
+    const getIcon = () => {
+        let src;
+
+        switch (icon || appearance) {
+        case NOTIFICATION_ICON.PARTICIPANT:
+            src = IconInfoCircle;
+            break;
+        case NOTIFICATION_ICON.PARTICIPANTS:
+            src = IconUsers;
+            break;
+        case NOTIFICATION_ICON.WARNING:
+            src = IconWarning;
+            break;
+        default:
+            src = IconInfoCircle;
+            break;
+        }
+
+        return src;
+    };
+
+    const _getDescription = () => {
+        const descriptionArray = [];
+
+        descriptionKey
+            && descriptionArray.push(t(descriptionKey, descriptionArguments));
+
+        description && descriptionArray.push(description);
+
+        return descriptionArray;
+    };
+
+    // eslint-disable-next-line react/no-multi-comp
+    const _renderContent = () => {
+        const titleText = title || (titleKey && t(titleKey, titleArguments));
+        const descriptionArray = _getDescription();
+
+        if (descriptionArray?.length) {
+            return (
+                <>
+                    <Text style = { styles.contentTextTitle }>
+                        {titleText}
+                    </Text>
+                    {
+                        descriptionArray.map((line, index) => (
+                            <Text
+                                key = { index }
+                                style = { styles.contentText }>
+                                {replaceNonUnicodeEmojis(line)}
+                            </Text>
+                        ))
+                    }
+                </>
+            );
+        }
+
         return (
-            <Text
-                numberOfLines = { maxLines }
-                style = { styles.contentText } >
-                { titleText }
+            <Text style = { styles.contentTextTitle }>
+                {titleText}
             </Text>
         );
-    }
+    };
 
-    _getDescription: () => Array<string>;
+    return (
+        <Animated.View
+            pointerEvents = 'box-none'
+            style = { [
+                _getDescription()?.length
+                    ? styles.notificationWithDescription
+                    : styles.notification,
+                {
+                    opacity: notificationOpacityAnimation
+                }
+            ] }>
+            <View
+                style = { (icon === NOTIFICATION_ICON.PARTICIPANTS
+                    ? styles.contentColumn
+                    : styles.interactiveContentColumn) }>
+                <View style = { styles.iconContainer }>
+                    <Icon
+                        color = { ICON_COLOR[appearance] }
+                        size = { 24 }
+                        src = { getIcon() } />
+                </View>
+                <View
+                    pointerEvents = 'box-none'
+                    style = { styles.contentContainer }>
+                    {_renderContent()}
+                </View>
+                <View style = { styles.btnContainer }>
+                    {mapAppearanceToButtons()}
+                </View>
+            </View>
+            <IconButton
+                color = { BaseTheme.palette.icon04 }
+                onPress = { onDismiss }
+                src = { IconCloseLarge }
+                type = { BUTTON_TYPES.TERTIARY } />
+        </Animated.View>
+    );
 
-    _onDismissed: () => void;
-}
+};
 
-export default translate(Notification);
+export default Notification;

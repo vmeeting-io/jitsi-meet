@@ -1,25 +1,32 @@
 // @flow
 
 // import { getGravatarURL } from '@jitsi/js-utils/avatar';
-import type { Store } from 'redux';
-
-import { GRAVATAR_BASE_URL, isCORSAvatarURL } from '../avatar';
-import { JitsiParticipantConnectionStatus } from '../lib-jitsi-meet';
-import { MEDIA_TYPE, shouldRenderVideoTrack } from '../media';
-import { toState } from '../redux';
-import { getTrackByMediaTypeAndParticipant } from '../tracks';
-import { createDeferred } from '../util';
 import axios from 'axios';
+
+import type { Store } from 'redux';
+import { isStageFilmstripAvailable } from '../../filmstrip/functions';
+import { isAddPeopleEnabled, isDialOutEnabled } from '../../invite/functions';
+import { toggleShareDialog } from '../../share-room/actions';
+import { isCORSAvatarURL } from '../avatar/functions';
+import { getCurrentConference } from '../conference/functions';
+import { ADD_PEOPLE_ENABLED } from '../flags/constants';
+import { getFeatureFlag } from '../flags/functions';
+import i18next from '../i18n/i18next';
+import { MEDIA_TYPE, VIDEO_TYPE } from '../media/constants';
+import { toState } from '../redux/functions';
+import { getScreenShareTrack } from '../tracks/functions.any';
+import { createDeferred } from '../util/helpers';
 
 import {
     JIGASI_PARTICIPANT_ICON,
     MAX_DISPLAY_NAME_LENGTH,
     PARTICIPANT_ROLE,
-    PIC_CONSENT
+    WHITEBOARD_PARTICIPANT_ICON
 } from './constants';
 import { preloadImage } from './preloadImage';
 import tokenLocalStorage from '../../../api/tokenLocalStorage';
 import { getAuthUrl } from '../../../api/url';
+import { FakeParticipant } from './types';
 
 
 /**
@@ -29,11 +36,14 @@ const AVATAR_QUEUE = [];
 const AVATAR_CHECKED_URLS = new Map();
 /* eslint-disable arrow-body-style, no-unused-vars */
 const AVATAR_CHECKER_FUNCTIONS = [
-    (participant, _) => {
-        return participant && participant.isJigasi ? JIGASI_PARTICIPANT_ICON : null;
+    (participant) => {
+        return participant?.isJigasi ? JIGASI_PARTICIPANT_ICON : null;
     },
-    (participant, _) => {
-        return participant && participant.avatarURL ? participant.avatarURL : null;
+    (participant) => {
+        return isWhiteboardParticipant(participant) ? WHITEBOARD_PARTICIPANT_ICON : null;
+    },
+    (participant) => {
+        return participant?.avatarURL ? participant.avatarURL : null;
     },
     // (participant, store) => {
     //     if (participant && participant.email) {
@@ -49,41 +59,100 @@ const AVATAR_CHECKER_FUNCTIONS = [
 ];
 /* eslint-enable arrow-body-style, no-unused-vars */
 
-export function openOnNewTab(url){
+export function openOnNewTab(url) {
     window.open(url, "_blank");
 }
 
 
-export function askForConsent(email: String){
+export function askForConsent(email: String) {
 
     const state = APP.store.getState();
     const config = {
-        headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(state)}`}
+        headers: { Authorization: `Bearer ${tokenLocalStorage.getItem(state)}` }
     };
 
     const _apiBase = getAuthUrl(state);
 
     try {
         axios.get(`${_apiBase}/verifyConsent`, config).then((resp) => {
-            switch(resp.data.consent){
+            switch (resp.data.consent) {
                 case PIC_CONSENT.UNAPPROVED:
                     //Open a new tab with verification.
                     openOnNewTab('/auth/page/consent')
                     break;
                 case PIC_CONSENT.APPROVED:
                     //Continue without any action.
-                    console.log("vmchg: PIC_CONSENT ",PIC_CONSENT.APPROVED ) 
+                    console.log("vmchg: PIC_CONSENT ", PIC_CONSENT.APPROVED)
                     break;
                 case PIC_CONSENT.DENIED:
-                    console.log("vmchg: PIC_CONSENT ",PIC_CONSENT.DENIED ) 
+                    console.log("vmchg: PIC_CONSENT ", PIC_CONSENT.DENIED)
                     break;
             }
         });
-    } catch(err) {
+    } catch (err) {
         console.log("vmchg: ", err);
     }
 
     //make an axios call and get the user status.
+}
+
+/**
+ * Returns the list of active speakers that should be moved to the top of the sorted list of participants so that the
+ * dominant speaker is visible always on the vertical filmstrip in stage layout.
+ *
+ * @param {Function | Object} stateful - The (whole) redux state, or redux's {@code getState} function to be used to
+ * retrieve the state.
+ * @returns {Array<string>}
+ */
+export function getActiveSpeakersToBeDisplayed(stateful) {
+    const state = toState(stateful);
+    const {
+        dominantSpeaker,
+        fakeParticipants,
+        sortedRemoteVirtualScreenshareParticipants,
+        speakersList
+    } = state['features/base/participants'];
+    const { visibleRemoteParticipants } = state['features/filmstrip'];
+    let activeSpeakers = new Map(speakersList);
+
+    // Do not re-sort the active speakers if dominant speaker is currently visible.
+    if (dominantSpeaker && visibleRemoteParticipants.has(dominantSpeaker)) {
+        return activeSpeakers;
+    }
+    let availableSlotsForActiveSpeakers = visibleRemoteParticipants.size;
+
+    if (activeSpeakers.has(dominantSpeaker ?? '')) {
+        activeSpeakers.delete(dominantSpeaker ?? '');
+    }
+
+    // Add dominant speaker to the beginning of the list (not including self) since the active speaker list is always
+    // alphabetically sorted.
+    if (dominantSpeaker && dominantSpeaker !== getLocalParticipant(state)?.id) {
+        const updatedSpeakers = Array.from(activeSpeakers);
+
+        updatedSpeakers.splice(0, 0, [ dominantSpeaker, getParticipantById(state, dominantSpeaker)?.name ?? '' ]);
+        activeSpeakers = new Map(updatedSpeakers);
+    }
+
+    // Remove screenshares from the count.
+    if (sortedRemoteVirtualScreenshareParticipants) {
+        availableSlotsForActiveSpeakers -= sortedRemoteVirtualScreenshareParticipants.size * 2;
+        for (const screenshare of Array.from(sortedRemoteVirtualScreenshareParticipants.keys())) {
+            const ownerId = getVirtualScreenshareParticipantOwnerId(screenshare);
+
+            activeSpeakers.delete(ownerId);
+        }
+    }
+
+    // Remove fake participants from the count.
+    if (fakeParticipants) {
+        availableSlotsForActiveSpeakers -= fakeParticipants.size;
+    }
+    const truncatedSpeakersList = Array.from(activeSpeakers).slice(0, availableSlotsForActiveSpeakers);
+
+    truncatedSpeakersList.sort((a: any, b: any) => a[1].localeCompare(b[1]));
+
+    return new Map(truncatedSpeakersList);
 }
 
 /**
@@ -132,6 +201,34 @@ export function getLocalParticipant(stateful: Object | Function) {
 }
 
 /**
+ * Returns local screen share participant from Redux state.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state features/base/participants.
+ * @returns {(IParticipant|undefined)}
+ */
+export function getLocalScreenShareParticipant(stateful: Object | Function) {
+    const state = toState(stateful)['features/base/participants'];
+
+    return state.localScreenShare;
+}
+
+/**
+ * Returns screenshare participant.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's {@code getState} function to be used to
+ * retrieve the state features/base/participants.
+ * @param {string} id - The owner ID of the screenshare participant to retrieve.
+ * @returns {(IParticipant|undefined)}
+ */
+export function getVirtualScreenshareParticipantByOwnerId(stateful: Object | Function, id: string) {
+    const state = toState(stateful);
+    const track = getScreenShareTrack(state['features/base/tracks'], id);
+
+    return getParticipantById(stateful, track?.jitsiTrack.getSourceName());
+}
+
+/**
  * Normalizes a display name so then no invalid values (padding, length...etc)
  * can be set.
  *
@@ -139,7 +236,7 @@ export function getLocalParticipant(stateful: Object | Function) {
  * @returns {string}
  */
 export function getNormalizedDisplayName(name: string) {
-    if (!name || !name.trim()) {
+    if (!name?.trim()) {
         return undefined;
     }
 
@@ -157,11 +254,13 @@ export function getNormalizedDisplayName(name: string) {
  * @returns {(Participant|undefined)}
  */
 export function getParticipantById(
-        stateful: Object | Function, id: string): ?Object {
+    stateful: Object | Function, id: string): ?Object {
     const state = toState(stateful)['features/base/participants'];
-    const { local, remote } = state;
+    const { local, localScreenShare, remote } = state;
 
-    return remote.get(id) || (local?.id === id ? local : undefined);
+    return remote.get(id)
+        || (local?.id === id ? local : undefined)
+        || (localScreenShare?.id === id ? localScreenShare : undefined);
 }
 
 /**
@@ -188,10 +287,26 @@ export function getParticipantByIdOrUndefined(stateful: Object | Function, parti
  * @returns {number}
  */
 export function getParticipantCount(stateful: Object | Function) {
-    const state = toState(stateful)['features/base/participants'];
-    const { local, remote, fakeParticipants } = state;
+    const state = toState(stateful);
+    const {
+        local,
+        remote,
+        fakeParticipants,
+        sortedRemoteVirtualScreenshareParticipants
+    } = state['features/base/participants'];
 
-    return remote.size - fakeParticipants.size + (local ? 1 : 0);
+    return remote.size - fakeParticipants.size - sortedRemoteVirtualScreenshareParticipants.size + (local ? 1 : 0);
+}
+
+/**
+ * Returns participant ID of the owner of a virtual screenshare participant.
+ *
+ * @param {string} id - The ID of the virtual screenshare participant.
+ * @private
+ * @returns {(string|undefined)}
+ */
+export function getVirtualScreenshareParticipantOwnerId(id: string) {
+    return id.split('-')[0];
 }
 
 /**
@@ -207,6 +322,69 @@ export function getFakeParticipants(stateful: Object | Function) {
 }
 
 /**
+ * Returns whether the fake participant is a local screenshare.
+ *
+ * @param {IParticipant|undefined} participant - The participant entity.
+ * @returns {boolean} - True if it's a local screenshare participant.
+ */
+export function isLocalScreenshareParticipant(participant) {
+    return participant?.fakeParticipant === FakeParticipant.LocalScreenShare;
+}
+
+/**
+ * Returns whether the fake participant is a remote screenshare.
+ *
+ * @param {IParticipant|undefined} participant - The participant entity.
+ * @returns {boolean} - True if it's a remote screenshare participant.
+ */
+export function isRemoteScreenshareParticipant(participant) {
+    return participant?.fakeParticipant === FakeParticipant.RemoteScreenShare;
+}
+
+/**
+ * Returns whether the fake participant is of local or virtual screenshare type.
+ *
+ * @param {IReduxState} state - The (whole) redux state, or redux's.
+ * @param {string|undefined} participantId - The participant id.
+ * @returns {boolean} - True if it's one of the two.
+ */
+export function isScreenShareParticipantById(state, participantId) {
+    const participant = getParticipantByIdOrUndefined(state, participantId);
+
+    return isScreenShareParticipant(participant);
+}
+
+/**
+ * Returns whether the fake participant is of local or virtual screenshare type.
+ *
+ * @param {IParticipant|undefined} participant - The participant entity.
+ * @returns {boolean} - True if it's one of the two.
+ */
+export function isScreenShareParticipant(participant) {
+    return isLocalScreenshareParticipant(participant) || isRemoteScreenshareParticipant(participant);
+}
+
+/**
+ * Returns whether the (fake) participant is a shared video.
+ *
+ * @param {IParticipant|undefined} participant - The participant entity.
+ * @returns {boolean} - True if it's a shared video participant.
+ */
+export function isSharedVideoParticipant(participant) {
+    return participant?.fakeParticipant === FakeParticipant.SharedVideo;
+}
+
+/**
+ * Returns whether the fake participant is a whiteboard.
+ *
+ * @param {Participant|undefined} participant - The participant entity.
+ * @returns {boolean} - True if it's a whiteboard participant.
+ */
+export function isWhiteboardParticipant(participant) {
+    return participant?.fakeParticipant === FakeParticipant.Whiteboard;
+}
+
+/**
  * Returns a count of the known remote participants in the passed in redux state.
  *
  * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
@@ -214,10 +392,11 @@ export function getFakeParticipants(stateful: Object | Function) {
  * features/base/participants.
  * @returns {number}
  */
-export function getRemoteParticipantCount(stateful: Object | Function) {
-    const state = toState(stateful)['features/base/participants'];
+export function getRemoteParticipantCountWithFake(stateful: Object | Function) {
+    const state = toState(stateful);
+    const participantsState = state['features/base/participants'];
 
-    return state.remote.size;
+    return participantsState.remote.size;
 }
 
 /**
@@ -230,40 +409,126 @@ export function getRemoteParticipantCount(stateful: Object | Function) {
  * @returns {number}
  */
 export function getParticipantCountWithFake(stateful: Object | Function) {
-    const state = toState(stateful)['features/base/participants'];
-    const { local, remote } = state;
+    const state = toState(stateful);
+    const { local, localScreenShare, remote } = state['features/base/participants'];
 
-    return remote.size + (local ? 1 : 0);
+    return remote.size + (local ? 1 : 0) + (localScreenShare ? 1 : 0);
 }
 
 /**
  * Returns participant's display name.
  *
- * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
- * {@code getState} function to be used to retrieve the state.
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's {@code getState} function to be used to
+ * retrieve the state.
  * @param {string} id - The ID of the participant's display name to retrieve.
  * @returns {string}
  */
-export function getParticipantDisplayName(
-        stateful: Object | Function,
-        id: string) {
-    const participant = getParticipantById(stateful, id);
+export function getParticipantDisplayName(stateful: Object | Function, id: string) {
+    const state = toState(stateful);
+    const participant = getParticipantById(state, id);
     const {
         defaultLocalDisplayName,
         defaultRemoteDisplayName
-    } = toState(stateful)['features/base/config'];
+    } = state['features/base/config'];
 
     if (participant) {
+        if (isScreenShareParticipant(participant)) {
+            return getScreenshareParticipantDisplayName(state, id);
+        }
+
         if (participant.name) {
             return participant.name;
         }
 
         if (participant.local) {
-            return defaultLocalDisplayName;
+            return defaultLocalDisplayName ?? '';
         }
     }
 
-    return defaultRemoteDisplayName;
+    return defaultRemoteDisplayName ?? '';
+}
+
+/**
+ * Returns the source names of the screenshare sources in the conference based on the presence shared by the remote
+ * endpoints. This should be only used for creating/removing virtual screenshare participant tiles when ssrc-rewriting
+ * is enabled. Once the tile is created, the source-name gets added to the receiver constraints based on which the
+ * JVB will add the source to the video sources map and signal it to the local endpoint. Only then, a remote track is
+ * created/remapped and the tracks in redux will be updated. Once the track is updated in redux, the client will
+ * will continue to use the other track based getter functions for other operations related to screenshare.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's {@code getState} function to be used to
+ * retrieve the state.
+ * @returns {string[]}
+ */
+export function getRemoteScreensharesBasedOnPresence(stateful) {
+    const conference = getCurrentConference(stateful);
+
+    return conference?.getParticipants()?.reduce((screenshares, participant) => {
+        const sources = participant.getSources();
+        const videoSources = sources.get(MEDIA_TYPE.VIDEO);
+        const screenshareSources = Array.from(videoSources ?? new Map())
+            .filter(source => source[1].videoType === VIDEO_TYPE.DESKTOP && !source[1].muted)
+            .map(source => source[0]);
+
+        // eslint-disable-next-line no-param-reassign
+        screenshares = [ ...screenshares, ...screenshareSources ];
+
+        return screenshares;
+    }, []);
+}
+
+/**
+ * Returns screenshare participant's display name.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's {@code getState} function to be used to
+ * retrieve the state.
+ * @param {string} id - The ID of the screenshare participant's display name to retrieve.
+ * @returns {string}
+ */
+export function getScreenshareParticipantDisplayName(stateful, id) {
+    const ownerDisplayName = getParticipantDisplayName(stateful, getVirtualScreenshareParticipantOwnerId(id));
+
+    return i18next.t('screenshareDisplayName', { name: ownerDisplayName });
+}
+
+/**
+ * Returns a list of IDs of the participants that are currently screensharing.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's {@code getState} function to be used to
+ * retrieve the state.
+ * @returns {Array<string>}
+ */
+export function getScreenshareParticipantIds(stateful) {
+    return toState(stateful)['features/base/tracks']
+        .filter(track => track.videoType === VIDEO_TYPE.DESKTOP && !track.muted)
+        .map(t => t.participantId);
+}
+
+/**
+ * Returns a list source name associated with a given remote participant and for the given media type.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's {@code getState} function to be used to
+ * retrieve the state.
+ * @param {string} id - The id of the participant whose source names are to be retrieved.
+ * @param {string} mediaType - The type of source, audio or video.
+ * @returns {Array<string>|undefined}
+ */
+export function getSourceNamesByMediaType(stateful, id, mediaType) {
+    const participant = getParticipantById(stateful, id);
+
+    if (!participant) {
+        return;
+    }
+
+    const sources = participant.sources;
+
+    if (!sources) {
+        return;
+    }
+
+    return Array.from(sources.get(mediaType) ?? new Map())
+        .filter(source => source[1].videoType !== VIDEO_TYPE.DESKTOP || !source[1].muted)
+        .map(s => s[0]);
 }
 
 /**
@@ -274,8 +539,7 @@ export function getParticipantDisplayName(
  * @param {string} id - The id of the participant.
  * @returns {string} - The presence status.
  */
-export function getParticipantPresenceStatus(
-        stateful: Object | Function, id: string) {
+export function getParticipantPresenceStatus(stateful: Object | Function, id: string) {
     if (!id) {
         return undefined;
     }
@@ -286,17 +550,6 @@ export function getParticipantPresenceStatus(
     }
 
     return participantById.presence;
-}
-
-/**
- * Returns true if there is at least 1 participant with screen sharing feature and false otherwise.
- *
- * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
- * {@code getState} function to be used to retrieve the state.
- * @returns {boolean}
- */
-export function haveParticipantWithScreenSharingFeature(stateful: Object | Function) {
-    return toState(stateful)['features/base/participants'].haveParticipantWithScreenSharingFeature;
 }
 
 /**
@@ -331,8 +584,16 @@ export function getRemoteParticipantsSorted(stateful: Object | Function) {
  * @returns {(Participant|undefined)}
  */
 export function getPinnedParticipant(stateful: Object | Function) {
-    const state = toState(stateful)['features/base/participants'];
-    const { pinnedParticipant } = state;
+    const state = toState(stateful);
+    const { pinnedParticipant } = state['features/base/participants'];
+    const stageFilmstrip = isStageFilmstripAvailable(state);
+
+    if (stageFilmstrip) {
+        const { activeParticipants } = state['features/filmstrip'];
+        const id = activeParticipants.find(p => p.pinned)?.participantId;
+
+        return id ? getParticipantById(stateful, id) : undefined;
+    }
 
     if (!pinnedParticipant) {
         return undefined;
@@ -379,7 +640,7 @@ export function getDominantSpeakerParticipant(stateful: Object | Function) {
 export function isEveryoneModerator(stateful: Object | Function) {
     const state = toState(stateful)['features/base/participants'];
 
-    return state.everyoneIsModerator === true;
+    return state.numberOfNonModeratorParticipants === 0;
 }
 
 /**
@@ -413,54 +674,6 @@ export function isLocalParticipantModerator(stateful: Object | Function) {
 }
 
 /**
- * Returns true if the video of the participant should be rendered.
- * NOTE: This is currently only used on mobile.
- *
- * @param {Object|Function} stateful - Object or function that can be resolved
- * to the Redux state.
- * @param {string} id - The ID of the participant.
- * @returns {boolean}
- */
-export function shouldRenderParticipantVideo(stateful: Object | Function, id: string) {
-    const state = toState(stateful);
-    const participant = getParticipantById(state, id);
-
-    if (!participant) {
-        return false;
-    }
-
-    /* First check if we have an unmuted video track. */
-    const videoTrack
-        = getTrackByMediaTypeAndParticipant(state['features/base/tracks'], MEDIA_TYPE.VIDEO, id);
-
-    if (!shouldRenderVideoTrack(videoTrack, /* waitForVideoStarted */ false)) {
-        return false;
-    }
-
-    /* Then check if the participant connection is active. */
-    const connectionStatus = participant.connectionStatus || JitsiParticipantConnectionStatus.ACTIVE;
-
-    if (connectionStatus !== JitsiParticipantConnectionStatus.ACTIVE) {
-        return false;
-    }
-
-    /* Then check if audio-only mode is not active. */
-    const audioOnly = state['features/base/audio-only'].enabled;
-
-    if (!audioOnly) {
-        return true;
-    }
-
-    /* Last, check if the participant is sharing their screen and they are on stage. */
-    const remoteScreenShares = state['features/video-layout'].remoteScreenShares || [];
-    const largeVideoParticipantId = state['features/large-video'].participantId;
-    const participantIsInLargeVideoWithScreen
-        = participant.id === largeVideoParticipantId && remoteScreenShares.includes(participant.id);
-
-    return participantIsInLargeVideoWithScreen;
-}
-
-/**
  * Resolves the first loadable avatar URL for a participant.
  *
  * @param {Object} participant - The participant to resolve avatars for.
@@ -484,7 +697,8 @@ async function _getFirstLoadableAvatarUrl(participant, store) {
             } else {
                 try {
                     const { corsAvatarURLs } = store.getState()['features/base/config'];
-                    const { isUsingCORS, src } = await preloadImage(url, isCORSAvatarURL(url, corsAvatarURLs));
+                    const useCORS = isIconUrl(url) ? false : isCORSAvatarURL(url, corsAvatarURLs);
+                    const { isUsingCORS, src } = await preloadImage(url, useCORS);
 
                     AVATAR_CHECKED_URLS.set(src, {
                         isLoadable: true,
@@ -529,8 +743,37 @@ export function getRaiseHandsQueue(stateful: Object | Function): Array<Object> {
  * @returns {boolean} - Whether participant has raise hand or not.
  */
 export function hasRaisedHand(participant: Object): boolean {
-    return Boolean(participant && participant.raisedHandTimestamp);
+    return Boolean(participant?.raisedHandTimestamp);
 }
+
+/**
+ * Add people feature enabling/disabling.
+ *
+ * @param {Object|Function} stateful - Object or function that can be resolved
+ * to the Redux state.
+ * @returns {boolean}
+ */
+export const addPeopleFeatureControl = (stateful: Object | Function) => {
+    const state = toState(stateful);
+
+    return getFeatureFlag(state, ADD_PEOPLE_ENABLED, true)
+    && (isAddPeopleEnabled(state) || isDialOutEnabled(state));
+};
+
+/**
+ * Controls share dialog visibility.
+ *
+ * @param {boolean} addPeopleFeatureEnabled - Checks if add people functionality is enabled.
+ * @param {Function} dispatch - The Redux dispatch function.
+ * @returns {Function}
+ */
+export const setShareDialogVisiblity = (addPeopleFeatureEnabled: boolean, dispatch: Function) => {
+    if (addPeopleFeatureEnabled) {
+        dispatch(toggleShareDialog(false));
+    } else {
+        dispatch(toggleShareDialog(true));
+    }
+};
 
 /**
  * Get the participants pinned tiles.

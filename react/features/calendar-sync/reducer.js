@@ -1,11 +1,11 @@
-// @flow
-
-import { PersistenceRegistry, ReducerRegistry, set } from '../base/redux';
+import PersistenceRegistry from '../base/redux/PersistenceRegistry';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
+import { set } from '../base/redux/functions';
 
 import {
     CLEAR_CALENDAR_INTEGRATION,
-    SET_CALENDAR_AUTH_STATE,
     SET_CALENDAR_AUTHORIZATION,
+    SET_CALENDAR_AUTH_STATE,
     SET_CALENDAR_ERROR,
     SET_CALENDAR_EVENTS,
     SET_CALENDAR_INTEGRATION,

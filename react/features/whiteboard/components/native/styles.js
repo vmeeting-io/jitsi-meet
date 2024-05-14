@@ -1,27 +1,37 @@
-// @flow
+import BaseTheme from '../../../base/ui/components/BaseTheme.native';
 
-import { ColorPalette } from '../../../base/styles';
+export const INDICATOR_COLOR = BaseTheme.palette.ui07;
 
-export const INDICATOR_COLOR = ColorPalette.lightGrey;
+const WV_BACKGROUND = BaseTheme.palette.ui03;
 
 export default {
 
-    headerArrowBack: {
-        marginLeft: 12
+    backDrop: {
+        backgroundColor: WV_BACKGROUND,
+        flex: 1
     },
 
     indicatorWrapper: {
         alignItems: 'center',
-        backgroundColor: ColorPalette.white,
+        backgroundColor: BaseTheme.palette.ui10,
         height: '100%',
         justifyContent: 'center'
     },
 
-    whiteboardContainer: {
+    webView: {
+        backgroundColor: WV_BACKGROUND,
         flex: 1
     },
 
-    webView: {
-        backgroundColor: 'rgb(242, 242, 242)'
+    limitUrlText: {
+        alignItems: 'center',
+        display: 'flex',
+        marginBottom: BaseTheme.spacing[2],
+        textAlign: 'center'
+    },
+
+    limitUrl: {
+        color: BaseTheme.palette.link01,
+        fontWeight: 'bold'
     }
 };

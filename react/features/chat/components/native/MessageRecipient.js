@@ -1,56 +1,45 @@
-// @flow
-
 import React from 'react';
 import { Text, TouchableHighlight, View } from 'react-native';
+import { connect } from 'react-redux';
 
-import { ColorSchemeRegistry } from '../../../base/color-scheme';
-import { translate } from '../../../base/i18n';
-import { Icon, IconCancelSelection } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { type StyleType } from '../../../base/styles';
+import { translate } from '../../../base/i18n/functions';
+import Icon from '../../../base/icons/components/Icon';
+import { IconCloseLarge } from '../../../base/icons/svg';
 import {
     setParams
-} from '../../../conference/components/native/ConferenceNavigationContainerRef';
-import { setPrivateMessageRecipient } from '../../actions.any';
-import AbstractMessageRecipient, {
-    type Props as AbstractProps
-} from '../AbstractMessageRecipient';
+} from '../../../mobile/navigation/components/conference/ConferenceNavigationContainerRef';
+import { setLobbyChatActiveState, setPrivateMessageRecipient } from '../../actions.any';
+import AbstractMessageRecipient from '../AbstractMessageRecipient';
 
-type Props = AbstractProps & {
-
-    /**
-     * The color-schemed stylesheet of the feature.
-     */
-    _styles: StyleType,
-
-    /**
-     * The Redux dispatch function.
-     */
-    dispatch: Function,
-
-    /**
-     * The participant object set for private messaging.
-     */
-    privateMessageRecipient: Object,
-};
+import styles from './styles';
 
 /**
  * Class to implement the displaying of the recipient of the next message.
  */
-class MessageRecipient extends AbstractMessageRecipient<Props> {
+class MessageRecipient extends AbstractMessageRecipient {
 
     /**
      * Constructor of the component.
      *
-     * @param {Props} props - The props of the component.
+     * @param {IProps} props - The props of the component.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this._onResetPrivateMessageRecipient = this._onResetPrivateMessageRecipient.bind(this);
+        this._onResetLobbyMessageRecipient = this._onResetLobbyMessageRecipient.bind(this);
     }
 
-    _onResetPrivateMessageRecipient: () => void;
+    /**
+     * Resets lobby message recipient from state.
+     *
+     * @returns {void}
+     */
+    _onResetLobbyMessageRecipient() {
+        const { dispatch } = this.props;
+
+        dispatch(setLobbyChatActiveState(false));
+    }
 
     /**
      * Resets private message recipient from state.
@@ -74,24 +63,48 @@ class MessageRecipient extends AbstractMessageRecipient<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { _styles, privateMessageRecipient, t } = this.props;
+        const {
+            isLobbyChatActive,
+            lobbyMessageRecipient,
+            privateMessageRecipient,
+            t
+        } = this.props;
+
+        if (isLobbyChatActive) {
+            return (
+                <View style = { styles.lobbyMessageRecipientContainer }>
+                    <Text style = { styles.messageRecipientText }>
+                        { t('chat.lobbyChatMessageTo', {
+                            recipient: lobbyMessageRecipient?.name
+                        }) }
+                    </Text>
+                    <TouchableHighlight
+                        onPress = { this._onResetLobbyMessageRecipient }>
+                        <Icon
+                            src = { IconCloseLarge }
+                            style = { styles.messageRecipientCancelIcon } />
+                    </TouchableHighlight>
+                </View>
+            );
+        }
 
         if (!privateMessageRecipient) {
             return null;
         }
 
         return (
-            <View style = { _styles.messageRecipientContainer }>
-                <Text style = { _styles.messageRecipientText }>
+            <View style = { styles.messageRecipientContainer }>
+                <Text style = { styles.messageRecipientText }>
                     { t('chat.messageTo', {
                         recipient: privateMessageRecipient.name
                     }) }
                 </Text>
                 <TouchableHighlight
-                    onPress = { this._onResetPrivateMessageRecipient }>
+                    onPress = { this._onResetPrivateMessageRecipient }
+                    underlayColor = { 'transparent' }>
                     <Icon
-                        src = { IconCancelSelection }
-                        style = { _styles.messageRecipientCancelIcon } />
+                        src = { IconCloseLarge }
+                        style = { styles.messageRecipientCancelIcon } />
                 </TouchableHighlight>
             </View>
         );
@@ -102,11 +115,15 @@ class MessageRecipient extends AbstractMessageRecipient<Props> {
  * Maps part of the redux state to the props of this component.
  *
  * @param {Object} state - The Redux state.
- * @returns {Props}
+ * @param {any} _ownProps - Component's own props.
+ * @returns {IProps}
  */
-function _mapStateToProps(state) {
+function _mapStateToProps(state, _ownProps) {
+    const { lobbyMessageRecipient, isLobbyChatActive } = state['features/chat'];
+
     return {
-        _styles: ColorSchemeRegistry.get(state, 'Chat')
+        isLobbyChatActive,
+        lobbyMessageRecipient
     };
 }
 

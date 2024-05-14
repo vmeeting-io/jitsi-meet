@@ -1,44 +1,6 @@
-// @flow
-
 import React, { Component } from 'react';
 
-import type { Section } from '../../Types';
-
 import Container from './Container';
-
-type Props = {
-
-    /**
-     * Rendered when the list is empty. Should be a rendered element.
-     */
-    ListEmptyComponent: Object,
-
-    /**
-     * Used to extract a unique key for a given item at the specified index.
-     * Key is used for caching and as the react key to track item re-ordering.
-     */
-    keyExtractor: Function,
-
-    /**
-     * Returns a React component that renders each Item in the list.
-     */
-    renderItem: Function,
-
-    /**
-     * Returns a React component that renders the header for every section.
-     */
-    renderSectionHeader: Function,
-
-    /**
-     * An array of sections.
-     */
-    sections: Array<Section>,
-
-    /**
-     * Defines what happens when  an item in the section list is clicked.
-     */
-    onItemClick: Function
-};
 
 /**
  * Implements a React/Web {@link Component} for displaying a list with
@@ -47,7 +9,7 @@ type Props = {
  *
  * @augments Component
  */
-export default class SectionList extends Component<Props> {
+export default class SectionList extends Component {
     /**
      * Renders the content of this component.
      *

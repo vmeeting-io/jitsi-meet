@@ -1,31 +1,13 @@
-// @flow
+import { connect } from 'react-redux';
 
-import { translate } from '../../base/i18n';
-import { IconGauge } from '../../base/icons';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { createToolbarEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { openDialog } from '../../base/dialog/actions';
+import { translate } from '../../base/i18n/functions';
+import { IconPerformance } from '../../base/icons/svg';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
 
-/**
- * The type of the React {@code Component} props of
- * {@link VideoQualityButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * Whether or not audio only mode is currently enabled.
-     */
-    _audioOnly: boolean,
-
-    /**
-     * The currently configured maximum quality resolution to be received from
-     * and sent to remote participants.
-     */
-    _videoQuality: number,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
+import VideoQualityDialog from './VideoQualityDialog.web';
 
 /**
  * React {@code Component} responsible for displaying a button in the overflow
@@ -34,29 +16,25 @@ type Props = AbstractButtonProps & {
  *
  * @augments Component
  */
-class VideoQualityButton extends AbstractButton<Props, *> {
+class VideoQualityButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.callQuality';
     label = 'videoStatus.performanceSettings';
     tooltip = 'videoStatus.performanceSettings';
-    icon = IconGauge;
-
+    icon = IconPerformance;
 
     /**
-     * Handles clicking / pressing the button.
-     *
-     * @override
-     * @protected
-     * @returns {void}
-     */
+    * Handles clicking the button, and opens the video quality dialog.
+    *
+    * @private
+    * @returns {void}
+    */
     _handleClick() {
-        const { handleClick } = this.props;
+        const { dispatch } = this.props;
 
-        if (handleClick) {
-            handleClick();
+        sendAnalytics(createToolbarEvent('video.quality'));
 
-            return;
-        }
+        dispatch(openDialog(VideoQualityDialog));
     }
 }
 
-export default translate(VideoQualityButton);
+export default connect()(translate(VideoQualityButton));

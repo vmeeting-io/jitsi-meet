@@ -1,8 +1,6 @@
-// @flow
-
 import md5 from 'js-md5';
 
-import { APP_LINK_SCHEME, parseURIString } from '../base/util';
+import { APP_LINK_SCHEME, parseURIString } from '../base/util/uri';
 
 import { setCalendarEvents } from './actions';
 import { MAX_LIST_LENGTH } from './constants';
@@ -40,12 +38,13 @@ function _isDisplayableCalendarEntry(entry) {
  * @private
  * @returns {void}
  */
-export function _updateCalendarEntries(events: Array<Object>) {
-    if (!events || !events.length) {
+export function _updateCalendarEntries(events) {
+    if (!events?.length) {
         return;
     }
 
-    // eslint-disable-next-line no-invalid-this
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-invalid-this
     const { dispatch, getState } = this;
     const knownDomains = getState()['features/base/known-domains'];
     const entryMap = new Map();
@@ -106,7 +105,7 @@ export function _updateCalendarEntries(events: Array<Object>) {
  * @param {string} negativePattern - The negative pattern.
  * @returns {string}
  */
-function _checkPattern(str, positivePattern, negativePattern) {
+function _checkPattern(str: string, positivePattern: string, negativePattern: string) {
     const positiveRegExp = new RegExp(positivePattern, 'gi');
     let positiveMatch = positiveRegExp.exec(str);
 
@@ -129,7 +128,7 @@ function _checkPattern(str, positivePattern, negativePattern) {
  * @private
  * @returns {CalendarEntry}
  */
-function _parseCalendarEntry(event, knownDomains) {
+function _parseCalendarEntry(event: any, knownDomains: string[]) {
     if (event) {
         const url = _getURLFromEvent(event, knownDomains);
         const startDate = Date.parse(event.startDate);

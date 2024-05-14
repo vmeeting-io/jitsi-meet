@@ -1,8 +1,8 @@
 // @flow
 
-import { openDialog } from '../base/dialog';
+import { openDialog } from '../base/dialog/actions';
 
-import { PremiumFeatureDialog } from './components';
+import PremiumFeatureDialog from './components/web/PremiumFeatureDialog';
 import { isFeatureDisabled } from './functions';
 
 /**

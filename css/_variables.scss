@@ -1,5 +1,3 @@
-@import "themes/light";
-
 /**
  * Style variables
  */
@@ -11,15 +9,14 @@ $hangupFontSize: 2em;
 $maxContentWidth: 1280px;
 
 /**
- * Size variables.
- */
+* Size variables.
+*/
 
 // Video layout.
-$thumbnailVideoMargin: 2px;
 $thumbnailsBorder: 2px;
+$thumbnailVideoMargin: 2px;
 $thumbnailVideoBorder: 2px;
 $filmstripToggleButtonWidth: 17px;
-
 
 /**
  * Color variables.
@@ -36,8 +33,8 @@ $presence-busy: rgb(233, 0, 27);
 $presence-idle: rgb(172, 172, 172);
 
 /**
- * Toolbar
- */
+* Toolbar
+*/
 $newToolbarBackgroundColor: #131519;
 $newToolbarButtonHoverColor: rgba(255, 255, 255, 0.2);
 $newToolbarButtonToggleColor: rgba(255, 255, 255, 0.15);
@@ -53,37 +50,10 @@ $overflowMenuItemHoverBG: #313D52;
 $overflowMenuItemHoverColor: #B8C7E0;
 $overflowMenuItemColor: #fff;
 $overflowMenuItemBackground: #36383C;
- 
-/**
- * Video layout
- */
-$participantNameColor: #fff;
-$audioLevelBg: #44A5FF;
-$audioLevelShadow: rgba(9, 36, 77, 0.9);
-$videoStateIndicatorColor: $defaultColor;
-$videoStateIndicatorBackground: $toolbarBackground;
-$videoStateIndicatorSize: 40px;
 
 /**
- * Feedback Modal
- */
-$feedbackContentBg: #fff;
-$feedbackInputBg: #fff;
-$feedbackTextColor: #000;
-$feedbackInputTextColor: #333;
-$feedbackInputPlaceholderColor: #777;
-
-/**
- * Modals
- */
-$modalButtonFontSize: 14px;
-$modalMockAKInputBackground: #fafbfc;
-$modalMockAKInputBorder: 1px solid #f4f5f7;
-$modalTextColor: #333;
-
-/**
- * Chat
- */
+* Chat
+*/
 $chatActionsSeparatorColor: rgb(173, 105, 112);
 $chatBackgroundColor: #131519;
 $chatInputSeparatorColor: #A4B8D1;
@@ -92,62 +62,27 @@ $chatPrivateMessageBackgroundColor: rgb(153, 69, 77);
 $chatRemoteMessageBackgroundColor:  #242528;
 $sidebarWidth: 315px;
 
- /**
- * Misc.
- */
+/**
+* Misc.
+*/
 $borderRadius: 4px;
-$happySoftwareBackground: transparent;
-$desktopAppDragBarHeight: 25px;
 $scrollHeight: 7px;
 
 /**
- * Z-indexes. TODO: Replace this by a function.
- */
+* Z-indexes. TODO: Replace this by a function.
+*/
 $zindex0: 0;
 $zindex1: 1;
 $zindex2: 2;
 $zindex3: 3;
-$toolbarBackgroundZ: 4;
-$labelsZ: 5;
-$filmstripVideosZ: 6;
-$subtitlesZ: 7;
-$popoverZ: 8;
-$reloadZ: 20;
-$poweredByZ: 100;
-$ringingZ: 300;
-$sideToolbarContainerZ: 300;
 $toolbarZ: 250;
-$drawerZ: 351;
-$tooltipsZ: 401;
-$dropdownMaskZ: 900;
-$dropdownZ: 901;
-$centeredVideoLabelZ: 1010;
-$overlayZ: 1016;
 // Place filmstrip videos over toolbar in order
 // to make connection info visible.
-$filmstripVideosZ: $toolbarZ - 1;
-
-
-/**
- * Font Colors
- */
-$defaultFontColor: #777;
-$defaultLightFontColor: #F1F1F1;
-$defaultDarkFontColor: #000;
+$filmstripVideosZ: $toolbarZ + 1;
 
 /**
- * Forms
- */
-//inputs
-$inputControlEmColor: #f29424;
-//buttons
-$linkFontColor: #489afe;
-$linkHoverFontColor: #287ade;
-$formPadding: 16px;
-
-/**
- * Unsupported browser
- */
+* Unsupported browser
+*/
 $primaryUnsupportedBrowserButtonBgColor: #0052CC;
 $unsupportedBrowserButtonBgColor: rgba(9, 30, 66, 0.04);
 $unsupportedBrowserTextColor: #4a4a4a;
@@ -158,17 +93,17 @@ $unsupportedDesktopBrowserTextColor: rgba(255, 255, 255, 0.7);
 $unsupportedDesktopBrowserTextFontSize: 21px;
 
 /**
- * The size of the default watermark.
- */
+* The size of the default watermark.
+*/
 $watermarkWidth: 186px;
 $watermarkHeight: 64px;
 
-$welcomePageWatermarkWidth: 110px;
+$welcomePageWatermarkWidth: 71px;
 $welcomePageWatermarkHeight: 32px;
 
 /**
- * Welcome page variables.
- */
+* Welcome page variables.
+*/
 $welcomePageDescriptionColor: #5f6368;
 $welcomePageFontFamily: inherit;
 $welcomePageBackground: white;
@@ -182,6 +117,10 @@ $welcomePageHeaderPaddingBottom: 0px;
 $welcomePageHeaderMinHeight: fit-content;
 $welcomePageHandlerHeight: 64px;
 $welcomePageHeaderTextAlign: center;
+
+$welcomePageHeaderContainerMarginTop: 104px;
+$welcomePageHeaderContainerDisplay: flex;
+$welcomePageHeaderContainerMargin: $welcomePageHeaderContainerMarginTop auto 0;
 
 $welcomePageHeaderTextMarginTop: 1rem;
 $welcomePageHeaderTextMarginBottom: 1rem;
@@ -213,7 +152,7 @@ $welcomePageEnterRoomInputContainerBorderImage: linear-gradient(to right, #dee1e
 
 $welcomePageEnterRoomTitleDisplay: inherit;
 
-$welcomePageTabContainerDisplay: block;
+$welcomePageTabContainerDisplay: flex;
 $welcomePageTabContentDisplay: inherit;
 $welcomePageTabButtonsDisplay: flex;
 $welcomePageTabDisplay: block;
@@ -228,8 +167,8 @@ $welcomePageButtonLineHeight: 36px;
 $welcomePageButtonTextColor: #5f6368;
 
 /**
- * Deep-linking page variables.
- */
+* Deep-linking page variables.
+*/
 $deepLinkingMobileLogoHeight: 40px;
 
 $deepLinkingMobileHeaderBackground: #f1f2f5;
@@ -243,11 +182,6 @@ $deepLinkingDialInConferenceIdPadding: inherit;
 $deepLinkingDialInConferenceIdBackgroundColor: inherit;
 $deepLinkingDialInConferenceIdBorderRadius: inherit;
 
-$deepLinkingDialInConferenceNameFontSize: inherit;
-$deepLinkingDialInConferenceNameLineHeight: inherit;
-$deepLinkingDialInConferenceNameMarginBottom: none;
-$deepLinkingDialInConferenceNameFontWeight: inherit;
-
 $deepLinkingDialInConferenceDescriptionFontSize: 0.8em;
 $deepLinkingDialInConferenceDescriptionLineHeight: inherit;
 $deepLinkingDialInConferenceDescriptionMarginBottom: none;
@@ -259,14 +193,14 @@ $depLinkingMobileHrefLineHeight: 2.2857142857142856em;
 $deepLinkingMobileHrefFontWeight: bolder;
 $deepLinkingMobileHrefFontSize: inherit;
 
-$deepLinkingMobileButtonHeight: auto;
-$deepLinkingMobileButtonLineHeight: inherit;
+$deepLinkingMobileButtonHeight: 2.2857142857142856em;
+$deepLinkingMobileButtonLineHeight: 2.2857142857142856em;
 $deepLinkingMobileButtonMargin: 18px auto 10px;
 $deepLinkingMobileButtonWidth: auto;
-$deepLinkingMobileButtonFontWeight: normal;
+$deepLinkingMobileButtonFontWeight: bold;
 $deepLinkingMobileButtonFontSize: inherit;
 
-$primaryDeepLinkingMobileButtonBorderRadius: 3px;
+$primaryDeepLinkingMobileButtonBorderRadius: inherit;
 
 /**
 * Chrome extension banner variables.
@@ -281,7 +215,6 @@ $chromeExtensionBannerRightInMeeeting: 10px;
 /**
 * media type thresholds
 */
-$smallScreen: 700px;
 $verySmallScreen: 500px;
 
 /**

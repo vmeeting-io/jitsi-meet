@@ -1,11 +1,11 @@
 // @flow
 
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { getLocalParticipant } from '../../base/participants';
-import { connect } from '../../base/redux';
+import { getLocalParticipant } from '../../base/participants/functions';
 import { getLargeVideoParticipant } from '../../large-video/functions';
-import { isLayoutTileView } from '../../video-layout';
+import { isLayoutTileView } from '../../video-layout/functions.web';
 
 import {
     _abstractMapStateToProps,

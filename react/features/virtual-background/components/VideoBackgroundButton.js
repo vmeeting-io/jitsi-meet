@@ -1,37 +1,19 @@
-// @flow
+import { connect } from 'react-redux';
 
-import { openDialog } from '../../base/dialog';
-import { translate } from '../../base/i18n';
-import { IconVirtualBackground } from '../../base/icons';
-import { connect } from '../../base/redux';
-import { AbstractButton } from '../../base/toolbox/components';
-import type { AbstractButtonProps } from '../../base/toolbox/components';
-import { checkBlurSupport } from '../functions';
-
-import { VirtualBackgroundDialog } from './index';
-
-/**
- * The type of the React {@code Component} props of {@link VideoBackgroundButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * True if the video background is blurred or false if it is not.
-     */
-    _isBackgroundEnabled: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
+import { translate } from '../../base/i18n/functions';
+import { IconImage } from '../../base/icons/svg';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
+import { isScreenVideoShared } from '../../screen-share/functions';
+import { openSettingsDialog } from '../../settings/actions';
+import { SETTINGS_TABS } from '../../settings/constants';
+import { checkBlurSupport, checkVirtualBackgroundEnabled } from '../functions';
 
 /**
  * An abstract implementation of a button that toggles the video background dialog.
  */
-class VideoBackgroundButton extends AbstractButton<Props, *> {
+class VideoBackgroundButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.selectBackground';
-    icon = IconVirtualBackground;
+    icon = IconImage;
     label = 'toolbar.selectBackground';
     tooltip = 'toolbar.selectBackground';
 
@@ -43,15 +25,9 @@ class VideoBackgroundButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { dispatch, handleClick } = this.props;
+        const { dispatch } = this.props;
 
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
-
-        dispatch(openDialog(VirtualBackgroundDialog));
+        dispatch(openSettingsDialog(SETTINGS_TABS.VIRTUAL_BACKGROUND));
     }
 
     /**
@@ -76,11 +52,13 @@ class VideoBackgroundButton extends AbstractButton<Props, *> {
  *     _isBackgroundEnabled: boolean
  * }}
  */
-function _mapStateToProps(state): Object {
+function _mapStateToProps(state) {
 
     return {
         _isBackgroundEnabled: Boolean(state['features/virtual-background'].backgroundEffectEnabled),
         visible: checkBlurSupport()
+        && !isScreenVideoShared(state)
+        && checkVirtualBackgroundEnabled(state)
     };
 }
 

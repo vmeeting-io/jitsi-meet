@@ -1,22 +1,13 @@
-// @flow
-
-import type { Dispatch } from 'redux';
-
 import {
     appNavigate,
     maybeRedirectToWelcomePage
 } from '../app/actions';
-import {
-    conferenceLeft,
-    JITSI_CONFERENCE_URL_KEY,
-    setPassword
-} from '../base/conference';
-import { hideDialog, openDialog } from '../base/dialog';
+import { conferenceLeft, setPassword } from '../base/conference/actions';
+import { JITSI_CONFERENCE_URL_KEY } from '../base/conference/constants';
+import { hideDialog, openDialog } from '../base/dialog/actions';
 import { SecurityDialog } from '../security/components/security-dialog';
 
-import { PasswordRequiredPrompt } from './components';
-
-declare var APP: Object;
+import PasswordRequiredPrompt from './components/PasswordRequiredPrompt';
 
 /**
  * Cancels a prompt for a password to join a specific conference/room.
@@ -26,13 +17,14 @@ declare var APP: Object;
  * @protected
  * @returns {Function}
  */
-export function _cancelPasswordRequiredPrompt(conference: Object) {
-    return (dispatch: Dispatch<any>, getState: Function) => {
+export function _cancelPasswordRequiredPrompt(conference) {
+    return (dispatch, getState) => {
 
         if (typeof APP !== 'undefined') {
             // when we are redirecting the library should handle any
             // unload and clean of the connection.
             APP.API.notifyReadyToClose();
+
             dispatch(maybeRedirectToWelcomePage());
 
             return;
@@ -70,9 +62,9 @@ export function _cancelPasswordRequiredPrompt(conference: Object) {
  * @returns {Function}
  */
 export function endRoomLockRequest(
-        conference: { lock: Function },
-        password: ?string) {
-    return (dispatch: Function) => {
+        conference,
+        password) {
+    return (dispatch) => {
         const setPassword_
             = password
                 ? dispatch(setPassword(conference, conference.lock, password))
@@ -95,7 +87,7 @@ export function endRoomLockRequest(
  *     props: PropTypes
  * }}
  */
-export function _openPasswordRequiredPrompt(conference: Object) {
+export function _openPasswordRequiredPrompt(conference) {
     return openDialog(PasswordRequiredPrompt, { conference });
 }
 
@@ -105,12 +97,12 @@ export function _openPasswordRequiredPrompt(conference: Object) {
  * @returns {Function}
  */
 export function unlockRoom() {
-    return (dispatch: Dispatch<any>, getState: Function) => {
+    return (dispatch, getState) => {
         const { conference } = getState()['features/base/conference'];
 
         return dispatch(setPassword(
             conference,
-            conference.lock,
+            conference?.lock,
             ''
         ));
     };

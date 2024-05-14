@@ -1,5 +1,3 @@
-// @flow
-
 /**
  * Flag indicating if add-people functionality should be enabled.
  * Default: enabled (true).
@@ -26,6 +24,12 @@ export const AUDIO_MUTE_BUTTON_ENABLED = 'audio-mute.enabled';
 export const AUDIO_ONLY_BUTTON_ENABLED = 'audio-only.enabled';
 
 /**
+ * Flag indicating that the Breakout Rooms button in the overflow menu is enabled.
+ * Default: enabled (true).
+ */
+export const BREAKOUT_ROOMS_BUTTON_ENABLED = 'breakout-rooms.enabled';
+
+/**
  * Flag indicating if calendar integration should be enabled.
  * Default: enabled (true) on Android, auto-detected on iOS.
  */
@@ -37,6 +41,12 @@ export const CALENDAR_ENABLED = 'calendar.enabled';
  * Default: enabled (true).
  */
 export const CALL_INTEGRATION_ENABLED = 'call-integration.enabled';
+
+/**
+ * Flag indicating if car mode should be enabled.
+ * Default: enabled (true).
+ */
+export const CAR_MODE_ENABLED = 'car-mode.enabled';
 
 /**
  * Flag indicating if close captions should be enabled.
@@ -79,6 +89,12 @@ export const HELP_BUTTON_ENABLED = 'help.enabled';
  * Default: enabled (true).
  */
 export const INVITE_ENABLED = 'invite.enabled';
+
+/**
+ * Flag indicating if dial-in invite functionality should be enabled.
+ * Default: enabled (true).
+ */
+export const INVITE_DIAL_IN_ENABLED = 'invite-dial-in.enabled';
 
 /**
  * Flag indicating if recording should be enabled in iOS.
@@ -149,10 +165,34 @@ export const NOTIFICATIONS_ENABLED = 'notifications.enabled';
 export const OVERFLOW_MENU_ENABLED = 'overflow-menu.enabled';
 
 /**
+ * Flag indicating if participants should be enabled.
+ * Default: enabled (true).
+ */
+export const PARTICIPANTS_ENABLED = 'participants.enabled';
+
+/**
  * Flag indicating if Picture-in-Picture should be enabled.
  * Default: auto-detected.
  */
 export const PIP_ENABLED = 'pip.enabled';
+
+/**
+ * Flag indicating if Picture-in-Picture button should be shown while screen sharing.
+ * Default: disabled (false).
+ */
+export const PIP_WHILE_SCREEN_SHARING_ENABLED = 'pip-while-screen-sharing.enabled';
+
+/**
+ * Flag indicating if the prejoin page should be enabled.
+ * Default: enabled (true).
+ */
+export const PREJOIN_PAGE_ENABLED = 'prejoinpage.enabled';
+
+/**
+ * Flag indicating if the participant name editing field should be displayed on the prejoin page.
+ * Default: disabled (false).
+ */
+export const PREJOIN_PAGE_HIDE_DISPLAY_NAME = 'prejoinpage.hideDisplayName';
 
 /**
  * Flag indicating if raise hand feature should be enabled.
@@ -198,6 +238,12 @@ export const SECURITY_OPTIONS_ENABLED = 'security-options.enabled';
 export const SERVER_URL_CHANGE_ENABLED = 'server-url-change.enabled';
 
 /**
+ * Flag indicating if settings should be enabled.
+ * Default: enabled (true).
+ */
+export const SETTINGS_ENABLED = 'settings.enabled';
+
+/**
  * Flag indicating if tile view feature should be enabled.
  * Default: enabled.
  */
@@ -214,6 +260,12 @@ export const TOOLBOX_ALWAYS_VISIBLE = 'toolbox.alwaysVisible';
  * Default: enabled.
  */
 export const TOOLBOX_ENABLED = 'toolbox.enabled';
+
+/**
+ * Flag indicating if the unsafe room warning should be enabled.
+ * Default: disabled (false).
+ */
+export const UNSAFE_ROOM_WARNING = 'unsaferoomwarning.enabled';
 
 /**
  * Flag indicating if the video mute button should be displayed.

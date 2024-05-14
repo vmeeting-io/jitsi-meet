@@ -1,18 +1,15 @@
-// @flow
-
 import React from 'react';
 
-import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app';
-import { CONFERENCE_JOINED } from '../base/conference';
-import {
-    formatDeviceLabel,
-    setAudioInputDevice
-} from '../base/devices';
+import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app/actionTypes';
+import { CONFERENCE_JOINED } from '../base/conference/actionTypes';
+import { setAudioInputDevice } from '../base/devices/actions';
+import { formatDeviceLabel } from '../base/devices/functions';
 import JitsiMeetJS, { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
-import { MiddlewareRegistry } from '../base/redux';
-import { updateSettings } from '../base/settings';
-import { playSound, registerSound, unregisterSound } from '../base/sounds';
-import { NOTIFICATION_TIMEOUT_TYPE, hideNotification, showNotification } from '../notifications';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { updateSettings } from '../base/settings/actions';
+import { playSound, registerSound, unregisterSound } from '../base/sounds/actions';
+import { hideNotification, showNotification } from '../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 
 import { setNoAudioSignalNotificationUid } from './actions';
 import DialInLink from './components/DialInLink';
@@ -52,7 +49,7 @@ async function _handleNoAudioSignalNotification({ dispatch, getState }, action) 
 
     const { conference } = action;
 
-    conference.on(JitsiConferenceEvents.AUDIO_INPUT_STATE_CHANGE, hasAudioInput => {
+    conference.on(JitsiConferenceEvents.AUDIO_INPUT_STATE_CHANGE, (hasAudioInput) => {
         const { noAudioSignalNotificationUid } = getState()['features/no-audio-signal'];
 
         // In case the notification is displayed but the conference detected audio input signal we hide it.

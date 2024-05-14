@@ -1,58 +1,38 @@
-// @flow
+import { connect } from 'react-redux';
 
-import { CHAT_ENABLED, getFeatureFlag } from '../../../base/flags';
-import { translate } from '../../../base/i18n';
-import { IconMessage, IconReply } from '../../../base/icons';
-import { getParticipantById } from '../../../base/participants';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { navigate } from '../../../conference/components/native/ConferenceNavigationContainerRef';
-import { screen } from '../../../conference/components/native/routes';
-
-export type Props = AbstractButtonProps & {
-
-    /**
-     * The ID of the participant that the message is to be sent.
-     */
-    participantID: string,
-
-    /**
-     * True if the button is rendered as a reply button.
-     */
-    reply: boolean,
-
-    /**
-     * Function to be used to translate i18n labels.
-     */
-    t: Function,
-
-    /**
-     * True if the polls feature is disabled.
-     */
-    _isPollsDisabled: boolean,
-
-    /**
-     * The participant object retrieved from Redux.
-     */
-    _participant: Object,
-};
+import { CHAT_ENABLED } from '../../../base/flags/constants';
+import { getFeatureFlag } from '../../../base/flags/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconMessage, IconReply } from '../../../base/icons/svg';
+import { getParticipantById } from '../../../base/participants/functions';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import { arePollsDisabled } from '../../../conference/functions.any';
+import { navigate } from '../../../mobile/navigation/components/conference/ConferenceNavigationContainerRef';
+import { screen } from '../../../mobile/navigation/routes';
+import { handleLobbyChatInitialized, openChat } from '../../actions.native';
 
 /**
- * Class to render a button that initiates the sending of a private message through chet.
+ * Class to render a button that initiates the sending of a private message through chat.
  */
-class PrivateMessageButton extends AbstractButton<Props, any> {
+class PrivateMessageButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.privateMessage';
     icon = IconMessage;
     label = 'toolbar.privateMessage';
     toggledIcon = IconReply;
 
     /**
-     * Handles clicking / pressing the button, and kicks the participant.
+     * Handles clicking / pressing the button.
      *
      * @private
      * @returns {void}
      */
     _handleClick() {
+        if (this.props._isLobbyMessage) {
+            this.props.dispatch(handleLobbyChatInitialized(this.props.participantID));
+        }
+
+        this.props.dispatch(openChat(this.props._participant));
+
         this.props._isPollsDisabled
             ? navigate(screen.conference.chat, {
                 privateMessageRecipient: this.props._participant
@@ -82,17 +62,17 @@ class PrivateMessageButton extends AbstractButton<Props, any> {
  * Maps part of the Redux store to the props of this component.
  *
  * @param {Object} state - The Redux state.
- * @param {Props} ownProps - The own props of the component.
- * @returns {Props}
+ * @param {IProps} ownProps - The own props of the component.
+ * @returns {IProps}
  */
-export function _mapStateToProps(state: Object, ownProps: Props): $Shape<Props> {
+export function _mapStateToProps(state, ownProps) {
     const enabled = getFeatureFlag(state, CHAT_ENABLED, true);
-    const { disablePolls } = state['features/base/config'];
-    const { visible = enabled } = ownProps;
+    const { visible = enabled, isLobbyMessage, participantID } = ownProps;
 
     return {
-        _isPollsDisabled: disablePolls,
-        _participant: getParticipantById(state, ownProps.participantID),
+        _isPollsDisabled: arePollsDisabled(state),
+        _participant: getParticipantById(state, participantID),
+        _isLobbyMessage: isLobbyMessage,
         visible
     };
 }

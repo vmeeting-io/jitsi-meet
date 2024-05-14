@@ -1,10 +1,8 @@
-/* @flow */
-
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { Dialog } from '../../../base/dialog';
-import { translate } from '../../../base/i18n';
-import { connect } from '../../../base/redux';
+import { translate } from '../../../base/i18n/functions';
+import Dialog from '../../../base/ui/components/web/Dialog';
 import AbstractMuteRemoteParticipantsVideoDialog, {
     abstractMapStateToProps
 } from '../AbstractMuteRemoteParticipantsVideoDialog';
@@ -25,10 +23,9 @@ class MuteRemoteParticipantsVideoDialog extends AbstractMuteRemoteParticipantsVi
     render() {
         return (
             <Dialog
-                okKey = 'dialog.muteParticipantsVideoButton'
+                ok = {{ translationKey: 'dialog.muteParticipantsVideoButton' }}
                 onSubmit = { this._onSubmit }
-                titleKey = 'dialog.muteParticipantsVideoTitle'
-                width = 'small'>
+                titleKey = 'dialog.muteParticipantsVideoTitle'>
                 <div>
                     {this.props.t(this.props.isVideoModerationOn
                         ? 'dialog.muteParticipantsVideoBodyModerationOn'
@@ -38,8 +35,6 @@ class MuteRemoteParticipantsVideoDialog extends AbstractMuteRemoteParticipantsVi
             </Dialog>
         );
     }
-
-    _onSubmit: () => boolean;
 }
 
 export default translate(connect(abstractMapStateToProps)(MuteRemoteParticipantsVideoDialog));

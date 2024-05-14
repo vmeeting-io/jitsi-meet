@@ -1,7 +1,7 @@
 // @flow
 
-import { toState } from '../base/redux';
-import { getServerURL } from '../base/settings';
+import { toState } from '../base/redux/functions';
+import { getServerURL } from '../base/settings/functions.web';
 
 declare var interfaceConfig: Object;
 

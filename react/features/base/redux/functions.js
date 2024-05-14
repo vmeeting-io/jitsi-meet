@@ -1,7 +1,6 @@
 // @flow
 
 import _ from 'lodash';
-import { connect as reduxConnect } from 'react-redux';
 
 /**
  * Sets specific properties of a specific state to specific values and prevents
@@ -24,19 +23,6 @@ export function assign(target: Object, source: Object) {
     }
 
     return t;
-}
-
-/**
- * Wrapper function for the react-redux connect function to avoid having to
- * declare function types for flow, but still let flow warn for other errors.
- *
- * @param {Function?} mapStateToProps - Redux mapStateToProps function.
- * @param {Function?} mapDispatchToProps - Redux mapDispatchToProps function.
- * @returns {Connector}
- */
-export function connect(
-        mapStateToProps?: Function, mapDispatchToProps?: Function) {
-    return reduxConnect<*, *, *, *, *, *>(mapStateToProps, mapDispatchToProps);
 }
 
 /**
@@ -126,6 +112,16 @@ function _set(
 /* eslint-enable max-params */
 
 /**
+ * Whether or not the entity is of type IStore.
+ *
+ * @param {IStateful} stateful - The entity to check.
+ * @returns {boolean}
+ */
+function isStore(stateful: Function | Object) {
+    return 'getState' in stateful && typeof stateful.getState === 'function';
+}
+
+/**
  * Returns redux state from the specified {@code stateful} which is presumed to
  * be related to the redux state (e.g. The redux store, the redux
  * {@code getState} function).
@@ -141,10 +137,8 @@ export function toState(stateful: Function | Object) {
             return stateful();
         }
 
-        const { getState } = stateful;
-
-        if (typeof getState === 'function') {
-            return getState();
+        if (isStore(stateful)) {
+            return stateful.getState();
         }
     }
 

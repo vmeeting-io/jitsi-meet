@@ -1,38 +1,13 @@
-// @flow
-
-import React, { useCallback, useState } from 'react';
-import type { AbstractComponent } from 'react';
+import React, { ComponentType, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { sendAnalytics, createPollEvent } from '../../analytics';
-import { getLocalParticipant, getParticipantById } from '../../base/participants';
+import { createPollEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { getLocalParticipant, getParticipantDisplayName } from '../../base/participants/functions';
 import { useBoundSelector } from '../../base/util/hooks';
 import { registerVote, setVoteChanging } from '../actions';
 import { COMMAND_ANSWER_POLL } from '../constants';
-import type { Poll } from '../types';
-
-/**
- * The type of the React {@code Component} props of inheriting component.
- */
-type InputProps = {
-    pollId: string,
-};
-
-/*
- * Props that will be passed by the AbstractPollAnswer to its
- * concrete implementations (web/native).
- **/
-export type AbstractProps = {
-    checkBoxStates: Function,
-    creatorName: string,
-    poll: Poll,
-    setCheckbox: Function,
-    skipAnswer: Function,
-    skipChangeVote: Function,
-    submitAnswer: Function,
-    t: Function,
-};
 
 /**
  * Higher Order Component taking in a concrete PollAnswer component and
@@ -41,13 +16,13 @@ export type AbstractProps = {
  * @param {React.AbstractComponent} Component - The concrete component.
  * @returns {React.AbstractComponent}
  */
-const AbstractPollAnswer = (Component: AbstractComponent<AbstractProps>) => (props: InputProps) => {
+const AbstractPollAnswer = (Component) => (props) => {
 
     const { pollId } = props;
 
-    const conference: Object = useSelector(state => state['features/base/conference'].conference);
+    const conference = useSelector((state) => state['features/base/conference'].conference);
 
-    const poll: Poll = useSelector(state => state['features/polls'].polls[pollId]);
+    const poll = useSelector((state) => state['features/polls'].polls[pollId]);
 
     const { id: localId } = useSelector(getLocalParticipant);
 
@@ -58,7 +33,8 @@ const AbstractPollAnswer = (Component: AbstractComponent<AbstractProps>) => (pro
 
         return new Array(poll.answers.length).fill(false);
     });
-    const participant = useBoundSelector(getParticipantById, poll.senderId);
+
+    const participantName = useBoundSelector(getParticipantDisplayName, poll.senderId);
 
     const setCheckbox = useCallback((index, state) => {
         const newCheckBoxStates = [ ...checkBoxStates ];
@@ -70,8 +46,7 @@ const AbstractPollAnswer = (Component: AbstractComponent<AbstractProps>) => (pro
 
     const dispatch = useDispatch();
 
-    const localParticipant = useBoundSelector(getParticipantById, localId);
-    const localName: string = localParticipant.name ? localParticipant.name : 'Fellow Jitster';
+    const localName = useBoundSelector(getParticipantDisplayName, localId);
 
     const submitAnswer = useCallback(() => {
         conference.sendMessage({
@@ -86,7 +61,7 @@ const AbstractPollAnswer = (Component: AbstractComponent<AbstractProps>) => (pro
         dispatch(registerVote(pollId, checkBoxStates));
 
         return false;
-    }, [ pollId, localId, localName, checkBoxStates, conference ]);
+    }, [ pollId, checkBoxStates, conference ]);
 
     const skipAnswer = useCallback(() => {
         dispatch(registerVote(pollId, null));
@@ -102,7 +77,7 @@ const AbstractPollAnswer = (Component: AbstractComponent<AbstractProps>) => (pro
 
     return (<Component
         checkBoxStates = { checkBoxStates }
-        creatorName = { participant ? participant.name : '' }
+        creatorName = { participantName }
         poll = { poll }
         setCheckbox = { setCheckbox }
         skipAnswer = { skipAnswer }

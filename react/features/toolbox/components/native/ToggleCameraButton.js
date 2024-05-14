@@ -1,37 +1,17 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { IconSwitchCamera } from '../../../base/icons';
-import { MEDIA_TYPE, toggleCameraFacingMode } from '../../../base/media';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { isLocalTrackMuted } from '../../../base/tracks';
-
-/**
- * The type of the React {@code Component} props of {@link ToggleCameraButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * Whether the current conference is in audio only mode or not.
-     */
-    _audioOnly: boolean,
-
-    /**
-     * Whether video is currently muted or not.
-     */
-    _videoMuted: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
+import { translate } from '../../../base/i18n/functions';
+import { IconSwitchCamera } from '../../../base/icons/svg';
+import { toggleCameraFacingMode } from '../../../base/media/actions';
+import { MEDIA_TYPE } from '../../../base/media/constants';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import { isLocalTrackMuted } from '../../../base/tracks/functions';
 
 /**
  * An implementation of a button for toggling the camera facing mode.
  */
-class ToggleCameraButton extends AbstractButton<Props, *> {
+class ToggleCameraButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.toggleCamera';
     icon = IconSwitchCamera;
     label = 'toolbar.toggleCamera';

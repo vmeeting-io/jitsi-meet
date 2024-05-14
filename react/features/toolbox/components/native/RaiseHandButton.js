@@ -1,49 +1,24 @@
 // @flow
 
 import { type Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
-import {
-    createToolbarEvent,
-    sendAnalytics
-} from '../../../analytics';
-import { RAISE_HAND_ENABLED, getFeatureFlag } from '../../../base/flags';
-import { translate } from '../../../base/i18n';
-import { IconRaisedHand } from '../../../base/icons';
-import {
-    getLocalParticipant,
-    hasRaisedHand,
-    raiseHand
-} from '../../../base/participants';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-
-/**
- * The type of the React {@code Component} props of {@link RaiseHandButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * The local participant.
-     */
-    _localParticipant: Object,
-
-    /**
-     * Whether the participant raused their hand or not.
-     */
-    _raisedHand: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Dispatch<any>
-};
+import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { RAISE_HAND_ENABLED } from '../../../base/flags/constants';
+import { getFeatureFlag } from '../../../base/flags/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconRaiseHand } from '../../../base/icons/svg';
+import { raiseHand } from '../../../base/participants/actions';
+import { getLocalParticipant, hasRaisedHand } from '../../../base/participants/functions';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 
 /**
  * An implementation of a button to raise or lower hand.
  */
-class RaiseHandButton extends AbstractButton<Props, *> {
+class RaiseHandButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.raiseHand';
-    icon = IconRaisedHand;
+    icon = IconRaiseHand;
     label = 'toolbar.raiseYourHand';
     toggledLabel = 'toolbar.lowerYourHand';
 

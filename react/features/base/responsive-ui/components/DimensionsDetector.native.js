@@ -1,10 +1,15 @@
 // @flow
 
-import React, { PureComponent } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
+
+    /**
+     * Any nested components.
+     */
+    children: React.ReactNode;
 
     /**
      * The "onLayout" handler.
@@ -12,29 +17,31 @@ type Props = {
     onDimensionsChanged: Function,
 
     /**
-     * Any nested components.
+     * The safe are insets handler.
      */
-    children: React$Node
+    onSafeAreaInsetsChanged?: Function,
 };
 
 /**
  * A {@link View} which captures the 'onLayout' event and calls a prop with the
  * component size.
+ *
+ * @param {Props} props - The read-only properties with which the new
+ * instance is to be initialized.
+ * @returns {Component} - Renders the root view and it's children.
  */
-export default class DimensionsDetector extends PureComponent<Props> {
-    /**
-     * Initializes a new DimensionsDetector instance.
-     *
-     * @param {Object} props - The read-only properties with which the new
-     * instance is to be initialized.
-     */
-    constructor(props: Object) {
-        super(props);
+export default function DimensionsDetector(props: Props) {
+    const { top = 0, right = 0, bottom = 0, left = 0 } = useSafeAreaInsets();
+    const { children, onDimensionsChanged, onSafeAreaInsetsChanged } = props;
 
-        this._onLayout = this._onLayout.bind(this);
-    }
-
-    _onLayout: (Object) => void;
+    useEffect(() => {
+        onSafeAreaInsetsChanged?.({
+            top,
+            right,
+            bottom,
+            left
+        });
+    }, [ onSafeAreaInsetsChanged, top, right, bottom, left ]);
 
     /**
      * Handles the "on layout" View's event and calls the onDimensionsChanged
@@ -45,24 +52,15 @@ export default class DimensionsDetector extends PureComponent<Props> {
      * @private
      * @returns {void}
      */
-    _onLayout({ nativeEvent: { layout: { height, width } } }) {
-        const { onDimensionsChanged } = this.props;
+    const onLayout = useCallback(({ nativeEvent: { layout: { height, width } } }) => {
+        onDimensionsChanged?.(width, height);
+    }, [ onDimensionsChanged ]);
 
-        onDimensionsChanged && onDimensionsChanged(width, height);
-    }
-
-    /**
-     * Renders the root view and it's children.
-     *
-     * @returns {Component}
-     */
-    render() {
-        return (
-            <View
-                onLayout = { this._onLayout }
-                style = { StyleSheet.absoluteFillObject } >
-                { this.props.children }
-            </View>
-        );
-    }
+    return (
+        <View
+            onLayout = { onLayout }
+            style = { StyleSheet.absoluteFillObject } >
+            { children }
+        </View>
+    );
 }

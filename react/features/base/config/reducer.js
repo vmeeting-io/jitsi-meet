@@ -3,16 +3,19 @@
 import _ from 'lodash';
 
 import { CONFERENCE_INFO } from '../../conference/components/constants';
-import { equals, ReducerRegistry } from '../redux';
+import { TOOLBAR_BUTTONS } from '../../toolbox/constants';
+import { CONNECTION_PROPERTIES_UPDATED } from '../connection/actionTypes';
+import ReducerRegistry from '../redux/ReducerRegistry';
+import { equals } from '../redux/functions';
 
 import {
-    UPDATE_CONFIG,
     CONFIG_WILL_LOAD,
     LOAD_CONFIG_ERROR,
+    OVERWRITE_CONFIG,
     SET_CONFIG,
-    OVERWRITE_CONFIG
+    UPDATE_CONFIG
 } from './actionTypes';
-import { _cleanupConfig } from './functions';
+import { _cleanupConfig, _setDeeplinkingDefaults } from './functions';
 
 declare var interfaceConfig: Object;
 
@@ -39,22 +42,6 @@ const INITIAL_NON_RN_STATE = {
  * @type {Object}
  */
 const INITIAL_RN_STATE = {
-    analytics: {},
-
-    // FIXME The support for audio levels in lib-jitsi-meet polls the statistics
-    // of WebRTC at a short interval multiple times a second. Unfortunately,
-    // React Native is slow to fetch these statistics from the native WebRTC
-    // API, through the React Native bridge and eventually to JavaScript.
-    // Because the audio levels are of no interest to the mobile app, it is
-    // fastest to merely disable them.
-    disableAudioLevels: true,
-
-    p2p: {
-        disabledCodec: '',
-        disableH264: false, // deprecated
-        preferredCodec: 'H264',
-        preferH264: true // deprecated
-    }
 };
 
 /**
@@ -65,7 +52,7 @@ const CONFERENCE_HEADER_MAPPING = {
     hideConferenceTimer: [ 'conference-timer' ],
     hideConferenceSubject: [ 'subject' ],
     hideParticipantsStats: [ 'participants-count' ],
-    hideRecordingLabel: [ 'recording', 'local-recording' ]
+    hideRecordingLabel: [ 'recording' ]
 };
 
 ReducerRegistry.register('features/base/config', (state = _getInitialState(), action) => {
@@ -85,6 +72,24 @@ ReducerRegistry.register('features/base/config', (state = _getInitialState(), ac
             */
             locationURL: action.locationURL
         };
+
+    case CONNECTION_PROPERTIES_UPDATED: {
+        const { region, shard } = action.properties;
+        const { deploymentInfo } = state;
+
+        if (deploymentInfo?.region === region && deploymentInfo?.shard === shard) {
+            return state;
+        }
+
+        return {
+            ...state,
+            deploymentInfo: JSON.parse(JSON.stringify({
+                ...deploymentInfo,
+                region,
+                shard
+            }))
+        };
+    }
 
     case LOAD_CONFIG_ERROR:
         // XXX LOAD_CONFIG_ERROR is one of the settlement execution paths of
@@ -145,13 +150,6 @@ function _getInitialState() {
  * @returns {Object} The new state after the reduction of the specified action.
  */
 function _setConfig(state, { config }) {
-    // The mobile app bundles jitsi-meet and lib-jitsi-meet at build time and
-    // does not download them at runtime from the deployment on which it will
-    // join a conference. The downloading is planned for implementation in the
-    // future (later rather than sooner) but is not implemented yet at the time
-    // of this writing and, consequently, we must provide legacy support in the
-    // meantime.
-
     // eslint-disable-next-line no-param-reassign
     config = _translateLegacyConfig(config);
 
@@ -207,11 +205,7 @@ function _getConferenceInfo(config) {
 
 /**
  * Constructs a new config {@code Object}, if necessary, out of a specific
- * config {@code Object} which is in the latest format supported by jitsi-meet.
- * Such a translation from an old config format to a new/the latest config
- * format is necessary because the mobile app bundles jitsi-meet and
- * lib-jitsi-meet at build time and does not download them at runtime from the
- * deployment on which it will join a conference.
+ * interface_config {@code Object} which is in the latest format supported by jitsi-meet.
  *
  * @param {Object} oldValue - The config {@code Object} which may or may not be
  * in the latest form supported by jitsi-meet and from which a new config
@@ -219,11 +213,11 @@ function _getConferenceInfo(config) {
  * @returns {Object} A config {@code Object} which is in the latest format
  * supported by jitsi-meet.
  */
-function _translateLegacyConfig(oldValue: Object) {
+function _translateInterfaceConfig(oldValue: Object) {
     const newValue = oldValue;
 
     if (!Array.isArray(oldValue.toolbarButtons)
-            && typeof interfaceConfig === 'object' && Array.isArray(interfaceConfig.TOOLBAR_BUTTONS)) {
+        && typeof interfaceConfig === 'object' && Array.isArray(interfaceConfig.TOOLBAR_BUTTONS)) {
         newValue.toolbarButtons = interfaceConfig.TOOLBAR_BUTTONS;
     }
 
@@ -231,6 +225,7 @@ function _translateLegacyConfig(oldValue: Object) {
         oldValue.toolbarConfig = {};
     }
 
+    newValue.toolbarConfig = oldValue.toolbarConfig || {};
     if (typeof oldValue.toolbarConfig.alwaysVisible !== 'boolean'
         && typeof interfaceConfig === 'object'
         && typeof interfaceConfig.TOOLBAR_ALWAYS_VISIBLE === 'boolean') {
@@ -249,37 +244,147 @@ function _translateLegacyConfig(oldValue: Object) {
         newValue.toolbarConfig.timeout = interfaceConfig.TOOLBAR_TIMEOUT;
     }
 
+    if (!oldValue.connectionIndicators
+        && typeof interfaceConfig === 'object'
+        && (interfaceConfig.hasOwnProperty('CONNECTION_INDICATOR_DISABLED')
+            || interfaceConfig.hasOwnProperty('CONNECTION_INDICATOR_AUTO_HIDE_ENABLED')
+            || interfaceConfig.hasOwnProperty('CONNECTION_INDICATOR_AUTO_HIDE_TIMEOUT'))) {
+        newValue.connectionIndicators = {
+            disabled: interfaceConfig.CONNECTION_INDICATOR_DISABLED,
+            autoHide: interfaceConfig.CONNECTION_INDICATOR_AUTO_HIDE_ENABLED,
+            autoHideTimeout: interfaceConfig.CONNECTION_INDICATOR_AUTO_HIDE_TIMEOUT
+        };
+    }
+
+    if (oldValue.disableModeratorIndicator === undefined
+        && typeof interfaceConfig === 'object'
+        && interfaceConfig.hasOwnProperty('DISABLE_FOCUS_INDICATOR')) {
+        newValue.disableModeratorIndicator = interfaceConfig.DISABLE_FOCUS_INDICATOR;
+    }
+
+    if (oldValue.defaultLocalDisplayName === undefined
+        && typeof interfaceConfig === 'object'
+        && interfaceConfig.hasOwnProperty('DEFAULT_LOCAL_DISPLAY_NAME')) {
+        newValue.defaultLocalDisplayName = interfaceConfig.DEFAULT_LOCAL_DISPLAY_NAME;
+    }
+
+    if (oldValue.defaultRemoteDisplayName === undefined
+        && typeof interfaceConfig === 'object'
+        && interfaceConfig.hasOwnProperty('DEFAULT_REMOTE_DISPLAY_NAME')) {
+        newValue.defaultRemoteDisplayName = interfaceConfig.DEFAULT_REMOTE_DISPLAY_NAME;
+    }
+
+    if (oldValue.defaultLogoUrl === undefined) {
+        if (typeof interfaceConfig === 'object'
+            && interfaceConfig.hasOwnProperty('DEFAULT_LOGO_URL')) {
+            newValue.defaultLogoUrl = interfaceConfig.DEFAULT_LOGO_URL;
+        } else {
+            newValue.defaultLogoUrl = 'images/watermark.svg';
+        }
+    }
+
+    // if we have `deeplinking` defined, ignore deprecated values, except `disableDeepLinking`.
+    // Otherwise, compose the config.
+    if (oldValue.deeplinking && newValue.deeplinking) { // make TS happy
+        newValue.deeplinking.disabled = oldValue.deeplinking.hasOwnProperty('disabled')
+            ? oldValue.deeplinking.disabled
+            : Boolean(oldValue.disableDeepLinking);
+    } else {
+        const disabled = Boolean(oldValue.disableDeepLinking);
+        const deeplinking = {
+            desktop: {},
+            hideLogo: false,
+            disabled,
+            android: {},
+            ios: {}
+        };
+
+        if (typeof interfaceConfig === 'object') {
+            const mobileDynamicLink = interfaceConfig.MOBILE_DYNAMIC_LINK;
+            const dynamicLink = mobileDynamicLink ? {
+                apn: mobileDynamicLink.APN,
+                appCode: mobileDynamicLink.APP_CODE,
+                ibi: mobileDynamicLink.IBI,
+                isi: mobileDynamicLink.ISI,
+                customDomain: mobileDynamicLink.CUSTOM_DOMAIN
+            } : undefined;
+
+            if (deeplinking.desktop) {
+                deeplinking.desktop.appName = interfaceConfig.NATIVE_APP_NAME;
+            }
+
+            deeplinking.hideLogo = Boolean(interfaceConfig.HIDE_DEEP_LINKING_LOGO);
+            deeplinking.android = {
+                appName: interfaceConfig.NATIVE_APP_NAME,
+                appScheme: interfaceConfig.APP_SCHEME,
+                downloadLink: interfaceConfig.MOBILE_DOWNLOAD_LINK_ANDROID,
+                appPackage: interfaceConfig.ANDROID_APP_PACKAGE,
+                fDroidUrl: interfaceConfig.MOBILE_DOWNLOAD_LINK_F_DROID,
+                dynamicLink
+            };
+            deeplinking.ios = {
+                appName: interfaceConfig.NATIVE_APP_NAME,
+                appScheme: interfaceConfig.APP_SCHEME,
+                downloadLink: interfaceConfig.MOBILE_DOWNLOAD_LINK_IOS,
+                dynamicLink
+            };
+        }
+        newValue.deeplinking = deeplinking;
+    }
+
+    return newValue;
+}
+
+/**
+ * Constructs a new config {@code Object}, if necessary, out of a specific
+ * config {@code Object} which is in the latest format supported by jitsi-meet.
+ * Such a translation from an old config format to a new/the latest config
+ * format is necessary because the mobile app bundles jitsi-meet and
+ * lib-jitsi-meet at build time and does not download them at runtime from the
+ * deployment on which it will join a conference.
+ *
+ * @param {Object} oldValue - The config {@code Object} which may or may not be
+ * in the latest form supported by jitsi-meet and from which a new config
+ * {@code Object} is to be constructed if necessary.
+ * @returns {Object} A config {@code Object} which is in the latest format
+ * supported by jitsi-meet.
+ */
+function _translateLegacyConfig(oldValue) {
+    const newValue = _translateInterfaceConfig(oldValue);
+
+    // Translate deprecated config values to new config values.
+
     const filteredConferenceInfo = Object.keys(CONFERENCE_HEADER_MAPPING).filter(key => oldValue[key]);
 
     if (filteredConferenceInfo.length) {
         newValue.conferenceInfo = _getConferenceInfo(oldValue);
 
         filteredConferenceInfo.forEach(key => {
+            newValue.conferenceInfo = oldValue.conferenceInfo ?? {};
+
             // hideRecordingLabel does not mean not render it at all, but autoHide it
             if (key === 'hideRecordingLabel') {
                 newValue.conferenceInfo.alwaysVisible
-                    = newValue.conferenceInfo.alwaysVisible.filter(c => !CONFERENCE_HEADER_MAPPING[key].includes(c));
+                    = (newValue.conferenceInfo?.alwaysVisible ?? [])
+                    .filter(c => !CONFERENCE_HEADER_MAPPING[key].includes(c));
                 newValue.conferenceInfo.autoHide
                     = _.union(newValue.conferenceInfo.autoHide, CONFERENCE_HEADER_MAPPING[key]);
             } else {
                 newValue.conferenceInfo.alwaysVisible
-                    = newValue.conferenceInfo.alwaysVisible.filter(c => !CONFERENCE_HEADER_MAPPING[key].includes(c));
+                    = (newValue.conferenceInfo.alwaysVisible ?? [])
+                    .filter(c => !CONFERENCE_HEADER_MAPPING[key].includes(c));
                 newValue.conferenceInfo.autoHide
-                    = newValue.conferenceInfo.autoHide.filter(c => !CONFERENCE_HEADER_MAPPING[key].includes(c));
+                    = (newValue.conferenceInfo.autoHide ?? []).filter(c =>
+                        !CONFERENCE_HEADER_MAPPING[key].includes(c));
             }
         });
     }
 
-    if (!oldValue.connectionIndicators
-            && typeof interfaceConfig === 'object'
-            && (interfaceConfig.hasOwnProperty('CONNECTION_INDICATOR_DISABLED')
-                || interfaceConfig.hasOwnProperty('CONNECTION_INDICATOR_AUTO_HIDE_ENABLED')
-                || interfaceConfig.hasOwnProperty('CONNECTION_INDICATOR_AUTO_HIDE_TIMEOUT'))) {
-        newValue.connectionIndicators = {
-            disabled: interfaceConfig.CONNECTION_INDICATOR_DISABLED,
-            autoHide: interfaceConfig.CONNECTION_INDICATOR_AUTO_HIDE_ENABLED,
-            autoHideTimeout: interfaceConfig.CONNECTION_INDICATOR_AUTO_HIDE_TIMEOUT
-        };
+    newValue.welcomePage = oldValue.welcomePage || {};
+    if (oldValue.hasOwnProperty('enableWelcomePage')
+        && !newValue.welcomePage.hasOwnProperty('disabled')
+    ) {
+        newValue.welcomePage.disabled = !oldValue.enableWelcomePage;
     }
 
     newValue.prejoinConfig = oldValue.prejoinConfig || {};
@@ -315,35 +420,137 @@ function _translateLegacyConfig(oldValue: Object) {
         };
     }
 
-    if (oldValue.disableModeratorIndicator === undefined
-        && typeof interfaceConfig === 'object'
-        && interfaceConfig.hasOwnProperty('DISABLE_FOCUS_INDICATOR')) {
-        newValue.disableModeratorIndicator = interfaceConfig.DISABLE_FOCUS_INDICATOR;
-    }
-
     newValue.e2ee = newValue.e2ee || {};
 
     if (oldValue.e2eeLabels) {
-        newValue.e2ee.e2eeLabels = oldValue.e2eeLabels;
-    }
-
-    if (oldValue.defaultLocalDisplayName === undefined
-        && typeof interfaceConfig === 'object'
-        && interfaceConfig.hasOwnProperty('DEFAULT_LOCAL_DISPLAY_NAME')) {
-        newValue.defaultLocalDisplayName = interfaceConfig.DEFAULT_LOCAL_DISPLAY_NAME;
+        newValue.e2ee.labels = oldValue.e2eeLabels;
     }
 
     newValue.defaultLocalDisplayName
         = newValue.defaultLocalDisplayName || 'me';
 
-    if (oldValue.defaultRemoteDisplayName === undefined
-        && typeof interfaceConfig === 'object'
-        && interfaceConfig.hasOwnProperty('DEFAULT_REMOTE_DISPLAY_NAME')) {
-        newValue.defaultRemoteDisplayName = interfaceConfig.DEFAULT_REMOTE_DISPLAY_NAME;
+    if (oldValue.hideAddRoomButton) {
+        newValue.breakoutRooms = {
+            /* eslint-disable-next-line no-extra-parens */
+            ...(newValue.breakoutRooms || {}),
+            hideAddRoomButton: oldValue.hideAddRoomButton
+        };
     }
 
     newValue.defaultRemoteDisplayName
         = newValue.defaultRemoteDisplayName || 'Fellow Jitster';
+
+    newValue.transcription = newValue.transcription || {};
+    if (oldValue.transcribingEnabled !== undefined) {
+        newValue.transcription = {
+            ...newValue.transcription,
+            enabled: oldValue.transcribingEnabled
+        };
+    }
+    if (oldValue.transcribeWithAppLanguage !== undefined) {
+        newValue.transcription = {
+            ...newValue.transcription,
+            useAppLanguage: oldValue.transcribeWithAppLanguage
+        };
+    }
+    if (oldValue.preferredTranscribeLanguage !== undefined) {
+        newValue.transcription = {
+            ...newValue.transcription,
+            preferredLanguage: oldValue.preferredTranscribeLanguage
+        };
+    }
+    if (oldValue.autoCaptionOnRecord !== undefined) {
+        newValue.transcription = {
+            ...newValue.transcription,
+            autoTranscribeOnRecord: oldValue.autoCaptionOnRecord
+        };
+    }
+
+    newValue.recordingService = newValue.recordingService || {};
+    if (oldValue.fileRecordingsServiceEnabled !== undefined
+        && newValue.recordingService.enabled === undefined) {
+        newValue.recordingService = {
+            ...newValue.recordingService,
+            enabled: oldValue.fileRecordingsServiceEnabled
+        };
+    }
+    if (oldValue.fileRecordingsServiceSharingEnabled !== undefined
+        && newValue.recordingService.sharingEnabled === undefined) {
+        newValue.recordingService = {
+            ...newValue.recordingService,
+            sharingEnabled: oldValue.fileRecordingsServiceSharingEnabled
+        };
+    }
+
+    newValue.liveStreaming = newValue.liveStreaming || {};
+
+    // Migrate config.liveStreamingEnabled
+    if (oldValue.liveStreamingEnabled !== undefined) {
+        newValue.liveStreaming = {
+            ...newValue.liveStreaming,
+            enabled: oldValue.liveStreamingEnabled
+        };
+    }
+
+    // Migrate interfaceConfig.LIVE_STREAMING_HELP_LINK
+    if (oldValue.liveStreaming === undefined
+        && typeof interfaceConfig === 'object'
+        && interfaceConfig.hasOwnProperty('LIVE_STREAMING_HELP_LINK')) {
+        newValue.liveStreaming = {
+            ...newValue.liveStreaming,
+            helpLink: interfaceConfig.LIVE_STREAMING_HELP_LINK
+        };
+    }
+
+    newValue.speakerStats = newValue.speakerStats || {};
+
+    if (oldValue.disableSpeakerStatsSearch !== undefined
+        && newValue.speakerStats.disableSearch === undefined
+    ) {
+        newValue.speakerStats = {
+            ...newValue.speakerStats,
+            disableSearch: oldValue.disableSpeakerStatsSearch
+        };
+    }
+
+    if (oldValue.speakerStatsOrder !== undefined
+         && newValue.speakerStats.order === undefined) {
+        newValue.speakerStats = {
+            ...newValue.speakerStats,
+            order: oldValue.speakerStatsOrder
+        };
+    }
+
+    if (oldValue.autoKnockLobby !== undefined
+        && newValue.lobby?.autoKnock === undefined) {
+        newValue.lobby = {
+            ...newValue.lobby || {},
+            autoKnock: oldValue.autoKnockLobby
+        };
+    }
+
+    if (oldValue.enableLobbyChat !== undefined
+        && newValue.lobby?.enableChat === undefined) {
+        newValue.lobby = {
+            ...newValue.lobby || {},
+            enableChat: oldValue.enableLobbyChat
+        };
+    }
+
+    if (oldValue.hideLobbyButton !== undefined
+        && newValue.securityUi?.hideLobbyButton === undefined) {
+        newValue.securityUi = {
+            ...newValue.securityUi || {},
+            hideLobbyButton: oldValue.hideLobbyButton
+        };
+    }
+
+    if (oldValue.disableProfile) {
+        newValue.toolbarButtons = (newValue.toolbarButtons || TOOLBAR_BUTTONS)
+            .filter((button) => button !== 'profile');
+    }
+
+    _setDeeplinkingDefaults(newValue.deeplinking);
 
     return newValue;
 }

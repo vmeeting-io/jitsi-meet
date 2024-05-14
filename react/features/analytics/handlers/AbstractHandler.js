@@ -2,6 +2,10 @@
  * Abstract implementation of analytics handler.
  */
 export default class AbstractHandler {
+    _enabled: boolean;
+    _whiteListedEvents: Array<string> | undefined;
+    _blackListedEvents: Array<string> | undefined;
+
     /**
      * Creates new instance.
      *
@@ -70,7 +74,7 @@ export default class AbstractHandler {
             return true;
         }
 
-        const name = this._extractName(event);
+        const name = this._extractName(event) ?? '';
 
         if (Array.isArray(this._whiteListedEvents)) {
             return this._whiteListedEvents.indexOf(name) === -1;

@@ -1,12 +1,36 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { getToolbarButtons } from '../../../../base/config';
-import { translate } from '../../../../base/i18n';
-import { connect } from '../../../../base/redux';
+import { openDialog } from '../../../../base/dialog/actions';
+import { translate } from '../../../../base/i18n/functions';
 import AbstractLiveStreamButton, {
     _mapStateToProps as _abstractMapStateToProps,
     type Props
 } from '../AbstractLiveStreamButton';
+
+import StartLiveStreamDialog from './StartLiveStreamDialog';
+import StopLiveStreamDialog from './StopLiveStreamDialog';
+
+/**
+ * Button for opening the live stream settings dialog.
+ */
+class LiveStreamButton extends AbstractLiveStreamButton<Props, *> {
+
+    /**
+     * Handles clicking / pressing the button.
+     *
+     * @override
+     * @protected
+     * @returns {void}
+     */
+    _onHandleClick() {
+        const { _isLiveStreamRunning, dispatch } = this.props;
+
+        dispatch(openDialog(
+            _isLiveStreamRunning ? StopLiveStreamDialog : StartLiveStreamDialog
+        ));
+    }
+}
 
 /**
  * Maps (parts of) the redux state to the associated props for the
@@ -24,15 +48,11 @@ import AbstractLiveStreamButton, {
  */
 function _mapStateToProps(state: Object, ownProps: Props) {
     const abstractProps = _abstractMapStateToProps(state, ownProps);
-    const toolbarButtons = getToolbarButtons(state);
+    const { toolbarButtons } = state['features/toolbox'];
     let { visible } = ownProps;
 
-    if (!toolbarButtons.includes('livestreaming')) {
-      visible = false;
-    }
-
     if (typeof visible === 'undefined') {
-        visible = toolbarButtons.includes('livestreaming') && abstractProps.visible;
+        visible = Boolean(toolbarButtons.includes('livestreaming') && abstractProps.visible);
     }
 
     return {
@@ -41,4 +61,4 @@ function _mapStateToProps(state: Object, ownProps: Props) {
     };
 }
 
-export default translate(connect(_mapStateToProps)(AbstractLiveStreamButton));
+export default translate(connect(_mapStateToProps)(LiveStreamButton));

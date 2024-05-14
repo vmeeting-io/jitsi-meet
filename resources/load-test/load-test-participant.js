@@ -177,59 +177,6 @@ function selectStageViewParticipant(selected, previous) {
 }
 
 /**
- * Simple emulation of jitsi-meet's selectParticipants behavior
- */
-function selectParticipants() {
-    if (!connected) {
-        return;
-    }
-    if (stageView) {
-        if (selectedParticipant) {
-            room.selectParticipants([selectedParticipant]);
-        }
-    }
-    else {
-        /* jitsi-meet's current Tile View behavior. */
-        const ids = room.getParticipants().map(participant => participant.getId());
-        room.selectParticipants(ids);
-    }
-}
-
-/**
- * Called when number of participants changes.
- */
-function setNumberOfParticipants() {
-    $('#participants').text(numParticipants);
-    if (!stageView) {
-        selectParticipants();
-        updateMaxFrameHeight();
-    }
-    updateLastN();
-}
-
-/**
- * Called when ICE connects
- */
-function onConnectionEstablished() {
-    connected = true;
-
-    selectParticipants();
-    updateMaxFrameHeight();
-    updateLastN();
-}
-
-/**
- * Handles dominant speaker changed.
- * @param id
- */
-function onDominantSpeakerChanged(selected, previous) {
-    if (selectStageViewParticipant(selected, previous)) {
-        selectParticipants();
-    }
-    updateMaxFrameHeight();
-}
-
-/**
  * Handles local tracks.
  * @param tracks Array with JitsiTrack objects
  */

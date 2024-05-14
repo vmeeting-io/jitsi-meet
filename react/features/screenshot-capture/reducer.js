@@ -1,6 +1,7 @@
 // @flow
 
-import { PersistenceRegistry, ReducerRegistry } from '../base/redux';
+import PersistenceRegistry from '../base/redux/PersistenceRegistry';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import { SET_SCREENSHOT_CAPTURE } from './actionTypes';
 
@@ -8,7 +9,12 @@ PersistenceRegistry.register('features/screnshot-capture', true, {
     capturesEnabled: false
 });
 
-ReducerRegistry.register('features/screenshot-capture', (state = {}, action) => {
+const DEFAULT_STATE = {
+    capturesEnabled: false
+};
+
+ReducerRegistry.register('features/screenshot-capture',
+(state = DEFAULT_STATE, action) => {
     switch (action.type) {
     case SET_SCREENSHOT_CAPTURE: {
         return {

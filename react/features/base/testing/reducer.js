@@ -1,4 +1,5 @@
-import { assign, ReducerRegistry } from '../redux';
+import ReducerRegistry from '../redux/ReducerRegistry';
+import { assign } from '../redux/functions';
 
 import { SET_CONNECTION_STATE } from './actionTypes';
 

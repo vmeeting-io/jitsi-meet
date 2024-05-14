@@ -1,45 +1,44 @@
-import { makeStyles } from '@material-ui/styles';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import { IconRaisedHand } from '../../../base/icons';
-import { Label } from '../../../base/label';
-import { Tooltip } from '../../../base/tooltip';
-import BaseTheme from '../../../base/ui/components/BaseTheme';
-import { open as openParticipantsPane } from '../../../participants-pane/actions';
+import { IconRaiseHand } from '../../../base/icons/svg';
+import Label from '../../../base/label/components/web/Label';
+import Tooltip from '../../../base/tooltip/components/Tooltip';
+import { open as openParticipantsPane } from '../../../participants-pane/actions.web';
 
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles()(theme => {
     return {
         label: {
             backgroundColor: theme.palette.warning02,
-            color: theme.palette.uiBackground,
-            marginRight: theme.spacing(1)
+            color: theme.palette.uiBackground
         }
     };
 });
 
 const RaisedHandsCountLabel = () => {
-    const styles = useStyles();
+    const { classes: styles, theme } = useStyles();
     const dispatch = useDispatch();
-    const raisedHandsCount = useSelector(state =>
+    const raisedHandsCount = useSelector((state) =>
         (state['features/base/participants'].raisedHandsQueue || []).length);
     const { t } = useTranslation();
     const onClick = useCallback(() => {
         dispatch(openParticipantsPane());
     }, []);
 
-    return raisedHandsCount > 0 && (<Tooltip
+    return raisedHandsCount > 0 ? (<Tooltip
         content = { t('raisedHandsLabel') }
         position = { 'bottom' }>
         <Label
+            accessibilityText = { t('raisedHandsLabel') }
             className = { styles.label }
-            icon = { IconRaisedHand }
-            iconColor = { BaseTheme.palette.uiBackground }
+            icon = { IconRaiseHand }
+            iconColor = { theme.palette.icon04 }
             id = 'raisedHandsCountLabel'
             onClick = { onClick }
-            text = { raisedHandsCount } />
-    </Tooltip>);
+            text = { `${raisedHandsCount}` } />
+    </Tooltip>) : null;
 };
 
 export default RaisedHandsCountLabel;

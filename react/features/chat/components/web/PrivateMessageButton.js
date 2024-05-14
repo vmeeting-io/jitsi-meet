@@ -1,14 +1,23 @@
 // @flow
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import { CHAT_ENABLED, getFeatureFlag } from '../../../base/flags';
-import { translate } from '../../../base/i18n';
-import { IconMessage, IconReply } from '../../../base/icons';
-import { getParticipantById } from '../../../base/participants';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { openChat } from '../../actions';
+import { CHAT_ENABLED } from '../../../base/flags/constants';
+import { getFeatureFlag } from '../../../base/flags/functions';
+import { IconReply } from '../../../base/icons/svg';
+import { getParticipantById } from '../../../base/participants/functions';
+import Button from '../../../base/ui/components/web/Button';
+import { BUTTON_TYPES } from '../../../base/ui/constants.any';
+import { handleLobbyChatInitialized, openChat } from '../../actions.web';
 
-export type Props = AbstractButtonProps & {
+export type Props = {
+
+    /**
+    * True if the message is a lobby chat message.
+    */
+    isLobbyMessage: boolean,
 
     /**
      * The ID of the participant that the message is to be sent.
@@ -16,75 +25,50 @@ export type Props = AbstractButtonProps & {
     participantID: string,
 
     /**
-     * True if the button is rendered as a reply button.
+     * Whether the button should be visible or not.
      */
-    reply: boolean,
-
-    /**
-     * Function to be used to translate i18n labels.
-     */
-    t: Function,
-
-    /**
-     * The Redux dispatch function.
-     */
-    dispatch: Function,
-
-    /**
-     * The participant object retrieved from Redux.
-     */
-    _participant: Object,
+    visible?: boolean;
 };
 
-/**
- * Class to render a button that initiates the sending of a private message through chet.
- */
-class PrivateMessageButton extends AbstractButton<Props, any> {
-    accessibilityLabel = 'toolbar.accessibilityLabel.privateMessage';
-    icon = IconMessage;
-    label = 'toolbar.privateMessage';
-    toggledIcon = IconReply;
-
-    /**
-     * Handles clicking / pressing the button, and kicks the participant.
-     *
-     * @private
-     * @returns {void}
-     */
-    _handleClick() {
-        const { _participant, dispatch } = this.props;
-
-        dispatch(openChat(_participant));
-    }
-
-    /**
-     * Helper function to be implemented by subclasses, which must return a
-     * {@code boolean} value indicating if this button is toggled or not.
-     *
-     * @protected
-     * @returns {boolean}
-     */
-    _isToggled() {
-        return this.props.reply;
-    }
-
-}
-
-/**
- * Maps part of the Redux store to the props of this component.
- *
- * @param {Object} state - The Redux state.
- * @param {Props} ownProps - The own props of the component.
- * @returns {Props}
- */
-export function _mapStateToProps(state: Object, ownProps: Props): $Shape<Props> {
-    const enabled = getFeatureFlag(state, CHAT_ENABLED, true);
-    const { visible = enabled } = ownProps;
-
+const useStyles = makeStyles()(theme => {
     return {
-        _participant: getParticipantById(state, ownProps.participantID),
-        visible
-    };
-}
+        replyButton: {
+            padding: '2px',
 
-export default translate(connect(_mapStateToProps)(PrivateMessageButton));
+            '&:hover': {
+                backgroundColor: theme.palette.action03
+            }
+        }
+    };
+});
+
+const PrivateMessageButton = ({ participantID, isLobbyMessage, visible }: Props) => {
+    const { classes } = useStyles();
+    const dispatch = useDispatch();
+    const participant = useSelector((state) => getParticipantById(state, participantID));
+    const isVisible = useSelector((state) => getFeatureFlag(state, CHAT_ENABLED, true)) ?? visible;
+    const { t } = useTranslation();
+
+    const handleClick = useCallback(() => {
+        if (isLobbyMessage) {
+            dispatch(handleLobbyChatInitialized(participantID));
+        } else {
+            dispatch(openChat(participant));
+        }
+    }, []);
+
+    if (!isVisible) {
+        return null;
+    }
+
+    return (
+        <Button
+            accessibilityLabel = { t('toolbar.accessibilityLabel.privateMessage') }
+            className = { classes.replyButton }
+            icon = { IconReply }
+            onClick = { handleClick }
+            type = { BUTTON_TYPES.TERTIARY } />
+    );
+};
+
+export default PrivateMessageButton;

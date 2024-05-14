@@ -1,6 +1,7 @@
 // @flow
 
 import { isLocalParticipantModerator } from '../base/participants/functions';
+import { isInBreakoutRoom } from '../breakout-rooms/functions';
 
 /**
  * Returns this feature's root state.
@@ -44,7 +45,7 @@ export const isEnabled = (kind: string) => (state: Object) => isEnabledFromState
 export const isSupported = () => (state: Object) => {
     const { conference } = state['features/base/conference'];
 
-    return conference ? conference.isAVModerationSupported() : false;
+    return Boolean(!isInBreakoutRoom(state) && conference?.isAVModerationSupported());
 };
 
 /**

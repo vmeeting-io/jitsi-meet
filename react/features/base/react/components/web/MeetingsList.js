@@ -1,54 +1,12 @@
-// @flow
-
 import React, { Component } from 'react';
 
-import {
-    getLocalizedDateFormatter,
-    getLocalizedDurationFormatter,
-    translate
-} from '../../../i18n';
-import { Icon, IconTrash } from '../../../icons';
+import { getLocalizedDateFormatter, getLocalizedDurationFormatter } from '../../../i18n/dateUtil';
+import { translate } from '../../../i18n/functions';
+import Icon from '../../../icons/components/Icon';
+import { IconTrash } from '../../../icons/svg';
 
 import Container from './Container';
 import Text from './Text';
-
-type Props = {
-
-    /**
-     * Indicates if the list is disabled or not.
-     */
-    disabled: boolean,
-
-    /**
-     * Indicates if the URL should be hidden or not.
-     */
-    hideURL: boolean,
-
-    /**
-     * Function to be invoked when an item is pressed. The item's URL is passed.
-     */
-    onPress: Function,
-
-    /**
-     * Rendered when the list is empty. Should be a rendered element.
-     */
-    listEmptyComponent: Object,
-
-    /**
-     * An array of meetings.
-     */
-    meetings: Array<Object>,
-
-    /**
-     * Handler for deleting an item.
-     */
-    onItemDelete?: Function,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
 
 /**
  * Generates a date string for a given date.
@@ -57,7 +15,7 @@ type Props = {
  * @private
  * @returns {string}
  */
-function _toDateString(date) {
+function _toDateString(date: Date) {
     return getLocalizedDateFormatter(date).format('ll');
 }
 
@@ -69,7 +27,7 @@ function _toDateString(date) {
  * @private
  * @returns {string}
  */
-function _toTimeString(times) {
+function _toTimeString(times: Date[]) {
     if (times && times.length > 0) {
         return (
             times
@@ -86,13 +44,13 @@ function _toTimeString(times) {
  *
  * @augments Component
  */
-class MeetingsList extends Component<Props> {
+class MeetingsList extends Component {
     /**
      * Constructor of the MeetingsList component.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this._onPress = this._onPress.bind(this);
@@ -105,18 +63,14 @@ class MeetingsList extends Component<Props> {
      * @returns {React.ReactNode}
      */
     render() {
-        const { listEmptyComponent, meetings, t } = this.props;
+        const { listEmptyComponent, meetings } = this.props;
 
         /**
          * If there are no recent meetings we don't want to display anything.
          */
         if (meetings) {
             return (
-                <Container
-                    aria-label = { t('welcomepage.recentList') }
-                    className = 'meetings-list'
-                    role = 'menu'
-                    tabIndex = '-1'>
+                <Container className = 'meetings-list'>
                     {
                         meetings.length === 0
                             ? listEmptyComponent
@@ -129,8 +83,6 @@ class MeetingsList extends Component<Props> {
         return null;
     }
 
-    _onPress: string => Function;
-
     /**
      * Returns a function that is used in the onPress callback of the items.
      *
@@ -138,17 +90,15 @@ class MeetingsList extends Component<Props> {
      * @private
      * @returns {Function}
      */
-    _onPress(url) {
+    _onPress(url: string) {
         const { disabled, onPress } = this.props;
 
         if (!disabled && url && typeof onPress === 'function') {
             return () => onPress(url);
         }
 
-        return null;
+        return undefined;
     }
-
-    _onKeyPress: string => Function;
 
     /**
      * Returns a function that is used in the onPress callback of the items.
@@ -157,21 +107,19 @@ class MeetingsList extends Component<Props> {
      * @private
      * @returns {Function}
      */
-    _onKeyPress(url) {
+    _onKeyPress(url: string) {
         const { disabled, onPress } = this.props;
 
         if (!disabled && url && typeof onPress === 'function') {
-            return e => {
+            return (e: React.KeyboardEvent) => {
                 if (e.key === ' ' || e.key === 'Enter') {
                     onPress(url);
                 }
             };
         }
 
-        return null;
+        return undefined;
     }
-
-    _onDelete: Object => Function;
 
     /**
      * Returns a function that is used on the onDelete callback.
@@ -180,17 +128,15 @@ class MeetingsList extends Component<Props> {
      * @private
      * @returns {Function}
      */
-    _onDelete(item) {
+    _onDelete(item: Object) {
         const { onItemDelete } = this.props;
 
-        return evt => {
-            evt.stopPropagation();
+        return (evt?: React.MouseEvent) => {
+            evt?.stopPropagation();
 
-            onItemDelete && onItemDelete(item);
+            onItemDelete?.(item);
         };
     }
-
-    _onDeleteKeyPress: Object => Function;
 
     /**
      * Returns a function that is used on the onDelete keypress callback.
@@ -199,10 +145,10 @@ class MeetingsList extends Component<Props> {
      * @private
      * @returns {Function}
      */
-    _onDeleteKeyPress(item) {
+    _onDeleteKeyPress(item: Object) {
         const { onItemDelete } = this.props;
 
-        return e => {
+        return (e: React.KeyboardEvent) => {
             if (onItemDelete && (e.key === ' ' || e.key === 'Enter')) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -210,8 +156,6 @@ class MeetingsList extends Component<Props> {
             }
         };
     }
-
-    _renderItem: (Object, number) => React$Node;
 
     /**
      * Renders an item for the list.
@@ -238,13 +182,9 @@ class MeetingsList extends Component<Props> {
 
         return (
             <Container
-                aria-label = { title }
                 className = { rootClassName }
                 key = { index }
-                onClick = { onPress }
-                onKeyPress = { onKeyPress }
-                role = 'menuitem'
-                tabIndex = { 0 }>
+                onClick = { onPress }>
                 <Container className = 'left-column'>
                     <Text className = 'title'>
                         { _toDateString(date) }
@@ -254,7 +194,12 @@ class MeetingsList extends Component<Props> {
                     </Text>
                 </Container>
                 <Container className = 'right-column'>
-                    <Text className = 'title'>
+                    <Text
+                        className = 'title'
+                        onClick = { onPress }
+                        onKeyPress = { onKeyPress }
+                        role = 'button'
+                        tabIndex = { 0 }>
                         { title }
                     </Text>
                     {

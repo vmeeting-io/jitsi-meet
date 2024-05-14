@@ -1,23 +1,22 @@
-/* @flow */
-
+// @ts-expect-error
 import Logger from '@jitsi/logger';
 
-import { APP_WILL_MOUNT } from '../app';
-import { CONFERENCE_JOINED, getCurrentConference } from '../conference';
+import { APP_WILL_MOUNT } from '../app/actionTypes';
+import { CONFERENCE_JOINED } from '../conference/actionTypes';
+import { getCurrentConference } from '../conference/functions';
+import { SET_CONFIG } from '../config/actionTypes';
 import JitsiMeetJS, {
-    LIB_WILL_INIT,
     JitsiConferenceEvents
 } from '../lib-jitsi-meet';
-import { MiddlewareRegistry } from '../redux';
-import { isTestModeEnabled } from '../testing';
+import { LIB_WILL_INIT } from '../lib-jitsi-meet/actionTypes';
+import MiddlewareRegistry from '../redux/MiddlewareRegistry';
+import { isTestModeEnabled } from '../testing/functions';
 
 import buildExternalApiLogTransport from './ExternalApiLogTransport';
 import JitsiMeetInMemoryLogStorage from './JitsiMeetInMemoryLogStorage';
 import JitsiMeetLogStorage from './JitsiMeetLogStorage';
 import { SET_LOGGING_CONFIG } from './actionTypes';
-import { setLogCollector } from './actions';
-
-declare var APP: Object;
+import { setLogCollector, setLoggingConfig } from './actions';
 
 /**
  * The Redux middleware of the feature base/logging.
@@ -36,6 +35,9 @@ MiddlewareRegistry.register(store => next => action => {
 
     case LIB_WILL_INIT:
         return _libWillInit(store, next, action);
+
+    case SET_CONFIG:
+        return _setConfig(store, next, action);
 
     case SET_LOGGING_CONFIG:
         return _setLoggingConfig(store, next, action);
@@ -102,7 +104,7 @@ function _conferenceJoined({ getState }, next, action) {
         logCollector.flush();
 
         // This event listener will flush the logs, before the statistics module
-        // (CallStats) is stopped.
+        // is stopped.
         //
         // NOTE The LogCollector is not stopped, because this event can be
         // triggered multiple times during single conference (whenever
@@ -131,7 +133,8 @@ function _conferenceJoined({ getState }, next, action) {
  * @private
  * @returns {void}
  */
-function _initLogging({ dispatch, getState }, loggingConfig, isTestingEnabled) {
+function _initLogging({ dispatch, getState },
+        loggingConfig, isTestingEnabled) {
     const { logCollector } = getState()['features/base/logging'];
 
     // Create the LogCollector and register it as the global log transport. It
@@ -139,8 +142,7 @@ function _initLogging({ dispatch, getState }, loggingConfig, isTestingEnabled) {
     // cached, before the JitsiMeetLogStorage gets ready (statistics module is
     // initialized).
     if (!logCollector && !loggingConfig.disableLogCollector) {
-        const _logCollector
-            = new Logger.LogCollector(new JitsiMeetLogStorage(getState));
+        const _logCollector = new Logger.LogCollector(new JitsiMeetLogStorage(getState));
 
         const { apiLogLevels } = getState()['features/base/config'];
 
@@ -199,6 +201,28 @@ function _libWillInit({ getState }, next, action) {
 }
 
 /**
+ * This feature that the action SET_CONFIG is being
+ * dispatched within a specific Redux store.
+ *
+ * @param {Store} store - The Redux store in which the specified action is being
+ * dispatched.
+ * @param {Dispatch} next - The Redux dispatch function to dispatch the
+ * specified action to the specified store.
+ * @param {Action} action - The Redux action SET_CONFIG which is being
+ * dispatched in the specified store.
+ * @private
+ * @returns {Object} The new state that is the result of the reduction of the
+ * specified action.
+ */
+function _setConfig({ dispatch }, next, action) {
+    const result = next(action);
+
+    dispatch(setLoggingConfig(action.config?.logging));
+
+    return result;
+}
+
+/**
  * Notifies the feature base/logging that the action {@link SET_LOGGING_CONFIG}
  * is being dispatched within a specific Redux {@code store}.
  *
@@ -212,7 +236,8 @@ function _libWillInit({ getState }, next, action) {
  * @returns {Object} The new state that is the result of the reduction of the
  * specified {@code action}.
  */
-function _setLoggingConfig({ dispatch, getState }, next, action) {
+function _setLoggingConfig({ dispatch, getState },
+        next, action) {
     const result = next(action);
     const newValue = getState()['features/base/logging'].config;
     const isTestingEnabled = isTestModeEnabled(getState());
@@ -252,7 +277,7 @@ function _setLogLevels(logger, config) {
     logger.setLogLevel(config.defaultLogLevel);
 
     // Second, set the log level of each logger explicitly overridden by config.
-    Object.keys(config).forEach(
-        id =>
-            id === 'defaultLogLevel' || logger.setLogLevelById(config[id], id));
+    for (const [ id, level ] of Object.entries(config.loggers)) {
+        logger.setLogLevelById(level, id);
+    }
 }

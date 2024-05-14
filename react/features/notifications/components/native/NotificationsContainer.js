@@ -1,54 +1,36 @@
-// @flow
-
 import React, { Component } from 'react';
-import { View } from 'react-native';
+import { Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { connect } from 'react-redux';
 
-import { connect } from '../../../base/redux';
 import { hideNotification } from '../../actions';
 import { areThereNotifications } from '../../functions';
+import NotificationsTransition from '../NotificationsTransition';
 
 import Notification from './Notification';
 import styles from './styles';
 
-type Props = {
-
-    /**
-     * The notifications to be displayed, with the first index being the
-     * notification at the top and the rest shown below it in order.
-     */
-    _notifications: Array<Object>,
-
-    /**
-     * Invoked to update the redux store in order to remove notifications.
-     */
-     dispatch: Function,
-
-    /**
-     * Any custom styling applied to the notifications container.
-     */
-    style: Object
-};
 
 /**
  * Implements a React {@link Component} which displays notifications and handles
- * automatic dismissmal after a notification is shown for a defined timeout
+ * automatic dismissal after a notification is shown for a defined timeout
  * period.
  *
  * @augments {Component}
  */
-class NotificationsContainer extends Component<Props> {
+class NotificationsContainer extends Component {
 
     /**
      * A timeout id returned by setTimeout.
      */
-    _notificationDismissTimeout: ?TimeoutID;
+    _notificationDismissTimeout;
 
     /**
      * Initializes a new {@code NotificationsContainer} instance.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         /**
@@ -65,12 +47,13 @@ class NotificationsContainer extends Component<Props> {
     }
 
     /**
-     * Sets a timeout for the first notification (if applicable).
+     * Sets a timeout (if applicable).
      *
      * @inheritdoc
      */
     componentDidMount() {
         // Set the initial dismiss timeout (if any)
+        // @ts-ignore
         this._manageDismissTimeout();
     }
 
@@ -79,37 +62,36 @@ class NotificationsContainer extends Component<Props> {
      *
      * @inheritdoc
      */
-    componentDidUpdate(prevProps: Props) {
+    componentDidUpdate(prevProps) {
         this._manageDismissTimeout(prevProps);
     }
 
     /**
      * Sets/clears the dismiss timeout for the top notification.
      *
-     * @param {P} [prevProps] - The previous properties (if called from
+     * @param {IProps} [prevProps] - The previous properties (if called from
      * {@code componentDidUpdate}).
      * @returns {void}
      * @private
      */
-    _manageDismissTimeout(prevProps: ?Props) {
+    _manageDismissTimeout(prevProps) {
         const { _notifications } = this.props;
 
         if (_notifications.length) {
             const notification = _notifications[0];
-            const previousNotification
-                 = prevProps && prevProps._notifications.length
-                     ? prevProps._notifications[0]
-                     : undefined;
+            const previousNotification = prevProps?._notifications.length
+                ? prevProps._notifications[0] : undefined;
 
             if (notification !== previousNotification) {
                 this._clearNotificationDismissTimeout();
 
-                if (notification && notification.timeout && notification.props.isDismissAllowed !== false) {
-                    const {
-                        timeout,
-                        uid
-                    } = notification;
+                // @ts-ignore
+                if (notification?.timeout) {
 
+                    // @ts-ignore
+                    const { timeout, uid } = notification;
+
+                    // @ts-ignore
                     this._notificationDismissTimeout = setTimeout(() => {
                         // Perform a no-op if a timeout is not specified.
                         this._onDismissed(uid);
@@ -143,21 +125,20 @@ class NotificationsContainer extends Component<Props> {
         this._notificationDismissTimeout = null;
     }
 
-    _onDismissed: number => void;
-
     /**
      * Emits an action to remove the notification from the redux store so it
      * stops displaying.
      *
-     * @param {number} uid - The id of the notification to be removed.
+     * @param {Object} uid - The id of the notification to be removed.
      * @private
      * @returns {void}
      */
-    _onDismissed(uid) {
+    _onDismissed(uid: any) {
         const { _notifications } = this.props;
 
         // Clear the timeout only if it's the top notification that's being
         // dismissed (the timeout is set only for the top one).
+        // @ts-ignore
         if (!_notifications.length || _notifications[0].uid === uid) {
             this._clearNotificationDismissTimeout();
         }
@@ -171,31 +152,45 @@ class NotificationsContainer extends Component<Props> {
      * @inheritdoc
      */
     render() {
-        const { _notifications } = this.props;
+        const { _notifications, shouldDisplayTileView, toolboxVisible } = this.props;
+        let notificationsContainerStyle;
 
-        // Currently the native container displays only the topmost notification
-        const theNotification = _notifications[0];
+        if (shouldDisplayTileView) {
 
-        if (!theNotification) {
-            return null;
+            if (toolboxVisible) {
+                notificationsContainerStyle = styles.withToolboxTileView;
+            } else {
+                notificationsContainerStyle = styles.withoutToolboxTileView;
+            }
+
+        } else {
+            notificationsContainerStyle
+                = toolboxVisible ? styles.withToolbox : styles.withoutToolbox;
         }
 
         return (
-            <View
-                pointerEvents = 'box-none'
-                style = { [
-                    styles.notificationContainer,
-                    this.props.style
-                ] } >
-                <Notification
-                    { ...theNotification.props }
-                    onDismissed = { this._onDismissed }
-                    uid = { theNotification.uid } />
-            </View>
+            <SafeAreaView
+                edges = { [ Platform.OS === 'ios' && 'bottom', 'left', 'right' ].filter(Boolean) }
+                style = { notificationsContainerStyle }>
+                <NotificationsTransition>
+                    {
+                        _notifications.map(notification => {
+                            // @ts-ignore
+                            const { props, uid } = notification;
+
+                            return (
+                                <Notification
+                                    { ...props }
+                                    key = { uid }
+                                    onDismissed = { this._onDismissed }
+                                    uid = { uid } />
+                            );
+                        })
+                    }
+                </NotificationsTransition>
+            </SafeAreaView>
         );
     }
-
-    _onDismissed: number => void;
 }
 
 /**
@@ -206,7 +201,7 @@ class NotificationsContainer extends Component<Props> {
  * @private
  * @returns {Props}
  */
-export function mapStateToProps(state: Object) {
+export function mapStateToProps(state) {
     const { notifications } = state['features/notifications'];
     const _visible = areThereNotifications(state);
 

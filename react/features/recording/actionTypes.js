@@ -56,3 +56,41 @@ export const SET_SELECTED_RECORDING_SERVICE = 'SET_SELECTED_RECORDING_SERVICE';
  * }
  */
 export const SET_STREAM_KEY = 'SET_STREAM_KEY';
+
+/**
+ * Sets the enable state of the meeting highlight button.
+ *
+ * {
+ *     type: SET_MEETING_HIGHLIGHT_BUTTON_STATE,
+ *     disabled: boolean
+ * }
+ */
+export const SET_MEETING_HIGHLIGHT_BUTTON_STATE = 'SET_MEETING_HIGHLIGHT_BUTTON_STATE';
+
+/**
+ * Attempts to start the local recording.
+ *
+ * {
+ *     type: START_LOCAL_RECORDING,
+ *     onlySelf: boolean
+ * }
+ */
+export const START_LOCAL_RECORDING = 'START_LOCAL_RECORDING';
+
+/**
+ * Stops local recording.
+ *
+ * {
+ *     type: STOP_LOCAL_RECORDING
+ * }
+ */
+export const STOP_LOCAL_RECORDING = 'STOP_LOCAL_RECORDING';
+
+/**
+ * Indicates that the start recording notification has been shown.
+ *
+ * {
+ *    type: SET_START_RECORDING_NOTIFICATION_SHOWN
+ * }
+ */
+export const SET_START_RECORDING_NOTIFICATION_SHOWN = 'SET_START_RECORDING_NOTIFICATION_SHOWN';

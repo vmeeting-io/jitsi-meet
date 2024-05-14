@@ -1,28 +1,20 @@
 // @flow
 
 import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { IconParticipants } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import { translate } from '../../../base/i18n/functions';
+import { IconParticipants } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 import { navigate }
     from '../../../conference/components/native/ConferenceNavigationContainerRef';
 import { screen } from '../../../conference/components/native/routes';
-
-type Props = AbstractButtonProps & {
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Dispatch<any>
-};
 
 
 /**
  * Implements an {@link AbstractButton} to open the participants panel.
  */
-class ParticipantsPaneButton extends AbstractButton<Props, *> {
+class ParticipantsPaneButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.participants';
     icon = IconParticipants;
     label = 'toolbar.participants';

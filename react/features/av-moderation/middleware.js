@@ -1,25 +1,24 @@
 // @flow
 import { batch } from 'react-redux';
 
-import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app';
-import { getConferenceState } from '../base/conference';
+import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app/actionTypes';
+import { getConferenceState } from '../base/conference/functions';
 import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
-import { MEDIA_TYPE } from '../base/media';
+import { MEDIA_TYPE, MediaType } from '../base/media/constants';
+import { PARTICIPANT_UPDATED } from '../base/participants/actionTypes';
+import { raiseHand } from '../base/participants/actions';
 import {
     getLocalParticipant,
     getRemoteParticipants,
     hasRaisedHand,
     isLocalParticipantModerator,
-    isParticipantModerator,
-    PARTICIPANT_UPDATED,
-    raiseHand
-} from '../base/participants';
-import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
-import { playSound, registerSound, unregisterSound } from '../base/sounds';
-import {
-    NOTIFICATION_TIMEOUT_TYPE,
-    showNotification
-} from '../notifications';
+    isParticipantModerator
+} from '../base/participants/functions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import StateListenerRegistry from '../base/redux/StateListenerRegistry';
+import { playSound, registerSound, unregisterSound } from '../base/sounds/actions';
+import { hideNotification, showNotification } from '../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 import { muteLocal } from '../video-menu/actions.any';
 
 import {
@@ -36,17 +35,19 @@ import {
 } from './actionTypes';
 import {
     disableModeration,
-    dismissPendingParticipant,
     dismissPendingAudioParticipant,
+    dismissPendingParticipant,
     enableModeration,
     localParticipantApproved,
+    localParticipantRejected,
     participantApproved,
     participantPendingAudio,
-    localParticipantRejected,
-    participantRejected,
+    participantRejected
 } from './actions';
 import {
-    ASKED_TO_UNMUTE_SOUND_ID, AUDIO_MODERATION_NOTIFICATION_ID,
+    ASKED_TO_UNMUTE_NOTIFICATION_ID,
+    ASKED_TO_UNMUTE_SOUND_ID,
+    AUDIO_MODERATION_NOTIFICATION_ID,
     CS_MODERATION_NOTIFICATION_ID,
     VIDEO_MODERATION_NOTIFICATION_ID
 } from './constants';
@@ -56,7 +57,7 @@ import {
     isParticipantPending
 } from './functions';
 import { ASKED_TO_UNMUTE_FILE } from './sounds';
-import { startScreenShareFlow } from '../screen-share';
+import { startScreenShareFlow } from '../screen-share/actions';
 
 declare var APP: Object;
 
@@ -76,7 +77,9 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
     case LOCAL_PARTICIPANT_MODERATION_NOTIFICATION: {
         let descriptionKey;
         let titleKey;
-        let uid;
+        let uid = '';
+        const localParticipant = getLocalParticipant(getState);
+        const raisedHand = hasRaisedHand(localParticipant);
 
         switch (action.kind) {
         case MEDIA_TYPE.AUDIO: {
@@ -98,10 +101,10 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
 
         dispatch(showNotification({
             customActionNameKey: [ 'notify.raiseHandAction' ],
-            customActionHandler: [ () => {
-                dispatch(raiseHand(true, action.kind));
-                return true;
-            } ],
+            customActionHandler: [ () => batch(() => {
+                !raisedHand && dispatch(raiseHand(true, action.kind));
+                dispatch(hideNotification(uid));
+            }) ],
             descriptionKey,
             sticky: true,
             titleKey,
@@ -111,11 +114,11 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
         break;
     }
     case REQUEST_DISABLE_MODERATION: {
-        conference.disableAVModeration(action.kind);
+        conference?.disableAVModeration(action.kind);
         break;
     }
     case REQUEST_ENABLE_MODERATION: {
-        conference.enableAVModeration(action.kind);
+        conference?.enableAVModeration(action.kind);
         break;
     }
     case PARTICIPANT_UPDATED: {
@@ -136,7 +139,7 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
                     isParticipantPending(participant, MEDIA_TYPE.AUDIO)(state)
                     && dispatch(dismissPendingAudioParticipant(participant));
                 }
-            } else if (participant.id === getLocalParticipant(state).id
+            } else if (participant.id === getLocalParticipant(state)?.id
                 && /* the new role */ isParticipantModerator(participant)) {
 
                 // this is the granted moderator case
@@ -205,6 +208,7 @@ StateListenerRegistry.register(
             // local participant is allowed to unmute
             conference.on(JitsiConferenceEvents.AV_MODERATION_APPROVED, ({ kind }) => {
                 dispatch(localParticipantApproved(kind));
+                dispatch(raiseHand(false));
 
                 // Audio & video moderation are both enabled at the same time.
                 // Avoid displaying 2 different notifications.
@@ -213,7 +217,8 @@ StateListenerRegistry.register(
                         titleKey: 'notify.hostAskedUnmute',
                         sticky: true,
                         customActionNameKey: [ 'notify.unmute' ],
-                        customActionHandler: [ () => dispatch(muteLocal(false, kind)) ]
+                        customActionHandler: [ () => dispatch(muteLocal(false, kind)) ],
+                        uid: ASKED_TO_UNMUTE_NOTIFICATION_ID
                     }, NOTIFICATION_TIMEOUT_TYPE.STICKY));
                     dispatch(playSound(ASKED_TO_UNMUTE_SOUND_ID));
                 } else if (kind === MEDIA_TYPE.VIDEO) {

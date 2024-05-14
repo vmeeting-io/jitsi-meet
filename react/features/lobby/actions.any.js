@@ -2,22 +2,29 @@
 
 import { type Dispatch } from 'redux';
 
-import {
-    conferenceWillJoin,
-    getCurrentConference,
-    sendLocalParticipant,
-    setPassword
-} from '../base/conference';
-import { getLocalParticipant } from '../base/participants';
+import { conferenceWillJoin, setPassword } from '../base/conference/actions';
+import { getCurrentConference, sendLocalParticipant } from '../base/conference/functions';
+import { getLocalParticipant } from '../base/participants/functions';
+import { onLobbyChatInitialized, removeLobbyChatParticipant, sendMessage } from '../chat/actions.any';
+import { LOBBY_CHAT_MESSAGE } from '../chat/constants';
+import { handleLobbyMessageReceived } from '../chat/middleware';
+import { hideNotification, showNotification } from '../notifications/actions';
+import { LOBBY_NOTIFICATION_ID } from '../notifications/constants';
+import { joinConference } from '../prejoin/actions';
 
 import {
     KNOCKING_PARTICIPANT_ARRIVED_OR_UPDATED,
     KNOCKING_PARTICIPANT_LEFT,
+    REMOVE_LOBBY_CHAT_WITH_MODERATOR,
     SET_KNOCKING_STATE,
     SET_LOBBY_MODE_ENABLED,
-    SET_PASSWORD_JOIN_FAILED,
-    SET_LOBBY_VISIBILITY
+    SET_LOBBY_PARTICIPANT_CHAT_STATE,
+    SET_LOBBY_VISIBILITY,
+    SET_PASSWORD_JOIN_FAILED
 } from './actionTypes';
+import { LOBBY_CHAT_INITIALIZED, MODERATOR_IN_CHAT_WITH_LEFT } from './constants';
+import { getKnockingParticipants, getLobbyConfig, getLobbyEnabled, isEnablingLobbyAllowed } from './functions';
+import logger from './logger';
 
 /**
  * Tries to join with a preset password.
@@ -29,7 +36,7 @@ export function joinWithPassword(password: string) {
     return async (dispatch: Dispatch<any>, getState: Function) => {
         const conference = getCurrentConference(getState);
 
-        dispatch(setPassword(conference, conference.join, password));
+        dispatch(setPassword(conference, conference?.join, password));
     };
 }
 
@@ -66,6 +73,20 @@ export function participantIsKnockingOrUpdated(participant: Object) {
 }
 
 /**
+ * Handles a knocking participant and dismisses the notification.
+ *
+ * @param {string} id - The id of the knocking participant.
+ * @param {boolean} approved - True if the participant is approved, false otherwise.
+ * @returns {Function}
+ */
+export function answerKnockingParticipant(id: string, approved: boolean) {
+    return async (dispatch) => {
+        dispatch(setKnockingParticipantApproval(id, approved));
+        dispatch(hideNotification(LOBBY_NOTIFICATION_ID));
+    };
+}
+
+/**
  * Approves (lets in) or rejects a knocking participant.
  *
  * @param {string} id - The id of the knocking participant.
@@ -96,9 +117,7 @@ export function admitMultiple(participants: Array<Object>) {
     return (dispatch: Function, getState: Function) => {
         const conference = getCurrentConference(getState);
 
-        participants.forEach(p => {
-            conference.lobbyApproveAccess(p.id);
-        });
+        conference?.lobbyApproveAccess(participants.map(p => p.id));
     };
 }
 
@@ -112,7 +131,7 @@ export function approveKnockingParticipant(id: string) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const conference = getCurrentConference(getState);
 
-        conference && conference.lobbyApproveAccess(id);
+        conference?.lobbyApproveAccess(id);
     };
 }
 
@@ -126,7 +145,7 @@ export function rejectKnockingParticipant(id: string) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const conference = getCurrentConference(getState);
 
-        conference && conference.lobbyDenyAccess(id);
+        conference?.lobbyDenyAccess(id);
     };
 }
 
@@ -187,6 +206,18 @@ export function startKnocking() {
     return async (dispatch: Dispatch<any>, getState: Function) => {
         const state = getState();
         const { membersOnly } = state['features/base/conference'];
+
+        if (!membersOnly) {
+
+            // no membersOnly, this means we got lobby screen shown as someone
+            // tried to join a conference that has lobby enabled without setting display name
+            // join conference should trigger the lobby/member_only path after setting the display name
+            // this is possible only for web, where we can join without a prejoin screen
+            dispatch(joinConference());
+
+            return;
+        }
+
         const localParticipant = getLocalParticipant(state);
 
         dispatch(conferenceWillJoin(membersOnly));
@@ -195,7 +226,8 @@ export function startKnocking() {
         // we want to send that display name, it was not updated in case when pre-join is disabled
         sendLocalParticipant(state, membersOnly);
 
-        membersOnly.joinLobby(localParticipant.name, localParticipant.email);
+        membersOnly?.joinLobby(localParticipant?.name, localParticipant?.email);
+        dispatch(setLobbyMessageListener());
         dispatch(setKnockingState(true));
     };
 }
@@ -211,9 +243,13 @@ export function toggleLobbyMode(enabled: boolean) {
         const conference = getCurrentConference(getState);
 
         if (enabled) {
-            conference.enableLobby();
+            if (isEnablingLobbyAllowed(getState())) {
+                conference?.enableLobby();
+            } else {
+                logger.info('Ignoring enable lobby request because there are visitors in the call already.');
+            }
         } else {
-            conference.disableLobby();
+            conference?.disableLobby();
         }
     };
 }
@@ -241,3 +277,150 @@ export function hideLobbyScreen() {
         visible: false
     };
 }
+
+/**
+ * Action to handle chat initialized in the lobby room.
+ *
+ * @param {Object} payload - The payload received,
+ * contains the information about the two participants
+ * that will chat with each other in the lobby room.
+ *
+ * @returns {Promise<void>}
+ */
+export function handleLobbyChatInitialized(payload) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const conference = getCurrentConference(state);
+
+        const id = conference?.myLobbyUserId();
+
+        dispatch({
+            type: SET_LOBBY_PARTICIPANT_CHAT_STATE,
+            participant: payload.attendee,
+            moderator: payload.moderator
+        });
+
+        dispatch(onLobbyChatInitialized(payload));
+
+        const attendeeIsKnocking = getKnockingParticipants(state).some(p => p.id === payload.attendee.id);
+
+        if (attendeeIsKnocking && conference?.getRole() === 'moderator' && payload.moderator.id !== id) {
+            dispatch(showNotification({
+                titleKey: 'lobby.lobbyChatStartedNotification',
+                titleArguments: {
+                    moderator: payload.moderator.name ?? '',
+                    attendee: payload.attendee.name ?? ''
+                }
+            }));
+        }
+    };
+}
+
+/**
+ * Action to send message to the moderator.
+ *
+ * @param {string} message - The message to be sent.
+ *
+ * @returns {Promise<void>}
+ */
+export function onSendMessage(message: string) {
+    return async (dispatch) => {
+        dispatch(sendMessage(message));
+    };
+}
+
+/**
+ * Action to send lobby message to every participant. Only allowed for moderators.
+ *
+ * @param {Object} message - The message to be sent.
+ *
+ * @returns {Promise<void>}
+ */
+export function sendLobbyChatMessage(message: Object) {
+    return async (dispatch, getState) => {
+        const conference = getCurrentConference(getState);
+
+        conference?.sendLobbyMessage(message);
+    };
+}
+
+/**
+ * Sets lobby listeners if lobby has been enabled.
+ *
+ * @returns {Function}
+ */
+export function maybeSetLobbyChatMessageListener() {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const lobbyEnabled = getLobbyEnabled(state);
+
+        if (lobbyEnabled) {
+            dispatch(setLobbyMessageListener());
+        }
+    };
+}
+
+/**
+ * Action to handle the event when a moderator leaves during lobby chat.
+ *
+ * @param {string} participantId - The participant id of the moderator who left.
+ * @returns {Function}
+ */
+export function updateLobbyParticipantOnLeave(participantId: string) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const { knocking, knockingParticipants } = state['features/lobby'];
+        const { lobbyMessageRecipient } = state['features/chat'];
+        const { conference } = state['features/base/conference'];
+
+        if (knocking && lobbyMessageRecipient && lobbyMessageRecipient.id === participantId) {
+            return dispatch(removeLobbyChatParticipant(true));
+        }
+
+        if (!knocking) {
+            // inform knocking participant when their moderator leaves
+            const participantToNotify = knockingParticipants.find(p => p.chattingWithModerator === participantId);
+
+            if (participantToNotify) {
+                conference?.sendLobbyMessage({
+                    type: MODERATOR_IN_CHAT_WITH_LEFT,
+                    moderatorId: participantToNotify.chattingWithModerator
+                }, participantToNotify.id);
+            }
+            dispatch({
+                type: REMOVE_LOBBY_CHAT_WITH_MODERATOR,
+                moderatorId: participantId
+            });
+        }
+    };
+}
+
+/**
+ * Handles all messages received in the lobby room.
+ *
+ * @returns {Function}
+ */
+export function setLobbyMessageListener() {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const conference = getCurrentConference(state);
+        const { enableChat = true } = getLobbyConfig(state);
+
+        if (!enableChat) {
+            return;
+        }
+
+        conference?.addLobbyMessageListener((message: any, participantId: string) => {
+            if (message.type === LOBBY_CHAT_MESSAGE) {
+                return dispatch(handleLobbyMessageReceived(message.message, participantId));
+            }
+            if (message.type === LOBBY_CHAT_INITIALIZED) {
+                return dispatch(handleLobbyChatInitialized(message));
+            }
+            if (message.type === MODERATOR_IN_CHAT_WITH_LEFT) {
+                return dispatch(updateLobbyParticipantOnLeave(message.moderatorId));
+            }
+        });
+    };
+}
+

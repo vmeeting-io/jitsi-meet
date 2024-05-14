@@ -2,9 +2,9 @@
 
 import React from 'react';
 import { SafeAreaView, View } from 'react-native';
+import { connect } from 'react-redux';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
-import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import { ChatButton } from '../../../chat';
 import { ParticipantsPaneButton } from '../../../participants-pane/components/native';

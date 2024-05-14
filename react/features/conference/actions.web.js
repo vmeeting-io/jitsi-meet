@@ -1,78 +1,69 @@
 // @flow
 
-import type { Dispatch } from 'redux';
+import { configureInitialDevices, getAvailableDevices } from '../base/devices/actions.web';
+import { openDialog } from '../base/dialog/actions';
+import { getBackendSafeRoomName } from '../base/util/uri';
 
-import { getParticipantDisplayName } from '../base/participants';
-import {
-    NOTIFICATION_TIMEOUT_TYPE,
-    NOTIFICATION_TYPE,
-    showNotification
-} from '../notifications';
+import { DISMISS_CALENDAR_NOTIFICATION } from './actionTypes';
+import LeaveReasonDialog from './components/web/LeaveReasonDialog.web';
+import logger from './logger';
 
 /**
- * Notify that we've been kicked out of the conference.
+ * Opens {@code LeaveReasonDialog}.
  *
- * @param {JitsiParticipant} participant - The {@link JitsiParticipant}
- * instance which initiated the kick event.
- * @param {?Function} _ - Used only in native code.
- * @returns {Function}
+ * @param {string} [title] - The dialog title.
+ *
+ * @returns {Promise} Resolved when the dialog is closed.
  */
-export function notifyKickedOut(participant: Object, _: ?Function) { // eslint-disable-line no-unused-vars
-    return (dispatch: Dispatch<any>, getState: Function) => {
-        if (!participant || (participant.isReplaced && participant.isReplaced())) {
-            return;
-        }
+export function openLeaveReasonDialog(title?: string) {
+    return (dispatch: Function) => new Promise(resolve => {
+        dispatch(openDialog(LeaveReasonDialog, {
+            onClose: resolve,
+            title
+        }));
+    });
+}
 
-        const args = {
-            participantDisplayName:
-                getParticipantDisplayName(getState, participant.getId())
-        };
-
-        dispatch(showNotification({
-            appearance: NOTIFICATION_TYPE.ERROR,
-            hideErrorSupportLink: true,
-            descriptionKey: 'dialog.kickMessage',
-            descriptionArguments: args,
-            titleKey: 'dialog.kickTitle',
-            titleArguments: args
-        }, NOTIFICATION_TIMEOUT_TYPE.STICKY));
+/**
+ * Dismisses calendar notification about next or ongoing event.
+ *
+ * @returns {Object}
+ */
+export function dismissCalendarNotification() {
+    return {
+        type: DISMISS_CALENDAR_NOTIFICATION
     };
 }
 
 /**
- * Notify that a user has been disabled for Chat
- * 
- * @param {JitsiParticipant} participant - The {JitsiParticipant} ID who was disabled for chat
+ * Setups initial devices. Makes sure we populate availableDevices list before configuring.
+ *
+ * @returns {Promise<any>}
  */
-export function notifyChatDisabled(participant: Object, _: ?Function) { // eslint-disable-line no-unused-vars
-    return (dispatch: Dispatch<any>, getState: Function) => {
-        const args = {
-            participantDisplayName:
-                getParticipantDisplayName(getState, participant)
-        };
-
-        dispatch(showNotification({
-            titleKey: 'dialog.chatDisabledMessage',
-            titleArguments: args,
-        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+export function setupInitialDevices() {
+    return async (dispatch: Function) => {
+        await dispatch(getAvailableDevices());
+        await dispatch(configureInitialDevices());
     };
 }
 
 /**
- * Notify that a user has been re-enabled for Chat
- * 
- * @param {JitsiParticipant} participant - The {JitsiParticipant} ID who was disabled for chat
+ * Init.
+ *
+ * @returns {Promise<JitsiConnection>}
  */
-export function notifyChatEnabled(participant: Object, _: ?Function) { // eslint-disable-line no-unused-vars
-    return (dispatch: Dispatch<any>, getState: Function) => {
-        const args = {
-            participantDisplayName:
-                getParticipantDisplayName(getState, participant)
-        };
+export function init() {
+    return (dispatch: Function, getState: Function) => {
+        const room = getBackendSafeRoomName(getState()['features/base/conference'].room);
 
-        dispatch(showNotification({
-            titleKey: 'dialog.chatEnabledMessage',
-            titleArguments: args
-        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+        // XXX For web based version we use conference initialization logic
+        // from the old app (at the moment of writing).
+        return dispatch(setupInitialDevices()).then(
+            () => APP.conference.init({
+                roomName: room
+            }).catch((error) => {
+                APP.API.notifyConferenceLeft(APP.conference.roomName);
+                logger.error(error);
+            }));
     };
 }

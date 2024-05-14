@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-import tokenLocalStorage from "../../api/tokenLocalStorage";
-import { getAuthUrl } from "../../api/url";
-import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from "../notifications"
+import tokenLocalStorage from '../../api/tokenLocalStorage';
+import { getAuthUrl } from '../../api/url';
+import { showNotification } from '../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 
 /**
  * Send a Consent Disagree Notification.

@@ -3,10 +3,11 @@
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const dotenv = require('dotenv');
 const fs = require('fs');
-const { join } = require('path');
+const { join, resolve } = require('path');
 const process = require('process');
 const webpack = require('webpack');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+// const sharedConfig = require('./webpack-shared-config');
 
 /**
  * The URL of the Jitsi Meet deployment to be proxy to in the context of
@@ -36,15 +37,15 @@ const envKeys = Object.keys(env).reduce((prev, next) => {
  *
  * @param {Object} options - options for the bundles configuration.
  * @param {boolean} options.analyzeBundle - whether the bundle needs to be analyzed for size.
- * @param {boolean} options.minimize - whether the code should be minimized or not.
+ * @param {boolean} options.isProduction - whether this is a production build or not.
  * @param {number} size - the size limit to apply.
  * @returns {Object} a performance hints object.
  */
 function getPerformanceHints(options, size) {
-    const { analyzeBundle, minimize } = options;
+    const { analyzeBundle, isProduction } = options;
 
     return {
-        hints: minimize && !analyzeBundle ? 'error' : false,
+        hints: isProduction && !analyzeBundle ? 'error' : false,
         maxAssetSize: size,
         maxEntrypointSize: size
     };
@@ -106,15 +107,15 @@ function devServerProxyBypass({ path }) {
  *
  * @param {Object} options - options for the bundles configuration.
  * @param {boolean} options.detectCircularDeps - whether to detect circular dependencies or not.
- * @param {boolean} options.minimize - whether the code should be minimized or not.
+ * @param {boolean} options.isProduction - whether this is a production build or not.
  * @returns {Object} the base config object.
  */
 function getConfig(options = {}) {
-    const { detectCircularDeps, minimize } = options;
+    const { detectCircularDeps, isProduction } = options;
 
     return {
-        devtool: 'source-map',
-        mode: minimize ? 'production' : 'development',
+        devtool: isProduction ? 'source-map' : 'eval-source-map',
+        mode: isProduction ? 'production' : 'development',
         module: {
             rules: [ {
                 // Transpile ES2015 (aka ES6) to ES5. Accept the JSX syntax by React
@@ -125,13 +126,12 @@ function getConfig(options = {}) {
                     // Avoid loading babel.config.js, since we only use it for React Native.
                     configFile: false,
 
-                    // XXX The require.resolve bellow solves failures to locate the
+                    // XXX The require.resolve below solves failures to locate the
                     // presets when lib-jitsi-meet, for example, is npm linked in
                     // jitsi-meet.
                     plugins: [
                         require.resolve('@babel/plugin-proposal-export-default-from')
                     ],
-
                     presets: [
                         [
                             require.resolve('@babel/preset-env'),
@@ -158,7 +158,7 @@ function getConfig(options = {}) {
                         require.resolve('@babel/preset-react'),
                     ]
                 },
-                test: /\.(js|ts)x?$/
+                test: /\.jsx?$/
             }, {
                 // TODO: get rid of this.
                 // Expose jquery as the globals $ and jQuery because it is expected
@@ -202,21 +202,6 @@ function getConfig(options = {}) {
                     },
                 ]
             }, {
-                test: /\/node_modules\/@atlaskit\/modal-dialog\/.*\.js$/,
-                resolve: {
-                    alias: {
-                        'react-focus-lock': `${__dirname}/react/features/base/util/react-focus-lock-wrapper.js`,
-                        '../styled/Modal': `${__dirname}/react/features/base/dialog/components/web/ThemedDialog.js`
-                    }
-                }
-            }, {
-                test: /\/react\/features\/base\/util\/react-focus-lock-wrapper.js$/,
-                resolve: {
-                    alias: {
-                        'react-focus-lock': `${__dirname}/node_modules/react-focus-lock`
-                    }
-                }
-            }, {
                 test: /\.svg$/,
                 use: [ {
                     loader: '@svgr/webpack',
@@ -231,9 +216,13 @@ function getConfig(options = {}) {
                 use: [{ loader: 'file-loader' }]
             }, {
                 test: /\.ts?$/,
-                use: [{ loader: 'ts-loader' }],
-                // exclude: /node_modules/,
-            }, ]
+                exclude: /node_modules/,
+                loader: 'ts-loader',
+                options: {
+                    configFile: 'tsconfig.web.json',
+                    transpileOnly: !isProduction // Skip type checking for dev builds.,
+                }
+            } ]
         },
         node: {
             // Allow the use of the real filename of the module being executed. By
@@ -242,11 +231,11 @@ function getConfig(options = {}) {
             __filename: true
         },
         optimization: {
-            concatenateModules: minimize,
-            minimize
+            concatenateModules: isProduction,
+            minimize: isProduction
         },
         output: {
-            filename: `[name]${minimize ? '.min' : ''}.js`,
+            filename: `[name]${isProduction ? '.min' : ''}.js`,
             path: `${__dirname}/build`,
             publicPath: '/libs/',
             sourceMapFilename: '[file].map'
@@ -256,7 +245,7 @@ function getConfig(options = {}) {
             detectCircularDeps
                 && new CircularDependencyPlugin({
                     allowAsyncCycles: false,
-                    // exclude: /node_modules/,
+                    exclude: /node_modules/,
                     failOnError: false
                 })
         ].filter(Boolean),
@@ -269,11 +258,15 @@ function getConfig(options = {}) {
             ],
             extensions: [
                 '.web.js',
+                '.web.ts',
+                '.web.tsx',
+
+                // Typescript:
+                '.tsx',
+                '.ts',
 
                 // Webpack defaults:
                 '.js',
-                '.ts',
-                '.tsx',
                 '.json'
             ],
             fallback: {
@@ -301,11 +294,12 @@ function getDevServerConfig() {
             overlay: {
                 errors: true,
                 warnings: false
-            }
+            },
         },
         allowedHosts: 'all',
         https: true,
         host: '0.0.0.0',
+        port: 8088,
         hot: true,
         proxy: {
             '/': {
@@ -329,12 +323,12 @@ module.exports = (_env, argv) => {
     const isProduction = mode === 'production';
     const configOptions = {
         detectCircularDeps: Boolean(process.env.DETECT_CIRCULAR_DEPS),
-        minimize: isProduction
+        isProduction
     };
     const config = getConfig(configOptions);
     const perfHintOptions = {
         analyzeBundle,
-        minimize: isProduction
+        isProduction
     };
 
     return [
@@ -358,7 +352,9 @@ module.exports = (_env, argv) => {
                     process: 'process/browser'
                 })
             ],
-            performance: getPerformanceHints(perfHintOptions, 7 * 1024 * 1024)
+
+            performance: getPerformanceHints(perfHintOptions, 10 * 1024 * 1024)
+
         }),
         Object.assign({}, config, {
             entry: {
@@ -369,40 +365,6 @@ module.exports = (_env, argv) => {
                 ...getBundleAnalyzerPlugin(analyzeBundle, 'alwaysontop')
             ],
             performance: getPerformanceHints(perfHintOptions, 800 * 1024)
-        }),
-        Object.assign({}, config, {
-            entry: {
-                'dial_in_info_bundle': './react/features/invite/components/dial-in-info-page'
-            },
-            plugins: [
-                ...config.plugins,
-                ...getBundleAnalyzerPlugin(analyzeBundle, 'dial_in_info'),
-                new webpack.IgnorePlugin({
-                    resourceRegExp: /^\.\/locale$/,
-                    contextRegExp: /moment$/
-                })
-            ],
-            performance: getPerformanceHints(perfHintOptions, 500 * 1024)
-        }),
-        Object.assign({}, config, {
-            entry: {
-                'do_external_connect': './connection_optimization/do_external_connect.js'
-            },
-            plugins: [
-                ...config.plugins,
-                ...getBundleAnalyzerPlugin(analyzeBundle, 'do_external_connect')
-            ],
-            performance: getPerformanceHints(perfHintOptions, 5 * 1024)
-        }),
-        Object.assign({}, config, {
-            entry: {
-                'flacEncodeWorker': './react/features/local-recording/recording/flac/flacEncodeWorker.js'
-            },
-            plugins: [
-                ...config.plugins,
-                ...getBundleAnalyzerPlugin(analyzeBundle, 'flacEncodeWorker')
-            ],
-            performance: getPerformanceHints(perfHintOptions, 5 * 1024)
         }),
         Object.assign({}, config, {
             entry: {
@@ -439,29 +401,74 @@ module.exports = (_env, argv) => {
             ],
             performance: getPerformanceHints(perfHintOptions, 200 * 1024)
         }),
-
         Object.assign({}, config, {
             entry: {
-                'facial-expressions-worker': './react/features/facial-recognition/facialExpressionsWorker.js'
+                'face-landmarks-worker': './react/features/face-landmarks/faceLandmarksWorker.js'
             },
             plugins: [
                 ...config.plugins,
-                ...getBundleAnalyzerPlugin(analyzeBundle, 'facial-expressions-worker')
+                ...getBundleAnalyzerPlugin(analyzeBundle, 'face-landmarks-worker')
             ],
-            performance: getPerformanceHints(perfHintOptions, 1024 * 1024)
+            performance: getPerformanceHints(perfHintOptions, 1024 * 1024 * 2)
+        }),
+        Object.assign({}, config, {
+            /**
+             * The NoiseSuppressorWorklet is loaded in an audio worklet which doesn't have the same
+             * context as a normal window, (e.g. self/window is not defined).
+             * While running a production build webpack's boilerplate code doesn't introduce any
+             * audio worklet "unfriendly" code however when running the dev server, hot module replacement
+             * and live reload add javascript code that can't be ran by the worklet, so we explicitly ignore
+             * those parts with the null-loader.
+             * The dev server also expects a `self` global object that's not available in the `AudioWorkletGlobalScope`,
+             * so we replace it.
+             */
+            entry: {
+                'noise-suppressor-worklet':
+                    './react/features/stream-effects/noise-suppression/NoiseSuppressorWorklet.js'
+            },
+
+            module: { rules: [
+                ...config.module.rules,
+                {
+                    test: resolve(__dirname, 'node_modules/webpack-dev-server/client'),
+                    loader: 'null-loader'
+                }
+            ] },
+            plugins: [
+            ],
+            performance: getPerformanceHints(perfHintOptions, 200 * 1024),
+
+            output: {
+                ...config.output,
+
+                globalObject: 'AudioWorkletGlobalScope'
+            }
+        }),
+
+        Object.assign({}, config, {
+            entry: {
+                'screenshot-capture-worker': './react/features/screenshot-capture/worker.js'
+            },
+            plugins: [
+                ...config.plugins,
+                ...getBundleAnalyzerPlugin(analyzeBundle, 'screenshot-capture-worker')
+            ],
+            performance: getPerformanceHints(perfHintOptions, 4 * 1024)
         }),
 
         ...(isProduction ? [] : [
-            Object.assign({}, config, {
-                entry: {
-                    'lib-jitsi-meet': './lib-jitsi-meet/index.js'
-                },
-                output: Object.assign({}, config.output, {
-                    library: 'JitsiMeetJS',
-                    libraryTarget: 'umd',
-                    path: join(process.cwd(), 'lib-jitsi-meet', 'dist', 'umd')
-                })
-            }),
+            // Object.assign({}, sharedConfig(false), {
+            //     entry: {
+            //         'lib-jitsi-meet': './lib-jitsi-meet/index.js'
+            //     },
+            //     output: {
+            //         library: 'JitsiMeetJS',
+            //         libraryTarget: 'umd',
+            //         path: join(process.cwd(), 'lib-jitsi-meet', 'dist', 'umd'),
+            //         filename: `[name].js`,
+            //         sourceMapFilename: `[name].js.map`
+            //     }
+            // }),
 
             // Object.assign({}, config, {
             //     entry: {

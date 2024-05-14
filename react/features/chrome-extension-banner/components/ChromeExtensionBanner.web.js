@@ -1,26 +1,21 @@
-// @flow
-
+// @ts-expect-error
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 
-import {
-    createChromeExtensionBannerEvent,
-    sendAnalytics
-} from '../../analytics';
+import { createChromeExtensionBannerEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
 import { getCurrentConference } from '../../base/conference/functions';
+import checkChromeExtensionsInstalled from '../../base/environment/checkChromeExtensionsInstalled.web';
 import {
-    checkChromeExtensionsInstalled,
     isMobileBrowser
 } from '../../base/environment/utils';
-import { translate } from '../../base/i18n';
-import { Icon, IconClose } from '../../base/icons';
+import { translate } from '../../base/i18n/functions';
+import Icon from '../../base/icons/components/Icon';
+import { IconCloseLarge } from '../../base/icons/svg';
 import { browser } from '../../base/lib-jitsi-meet';
-import { connect } from '../../base/redux';
 import { isVpaasMeeting } from '../../jaas/functions';
 import logger from '../logger';
-
-
-declare var interfaceConfig: Object;
 
 const emptyObject = {};
 
@@ -32,70 +27,21 @@ const emptyObject = {};
 const DONT_SHOW_AGAIN_CHECKED = 'hide_chrome_extension_banner';
 
 /**
- * The type of the React {@code PureComponent} props of {@link ChromeExtensionBanner}.
- */
-type Props = {
-
-    /**
-     * Contains info about installed/to be installed chrome extension(s).
-     */
-    bannerCfg: Object,
-
-    /**
-     * Conference data, if any.
-     */
-    conference: Object,
-
-    /**
-     * Whether I am the current recorder.
-     */
-    iAmRecorder: boolean,
-
-    /**
-     * Whether it's a vpaas meeting or not.
-     */
-    isVpaas: boolean,
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function,
-};
-
-/**
- * The type of the React {@link PureComponent} state of {@link ChromeExtensionBanner}.
- */
-type State = {
-
-    /**
-     * Keeps the current value of dont show again checkbox.
-     */
-    dontShowAgainChecked: boolean,
-
-    /**
-     * Tells whether user pressed install extension or close button.
-     */
-    closePressed: boolean,
-
-    /**
-     * Tells whether should show the banner or not based on extension being installed or not.
-     */
-    shouldShow: boolean,
-};
-
-/**
  * Implements a React {@link PureComponent} which displays a banner having a link to the chrome extension.
  *
  * @class ChromeExtensionBanner
  * @augments PureComponent
  */
-class ChromeExtensionBanner extends PureComponent<Props, State> {
+class ChromeExtensionBanner extends PureComponent {
+    isEdge;
+
     /**
      * Initializes a new {@code ChromeExtensionBanner} instance.
      *
      * @param {Object} props - The read-only React {@code PureComponent} props with
      * which the new instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
         this.state = {
             dontShowAgainChecked: false,
@@ -103,6 +49,7 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
             shouldShow: false
         };
 
+        this.isEdge = /Edg(e)?/.test(navigator.userAgent);
         this._onClosePressed = this._onClosePressed.bind(this);
         this._onInstallExtensionClick = this._onInstallExtensionClick.bind(this);
         this._shouldNotRender = this._shouldNotRender.bind(this);
@@ -136,8 +83,7 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
         const hasExtensions = await checkChromeExtensionsInstalled(this.props.bannerCfg);
 
         if (
-            hasExtensions
-            && hasExtensions.length
+            hasExtensions?.length
             && hasExtensions.every(ext => !ext)
             && !this.state.shouldShow
         ) {
@@ -153,13 +99,11 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
      */
     _isSupportedEnvironment() {
         return interfaceConfig.SHOW_CHROME_EXTENSION_BANNER
-            && browser.isChrome()
+            && browser.isChromiumBased()
             && !browser.isTwa()
             && !isMobileBrowser()
             && !this.props.isVpaas;
     }
-
-    _onClosePressed: () => void;
 
     /**
      * Closes the banner for the current session.
@@ -170,8 +114,6 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
         sendAnalytics(createChromeExtensionBannerEvent(false));
         this.setState({ closePressed: true });
     }
-
-    _onCloseKeyPress: (Object) => void;
 
     /**
      * KeyPress handler for accessibility.
@@ -187,20 +129,18 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
         }
     }
 
-    _onInstallExtensionClick: () => void;
-
     /**
      * Opens the chrome extension page.
      *
      * @returns {void}
      */
     _onInstallExtensionClick() {
+        const { edgeUrl, url } = this.props.bannerCfg;
+
         sendAnalytics(createChromeExtensionBannerEvent(true));
-        window.open(this.props.bannerCfg.url);
+        window.open(this.isEdge && edgeUrl ? edgeUrl : url);
         this.setState({ closePressed: true });
     }
-
-    _onInstallExtensionKeyPress: (Object) => void;
 
     /**
      * KeyPress handler for accessibility.
@@ -215,8 +155,6 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
             this._onClosePressed();
         }
     }
-
-    _shouldNotRender: () => boolean;
 
     /**
      * Checks whether the banner should not be rendered.
@@ -236,8 +174,6 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
             || !this.state.shouldShow
             || this.props.iAmRecorder;
     }
-
-    _onDontShowAgainChange: (object: Object) => void;
 
     /**
     * Handles the current `don't show again` checkbox state.
@@ -263,7 +199,7 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
 
             return null;
         }
-        const { t } = this.props;
+        const { bannerCfg, t } = this.props;
         const mainClassNames = this.props.conference
             ? 'chrome-extension-banner chrome-extension-banner__pos_in_meeting'
             : 'chrome-extension-banner';
@@ -271,7 +207,7 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
         return (
             <div className = { mainClassNames }>
                 <div
-                    aria-aria-describedby = 'chrome-extension-banner__text-container'
+                    aria-describedby = 'chrome-extension-banner__text-container'
                     className = 'chrome-extension-banner__container'
                     role = 'banner'>
                     <div className = 'chrome-extension-banner__icon-container' />
@@ -290,7 +226,7 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
                         <Icon
                             className = 'gray'
                             size = { 12 }
-                            src = { IconClose } />
+                            src = { IconCloseLarge } />
                     </div>
                 </div>
                 <div
@@ -305,7 +241,10 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
                         <div
                             className = 'chrome-extension-banner__button-text'
                             id = 'chrome-extension-banner__button-text'>
-                            { t('chromeExtensionBanner.buttonText') }
+                            { t(this.isEdge && bannerCfg.edgeUrl
+                                ? 'chromeExtensionBanner.buttonTextEdge'
+                                : 'chromeExtensionBanner.buttonText')
+                            }
                         </div>
                     </div>
                 </div>
@@ -334,12 +273,12 @@ class ChromeExtensionBanner extends PureComponent<Props, State> {
  * @param {Object} state - Redux state.
  * @returns {Object}
  */
-const _mapStateToProps = state => {
+const _mapStateToProps = (state) => {
     return {
         // Using emptyObject so that we don't change the reference every time when _mapStateToProps is called.
         bannerCfg: state['features/base/config'].chromeExtensionBanner || emptyObject,
         conference: getCurrentConference(state),
-        iAmRecorder: state['features/base/config'].iAmRecorder,
+        iAmRecorder: Boolean(state['features/base/config'].iAmRecorder),
         isVpaas: isVpaasMeeting(state)
     };
 };

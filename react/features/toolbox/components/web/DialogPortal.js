@@ -1,35 +1,8 @@
-// @flow
-
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
+import { useSelector } from 'react-redux';
 
-type Props = {
-
-    /**
-     * The component(s) to be displayed within the drawer portal.
-     */
-    children: React$Node,
-
-    /**
-     * Custom class name to apply on the container div.
-     */
-    className?: string,
-
-    /**
-     * Function used to get the refferrence to the container div.
-     */
-    getRef?: Function,
-
-    /**
-     * Function used to get the updated size info of the container on it's resize.
-     */
-    setSize?: Function,
-
-    /**
-     * Custom style to apply to the container div.
-     */
-    style?: Object,
-};
+import { ZINDEX_DIALOG_PORTAL } from '../../constants';
 
 /**
  * Component meant to render a drawer at the bottom of the screen,
@@ -37,18 +10,21 @@ type Props = {
  *
  * @returns {ReactElement}
  */
-function DialogPortal({ children, className, style, getRef, setSize }: Props) {
+function DialogPortal({ children, className, style, getRef, setSize, targetSelector, onVisible }) {
+    const clientWidth = useSelector((state) => state['features/base/responsive-ui'].clientWidth);
     const [ portalTarget ] = useState(() => {
         const portalDiv = document.createElement('div');
 
+        portalDiv.style.visibility = 'hidden';
+
         return portalDiv;
     });
+    const timerRef = useRef();
 
     useEffect(() => {
         if (style) {
             for (const styleProp of Object.keys(style)) {
-                // https://github.com/facebook/flow/issues/3733
-                const objStyle: Object = portalTarget.style;
+                const objStyle = portalTarget.style;
 
                 objStyle[styleProp] = style[styleProp];
             }
@@ -61,8 +37,9 @@ function DialogPortal({ children, className, style, getRef, setSize }: Props) {
     useEffect(() => {
         if (portalTarget && getRef) {
             getRef(portalTarget);
+            portalTarget.style.zIndex = `${ZINDEX_DIALOG_PORTAL}`;
         }
-    }, [ portalTarget ]);
+    }, [ portalTarget, getRef ]);
 
     useEffect(() => {
         const size = {
@@ -73,26 +50,33 @@ function DialogPortal({ children, className, style, getRef, setSize }: Props) {
             const { contentRect } = entries[0];
 
             if (contentRect.width !== size.width || contentRect.height !== size.height) {
-                setSize && setSize(contentRect);
+                setSize?.(contentRect);
+                clearTimeout(timerRef.current);
+                timerRef.current = window.setTimeout(() => {
+                    portalTarget.style.visibility = 'visible';
+                    onVisible?.();
+                }, 100);
             }
         });
 
+        const target = targetSelector ? portalTarget.querySelector(targetSelector) : portalTarget;
+
         if (document.body) {
             document.body.appendChild(portalTarget);
-            observer.observe(portalTarget);
+            observer.observe(target ?? portalTarget);
         }
 
         return () => {
-            observer.unobserve(portalTarget);
+            observer.unobserve(target ?? portalTarget);
             if (document.body) {
                 document.body.removeChild(portalTarget);
             }
         };
-    }, []);
+    }, [ clientWidth ]);
 
     return ReactDOM.createPortal(
-      children,
-      portalTarget
+        children,
+        portalTarget
     );
 }
 

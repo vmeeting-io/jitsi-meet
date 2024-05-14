@@ -1,6 +1,6 @@
 // @flow
 
-import { ReducerRegistry } from '../redux';
+import ReducerRegistry from '../redux/ReducerRegistry';
 
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from './actionTypes';
 

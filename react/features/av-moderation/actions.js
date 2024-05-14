@@ -1,22 +1,22 @@
 // @flow
 
-import { getConferenceState } from '../base/conference';
-import { MEDIA_TYPE, type MediaType } from '../base/media/constants';
-import { getParticipantById, isParticipantModerator } from '../base/participants';
+import { getConferenceState } from '../base/conference/functions';
+import { MEDIA_TYPE } from '../base/media/constants';
+import { getParticipantById, isParticipantModerator } from '../base/participants/functions';
 import { isForceMuted } from '../participants-pane/functions';
 
 import {
-    DISMISS_PENDING_PARTICIPANT,
     DISABLE_MODERATION,
+    DISMISS_PENDING_PARTICIPANT,
     ENABLE_MODERATION,
     LOCAL_PARTICIPANT_APPROVED,
     LOCAL_PARTICIPANT_MODERATION_NOTIFICATION,
+    LOCAL_PARTICIPANT_REJECTED,
     PARTICIPANT_APPROVED,
     PARTICIPANT_PENDING_AUDIO,
+    PARTICIPANT_REJECTED,
     REQUEST_DISABLE_MODERATION,
-    REQUEST_ENABLE_MODERATION,
-    LOCAL_PARTICIPANT_REJECTED,
-    PARTICIPANT_REJECTED
+    REQUEST_ENABLE_MODERATION
 } from './actionTypes';
 import { isEnabledFromState } from './functions';
 

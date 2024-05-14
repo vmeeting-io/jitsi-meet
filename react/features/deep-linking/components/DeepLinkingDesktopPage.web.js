@@ -1,176 +1,177 @@
 // @flow
 
-import ButtonGroup from '@atlaskit/button/button-group';
-import Button from '@atlaskit/button/standard-button';
-import { AtlasKitThemeProvider } from '@atlaskit/theme';
-import React, { Component } from 'react';
-import type { Dispatch } from 'redux';
+import { Theme } from '@mui/material';
+import React, { useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import { createDeepLinkingPageEvent, sendAnalytics } from '../../analytics';
-import { isSupportedBrowser } from '../../base/environment';
-import { translate } from '../../base/i18n';
-import { connect } from '../../base/redux';
+import { createDeepLinkingPageEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { getLegalUrls } from '../../base/config/functions.any';
+import { isSupportedBrowser } from '../../base/environment/environment';
+import { translate, translateToHTML } from '../../base/i18n/functions';
+import Platform from '../../base/react/Platform.web';
+import { withPixelLineHeight } from '../../base/styles/functions.web';
+import Button from '../../base/ui/components/web/Button';
+import { BUTTON_TYPES } from '../../base/ui/constants.any';
 import {
-    openWebApp,
-    openDesktopApp
+    openDesktopApp,
+    openWebApp
 } from '../actions';
 import { _TNS } from '../constants';
 
-declare var interfaceConfig: Object;
+const useStyles = makeStyles()((theme: Theme) => {
+    return {
+        container: {
+            background: '#1E1E1E',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+            display: 'flex'
+        },
+        contentPane: {
+            display: 'flex',
+            flexDirection: 'column',
+            background: theme.palette.ui01,
+            border: `1px solid ${theme.palette.ui03}`,
+            padding: 40,
+            borderRadius: 16,
+            maxWidth: 410,
+            color: theme.palette.text01
+        },
+        logo: {
+            marginBottom: 32
+        },
+        launchingMeetingLabel: {
+            marginBottom: 16,
+            ...withPixelLineHeight(theme.typography.heading4)
+        },
+        roomName: {
+            marginBottom: 32,
+            ...withPixelLineHeight(theme.typography.heading5)
+        },
+        descriptionLabel: {
+            marginBottom: 32,
+            ...withPixelLineHeight(theme.typography.bodyLongRegular)
+        },
+        buttonsContainer: {
+            display: 'flex',
+            justifyContent: 'flex-start',
+            '& > *:not(:last-child)': {
+                marginRight: 16
+            }
+        },
+        separator: {
+            marginTop: 40,
+            height: 1,
+            maxWidth: 390,
+            background: theme.palette.ui03
+        },
+        label: {
+            marginTop: 40,
+            ...withPixelLineHeight(theme.typography.labelRegular),
+            color: theme.palette.text02,
+            '& a': {
+                color: theme.palette.link01
+            }
+        }
+    };
+});
 
-/**
- * The type of the React {@code Component} props of
- * {@link DeepLinkingDesktopPage}.
- */
- type Props = {
+const DeepLinkingDesktopPage = ({ t }) => {
+    const dispatch = useDispatch();
+    const room = useSelector((state) => decodeURIComponent(state['features/base/conference'].room || ''));
+    const deeplinkingCfg = useSelector((state) =>
+        state['features/base/config']?.deeplinking || {});
 
-    /**
-     * Used to dispatch actions from the buttons.
-     */
-    dispatch: Dispatch<any>,
+    const generateDownloadURL = useCallback(() => {
+        const downloadCfg = deeplinkingCfg.desktop?.download;
 
-    /**
-     * Used to obtain translations.
-     */
-    t: Function
-};
+        if (downloadCfg) {
+            return downloadCfg[Platform.OS];
+        }
+    }, [ deeplinkingCfg ]);
 
-/**
- * React component representing the deep linking page.
- *
- * @class DeepLinkingDesktopPage
- */
-class DeepLinkingDesktopPage<P : Props> extends Component<P> {
-    /**
-     * Initializes a new {@code DeepLinkingDesktopPage} instance.
-     *
-     * @param {Object} props - The read-only React {@code Component} props with
-     * which the new instance is to be initialized.
-     */
-    constructor(props: P) {
-        super(props);
+    const legalUrls = useSelector(getLegalUrls);
 
-        // Bind event handlers so they are only bound once per instance.
-        this._onLaunchWeb = this._onLaunchWeb.bind(this);
-        this._onTryAgain = this._onTryAgain.bind(this);
-    }
+    const { hideLogo, desktop } = deeplinkingCfg;
 
-    /**
-     * Implements the Component's componentDidMount method.
-     *
-     * @inheritdoc
-     */
-    componentDidMount() {
-        sendAnalytics(
-            createDeepLinkingPageEvent(
-                'displayed', 'DeepLinkingDesktop', { isMobileBrowser: false }));
-    }
-
-    /**
-     * Renders the component.
-     *
-     * @returns {ReactElement}
-     */
-    render() {
-        const { t } = this.props;
-        const { HIDE_DEEP_LINKING_LOGO, NATIVE_APP_NAME, SHOW_DEEP_LINKING_IMAGE } = interfaceConfig;
-        const rightColumnStyle
-            = SHOW_DEEP_LINKING_IMAGE ? null : { width: '100%' };
-
-        return (
-
-            // Enabling light theme because of the color of the buttons.
-            <AtlasKitThemeProvider mode = 'light'>
-                <div className = 'deep-linking-desktop'>
-                    <div className = 'header'>
-                        {
-                            HIDE_DEEP_LINKING_LOGO
-                                ? null
-                                : <img
-                                    alt = { t('welcomepage.logo.logoDeepLinking') }
-                                    className = 'logo'
-                                    src = 'images/logo-deep-linking.png' />
-                        }
-                    </div>
-                    <div className = 'content'>
-                        {
-                            SHOW_DEEP_LINKING_IMAGE
-                                ? <div className = 'leftColumn'>
-                                    <div className = 'leftColumnContent'>
-                                        <div className = 'image' />
-                                    </div>
-                                </div> : null
-                        }
-                        <div
-                            className = 'rightColumn'
-                            style = { rightColumnStyle }>
-                            <div className = 'rightColumnContent'>
-                                <h1 className = 'title'>
-                                    {
-                                        t(`${_TNS}.title`,
-                                        { app: NATIVE_APP_NAME })
-                                    }
-                                </h1>
-                                <p className = 'description'>
-                                    {
-                                        t(
-                                            `${_TNS}.${isSupportedBrowser()
-                                                ? 'description'
-                                                : 'descriptionWithoutWeb'}`,
-                                            { app: NATIVE_APP_NAME }
-                                        )
-                                    }
-                                </p>
-                                <div className = 'buttons'>
-                                    <ButtonGroup>
-                                        <Button
-                                            appearance = 'default'
-                                            onClick = { this._onTryAgain }>
-                                            { t(`${_TNS}.tryAgainButton`) }
-                                        </Button>
-                                        {
-                                            isSupportedBrowser()
-                                                && <Button onClick = { this._onLaunchWeb }>
-                                                    { t(`${_TNS}.launchWebButton`) }
-                                                </Button>
-                                        }
-                                    </ButtonGroup>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </AtlasKitThemeProvider>
-        );
-    }
-
-    _onTryAgain: () => void;
-
-    /**
-     * Handles try again button clicks.
-     *
-     * @returns {void}
-     */
-    _onTryAgain() {
-        sendAnalytics(
-            createDeepLinkingPageEvent(
-                'clicked', 'tryAgainButton', { isMobileBrowser: false }));
-        this.props.dispatch(openDesktopApp());
-    }
-
-    _onLaunchWeb: () => void;
-
-    /**
-     * Handles launch web button clicks.
-     *
-     * @returns {void}
-     */
-    _onLaunchWeb() {
+    const { classes: styles } = useStyles();
+    const onLaunchWeb = useCallback(() => {
         sendAnalytics(
             createDeepLinkingPageEvent(
                 'clicked', 'launchWebButton', { isMobileBrowser: false }));
-        this.props.dispatch(openWebApp());
-    }
-}
+        dispatch(openWebApp());
+    }, []);
+    const onTryAgain = useCallback(() => {
+        sendAnalytics(
+            createDeepLinkingPageEvent(
+                'clicked', 'tryAgainButton', { isMobileBrowser: false }));
+        dispatch(openDesktopApp());
+    }, []);
 
-export default translate(connect()(DeepLinkingDesktopPage));
+    useEffect(() => {
+        sendAnalytics(
+            createDeepLinkingPageEvent(
+                'displayed', 'DeepLinkingDesktop', { isMobileBrowser: false }));
+    }, []);
+
+    return (
+        <div className = { styles.container }>
+            <div className = { styles.contentPane }>
+                <div className = 'header'>
+                    {
+                        !hideLogo
+                            && <img
+                                alt = { t('welcomepage.logo.logoDeepLinking') }
+                                className = { styles.logo }
+                                src = 'images/logo-deep-linking.png' />
+                    }
+                </div>
+                <div className = { styles.launchingMeetingLabel }>
+                    {
+                        t(`${_TNS}.titleNew`)
+                    }
+                </div>
+                <div className = { styles.roomName }>{ room }</div>
+                <div className = { styles.descriptionLabel }>
+                    {
+                        isSupportedBrowser()
+                            ? translateToHTML(t, `${_TNS}.descriptionNew`, { app: desktop?.appName })
+                            : t(`${_TNS}.descriptionWithoutWeb`, { app: desktop?.appName })
+                    }
+                </div>
+                <div className = { styles.descriptionLabel }>
+                    {
+                        t(`${_TNS}.noDesktopApp`)
+                    } &nbsp;
+                    <a href = { generateDownloadURL() }>
+                        {
+                            t(`${_TNS}.downloadApp`)
+                        }
+                    </a>
+                </div>
+                <div className = { styles.buttonsContainer }>
+                    <Button
+                        label = { t(`${_TNS}.tryAgainButton`) }
+                        onClick = { onTryAgain } />
+                    { isSupportedBrowser() && (
+                        <Button
+                            label = { t(`${_TNS}.launchWebButton`) }
+                            onClick = { onLaunchWeb }
+                            type = { BUTTON_TYPES.SECONDARY } />
+                    )}
+
+                </div>
+                <div className = { styles.separator } />
+                <div className = { styles.label }> {translateToHTML(t, 'deepLinking.termsAndConditions', {
+                    termsAndConditionsLink: legalUrls.terms
+                })}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default translate(DeepLinkingDesktopPage);

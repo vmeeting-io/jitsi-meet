@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { NativeModules, SafeAreaView, StatusBar, View } from 'react-native';
+import { connect } from 'react-redux';
 
 import { appNavigate } from '../../../app/actions';
 import { PIP_ENABLED, FULLSCREEN_ENABLED, getFeatureFlag } from '../../../base/flags';
 import { Container, LoadingIndicator, TintedView } from '../../../base/react';
-import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
 import { TestConnectionInfo } from '../../../base/testing';
 import { ConferenceNotification, isCalendarEnabled } from '../../../calendar-sync';
@@ -22,7 +22,7 @@ import { LargeVideo } from '../../../large-video';
 import { KnockingParticipantList } from '../../../lobby';
 import { getIsLobbyVisible } from '../../../lobby/functions';
 import { BackButtonRegistry } from '../../../mobile/back-button';
-import { Captions } from '../../../subtitles';
+import Captions from '../../../subtitles/components/native/Captions';
 import { setToolboxVisible } from '../../../toolbox/actions';
 import { Toolbox } from '../../../toolbox/components/native';
 import { isToolboxVisible } from '../../../toolbox/functions';

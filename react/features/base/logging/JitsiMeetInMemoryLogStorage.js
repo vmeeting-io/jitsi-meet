@@ -3,6 +3,7 @@
  *
  */
 export default class JitsiMeetInMemoryLogStorage {
+    logs = [];
 
     /**
      * Creates new <tt>JitsiMeetInMemoryLogStorage</tt>.

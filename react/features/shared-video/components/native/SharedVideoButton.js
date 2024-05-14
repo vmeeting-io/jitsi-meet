@@ -1,45 +1,25 @@
 // @flow
 
 import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
-import { getFeatureFlag, VIDEO_SHARE_BUTTON_ENABLED } from '../../../base/flags';
-import { translate } from '../../../base/i18n';
-import { IconShareVideo } from '../../../base/icons';
+import { VIDEO_SHARE_BUTTON_ENABLED } from '../../../base/flags/constants';
+import { getFeatureFlag } from '../../../base/flags/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconPlay } from '../../../base/icons/svg';
 import { getLocalParticipant } from '../../../base/participants';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 import { toggleSharedVideo } from '../../actions.native';
 import { isSharingStatus } from '../../functions';
-
-/**
- * The type of the React {@code Component} props of {@link TileViewButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * Whether or not the button is disabled.
-     */
-    _isDisabled: boolean,
-
-    /**
-     * Whether or not the local participant is sharing a video.
-     */
-    _sharingVideo: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Dispatch<any>
-};
 
 /**
  * Component that renders a toolbar button for toggling the tile layout view.
  *
  * @augments AbstractButton
  */
-class VideoShareButton extends AbstractButton<Props, *> {
+class VideoShareButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.sharedvideo';
-    icon = IconShareVideo;
+    icon = IconPlay;
     label = 'toolbar.sharedvideo';
     toggledLabel = 'toolbar.stopSharedVideo';
 

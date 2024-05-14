@@ -1,5 +1,11 @@
-import { find, max, min } from 'lodash';
+import _ from 'lodash';
 import moment from 'moment';
+
+import { getConferenceTimestamp } from '../base/conference/functions';
+import { PARTICIPANT_ROLE } from '../base/participants/constants';
+import { getParticipantById } from '../base/participants/functions';
+
+import { THRESHOLD_FIXED_AXIS } from './constants';
 
 export function getDuration(item) {
     if (!item.leaveTime || !item.joinTime) return 0;
@@ -11,8 +17,8 @@ export function getDuration(item) {
 }
 
 export function getOverlap(log1, log2) {
-    const t2 = min([log1.leaveTime, log2.leaveTime]);
-    const t1 = max([log1.joinTime, log2.joinTime]);
+    const t2 = _.min([log1.leaveTime, log2.leaveTime]);
+    const t1 = _.max([log1.joinTime, log2.joinTime]);
 
     // not overlapped
     if (t2 <= t1) return 0;
@@ -35,7 +41,7 @@ export function mergeStats(state) {
         }
 
         // 참석자 stats_id가 일치하지 않으면 걍 추가
-        const found = find(data, { stats_id: item.stats_id });
+        const found = _.find(data, { stats_id: item.stats_id });
         if (!found) {
             data.push(item);
             return;
@@ -59,7 +65,7 @@ export function mergeStats(state) {
             // merge with before
             found.duration += item.duration;
             found.duration -= getOverlap(found, item);
-            found.leaveTime = max([found.leaveTime, item.leaveTime]);
+            found.leaveTime = _.max([found.leaveTime, item.leaveTime]);
             found.nick = item.nick;
         }
         // --- ---->
@@ -82,13 +88,33 @@ export function mergeStats(state) {
 }
 
 /**
+ * Checks if the speaker stats search is disabled.
+ *
+ * @param {IReduxState} state - The redux state.
+ * @returns {boolean} - True if the speaker stats search is disabled and false otherwise.
+ */
+export function isSpeakerStatsSearchDisabled(state: Object) {
+    return state['features/base/config']?.speakerStats?.disableSearch;
+}
+
+/**
+ * Checks if the speaker stats is disabled.
+ *
+ * @param {IReduxState} state - The redux state.
+ * @returns {boolean} - True if the speaker stats search is disabled and false otherwise.
+ */
+export function isSpeakerStatsDisabled(state: Object) {
+    return state['features/base/config']?.speakerStats?.disabled;
+}
+
+/**
  * Gets whether participants in speaker stats should be ordered or not, and with what priority.
  *
  * @param {*} state - The redux state.
  * @returns {Array<string>} - The speaker stats order array or an empty array.
  */
 export function getSpeakerStatsOrder(state: Object) {
-    return state['features/base/config']?.speakerStatsOrder ?? [
+    return state['features/base/config']?.speakerStats?.order ?? [
         'role',
         'name',
         'hasLeft'
@@ -112,7 +138,7 @@ export function getSpeakerStats(state: Object) {
  * @returns {string} - The search criteria.
  */
 export function getSearchCriteria(state: Object) {
-    return state['features/speaker-stats']?.criteria ?? '';
+    return state['features/speaker-stats']?.criteria;
 }
 
 /**
@@ -126,56 +152,67 @@ export function getPendingReorder(state: Object) {
 }
 
 /**
- * Get sorted speaker stats based on a configuration setting.
+ * Get sorted speaker stats ids based on a configuration setting.
  *
  * @param {Object} state - The redux state.
  * @param {Object} stats - The current speaker stats.
  * @returns {Object} - Ordered speaker stats.
  * @public
  */
-export function getSortedSpeakerStats(state: Object, stats: Object) {
+export function getSortedSpeakerStatsIds(state: Object, stats: Object) {
     const orderConfig = getSpeakerStatsOrder(state);
 
     if (orderConfig) {
         const enhancedStats = getEnhancedStatsForOrdering(state, stats, orderConfig);
-        const sortedStats = objectSort(enhancedStats, (currentParticipant, nextParticipant) => {
-            if (orderConfig.includes('hasLeft')) {
-                if (nextParticipant.hasLeft() && !currentParticipant.hasLeft()) {
-                    return -1;
-                } else if (currentParticipant.hasLeft() && !nextParticipant.hasLeft()) {
-                    return 1;
+
+        return Object.entries(enhancedStats)
+            .sort(([ , a ], [ , b ]) => compareFn(a, b))
+            .map(el => el[0]);
+    }
+
+    /**
+     *
+     * Compares the order of two participants in the speaker stats list.
+     *
+     * @param {ISpeaker} currentParticipant - The first participant for comparison.
+     * @param {ISpeaker} nextParticipant - The second participant for comparison.
+     * @returns {number} - The sort order of the two participants.
+     */
+    function compareFn(currentParticipant: ISpeaker, nextParticipant: ISpeaker) {
+        if (orderConfig.includes('hasLeft')) {
+            if (nextParticipant.hasLeft() && !currentParticipant.hasLeft()) {
+                return -1;
+            } else if (currentParticipant.hasLeft() && !nextParticipant.hasLeft()) {
+                return 1;
+            }
+        }
+
+        let result = 0;
+
+        for (const sortCriteria of orderConfig) {
+            switch (sortCriteria) {
+            case 'role':
+                if (!nextParticipant.isModerator && currentParticipant.isModerator) {
+                    result = -1;
+                } else if (!currentParticipant.isModerator && nextParticipant.isModerator) {
+                    result = 1;
+                } else {
+                    result = 0;
                 }
+                break;
+            case 'name':
+                result = (currentParticipant.displayName || '').localeCompare(
+                    nextParticipant.displayName || ''
+                );
+                break;
             }
 
-            let result;
-
-            for (const sortCriteria of orderConfig) {
-                switch (sortCriteria) {
-                case 'role':
-                    if (!nextParticipant.isModerator && currentParticipant.isModerator) {
-                        result = -1;
-                    } else if (!currentParticipant.isModerator && nextParticipant.isModerator) {
-                        result = 1;
-                    } else {
-                        result = 0;
-                    }
-                    break;
-                case 'name':
-                    result = (currentParticipant.displayName || '').localeCompare(
-                        nextParticipant.displayName || ''
-                    );
-                    break;
-                }
-
-                if (result !== 0) {
-                    break;
-                }
+            if (result !== 0) {
+                break;
             }
+        }
 
-            return result;
-        });
-
-        return sortedStats;
+        return result;
     }
 }
 
@@ -195,14 +232,6 @@ function getEnhancedStatsForOrdering(state, stats, orderConfig) {
 
     for (const id in stats) {
         if (stats[id].hasOwnProperty('_hasLeft') && !stats[id].hasLeft()) {
-            if (orderConfig.includes('name')) {
-                const localParticipant = getLocalParticipant(state);
-
-                if (stats[id].isLocalStats()) {
-                    stats[id].setDisplayName(localParticipant.name);
-                }
-            }
-
             if (orderConfig.includes('role')) {
                 const participant = getParticipantById(state, stats[id].getUserId());
 
@@ -227,19 +256,97 @@ export function filterBySearchCriteria(state: Object, stats: ?Object) {
     const filteredStats = _.cloneDeep(stats ?? getSpeakerStats(state));
     const criteria = getSearchCriteria(state);
 
-    if (criteria) {
+    if (criteria !== null) {
         const searchRegex = new RegExp(criteria, 'gi');
 
         for (const id in filteredStats) {
             if (filteredStats[id].hasOwnProperty('_isLocalStats')) {
                 const name = filteredStats[id].getDisplayName();
 
-                if (!name || !name.match(searchRegex)) {
-                    filteredStats[id].hidden = true;
-                }
+                filteredStats[id].hidden = !name?.match(searchRegex);
             }
         }
     }
 
     return filteredStats;
+}
+
+/**
+ * Reset the hidden speaker stats.
+ *
+ * @param {IState} state - The redux state.
+ * @param {ISpeakerStats | undefined} stats - The unfiltered stats.
+ *
+ * @returns {Object} - Speaker stats.
+ * @public
+ */
+export function resetHiddenStats(state: Object, stats: ?Object) {
+    const resetStats = _.cloneDeep(stats ?? getSpeakerStats(state));
+
+    for (const id in resetStats) {
+        if (resetStats[id].hidden) {
+            resetStats[id].hidden = false;
+        }
+    }
+
+    return resetStats;
+}
+
+/**
+ * Gets the current duration of the conference.
+ *
+ * @param {IState} state - The redux state.
+ * @returns {number | null} - The duration in milliseconds or null.
+ */
+export function getCurrentDuration(state: Object) {
+    const startTimestamp = getConferenceTimestamp(state);
+
+    return startTimestamp ? Date.now() - startTimestamp : null;
+}
+
+/**
+ * Gets the boundaries of the emotion timeline.
+ *
+ * @param {IState} state - The redux state.
+ * @returns {Object} - The left and right boundaries.
+ */
+export function getTimelineBoundaries(state: Object) {
+    const { timelineBoundary, offsetLeft, offsetRight } = state['features/speaker-stats'];
+    const currentDuration = getCurrentDuration(state) ?? 0;
+    const rightBoundary = timelineBoundary ? timelineBoundary : currentDuration;
+    let leftOffset = 0;
+
+    if (rightBoundary > THRESHOLD_FIXED_AXIS) {
+        leftOffset = rightBoundary - THRESHOLD_FIXED_AXIS;
+    }
+
+    const left = offsetLeft + leftOffset;
+    const right = rightBoundary + offsetRight;
+
+    return {
+        left,
+        right
+    };
+}
+
+/**
+ * Returns the conference start time of the face landmarks.
+ *
+ * @param {FaceLandmarks} faceLandmarks - The face landmarks.
+ * @param {number} startTimestamp - The start timestamp of the conference.
+ * @returns {number}
+ */
+export function getFaceLandmarksStart(faceLandmarks: any, startTimestamp: number) {
+    return faceLandmarks.timestamp - startTimestamp;
+}
+
+/**
+ * Returns the conference end time of the face landmarks.
+ *
+ * @param {FaceLandmarks} faceLandmarks - The face landmarks.
+ * @param {number} startTimestamp - The start timestamp of the conference.
+ * @returns {number}
+ */
+export function getFaceLandmarksEnd(faceLandmarks: any, startTimestamp: number) {
+    return getFaceLandmarksStart(faceLandmarks, startTimestamp) + faceLandmarks.duration;
 }

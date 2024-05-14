@@ -1,10 +1,7 @@
 // @flow
 
-import React, { Fragment } from 'react';
-
-import { BaseApp } from '../../base/app';
-import { toURLString } from '../../base/util';
-import { OverlayContainer } from '../../overlay';
+import BaseApp from '../../base/app/components/BaseApp';
+import { toURLString } from '../../base/util/uri';
 import { appNavigate } from '../actions';
 import { getDefaultURL } from '../functions';
 
@@ -38,14 +35,12 @@ export class AbstractApp extends BaseApp<Props, *> {
      *
      * @inheritdoc
      */
-    componentDidMount() {
-        super.componentDidMount();
+    async componentDidMount() {
+        await super.componentDidMount();
 
-        this._init.then(() => {
-            // If a URL was explicitly specified to this React Component, then
-            // open it; otherwise, use a default.
-            this._openURL(toURLString(this.props.url) || this._getDefaultURL());
-        });
+        // If a URL was explicitly specified to this React Component, then
+        // open it; otherwise, use a default.
+        this._openURL(toURLString(this.props.url) || this._getDefaultURL());
     }
 
     /**
@@ -53,42 +48,24 @@ export class AbstractApp extends BaseApp<Props, *> {
      *
      * @inheritdoc
      */
-    componentDidUpdate(prevProps: Props) {
+    async componentDidUpdate(prevProps: Props) {
         const previousUrl = toURLString(prevProps.url);
         const currentUrl = toURLString(this.props.url);
         const previousTimestamp = prevProps.timestamp;
         const currentTimestamp = this.props.timestamp;
 
-        this._init.then(() => {
-            // Deal with URL changes.
+        await this._init.promise;
 
-            if (previousUrl !== currentUrl
+        // Deal with URL changes.
 
-                    // XXX Refer to the implementation of loadURLObject: in
-                    // ios/sdk/src/JitsiMeetView.m for further information.
-                    || previousTimestamp !== currentTimestamp) {
-                this._openURL(currentUrl || this._getDefaultURL());
-            }
-        });
+        if (previousUrl !== currentUrl
+
+            // XXX Refer to the implementation of loadURLObject: in
+            // ios/sdk/src/JitsiMeetView.m for further information.
+            || previousTimestamp !== currentTimestamp) {
+            this._openURL(currentUrl || this._getDefaultURL());
+        }
     }
-
-    /**
-     * Creates an extra {@link ReactElement}s to be added (unconditionally)
-     * alongside the main element.
-     *
-     * @abstract
-     * @protected
-     * @returns {ReactElement}
-     */
-    _createExtraElement() {
-        return (
-            <Fragment>
-                <OverlayContainer />
-            </Fragment>
-        );
-    }
-
-    _createMainElement: (React$Element<*>, Object) => ?React$Element<*>;
 
     /**
      * Gets the default URL to be opened when this {@code App} mounts.
@@ -110,6 +87,6 @@ export class AbstractApp extends BaseApp<Props, *> {
      * @returns {void}
      */
     _openURL(url) {
-        this.state.store.dispatch(appNavigate(toURLString(url)));
+        this.state.store?.dispatch(appNavigate(toURLString(url)));
     }
 }

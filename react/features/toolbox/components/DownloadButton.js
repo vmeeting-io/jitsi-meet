@@ -1,25 +1,16 @@
-// @flow
+import { connect } from 'react-redux';
 
-import { createToolbarEvent, sendAnalytics } from '../../analytics';
-import { translate } from '../../base/i18n';
-import { IconDownload } from '../../base/icons';
-import { connect } from '../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
-import { openURLInBrowser } from '../../base/util';
-import { isVpaasMeeting } from '../../jaas/functions';
-
-type Props = AbstractButtonProps & {
-
-    /**
-     * The URL to the applications page.
-     */
-    _downloadAppsUrl: string
-};
+import { createToolbarEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { translate } from '../../base/i18n/functions';
+import { IconDownload } from '../../base/icons/svg';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
+import { openURLInBrowser } from '../../base/util/openURLInBrowser';
 
 /**
  * Implements an {@link AbstractButton} to open the applications page in a new window.
  */
-class DownloadButton extends AbstractButton<Props, *> {
+class DownloadButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.download';
     icon = IconDownload;
     label = 'toolbar.download';
@@ -32,13 +23,7 @@ class DownloadButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { _downloadAppsUrl, handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
+        const { _downloadAppsUrl } = this.props;
 
         sendAnalytics(createToolbarEvent('download.pressed'));
         openURLInBrowser(_downloadAppsUrl);
@@ -52,12 +37,12 @@ class DownloadButton extends AbstractButton<Props, *> {
  * @param {Object} state - The redux store/state.
  * @returns {Object}
  */
-function _mapStateToProps(state: Object) {
+function _mapStateToProps(state) {
     const { downloadAppsUrl } = state['features/base/config'].deploymentUrls || {};
-    const visible = typeof downloadAppsUrl === 'string' && !isVpaasMeeting(state);
+    const visible = typeof downloadAppsUrl === 'string';
 
     return {
-        _downloadAppsUrl: downloadAppsUrl,
+        _downloadAppsUrl: downloadAppsUrl ?? '',
         visible
     };
 }

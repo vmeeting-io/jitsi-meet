@@ -1,15 +1,11 @@
-// @flow
-
-import type { Dispatch } from 'redux';
-
 import {
     getCalendarEntries,
-    googleApi,
     loadGoogleAPI,
     signIn,
     updateCalendarEvent,
     updateProfile
-} from '../../google-api';
+} from '../../google-api/actions'; // @ts-ignore
+import googleApi from '../../google-api/googleApi.web';
 
 /**
  * A stateless collection of action creators that implements the expected
@@ -43,7 +39,7 @@ export const googleCalendarApi = {
      * @returns {function(Dispatch<any>, Function): Promise<void>}
      */
     load() {
-        return (dispatch: Dispatch<any>) => dispatch(loadGoogleAPI());
+        return (dispatch) => dispatch(loadGoogleAPI());
     },
 
     /**

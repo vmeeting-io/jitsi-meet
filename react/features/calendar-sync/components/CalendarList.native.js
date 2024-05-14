@@ -1,42 +1,23 @@
-// @flow
-
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import {
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { connect } from 'react-redux';
 
-import { translate } from '../../base/i18n';
-import { AbstractPage } from '../../base/react';
-import { connect } from '../../base/redux';
-import { openSettings } from '../../mobile/permissions';
-import { refreshCalendar } from '../actions';
+import { translate } from '../../base/i18n/functions';
+import AbstractPage from '../../base/react/components/AbstractPage';
+import { openSettings } from '../../mobile/permissions/functions';
+import { refreshCalendar } from '../actions.native';
 
-import CalendarListContent from './CalendarListContent';
+import CalendarListContent from './CalendarListContent.native';
 import styles from './styles';
-
-/**
- * The tyoe of the React {@code Component} props of {@link CalendarList}.
- */
-type Props = {
-
-    /**
-     * The current state of the calendar access permission.
-     */
-    _authorization: ?string,
-
-    /**
-     * Indicates if the list is disabled or not.
-     */
-    disabled: boolean,
-
-    /**
-     * The translate function.
-     */
-    t: Function
-};
 
 /**
  * Component to display a list of events from the (mobile) user's calendar.
  */
-class CalendarList extends AbstractPage<Props> {
+class CalendarList extends AbstractPage {
     /**
      * Initializes a new {@code CalendarList} instance.
      *
@@ -77,9 +58,9 @@ class CalendarList extends AbstractPage<Props> {
             CalendarListContent
                 ? <View
                     style = {
-                        disabled
+                        (disabled
                             ? styles.calendarSyncDisabled
-                            : styles.calendarSync }>
+                            : styles.calendarSync) }>
                     <CalendarListContent
                         disabled = { disabled }
                         listEmptyComponent
@@ -88,8 +69,6 @@ class CalendarList extends AbstractPage<Props> {
                 : null
         );
     }
-
-    _getRenderListEmptyComponent: () => Object;
 
     /**
      * Returns a list empty component if a custom one has to be rendered instead
@@ -105,7 +84,7 @@ class CalendarList extends AbstractPage<Props> {
         // the default empty component of the NavigateSectionList will be
         // rendered, which (atm) is a simple "Pull to refresh" message.
         if (_authorization !== 'denied') {
-            return undefined;
+            return <></>;
         }
 
         return (
@@ -134,7 +113,7 @@ class CalendarList extends AbstractPage<Props> {
  *     _eventList: Array<Object>
  * }}
  */
-function _mapStateToProps(state: Object) {
+function _mapStateToProps(state) {
     const { authorization } = state['features/calendar-sync'];
 
     return {

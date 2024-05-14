@@ -1,18 +1,16 @@
 // @flow
 
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { IconMessage } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import {
-    isLocalParticipantModerator
-} from '../../../base/participants';
-import { getParticipantById } from '../../../base/participants'
+import { openDialog } from '../../../base/dialog/actions';
+import { translate } from '../../../base/i18n/functions';
+import { IconMessage } from '../../../base/icons/svg';
+import { getParticipantById, isLocalParticipantModerator } from '../../../base/participants/functions';
 
+import DisableChatForRemoteParticipantDialog from './DisableChatForRemoteParticipantDialog';
+import EnableChatForRemoteParticipantDialog from './EnableChatForRemoteParticipantDialog';
 import RemoteVideoMenuButton from './RemoteVideoMenuButton';
-import { openDialog } from '../../../base/dialog';
-import { DisableChatForRemoteParticipantDialog, EnableChatForRemoteParticipantDialog } from '.';
 
 declare var interfaceConfig: Object;
 

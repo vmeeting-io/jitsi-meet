@@ -3,13 +3,15 @@
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import { find } from 'lodash';
 
-import { conferenceSubjectChanged } from '../base/conference';
-import { CONNECTION_DISCONNECTED } from '../base/connection';
+import { conferenceSubjectChanged } from '../base/conference/actions';
+import { CONNECTION_DISCONNECTED } from '../base/connection/actionTypes';
 import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
-import { getParticipantById } from '../base/participants';
-import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
-import { editMessage, MESSAGE_TYPE_REMOTE } from '../chat';
-import { UPDATE_ATTENTION_STATUS } from '../face-detect';
+import { getParticipantById } from '../base/participants/functions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import StateListenerRegistry from '../base/redux/StateListenerRegistry';
+import { editMessage } from '../chat/actions.any';
+import { MESSAGE_TYPE_REMOTE } from '../chat/constants';
+import { UPDATE_ATTENTION_STATUS } from '../face-detect/actionTypes';
 
 import { UPDATE_BREAKOUT_ROOMS } from './actionTypes';
 import { moveToRoom } from './actions';
@@ -31,6 +33,9 @@ StateListenerRegistry.register(
 
             conference.on(JitsiConferenceEvents.BREAKOUT_ROOMS_UPDATED, ({ rooms, roomCounter }) => {
                 logger.debug('Room list updated');
+                if (typeof APP !== 'undefined') {
+                    APP.API.notifyBreakoutRoomsUpdated(rooms);
+                }
                 dispatch({
                     type: UPDATE_BREAKOUT_ROOMS,
                     rooms,
@@ -58,12 +63,47 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => action => {
 
     switch (type) {
     case UPDATE_BREAKOUT_ROOMS: {
-        const { messages } = getState()['features/chat'];
+        // edit name if it was overwritten
+        if (!action.updatedNames) {
+            const { overwrittenNameList } = getState()['features/base/participants'];
+
+            if (Object.keys(overwrittenNameList).length > 0) {
+                const newRooms = {};
+
+                Object.entries(action.rooms).forEach(([ key, r ]) => {
+                    let participants = r?.participants || {};
+                    let jid;
+
+                    for (const id of Object.keys(overwrittenNameList)) {
+                        jid = Object.keys(participants).find(p => p.slice(p.indexOf('/') + 1) === id);
+
+                        if (jid) {
+                            participants = {
+                                ...participants,
+                                [jid]: {
+                                    ...participants[jid],
+                                    displayName: overwrittenNameList[id]
+                                }
+                            };
+                        }
+                    }
+
+                    newRooms[key] = {
+                        ...r,
+                        participants
+                    };
+                });
+
+                action.rooms = newRooms;
+            }
+        }
 
         // edit the chat history to match names for participants in breakout rooms
-        messages && messages.forEach(m => {
+        const { messages } = getState()['features/chat'];
+
+        messages?.forEach(m => {
             if (m.messageType === MESSAGE_TYPE_REMOTE && !getParticipantById(getState(), m.id)) {
-                const rooms = getBreakoutRooms(getState);
+                const rooms = action.room;
 
                 for (const room of Object.values(rooms)) {
                     // $FlowExpectedError

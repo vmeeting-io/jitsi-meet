@@ -1,111 +1,42 @@
-// @flow
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { batch, connect, useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import { withStyles } from '@material-ui/styles';
-import React, { Component } from 'react';
-import { batch } from 'react-redux';
-
-import ContextMenu from '../../../base/components/context-menu/ContextMenu';
-import ContextMenuItemGroup from '../../../base/components/context-menu/ContextMenuItemGroup';
 import { isMobileBrowser } from '../../../base/environment/utils';
-import { translate } from '../../../base/i18n';
-import { Icon, IconHorizontalPoints } from '../../../base/icons';
-import {
-    getLocalParticipant
-} from '../../../base/participants';
-import { Popover } from '../../../base/popover';
-import { connect } from '../../../base/redux';
+import { IconDotsHorizontal } from '../../../base/icons/svg';
+import { getLocalParticipant, getParticipantCount } from '../../../base/participants/functions';
+import Popover from '../../../base/popover/components/Popover.web';
 import { setParticipantContextMenuOpen } from '../../../base/responsive-ui/actions';
-import { getHideSelfView } from '../../../base/settings';
-import { getLocalVideoTrack } from '../../../base/tracks';
+import { getHideSelfView } from '../../../base/settings/functions.web';
+import { getLocalVideoTrack } from '../../../base/tracks/functions';
+import Button from '../../../base/ui/components/web/Button';
+import ContextMenu from '../../../base/ui/components/web/ContextMenu';
+import ContextMenuItemGroup from '../../../base/ui/components/web/ContextMenuItemGroup';
 import ConnectionIndicatorContent from '../../../connection-indicator/components/web/ConnectionIndicatorContent';
-import { getCurrentLayout, LAYOUTS } from '../../../video-layout';
+import { THUMBNAIL_TYPE } from '../../../filmstrip/constants';
+import { isStageFilmstripAvailable } from '../../../filmstrip/functions.web';
+import { getParticipantMenuButtonsWithNotifyClick } from '../../../toolbox/functions.web';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 import { renderConnectionStatus } from '../../actions.web';
+import { PARTICIPANT_MENU_BUTTONS as BUTTONS } from '../../constants';
 
 import ConnectionStatusButton from './ConnectionStatusButton';
+import DemoteToVisitorButton from './DemoteToVisitorButton';
 import FlipLocalVideoButton from './FlipLocalVideoButton';
 import HideSelfViewVideoButton from './HideSelfViewVideoButton';
+import TogglePinToStageButton from './TogglePinToStageButton';
 
-/**
- * The type of the React {@code Component} props of
- * {@link LocalVideoMenuTriggerButton}.
- */
-type Props = {
-
-    /**
-     * Whether or not the button should be visible.
-     */
-    buttonVisible: boolean,
-
-    /**
-     * An object containing the CSS classes.
-     */
-    classes: Object,
-
-    /**
-     * The redux dispatch function.
-     */
-    dispatch: Function,
-
-    /**
-     * Hides popover.
-     */
-    hidePopover: Function,
-
-    /**
-     * Whether the popover is visible or not.
-     */
-    popoverVisible: boolean,
-
-    /**
-     * Shows popover.
-     */
-    showPopover: Function,
-
-    /**
-     * The id of the local participant.
-     */
-    _localParticipantId: string,
-
-    /**
-     * The position relative to the trigger the local video menu should display
-     * from. Valid values are those supported by AtlasKit
-     * {@code InlineDialog}.
-     */
-    _menuPosition: string,
-
-    /**
-     * Whether to display the Popover as a drawer.
-     */
-    _overflowDrawer: boolean,
-
-    /**
-     * Whether to render the connection info pane.
-     */
-    _showConnectionInfo: boolean,
-
-    /**
-     * Whether to render the hide self view button.
-     */
-    _showHideSelfViewButton: boolean,
-
-    /**
-     * Shows/hides the local video flip button.
-     */
-    _showLocalVideoFlipButton: boolean,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
-
-const styles = theme => {
+const useStyles = makeStyles()(() => {
     return {
         triggerButton: {
-            backgroundColor: theme.palette.action01,
-            padding: '3px',
-            display: 'inline-block',
-            borderRadius: '4px'
+            padding: '3px !important',
+            borderRadius: '4px',
+
+            '& svg': {
+                width: '18px',
+                height: '18px'
+            }
         },
 
         contextMenu: {
@@ -120,134 +51,132 @@ const styles = theme => {
             marginLeft: '36px'
         }
     };
-};
+});
 
-/**
- * React {@code Component} for displaying an icon associated with opening the
- * the {@code RemoteVideoMenu}.
- *
- * @augments {Component}
- */
-class LocalVideoMenuTriggerButton extends Component<Props> {
+const LocalVideoMenuTriggerButton = ({
+    _localParticipantId,
+    _menuPosition,
+    _overflowDrawer,
+    _showConnectionInfo,
+    _showDemote,
+    _showHideSelfViewButton,
+    _showLocalVideoFlipButton,
+    _showPinToStage,
+    buttonVisible,
+    dispatch,
+    hidePopover,
+    showPopover,
+    popoverVisible
+}) => {
+    const { classes } = useStyles();
+    const { t } = useTranslation();
+    const buttonsWithNotifyClick = useSelector(getParticipantMenuButtonsWithNotifyClick);
+    const visitorsSupported = useSelector((state) => state['features/visitors'].supported);
 
-    /**
-     * Initializes a new LocalVideoMenuTriggerButton instance.
-     *
-     * @param {Object} props - The read-only React Component props with which
-     * the new instance is to be initialized.
-     */
-    constructor(props: Props) {
-        super(props);
+    const notifyClick = useCallback(
+        (buttonKey: string) => {
+            const notifyMode = buttonsWithNotifyClick?.get(buttonKey);
 
-        this._onPopoverClose = this._onPopoverClose.bind(this);
-        this._onPopoverOpen = this._onPopoverOpen.bind(this);
-    }
+            if (!notifyMode) {
+                return;
+            }
 
-
-    /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
-    render() {
-        const {
-            _aiAttentionAnalysisEnabled,
-            _localParticipantId,
-            _menuPosition,
-            _overflowDrawer,
-            _showConnectionInfo,
-            _showHideSelfViewButton,
-            _showLocalVideoFlipButton,
-            buttonVisible,
-            classes,
-            hidePopover,
-            popoverVisible,
-            t
-        } = this.props;
-
-        const content = _showConnectionInfo
-            ? <ConnectionIndicatorContent participantId = { _localParticipantId } />
-            : (
-                <ContextMenu
-                    className = { classes.contextMenu }
-                    hidden = { false }
-                    inDrawer = { _overflowDrawer }>
-                    <ContextMenuItemGroup>
-                        <FlipLocalVideoButton
-                            className = { _overflowDrawer ? classes.flipText : '' }
-                            onClick = { hidePopover } />
-                        { !_aiAttentionAnalysisEnabled && _showHideSelfViewButton
-                            && <HideSelfViewVideoButton
-                                className = { _overflowDrawer ? classes.flipText : '' }
-                                onClick = { hidePopover } />
-                        }
-                        { isMobileBrowser()
-                            && <ConnectionStatusButton participantId = { _localParticipantId } />
-                        }
-                    </ContextMenuItemGroup>
-                </ContextMenu>
+            APP.API.notifyParticipantMenuButtonClicked(
+                buttonKey,
+                _localParticipantId,
+                notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY
             );
+        }, [ buttonsWithNotifyClick ]);
 
-        return (
-            isMobileBrowser() || _showLocalVideoFlipButton
-                ? <Popover
-                    content = { content }
-                    id = 'local-video-menu-trigger'
-                    onPopoverClose = { this._onPopoverClose }
-                    onPopoverOpen = { this._onPopoverOpen }
-                    overflowDrawer = { _overflowDrawer }
-                    position = { _menuPosition }
-                    visible = { popoverVisible }>
-                    {!_overflowDrawer && buttonVisible && (
-                        <span
-                            className = { classes.triggerButton }
-                            role = 'button'>
-                            {!isMobileBrowser() && <Icon
-                                ariaLabel = { t('dialog.localUserControls') }
-                                size = { 18 }
-                                src = { IconHorizontalPoints }
-                                tabIndex = { 0 }
-                                title = { t('dialog.localUserControls') } />
-                            }
-                        </span>
-                    )}
-                </Popover>
-                : null
-        );
-    }
-
-    _onPopoverOpen: () => void;
-
-    /**
-     * Disable and hide toolbox while context menu is open.
-     *
-     * @returns {void}
-     */
-    _onPopoverOpen() {
-        const { dispatch, showPopover } = this.props;
-
-        showPopover();
+    const _onPopoverOpen = useCallback(() => {
+        showPopover?.();
         dispatch(setParticipantContextMenuOpen(true));
-    }
+    }, []);
 
-    _onPopoverClose: () => void;
-
-    /**
-     * Render normal context menu next time popover dialog opens.
-     *
-     * @returns {void}
-     */
-    _onPopoverClose() {
-        const { hidePopover, dispatch } = this.props;
-
-        hidePopover();
+    const _onPopoverClose = useCallback(() => {
+        hidePopover?.();
         batch(() => {
             dispatch(setParticipantContextMenuOpen(false));
             dispatch(renderConnectionStatus(false));
         });
-    }
-}
+    }, []);
+
+    const content = _showConnectionInfo
+        ? <ConnectionIndicatorContent participantId = { _localParticipantId } />
+        : (
+            <ContextMenu
+                className = { classes.contextMenu }
+                hidden = { false }
+                inDrawer = { _overflowDrawer }>
+                <ContextMenuItemGroup>
+                    {_showLocalVideoFlipButton
+                        && <FlipLocalVideoButton
+                            className = { _overflowDrawer ? classes.flipText : '' }
+                            // eslint-disable-next-line react/jsx-no-bind
+                            notifyClick = { () => notifyClick(BUTTONS.FLIP_LOCAL_VIDEO) }
+                            notifyMode = { buttonsWithNotifyClick?.get(BUTTONS.FLIP_LOCAL_VIDEO) }
+                            onClick = { hidePopover } />
+                    }
+                    {_showHideSelfViewButton
+                        && <HideSelfViewVideoButton
+                            className = { _overflowDrawer ? classes.flipText : '' }
+                            // eslint-disable-next-line react/jsx-no-bind
+                            notifyClick = { () => notifyClick(BUTTONS.HIDE_SELF_VIEW) }
+                            notifyMode = { buttonsWithNotifyClick?.get(BUTTONS.HIDE_SELF_VIEW) }
+                            onClick = { hidePopover } />
+                    }
+                    {
+                        _showPinToStage && <TogglePinToStageButton
+                            className = { _overflowDrawer ? classes.flipText : '' }
+                            noIcon = { true }
+                            // eslint-disable-next-line react/jsx-no-bind
+                            notifyClick = { () => notifyClick(BUTTONS.PIN_TO_STAGE) }
+                            notifyMode = { buttonsWithNotifyClick?.get(BUTTONS.PIN_TO_STAGE) }
+                            onClick = { hidePopover }
+                            participantID = { _localParticipantId } />
+                    }
+                    {
+                        _showDemote && visitorsSupported && <DemoteToVisitorButton
+                            className = { _overflowDrawer ? classes.flipText : '' }
+                            noIcon = { true }
+                            // eslint-disable-next-line react/jsx-no-bind
+                            notifyClick = { () => notifyClick(BUTTONS.DEMOTE) }
+                            notifyMode = { buttonsWithNotifyClick?.get(BUTTONS.DEMOTE) }
+                            onClick = { hidePopover }
+                            participantID = { _localParticipantId } />
+                    }
+                    {
+                        isMobileBrowser() && <ConnectionStatusButton
+                            // eslint-disable-next-line react/jsx-no-bind
+                            notifyClick = { () => notifyClick(BUTTONS.CONN_STATUS) }
+                            notifyMode = { buttonsWithNotifyClick?.get(BUTTONS.CONN_STATUS) }
+                            participantID = { _localParticipantId } />
+                    }
+                </ContextMenuItemGroup>
+            </ContextMenu>
+        );
+
+    return (
+        isMobileBrowser() || _showLocalVideoFlipButton || _showHideSelfViewButton
+            ? <Popover
+                content = { content }
+                headingLabel = { t('dialog.localUserControls') }
+                id = 'local-video-menu-trigger'
+                onPopoverClose = { _onPopoverClose }
+                onPopoverOpen = { _onPopoverOpen }
+                position = { _menuPosition }
+                visible = { Boolean(popoverVisible) }>
+                {buttonVisible && !isMobileBrowser() && (
+                    <Button
+                        accessibilityLabel = { t('dialog.localUserControls') }
+                        className = { classes.triggerButton }
+                        icon = { IconDotsHorizontal }
+                        size = 'small' />
+                )}
+            </Popover>
+            : null
+    );
+};
 
 /**
  * Maps (parts of) the Redux state to the associated {@code LocalVideoMenuTriggerButton}'s props.
@@ -255,10 +184,10 @@ class LocalVideoMenuTriggerButton extends Component<Props> {
  * @param {Object} state - The Redux state.
  * @param {Object} ownProps - The own props of the component.
  * @private
- * @returns {Object}
+ * @returns {IProps}
  */
-function _mapStateToProps(state) {
-    const currentLayout = getCurrentLayout(state);
+function _mapStateToProps(state, ownProps) {
+    const { thumbnailType } = ownProps;
     const localParticipant = getLocalParticipant(state);
     const { disableLocalVideoFlip, disableSelfViewSettings } = state['features/base/config'];
     const videoTrack = getLocalVideoTrack(state['features/base/tracks']);
@@ -268,14 +197,14 @@ function _mapStateToProps(state) {
 
     let _menuPosition;
 
-    switch (currentLayout) {
-    case LAYOUTS.TILE_VIEW:
+    switch (thumbnailType) {
+    case THUMBNAIL_TYPE.TILE:
         _menuPosition = 'left-start';
         break;
-    case LAYOUTS.VERTICAL_FILMSTRIP_VIEW:
+    case THUMBNAIL_TYPE.VERTICAL:
         _menuPosition = 'left-start';
         break;
-    case LAYOUTS.HORIZONTAL_FILMSTRIP_VIEW:
+    case THUMBNAIL_TYPE.HORIZONTAL:
         _menuPosition = 'top-start';
         break;
     default:
@@ -283,14 +212,15 @@ function _mapStateToProps(state) {
     }
 
     return {
-        _aiAttentionAnalysisEnabled: state['features/base/settings'].aiAttentionAnalysisEnabled,
         _menuPosition,
+        _showDemote: getParticipantCount(state) > 1,
         _showLocalVideoFlipButton: !disableLocalVideoFlip && videoTrack?.videoType !== 'desktop',
         _showHideSelfViewButton: showHideSelfViewButton,
         _overflowDrawer: overflowDrawer,
-        _localParticipantId: localParticipant.id,
-        _showConnectionInfo: showConnectionInfo
+        _localParticipantId: localParticipant?.id ?? '',
+        _showConnectionInfo: Boolean(showConnectionInfo),
+        _showPinToStage: isStageFilmstripAvailable(state)
     };
 }
 
-export default translate(connect(_mapStateToProps)(withStyles(styles)(LocalVideoMenuTriggerButton)));
+export default connect(_mapStateToProps)(LocalVideoMenuTriggerButton);

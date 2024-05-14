@@ -2,10 +2,10 @@
 
 import React, { PureComponent } from 'react';
 import { FlatList, SafeAreaView } from 'react-native';
+import { connect } from 'react-redux';
 
 import { getLocalParticipant } from '../../../base/participants';
 import { Platform } from '../../../base/react';
-import { connect } from '../../../base/redux';
 import { ASPECT_RATIO_NARROW } from '../../../base/responsive-ui/constants';
 import { shouldHideSelfView } from '../../../base/settings/functions.any';
 import { setVisibleRemoteParticipants } from '../../actions';

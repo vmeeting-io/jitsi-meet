@@ -1,46 +1,25 @@
 // @flow
 
 import { type Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
-import { isDialogOpen, openDialog } from '../../../base/dialog';
-import { RAISE_HAND_ENABLED, getFeatureFlag } from '../../../base/flags';
-import { translate } from '../../../base/i18n';
-import { IconRaisedHand } from '../../../base/icons';
-import {
-    getLocalParticipant, hasRaisedHand
-} from '../../../base/participants';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import { openDialog } from '../../../base/dialog/actions';
+import { isDialogOpen } from '../../../base/dialog/functions';
+import { RAISE_HAND_ENABLED } from '../../../../base/flags/constants';
+import { getFeatureFlag } from '../../../../base/flags/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconRaiseHand } from '../../../base/icons/svg';
+import { getLocalParticipant, hasRaisedHand } from '../../../base/participants/functions';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 
 import ReactionMenuDialog from './ReactionMenuDialog';
 
 /**
- * The type of the React {@code Component} props of {@link ReactionsMenuButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * Whether the participant raised their hand or not.
-     */
-    _raisedHand: boolean,
-
-    /**
-     * Whether or not the reactions menu is open.
-     */
-    _reactionsOpen: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Dispatch<any>
-};
-
-/**
  * An implementation of a button to raise or lower hand.
  */
-class ReactionsMenuButton extends AbstractButton<Props, *> {
+class ReactionsMenuButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.reactionsMenu';
-    icon = IconRaisedHand;
+    icon = IconRaiseHand;
     label = 'toolbar.openReactionsMenu';
     toggledLabel = 'toolbar.closeReactionsMenu';
 

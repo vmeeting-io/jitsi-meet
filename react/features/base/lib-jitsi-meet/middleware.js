@@ -1,13 +1,11 @@
 /* @flow */
 
-import { SET_CONFIG } from '../config';
-import { setLoggingConfig } from '../logging';
-import { SET_NETWORK_INFO } from '../net-info';
-import { PARTICIPANT_LEFT } from '../participants';
-import { MiddlewareRegistry } from '../redux';
+import { SET_CONFIG } from '../config/actionTypes';
+import { SET_NETWORK_INFO } from '../net-info/actionTypes';
+import { PARTICIPANT_LEFT } from '../participants/actionTypes';
+import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 
 import JitsiMeetJS from './_';
-import { LIB_WILL_INIT } from './actionTypes';
 import { disposeLib, initLib } from './actions';
 
 declare var APP: Object;
@@ -24,14 +22,6 @@ declare var APP: Object;
  */
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
-    case LIB_WILL_INIT:
-        // Moved from conference.js init method. It appears the error handlers
-        // are not used for mobile.
-        if (typeof APP !== 'undefined') {
-            _setErrorHandlers();
-        }
-        break;
-
     case SET_NETWORK_INFO:
         JitsiMeetJS.setNetworkInfo({
             isOnline: action.isOnline
@@ -79,56 +69,7 @@ function _setConfig({ dispatch, getState }, next, action) {
     // from there).
     const result = next(action);
 
-    // FIXME Obviously, the following is bad design. However, I'm currently
-    // introducing the features base/config and base/logging and I'm trying to
-    // minimize the scope of the changes while I'm attempting to preserve
-    // compatibility with the existing partially React-ified Web source code and
-    // what was already executing on React Native. Additionally, I do not care
-    // to load logging_config.js on React Native.
-    dispatch(setLoggingConfig(window.loggingConfig));
-
     dispatch(initLib());
 
     return result;
-}
-
-/**
- * Attaches our custom error handlers to the window object.
- *
- * @returns {void}
- */
-function _setErrorHandlers() {
-    // attaches global error handler, if there is already one, respect it
-    if (JitsiMeetJS.getGlobalOnErrorHandler) {
-        const oldOnErrorHandler = window.onerror;
-
-        // eslint-disable-next-line max-params
-        window.onerror = (message, source, lineno, colno, error) => {
-            const errMsg = message || (error && error.message);
-            const stack = error && error.stack;
-
-            JitsiMeetJS.getGlobalOnErrorHandler(errMsg, source, lineno, colno, stack);
-
-            if (oldOnErrorHandler) {
-                oldOnErrorHandler(message, source, lineno, colno, error);
-            }
-        };
-
-        const oldOnUnhandledRejection = window.onunhandledrejection;
-
-        window.onunhandledrejection = function(event) {
-            let message = event.reason;
-            let stack = 'n/a';
-
-            if (event.reason instanceof Error) {
-                ({ message, stack } = event.reason);
-            }
-
-            JitsiMeetJS.getGlobalOnErrorHandler(message, null, null, null, stack);
-
-            if (oldOnUnhandledRejection) {
-                oldOnUnhandledRejection(event);
-            }
-        };
-    }
 }

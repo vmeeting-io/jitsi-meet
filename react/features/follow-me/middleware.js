@@ -1,20 +1,17 @@
 // @flow
 
-import { setFollowMe } from '../base/conference';
-import { CONFERENCE_WILL_JOIN } from '../base/conference';
+import { CONFERENCE_JOIN_IN_PROGRESS } from '../base/conference/actionTypes';
+import { setFollowMe } from '../base/conference/actions';
 import { JitsiConferenceEvents, JitsiRecordingConstants } from '../base/lib-jitsi-meet';
-import {
-    getLocalParticipant,
-    getParticipantById,
-    getPinnedParticipant,
-    PARTICIPANT_LEFT,
-    pinParticipant,
-} from '../base/participants';
-import { MiddlewareRegistry } from '../base/redux';
-import { setFilmstripVisible } from '../filmstrip';
-import { getResourceId, getSessionById } from '../recording';
+import { PARTICIPANT_LEFT } from '../base/participants/actionTypes';
+import { pinParticipant } from '../base/participants/actions';
+import { getLocalParticipant, getParticipantById, getPinnedParticipant } from '../base/participants/functions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { updateSettings } from '../base/settings/actions';
+import { addStageParticipant, removeStageParticipant, setFilmstripVisible } from '../filmstrip/actions';
 import { RECORDING_SESSION_UPDATED } from '../recording/actionTypes';
-import { setTileView } from '../video-layout';
+import { getResourceId, getSessionById } from '../recording/functions';
+import { setTileView } from '../video-layout/actions';
 
 import {
     setFollowMeModerator,
@@ -63,7 +60,7 @@ let nextOnStageTimer = 0;
  */
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
-    case CONFERENCE_WILL_JOIN: {
+    case CONFERENCE_JOIN_IN_PROGRESS: {
         const { conference } = action;
 
         conference.addCommandListener(
@@ -152,20 +149,33 @@ function _onFollowMeCommand(attributes = {}, id, store) {
     }
 
     const participantSendingCommand = getParticipantById(state, id);
-    if (!participantSendingCommand) {
-        return;
-    }
 
-    // The Command(s) API will send us our own commands and we don't want
-    // to act upon them.
-    if (participantSendingCommand.local) {
-        return;
-    }
+    if (participantSendingCommand) {
+        // The Command(s) API will send us our own commands and we don't want
+        // to act upon them.
+        if (participantSendingCommand.local) {
+            return;
+        }
+    
+        if (participantSendingCommand.role !== 'moderator') {
+            logger.warn('Received follow-me command not from moderator');
+    
+            return;
+        }
+    } else {
+        // This is the case of jibri receiving commands from a hidden participant.
+        const { iAmRecorder } = state['features/base/config'];
+        const { conference } = state['features/base/conference'];
 
-    if (participantSendingCommand.role !== 'moderator') {
-        logger.warn('Received follow-me command not from moderator');
+        // As this participant is not stored in redux store we do the checks on the JitsiParticipant from lib-jitsi-meet
+        const participant = conference?.getParticipantById(id);
 
-        return;
+        if (!iAmRecorder || !participant || participant.getRole() !== 'moderator'
+            || !participant.isHiddenFromRecorder()) {
+            logger.warn('Something went wrong with follow-me command');
+
+            return;
+        }
     }
 
     if (!isFollowMeActive(state) || state['features/follow-me'].moderator !== id) {
@@ -215,6 +225,32 @@ function _onFollowMeCommand(attributes = {}, id, store) {
         _pinVideoThumbnailById(store, idOfParticipantToPin);
     } else if (typeof idOfParticipantToPin === 'undefined' && pinnedParticipant) {
         store.dispatch(pinParticipant(null));
+    }
+
+    if (attributes.pinnedStageParticipants !== undefined) {
+        const stageParticipants = JSON.parse(attributes.pinnedStageParticipants);
+        let oldStageParticipants = [];
+
+        if (oldState.pinnedStageParticipants !== undefined) {
+            oldStageParticipants = JSON.parse(oldState.pinnedStageParticipants);
+        }
+
+        if (!_.isEqual(stageParticipants, oldStageParticipants)) {
+            const toRemove = _.differenceWith(oldStageParticipants, stageParticipants, _.isEqual);
+            const toAdd = _.differenceWith(stageParticipants, oldStageParticipants, _.isEqual);
+
+            toRemove.forEach((p) =>
+                store.dispatch(removeStageParticipant(p.participantId)));
+            toAdd.forEach((p) =>
+                store.dispatch(addStageParticipant(p.participantId, true)));
+        }
+    }
+
+    if (attributes.maxStageParticipants !== undefined
+        && oldState.maxStageParticipants !== attributes.maxStageParticipants) {
+        store.dispatch(updateSettings({
+            maxStageParticipants: Number(attributes.maxStageParticipants)
+        }));
     }
 }
 

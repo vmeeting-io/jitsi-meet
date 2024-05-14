@@ -1,24 +1,63 @@
-// @flow
-
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import { Icon, IconChatUnread } from '../../../base/icons';
+import Icon from '../../../base/icons/components/Icon';
+import { IconMessage } from '../../../base/icons/svg';
+import { browser } from '../../../base/lib-jitsi-meet';
+import { withPixelLineHeight } from '../../../base/styles/functions.web';
 
-import { PollItem } from '.';
+import PollItem from './PollItem';
+
+const useStyles = makeStyles()(theme => {
+    return {
+        container: {
+            height: '100%',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column'
+        },
+        emptyIcon: {
+            width: '100px',
+            padding: '16px',
+
+            '& svg': {
+                width: '100%',
+                height: 'auto'
+            }
+        },
+        emptyMessage: {
+            ...withPixelLineHeight(theme.typography.bodyLongBold),
+            color: theme.palette.text02,
+            padding: '0 24px',
+            textAlign: 'center'
+        }
+    };
+});
 
 const PollsList = () => {
     const { t } = useTranslation();
+    const { classes, theme } = useStyles();
 
-    const polls = useSelector(state => state['features/polls'].polls);
+    const polls = useSelector((state) => state['features/polls'].polls);
     const pollListEndRef = useRef(null);
 
-    const scrollToBottom = () => {
+    const scrollToBottom = useCallback(() => {
         if (pollListEndRef.current) {
-            pollListEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            // Safari does not support options
+            const param = browser.isSafari()
+                ? false : {
+                    behavior: 'smooth',
+                    block: 'end',
+                    inline: 'nearest'
+                };
+
+            pollListEndRef.current.scrollIntoView(param);
         }
-    };
+    }, [ pollListEndRef.current ]);
 
     useEffect(() => {
         scrollToBottom();
@@ -29,11 +68,12 @@ const PollsList = () => {
     return (
         <>
             {listPolls.length === 0
-                ? <div className = 'pane-content'>
+                ? <div className = { classes.container }>
                     <Icon
-                        className = 'empty-pane-icon'
-                        src = { IconChatUnread } />
-                    <span className = 'empty-pane-message'>{t('polls.results.empty')}</span>
+                        className = { classes.emptyIcon }
+                        color = { theme.palette.icon03 }
+                        src = { IconMessage } />
+                    <span className = { classes.emptyMessage }>{t('polls.results.empty')}</span>
                 </div>
                 : listPolls.map((id, index) => (
                     <PollItem

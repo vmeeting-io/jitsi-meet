@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { Text } from 'react-native';
+import { connect } from 'react-redux';
 
 import { ConfirmDialog } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
-import { connect } from '../../../base/redux';
 import AbstractGrantModeratorDialog, { abstractMapStateToProps }
     from '../AbstractGrantModeratorDialog';
 

@@ -1,27 +1,25 @@
-// @flow
-
 import React from 'react';
 
-import { IconEventNote, IconRestore } from '../base/icons';
+import { IconCalendar, IconGear, IconRestore } from '../base/icons/svg';
 import BaseTheme from '../base/ui/components/BaseTheme';
 
 import TabIcon from './components/TabIcon';
 
-export const INACTIVE_TAB_COLOR = BaseTheme.palette.tab01Disabled;
+export const ACTIVE_TAB_COLOR = BaseTheme.palette.icon01;
+export const INACTIVE_TAB_COLOR = BaseTheme.palette.icon03;
 
 export const tabBarOptions = {
-    activeTintColor: BaseTheme.palette.icon01,
-    inactiveTintColor: INACTIVE_TAB_COLOR,
-    labelStyle: {
+    tabBarActiveTintColor: ACTIVE_TAB_COLOR,
+    tabBarInactiveTintColor: INACTIVE_TAB_COLOR,
+    tabBarLabelStyle: {
         fontSize: 12
     },
-    style: {
-        backgroundColor: BaseTheme.palette.screen01Header
+    tabBarStyle: {
+        backgroundColor: BaseTheme.palette.ui01
     }
 };
 
 export const recentListTabBarOptions = {
-    // $FlowExpectedError
     tabBarIcon: ({ focused }) => (
         <TabIcon
             focused = { focused }
@@ -30,10 +28,17 @@ export const recentListTabBarOptions = {
 };
 
 export const calendarListTabBarOptions = {
-    // $FlowExpectedError
     tabBarIcon: ({ focused }) => (
         <TabIcon
             focused = { focused }
-            src = { IconEventNote } />
+            src = { IconCalendar } />
+    )
+};
+
+export const settingsTabBarOptions = {
+    tabBarIcon: ({ focused }) => (
+        <TabIcon
+            focused = { focused }
+            src = { IconGear } />
     )
 };

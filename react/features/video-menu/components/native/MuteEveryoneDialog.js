@@ -3,11 +3,11 @@
 import React from 'react';
 import { Text, View, Switch } from 'react-native';
 import { Divider } from 'react-native-paper';
+import { connect } from 'react-redux';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { ConfirmDialog } from '../../../base/dialog';
 import { translate } from '../../../base/i18n';
-import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import AbstractMuteEveryoneDialog, {
     abstractMapStateToProps,

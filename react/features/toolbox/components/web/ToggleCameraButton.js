@@ -1,36 +1,18 @@
-// @flow
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { IconCameraRefresh } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { isLocalCameraTrackMuted, isToggleCameraEnabled, toggleCamera } from '../../../base/tracks';
+import { translate } from '../../../base/i18n/functions';
+import { IconCameraRefresh } from '../../../base/icons/svg';
+import { MEDIA_TYPE } from '../../../base/media/constants';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import { toggleCamera } from '../../../base/tracks/actions';
+import { isLocalTrackMuted, isToggleCameraEnabled } from '../../../base/tracks/functions';
+import { setOverflowMenuVisible } from '../../actions.web';
 
-/**
- * The type of the React {@code Component} props of {@link ToggleCameraButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * Whether the current conference is in audio only mode or not.
-     */
-    _audioOnly: boolean,
-
-    /**
-     * Whether video is currently muted or not.
-     */
-    _videoMuted: boolean,
-
-    /**
-     * The Redux dispatch function.
-     */
-    dispatch: Function
-};
 
 /**
  * An implementation of a button for toggling the camera facing mode.
  */
-class ToggleCameraButton extends AbstractButton<Props, any> {
+class ToggleCameraButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.toggleCamera';
     icon = IconCameraRefresh;
     label = 'toolbar.toggleCamera';
@@ -41,15 +23,10 @@ class ToggleCameraButton extends AbstractButton<Props, any> {
      * @returns {void}
      */
     _handleClick() {
-        const { dispatch, handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
+        const { dispatch } = this.props;
 
         dispatch(toggleCamera());
+        dispatch(setOverflowMenuVisible(false));
     }
 
     /**
@@ -67,15 +44,15 @@ class ToggleCameraButton extends AbstractButton<Props, any> {
  * {@code ToggleCameraButton} component.
  *
  * @param {Object} state - The Redux state.
- * @returns {Props}
+ * @returns {IProps}
  */
-function mapStateToProps(state): Object {
+function mapStateToProps(state) {
     const { enabled: audioOnly } = state['features/base/audio-only'];
     const tracks = state['features/base/tracks'];
 
     return {
         _audioOnly: Boolean(audioOnly),
-        _videoMuted: isLocalCameraTrackMuted(tracks),
+        _videoMuted: isLocalTrackMuted(tracks, MEDIA_TYPE.VIDEO),
         visible: isToggleCameraEnabled(state)
     };
 }

@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Spinner from '@atlaskit/spinner';
-import DropdownMenu, {
-    DropdownItem,
-    DropdownItemGroup
-} from '@atlaskit/dropdown-menu';
-import { Dialog } from '../../../base/dialog';
-import { Switch } from '../../../base/react';
-import { connect } from '../../../base/redux';
-import { i18next, translate } from '../../../base/i18n';
-import { isLocalParticipantModerator } from '../../../base/participants';
+import { connect } from 'react-redux';
+
 import { getAuthUrl } from '../../../../api/url';
-import { Icon, IconRefresh } from '../../../base/icons';
+import { translate } from '../../../base/i18n/functions';
+import i18next from '../../../base/i18n/i18next';
+import { isLocalParticipantModerator } from '../../../base/participants/functions';
+import Icon from '../../../base/icons/components/Icon';
+import { IconRefresh } from '../../../base/icons/svg';
+import Dialog from '../../../base/ui/components/web/Dialog';
+import Select from '../../../base/ui/components/web/Select';
+import Spinner from '../../../base/ui/components/web/Spinner';
+import Switch from '../../../base/ui/components/web/Switch';
 
 import { availableTransLanguageList } from './translationCode';
 
@@ -85,7 +85,7 @@ function STTDialog({
     }
 
     const onChangeTargetLanguage = (e) => {
-        const target = e.currentTarget.getAttribute('data-lang');
+        const target = e.target.value;
         setTargetLanguage(target);
         dispatch(changeSTTTargetLanguage(target));
     }
@@ -97,7 +97,7 @@ function STTDialog({
     }
 
     const onChangeFontSize = (e) => {
-        const target = e.currentTarget.getAttribute('data-fontsize');
+        const target = e.target.value;
         setFontSize(target);
         dispatch(changeSubtitleFontSize(target));
     }
@@ -109,7 +109,7 @@ function STTDialog({
     }
 
     const onChangeTargetTransLanguage = (e) => {
-        const target = e.currentTarget.getAttribute('data-translang');
+        const target = e.target.value;
         setTargetTransLanguage(target);
         dispatch(changeSTTTargetTransLanguage(target));
     }
@@ -117,6 +117,22 @@ function STTDialog({
     const onRetry = () => {
         dispatch(retryRequest());
     }
+
+    const languageItems = [
+        { value: 'ko', label: t('languages:ko') },
+        { value: 'en', label: t('languages:en') }
+    ];
+
+    const fontSizeItems = [
+        { value: 'small', label: t('stt.font_small') },
+        { value: 'medium', label: t('stt.font_medium') },
+        { value: 'large', label: t('stt.font_large') }
+    ];
+
+    const transLanguageItems = availableTransLanguageList.map(({translationCode, name, name_ko}) => ({
+        value: translationCode,
+        label: i18next.language === 'ko'? name_ko : name
+    }));
 
     return (
         <Dialog
@@ -154,40 +170,12 @@ function STTDialog({
                         _sttOn? 
                         <div className = 'stt-section'>
                             <div className = 'control-row-sub'>
-                                <label htmlFor = 'stt-target-language'>
-                                    { t('stt.currentTargetLanguage') }
-                                </label>
-                                <div className = 'stt-dropdown'>
-                                    <DropdownMenu
-                                        shouldFitContainer = { true }
-                                        trigger = {targetLanguage === 'ko'? '한국어' : 'English'}
-                                        triggerButtonProps = {{
-                                            shouldFitContainer: true,
-                                            id: 'stt-dropdown-id',
-                                            className: 'stt-dropdown-label'
-                                        }}
-                                        triggerType = 'button'>
-                                        <DropdownItemGroup>
-                                            <DropdownItem
-                                                data-lang='ko'
-                                                key='ko'
-                                                isSelected = {'ko' === targetLanguage}
-                                                onClick={onChangeTargetLanguage}>
-                                                <span className='stt-dropdown-label'>
-                                                { t('languages:ko') }
-                                                </span>
-                                            </DropdownItem>
-                                            <DropdownItem
-                                                data-lang='en'
-                                                key='en'
-                                                isSelected = {'en' === targetLanguage}
-                                                onClick={onChangeTargetLanguage}>
-                                                <span className='stt-dropdown-label'>
-                                                { t('languages:en') }
-                                                </span>
-                                            </DropdownItem>
-                                        </DropdownItemGroup>
-                                    </DropdownMenu>
+                                <div className = 'stt-target-language'>
+                                    <Select
+                                        label = { t('stt.currentTargetLanguage') }
+                                        onChange = { onChangeTargetLanguage }
+                                        options = { languageItems }
+                                        value = { targetLanguage } />
                                 </div>
                             </div>
                             <div className = 'separator-line' />
@@ -207,49 +195,12 @@ function STTDialog({
                             </div>
                             <div>
                                 <div className = 'control-row'>
-                                    <label htmlFor = 'stt-target-language'>
-                                        { t('stt.fontSize') }
-                                    </label>
-                                    <div className = 'stt-dropdown'>
-                                        <DropdownMenu
-                                            shouldFitContainer = { true }
-                                            trigger = {t(`stt.font_${fontSize}`)}
-                                            triggerButtonProps = {{
-                                                shouldFitContainer: true,
-                                                id: 'stt-fs-dropdown-id',
-                                                className: 'stt-dropdown-label'
-                                            }}
-                                            triggerType = 'button'>
-                                            <DropdownItemGroup>
-                                                <DropdownItem
-                                                    data-fontsize='small'
-                                                    key='small'
-                                                    isSelected = {'small' === fontSize}
-                                                    onClick={onChangeFontSize}>
-                                                    <span className='stt-dropdown-label'>
-                                                    {t('stt.font_small')}
-                                                    </span>
-                                                </DropdownItem>
-                                                <DropdownItem
-                                                    data-fontsize='medium'
-                                                    key='medium'
-                                                    isSelected = {'medium' === fontSize}
-                                                    onClick={onChangeFontSize}>
-                                                    <span className='stt-dropdown-label'>
-                                                    {t('stt.font_medium')}
-                                                    </span>
-                                                </DropdownItem>
-                                                <DropdownItem
-                                                    data-fontsize='large'
-                                                    key='large'
-                                                    isSelected = {'large' === fontSize}
-                                                    onClick={onChangeFontSize}>
-                                                    <span className='stt-dropdown-label'>
-                                                    {t('stt.font_large')}
-                                                    </span>
-                                                </DropdownItem>
-                                            </DropdownItemGroup>
-                                        </DropdownMenu>
+                                    <div className = 'stt-font-size'>
+                                        <Select
+                                            label = { t('stt.fontSize') }
+                                            onChange = { onChangeFontSize }
+                                            options = { fontSizeItems }
+                                            value = { fontSize } />
                                     </div>
                                 </div>
                                 <div className= 'description'>
@@ -273,34 +224,12 @@ function STTDialog({
                             </div>
                             { translationEnabled &&
                                 <div className = 'control-row-sub'>
-                                    <label htmlFor = 'stt-target-trans-language'>
-                                        { t('stt.currentTransLanguage') }
-                                    </label>
-                                    <div className = 'stt-dropdown'>
-                                        <DropdownMenu
-                                            shouldFitContainer = { true }
-                                            trigger = { availableTransLanguageList.find(e => e.translationCode === targetTransLanguage)[i18next.language === 'ko'? 'name_ko' : 'name'] }
-                                            triggerButtonProps = {{
-                                                shouldFitContainer: true,
-                                                id: 'stt-dropdown-id',
-                                                className: 'stt-dropdown-label'
-                                            }}
-                                            triggerType = 'button'>
-                                            <DropdownItemGroup>
-                                                {
-                                                    availableTransLanguageList.map(({translationCode, name, name_ko }, idx) => (<DropdownItem
-                                                        data-translang={translationCode}
-                                                        key={translationCode}
-                                                        isSelected = {{translationCode} === targetTransLanguage}
-                                                        onClick={onChangeTargetTransLanguage}>
-                                                        <span className='stt-dropdown-label'>
-                                                        { i18next.language === 'ko'? name_ko : name }
-                                                        </span>
-                                                        </DropdownItem>
-                                                    ))
-                                                }
-                                            </DropdownItemGroup>
-                                        </DropdownMenu>
+                                    <div className = 'stt-trans-language'>
+                                        <Select
+                                            label = { t('stt.currentTransLanguage') }
+                                            onChange = { onChangeTargetTransLanguage }
+                                            options = { transLanguageItems }
+                                            value = { targetTransLanguage } />
                                     </div>
                                 </div>
                             }

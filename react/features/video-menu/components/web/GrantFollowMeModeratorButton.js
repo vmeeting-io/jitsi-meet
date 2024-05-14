@@ -1,11 +1,11 @@
 /* @flow */
 
 import React from 'react';
+import { connect } from 'react-redux';
 
-import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { translate } from '../../../base/i18n';
-import { IconUserFollow } from '../../../base/icons';
-import { connect } from '../../../base/redux';
+import { translate } from '../../../base/i18n/functions';
+import { IconUserFollow } from '../../../base/icons/svg';
+import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
 import AbstractGrantFollowMeModeratorButton, {
     _mapStateToProps,
     type Props

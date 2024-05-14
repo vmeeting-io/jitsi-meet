@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 
-import { connect } from '../../../base/redux';
+import { connect } from 'react-redux';
 import { getUnreadPollCount } from '../../../polls/functions';
 import { getUnreadCount } from '../../functions';
 

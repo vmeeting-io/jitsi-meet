@@ -1,6 +1,6 @@
 /* eslint-disable require-jsdoc */
-import { toState } from '../features/base/redux';
-import { getServerURL } from '../features/base/settings';
+import { toState } from '../features/base/redux/functions';
+import { getServerURL } from '../features/base/settings/functions';
 
 export function getAuthServerURL(stateful) {
     const state = toState(stateful);

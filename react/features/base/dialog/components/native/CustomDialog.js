@@ -1,6 +1,6 @@
 // @flow
 
-import { connect } from '../../../redux';
+import { connect } from 'react-redux';
 import { _abstractMapStateToProps } from '../../functions';
 
 import BaseDialog, { type Props } from './BaseDialog';

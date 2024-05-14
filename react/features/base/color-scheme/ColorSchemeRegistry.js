@@ -1,7 +1,5 @@
-// @flow
-
-import { toState } from '../redux';
-import { StyleType } from '../styles';
+import { toState } from '../redux/functions';
+import { StyleType } from '../styles/functions.any';
 
 import defaultScheme from './defaultScheme';
 
@@ -40,7 +38,7 @@ class ColorSchemeRegistry {
      * want to retrieve.
      * @returns {StyleType}
      */
-    get(stateful: Object | Function, componentName: string): StyleType {
+    get(stateful, componentName) {
         let schemedStyle = this._schemedStyles.get(componentName);
 
         if (!schemedStyle) {
@@ -66,7 +64,7 @@ class ColorSchemeRegistry {
      * @param {StyleType} style - The style definition to register.
      * @returns {void}
      */
-    register(componentName: string, style: StyleType): void {
+    register(componentName, style) {
         this._styleTemplates.set(componentName, style);
 
         // If this is a style overwrite, we need to delete the processed version
@@ -87,9 +85,9 @@ class ColorSchemeRegistry {
      * @returns {StyleType}
      */
     _applyColorScheme(
-            stateful: Object | Function,
-            componentName: string,
-            style: StyleType): StyleType {
+            stateful,
+            componentName,
+            style) {
         let schemedStyle;
 
         if (Array.isArray(style)) {
@@ -121,7 +119,6 @@ class ColorSchemeRegistry {
                 } else if (typeof styleValue === 'function') {
                     // The value is a function, which indicates that it's a
                     // dynamic, schemed color we need to resolve.
-                    // $FlowExpectedError
                     const value = styleValue();
 
                     schemedStyle[styleName]
@@ -146,9 +143,9 @@ class ColorSchemeRegistry {
      * @returns {string}
      */
     _getColor(
-            stateful: Object | Function,
-            componentName: string,
-            colorDefinition: string): string {
+            stateful,
+            componentName,
+            colorDefinition) {
         const colorScheme = toState(stateful)['features/base/color-scheme'] || {};
 
         return {

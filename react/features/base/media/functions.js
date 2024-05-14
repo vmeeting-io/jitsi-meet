@@ -1,9 +1,9 @@
 /* @flow */
 
-import { toState } from '../redux';
-import { getPropertyValue } from '../settings';
+import { toState } from '../redux/functions';
+import { getPropertyValue } from '../settings/functions';
 
-import { VIDEO_MUTISM_AUTHORITY } from './constants';
+import { AudioSupportedLanguage, VIDEO_MUTISM_AUTHORITY } from './constants';
 
 
 // XXX The configurations/preferences/settings startWithAudioMuted and startWithVideoMuted were introduced for
@@ -75,7 +75,8 @@ function _isVideoMutedByAuthority(
  * @returns {boolean} - The computed startWithAudioMuted value that will be used.
  */
 export function getStartWithAudioMuted(stateful: Object | Function) {
-    return Boolean(getPropertyValue(stateful, 'startWithAudioMuted', START_WITH_AUDIO_VIDEO_MUTED_SOURCES));
+    return Boolean(getPropertyValue(stateful, 'startWithAudioMuted', START_WITH_AUDIO_VIDEO_MUTED_SOURCES))
+        || Boolean(getPropertyValue(stateful, 'startSilent', START_WITH_AUDIO_VIDEO_MUTED_SOURCES));
 }
 
 /**
@@ -116,7 +117,7 @@ export function isVideoMutedByUser(stateful: Function | Object) {
  * @param {boolean} waitForVideoStarted - True if the specified videoTrack
  * should be rendered only after its associated video has started;
  * otherwise, false.
- * @returns {boolean} True if the specified videoTrack should be renderd;
+ * @returns {boolean} True if the specified videoTrack should be rendered;
  * otherwise, false.
  */
 export function shouldRenderVideoTrack(
@@ -127,3 +128,20 @@ export function shouldRenderVideoTrack(
             && !videoTrack.muted
             && (!waitForVideoStarted || videoTrack.videoStarted));
 }
+
+/**
+ * Computes the localized sound file source.
+ *
+ * @param {string} file - The default file source.
+ * @param {string} language - The language to use for localization.
+ * @returns {string}
+ */
+export const getSoundFileSrc = (file: string, language: string): string => {
+    if (!AudioSupportedLanguage[language]
+        || language === AudioSupportedLanguage.en) {
+        return file;
+    }
+    const fileTokens = file.split('.');
+
+    return `${fileTokens[0]}_${language}.${fileTokens[1]}`;
+};

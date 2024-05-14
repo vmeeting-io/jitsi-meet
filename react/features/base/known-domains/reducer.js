@@ -1,7 +1,5 @@
-// @flow
-
-import { APP_WILL_MOUNT } from '../app/actionTypes';
-import { PersistenceRegistry, ReducerRegistry } from '../redux';
+import PersistenceRegistry from '../redux/PersistenceRegistry';
+import ReducerRegistry from '../redux/ReducerRegistry';
 
 import { ADD_KNOWN_DOMAINS } from './actionTypes';
 
@@ -13,7 +11,7 @@ import { ADD_KNOWN_DOMAINS } from './actionTypes';
  * read the information out of the app's manifests: App Store strips the
  * associated domains manifest out of the app so it's never downloaded on the
  * client and we did not spend a lot of effort to read the associated domains
- * out of the Andorid manifest.
+ * out of the Android manifest.
  */
 export const DEFAULT_STATE = [
     'alpha.jitsi.net',
@@ -30,11 +28,6 @@ ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
     switch (action.type) {
     case ADD_KNOWN_DOMAINS:
         return _addKnownDomains(state, action.knownDomains);
-
-    case APP_WILL_MOUNT:
-        // In case persistence has deserialized a weird redux state:
-        return _addKnownDomains(state, DEFAULT_STATE);
-
     default:
         return state;
     }

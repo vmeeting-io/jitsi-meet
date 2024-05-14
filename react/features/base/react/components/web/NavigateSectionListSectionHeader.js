@@ -1,18 +1,6 @@
-// @flow
-
 import React, { Component } from 'react';
 
-import type { Section } from '../../Types';
-
 import Text from './Text';
-
-type Props = {
-
-    /**
-     * A section containing the data to be rendered.
-     */
-    section: Section
-}
 
 /**
  * Implements a React/Web {@link Component} that renders the section header of
@@ -20,7 +8,7 @@ type Props = {
  *
  * @augments Component
  */
-export default class NavigateSectionListSectionHeader extends Component<Props> {
+export default class NavigateSectionListSectionHeader extends Component {
     /**
      * Renders the content of this component.
      *

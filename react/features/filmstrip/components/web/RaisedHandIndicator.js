@@ -1,41 +1,16 @@
-/* @flow */
-
-import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import { IconRaisedHand } from '../../../base/icons';
-import { getParticipantById, hasRaisedHand } from '../../../base/participants';
-import { BaseIndicator } from '../../../base/react';
-import BaseTheme from '../../../base/ui/components/BaseTheme';
+import { IconRaiseHand } from '../../../base/icons/svg';
+import { getParticipantById, hasRaisedHand } from '../../../base/participants/functions';
+import BaseIndicator from '../../../base/react/components/web/BaseIndicator';
 
-/**
- * The type of the React {@code Component} props of {@link RaisedHandIndicator}.
- */
-type Props = {
-
-    /**
-     * The font-size for the icon.
-     */
-    iconSize: number,
-
-    /**
-     * The participant id who we want to render the raised hand indicator
-     * for.
-     */
-    participantId: string,
-
-    /**
-     * From which side of the indicator the tooltip should appear from.
-     */
-    tooltipPosition: string
-};
-
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles()(theme => {
     return {
         raisedHandIndicator: {
             backgroundColor: theme.palette.warning02,
-            padding: '2px',
+            padding: '4px',
             zIndex: 3,
             display: 'inline-block',
             borderRadius: '4px',
@@ -53,10 +28,11 @@ const RaisedHandIndicator = ({
     iconSize,
     participantId,
     tooltipPosition
-}: Props) => {
-    const _raisedHand = hasRaisedHand(useSelector(state =>
-        getParticipantById(state, participantId)));
-    const styles = useStyles();
+}) => {
+    const participant = useSelector((state) =>
+        getParticipantById(state, participantId));
+    const _raisedHand = hasRaisedHand(participant);
+    const { classes: styles, theme } = useStyles();
 
     if (!_raisedHand) {
         return null;
@@ -65,8 +41,8 @@ const RaisedHandIndicator = ({
     return (
         <div className = { styles.raisedHandIndicator }>
             <BaseIndicator
-                icon = { IconRaisedHand }
-                iconColor = { BaseTheme.palette.uiBackground }
+                icon = { IconRaiseHand }
+                iconColor = { theme.palette.uiBackground }
                 iconSize = { `${iconSize}px` }
                 tooltipKey = 'raisedHand'
                 tooltipPosition = { tooltipPosition } />

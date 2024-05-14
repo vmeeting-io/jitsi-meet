@@ -10,14 +10,14 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { connect } from 'react-redux';
 
 import { getName } from '../../app/functions';
 import { ColorSchemeRegistry } from '../../base/color-scheme';
 import { translate } from '../../base/i18n';
-import { Icon, IconMenu, IconWarning } from '../../base/icons';
+import { Icon, IconWarning } from '../../base/icons';
 import JitsiStatusBar from '../../base/modal/components/JitsiStatusBar';
 import { LoadingIndicator, Text } from '../../base/react';
-import { connect } from '../../base/redux';
 import BaseTheme from '../../base/ui/components/BaseTheme.native';
 
 import {
@@ -90,7 +90,7 @@ class WelcomePage extends AbstractWelcomePage<*> {
 
     _onRoomChange: (string) => void;
 
-    _updateRoomname: () => void;
+    _updateRoomName: () => void;
 
     /**
      * Implements React's {@link Component#componentDidMount()}. Invoked
@@ -103,7 +103,7 @@ class WelcomePage extends AbstractWelcomePage<*> {
     componentDidMount() {
         super.componentDidMount();
 
-        this._updateRoomname();
+        this._updateRoomName();
 
         const {
             _headerStyles,
@@ -111,21 +111,7 @@ class WelcomePage extends AbstractWelcomePage<*> {
         } = this.props;
 
         navigation.setOptions({
-            headerLeft: () => (
-                <TouchableOpacity
-                    /* eslint-disable-next-line react/jsx-no-bind */
-                    onPress = { () =>
-                        navigation.dispatch(DrawerActions.openDrawer()) }
-                    style = { styles.drawerNavigationIcon }>
-                    <Icon
-                        size = { 20 }
-                        src = { IconMenu }
-                        style = { _headerStyles.headerButtonIcon } />
-                </TouchableOpacity>
-            ),
-            // eslint-disable-next-line react/no-multi-comp
-            headerRight: () =>
-                <VideoSwitch />
+            headerTitle: t('welcomepage.headerTitle')
         });
     }
 

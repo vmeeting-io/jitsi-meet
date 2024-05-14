@@ -1,44 +1,30 @@
-// @flow
-
 /* eslint-disable react/no-multi-comp */
-
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
-import { connect } from '../../../base/redux';
-import { E2EELabel } from '../../../e2ee';
-import { LocalRecordingLabel } from '../../../local-recording';
-import { RecordingLabel } from '../../../recording';
+import E2EELabel from '../../../e2ee/components/E2EELabel';
+import HighlightButton from '../../../recording/components/Recording/web/HighlightButton';
+import RecordingLabel from '../../../recording/components/web/RecordingLabel';
+import { showToolbox } from '../../../toolbox/actions.web';
 import { isToolboxVisible } from '../../../toolbox/functions.web';
-import { TranscribingLabel } from '../../../transcribing';
-import { VideoQualityLabel } from '../../../video-quality';
-import { TimerLabel } from '../../../timer';
+import VideoQualityLabel from '../../../video-quality/components/VideoQualityLabel.web';
+import VisitorsCountLabel from '../../../visitors/components/web/VisitorsCountLabel';
 import ConferenceTimer from '../ConferenceTimer';
-import { getConferenceInfo } from '../functions';
+import { getConferenceInfo } from '../functions.web';
 
 import ConferenceInfoContainer from './ConferenceInfoContainer';
 import InsecureRoomNameLabel from './InsecureRoomNameLabel';
-import ParticipantsCount from './ParticipantsCount';
 import RaisedHandsCountLabel from './RaisedHandsCountLabel';
+import SpeakerStatsLabel from './SpeakerStatsLabel';
 import SubjectText from './SubjectText';
-
-/**
- * The type of the React {@code Component} props of {@link Subject}.
- */
-type Props = {
-
-    /**
-     * The conference info labels to be shown in the conference header.
-     */
-    _conferenceInfo: Object,
-
-    /**
-     * Indicates whether the component should be visible or not.
-     */
-    _visible: boolean
-};
+import ToggleTopPanelLabel from './ToggleTopPanelLabel';
 
 const COMPONENTS = [
+    {
+        Component: HighlightButton,
+        id: 'highlight-moment'
+    },
     {
         Component: SubjectText,
         id: 'subject'
@@ -48,7 +34,7 @@ const COMPONENTS = [
         id: 'conference-timer'
     },
     {
-        Component: ParticipantsCount,
+        Component: SpeakerStatsLabel,
         id: 'participants-count'
     },
     {
@@ -65,24 +51,24 @@ const COMPONENTS = [
         id: 'recording'
     },
     {
-        Component: LocalRecordingLabel,
-        id: 'local-recording'
-    },
-    {
         Component: RaisedHandsCountLabel,
         id: 'raised-hands-count'
-    },
-    {
-        Component: TranscribingLabel,
-        id: 'transcribing'
     },
     {
         Component: VideoQualityLabel,
         id: 'video-quality'
     },
     {
+        Component: VisitorsCountLabel,
+        id: 'visitors-count'
+    },
+    {
         Component: InsecureRoomNameLabel,
         id: 'insecure-room'
+    },
+    {
+        Component: ToggleTopPanelLabel,
+        id: 'top-panel-toggle'
     }
 ];
 
@@ -92,21 +78,32 @@ const COMPONENTS = [
  * @param {Object} props - The props of the component.
  * @returns {React$None}
  */
-class ConferenceInfo extends Component<Props> {
+class ConferenceInfo extends Component {
     /**
      * Initializes a new {@code ConferenceInfo} instance.
      *
-     * @param {Props} props - The read-only React {@code Component} props with
+     * @param {IProps} props - The read-only React {@code Component} props with
      * which the new instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this._renderAutoHide = this._renderAutoHide.bind(this);
         this._renderAlwaysVisible = this._renderAlwaysVisible.bind(this);
+        this._onTabIn = this._onTabIn.bind(this);
     }
 
-    _renderAutoHide: () => void;
+    /**
+     * Callback invoked when the component is focused to show the conference
+     * info if necessary.
+     *
+     * @returns {void}
+     */
+    _onTabIn() {
+        if (this.props._conferenceInfo.autoHide?.length && !this.props._visible) {
+            this.props.dispatch(showToolbox());
+        }
+    }
 
     /**
      * Renders auto-hidden info header labels.
@@ -116,7 +113,7 @@ class ConferenceInfo extends Component<Props> {
     _renderAutoHide() {
         const { autoHide } = this.props._conferenceInfo;
 
-        if (!autoHide || !autoHide.length) {
+        if (!autoHide?.length) {
             return null;
         }
 
@@ -135,8 +132,6 @@ class ConferenceInfo extends Component<Props> {
         );
     }
 
-    _renderAlwaysVisible: () => void;
-
     /**
      * Renders the always visible info header labels.
      *
@@ -145,7 +140,7 @@ class ConferenceInfo extends Component<Props> {
     _renderAlwaysVisible() {
         const { alwaysVisible } = this.props._conferenceInfo;
 
-        if (!alwaysVisible || !alwaysVisible.length) {
+        if (!alwaysVisible?.length) {
             return null;
         }
 
@@ -172,12 +167,11 @@ class ConferenceInfo extends Component<Props> {
      */
     render() {
         return (
-            <div className = 'details-container' >
+            <div
+                className = 'details-container'
+                onFocus = { this._onTabIn }>
                 { this._renderAlwaysVisible() }
                 { this._renderAutoHide() }
-                { this.props._timerStarted && <TimerLabel
-                    id = 'timer-label'
-                    visible = { this.props._visible } /> }
             </div>
         );
     }
@@ -195,12 +189,9 @@ class ConferenceInfo extends Component<Props> {
  * }}
  */
 function _mapStateToProps(state) {
-    const { timerStarted } = state['features/base/conference'];
-
     return {
-        _conferenceInfo: getConferenceInfo(state),
-        _timerStarted: timerStarted,
         _visible: isToolboxVisible(state),
+        _conferenceInfo: getConferenceInfo(state)
     };
 }
 

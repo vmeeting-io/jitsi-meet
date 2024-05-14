@@ -1,9 +1,9 @@
 // @flow
 
 import React from 'react';
+import { connect } from 'react-redux';
 
 import { Icon, IconAngleRight, IconAngleDown } from '../../../base/icons';
-import { connect } from '../../../base/redux';
 import { ColorPalette } from '../../../base/styles';
 import { setPagination } from '../../../video-layout';
 

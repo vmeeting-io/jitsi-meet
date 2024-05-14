@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { TouchableRipple } from 'react-native-paper';
 import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
 import { ColorSchemeRegistry } from '../../../../base/color-scheme';
 import { FIELD_UNDERLINE } from '../../../../base/dialog';
@@ -17,7 +18,6 @@ import { translate } from '../../../../base/i18n';
 import { IconClose } from '../../../../base/icons';
 import JitsiScreen from '../../../../base/modal/components/JitsiScreen';
 import { isLocalParticipantModerator } from '../../../../base/participants';
-import { connect } from '../../../../base/redux';
 import { StyleType } from '../../../../base/styles';
 import BaseTheme from '../../../../base/ui/components/BaseTheme';
 import { isInBreakoutRoom } from '../../../../breakout-rooms';

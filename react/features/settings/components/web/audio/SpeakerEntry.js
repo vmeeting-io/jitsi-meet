@@ -1,91 +1,68 @@
-// @flow
+import React, { useRef } from 'react';
+import { makeStyles } from 'tss-react/mui';
 
-import React, { Component } from 'react';
-
+import { IconCheck } from '../../../../base/icons/svg';
+import Button from '../../../../base/ui/components/web/Button';
+import ContextMenuItem from '../../../../base/ui/components/web/ContextMenuItem';
+import { BUTTON_TYPES, TEXT_OVERFLOW_TYPES } from '../../../../base/ui/constants.any';
 import logger from '../../../logger';
 
-import AudioSettingsEntry from './AudioSettingsEntry';
-import TestButton from './TestButton';
+const TEST_SOUND_PATH = 'sounds/ring.mp3';
 
-const TEST_SOUND_PATH = 'sounds/ring.wav';
+const useStyles = makeStyles()(() => {
+    return {
+        container: {
+            position: 'relative',
 
-/**
- * The type of the React {@code Component} props of {@link SpeakerEntry}.
- */
-type Props = {
+            [[ '&:hover', '&:focus', '&:focus-within' ]]: {
+                '& .entryText': {
+                    maxWidth: '178px',
+                    marginRight: 0
+                },
 
+                '& .testButton': {
+                    display: 'inline-block'
+                }
+            }
+        },
 
-    /**
-     * The text label for the entry.
-     */
-    children: React$Node,
+        entryText: {
+            maxWidth: '238px',
 
-    /**
-     * Flag controlling the selection state of the entry.
-     */
-    isSelected: boolean,
+            '&.left-margin': {
+                marginLeft: '36px'
+            }
+        },
 
-    /**
-     * Flag controlling the selection state of the entry.
-     */
-    index: number,
-
-    /**
-     * Flag controlling the selection state of the entry.
-     */
-    length: number,
-
-    /**
-     * The deviceId of the speaker.
-     */
-    deviceId: string,
-
-    /**
-     * Click handler for the component.
-     */
-    onClick: Function,
-    listHeaderId: string
-};
+        testButton: {
+            display: 'none',
+            padding: '4px 10px',
+            position: 'absolute',
+            right: '16px',
+            top: '6px'
+        }
+    };
+});
 
 /**
  * Implements a React {@link Component} which displays an audio
  * output settings entry. The user can click and play a test sound.
  *
- * @augments Component
+ * @param {IProps} props - Component props.
+ * @returns {JSX.Element}
  */
-export default class SpeakerEntry extends Component<Props> {
-    /**
-     * A React ref to the HTML element containing the {@code audio} instance.
-     */
-    audioRef: Object;
-
-    /**
-     * Initializes a new {@code SpeakerEntry} instance.
-     *
-     * @param {Object} props - The read-only properties with which the new
-     * instance is to be initialized.
-     */
-    constructor(props: Props) {
-        super(props);
-
-        this.audioRef = React.createRef();
-        this._onTestButtonClick = this._onTestButtonClick.bind(this);
-        this._onClick = this._onClick.bind(this);
-        this._onKeyPress = this._onKeyPress.bind(this);
-    }
-
-    _onClick: () => void;
+const SpeakerEntry = (props) => {
+    const audioRef = useRef(null);
+    const { classes, cx } = useStyles();
 
     /**
      * Click handler for the entry.
      *
      * @returns {void}
      */
-    _onClick() {
-        this.props.onClick(this.props.deviceId);
+    function _onClick() {
+        props.onClick(props.deviceId);
     }
-
-    _onKeyPress: () => void;
 
     /**
      * Key pressed handler for the entry.
@@ -95,69 +72,65 @@ export default class SpeakerEntry extends Component<Props> {
      *
      * @returns {void}
      */
-    _onKeyPress(e) {
-        if (e.key === ' ') {
+    function _onKeyPress(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            this.props.onClick(this.props.deviceId);
+            props.onClick(props.deviceId);
         }
     }
-
-
-    _onTestButtonClick: Object => void;
 
     /**
      * Click handler for Test button.
      * Sets the current audio output id and plays a sound.
      *
-     * @param {Object} e - The sythetic event.
+     * @param {Object} e - The synthetic event.
      * @returns {void}
      */
-    async _onTestButtonClick(e) {
+    async function _onTestButtonClick(e) {
         e.stopPropagation();
 
         try {
-            await this.audioRef.current.setSinkId(this.props.deviceId);
-            this.audioRef.current.play();
+            await audioRef.current?.setSinkId(props.deviceId);
+            audioRef.current?.play();
         } catch (err) {
             logger.log('Could not set sink id', err);
         }
     }
 
-    /**
-     * Implements React's {@link Component#render}.
-     *
-     * @inheritdoc
-     */
-    render() {
-        const { children, isSelected, index, deviceId, length, listHeaderId } = this.props;
-        const deviceTextId: string = `choose_speaker${deviceId}`;
-        const labelledby: string = `${listHeaderId} ${deviceTextId} `;
+    const { children, isSelected, index, length } = props;
 
-        return (
-            <li
-                aria-checked = { isSelected }
-                aria-labelledby = { labelledby }
-                aria-posinset = { index }
-                aria-setsize = { length }
-                className = 'audio-preview-speaker'
-                onClick = { this._onClick }
-                onKeyPress = { this._onKeyPress }
-                role = 'radio'
-                tabIndex = { 0 }>
-                <AudioSettingsEntry
-                    isSelected = { isSelected }
-                    key = { deviceId }
-                    labelId = { deviceTextId }>
-                    {children}
-                </AudioSettingsEntry>
-                <TestButton
-                    onClick = { this._onTestButtonClick }
-                    onKeyPress = { this._onTestButtonClick } />
-                <audio
-                    preload = 'auto'
-                    ref = { this.audioRef }
-                    src = { TEST_SOUND_PATH } />
-            </li>
-        );
-    }
-}
+    /* eslint-disable react/jsx-no-bind */
+    return (
+        <li
+            aria-checked = { isSelected }
+            aria-posinset = { index }
+            aria-setsize = { length }
+            className = { classes.container }
+            onClick = { _onClick }
+            onKeyPress = { _onKeyPress }
+            role = 'radio'
+            tabIndex = { 0 }>
+            <ContextMenuItem
+                accessibilityLabel = { children }
+                icon = { isSelected ? IconCheck : undefined }
+                overflowType = { TEXT_OVERFLOW_TYPES.SCROLL_ON_HOVER }
+                selected = { isSelected }
+                text = { children }
+                textClassName = { cx(classes.entryText, 'entryText', !isSelected && 'left-margin') }>
+                <Button
+                    className = { cx(classes.testButton, 'testButton') }
+                    label = 'Test'
+                    onClick = { _onTestButtonClick }
+                    onKeyPress = { _onTestButtonClick }
+                    type = { BUTTON_TYPES.SECONDARY } />
+            </ContextMenuItem>
+            <audio
+                preload = 'auto'
+                ref = { audioRef }
+                src = { TEST_SOUND_PATH } />
+        </li>
+    );
+};
+
+
+export default SpeakerEntry;

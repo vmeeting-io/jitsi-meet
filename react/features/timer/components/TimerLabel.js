@@ -1,36 +1,18 @@
 // @flow
 
 import React,{Component} from 'react';
+import { connect } from 'react-redux';
 
-import { getLocalizedDurationFormatter , translate } from '../../base/i18n';
-import { Label } from '../../base/label';
-import { IconStopWatch } from '../../base/icons';
-import { connect } from '../../base/redux';
-import { Tooltip } from '../../base/tooltip';
-import { playSound } from '../../base/sounds';
+import { getLocalizedDurationFormatter } from '../../base/i18n/functions';
+import Label from '../../base/label/components/web/Label';
+import { IconStopWatch } from '../../base/icons/svg';
+import { playSound } from '../../base/sounds/actions';
 import { TIMER_OFF_SOUND_ID } from '../constants';
 
-import AbstractTimerLabel, {
-    _abstractMapStateToProps,
-    type Props as AbstractProps
-} from './AbstractTimerLabel';
+import { _abstractMapStateToProps } from './AbstractTimerLabel';
 
 import { notifyTimerStopped } from '../../participants-pane/actions.any'
-import { TimerOffGif } from '.';
-
-type Props = AbstractProps & {
-
-    /**
-     * The message to show within the label.
-     */
-    _labelKey: string,
-
-    /**
-     * The message to show within the label's tooltip.
-     */
-    _tooltipKey: string,
-
-};
+import TimerOffGif from './TimerOffGif';
 
 
 /**
@@ -38,9 +20,9 @@ type Props = AbstractProps & {
  * remaining timer for the currently enabled timer.
  * 
  */
-export class TimerLabel extends Component<Props> {
+export class TimerLabel extends Component {
 
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this.state = {

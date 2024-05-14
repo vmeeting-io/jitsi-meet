@@ -1,54 +1,17 @@
-// @flow
-
-import { FieldTextStateless as TextField } from '@atlaskit/field-text';
 import React, { Component } from 'react';
-import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
-import { setPassword } from '../../base/conference';
-import { Dialog } from '../../base/dialog';
-import { translate } from '../../base/i18n';
-import { connect } from '../../base/redux';
+import { setPassword } from '../../base/conference/actions';
+import { translate } from '../../base/i18n/functions';
+import Dialog from '../../base/ui/components/web/Dialog';
+import Input from '../../base/ui/components/web/Input';
 import { _cancelPasswordRequiredPrompt } from '../actions';
-
-/**
- * The type of the React {@code Component} props of
- * {@link PasswordRequiredPrompt}.
- */
-type Props = {
-
-    /**
-     * The JitsiConference which requires a password.
-     */
-    conference: Object,
-
-    /**
-     * The redux store's {@code dispatch} function.
-     */
-    dispatch: Dispatch<any>,
-
-    /**
-     * The translate function.
-     */
-    t: Function
-};
-
-/**
- * The type of the React {@code Component} state of
- * {@link PasswordRequiredPrompt}.
- */
-type State = {
-
-    /**
-     * The password entered by the local participant.
-     */
-    password: string
-}
 
 /**
  * Implements a React Component which prompts the user when a password is
  * required to join a conference.
  */
-class PasswordRequiredPrompt extends Component<Props, State> {
+class PasswordRequiredPrompt extends Component {
     state = {
         password: ''
     };
@@ -59,7 +22,7 @@ class PasswordRequiredPrompt extends Component<Props, State> {
      * @param {Object} props - The read-only properties with which the new
      * instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // Bind event handlers so they are only bound once per instance.
@@ -77,12 +40,10 @@ class PasswordRequiredPrompt extends Component<Props, State> {
     render() {
         return (
             <Dialog
-                disableBlanketClickDismiss = { true }
-                isModal = { false }
+                disableBackdropClose = { true }
                 onCancel = { this._onCancel }
                 onSubmit = { this._onSubmit }
-                titleKey = 'dialog.passwordRequired'
-                width = 'small'>
+                titleKey = 'dialog.passwordRequired'>
                 { this._renderBody() }
             </Dialog>
         );
@@ -97,35 +58,31 @@ class PasswordRequiredPrompt extends Component<Props, State> {
     _renderBody() {
         return (
             <div>
-                <TextField
+                <Input
                     autoFocus = { true }
-                    compact = { true }
+                    className = 'dialog-bottom-margin'
+                    id = 'required-password-input'
                     label = { this.props.t('dialog.passwordLabel') }
                     name = 'lockKey'
                     onChange = { this._onPasswordChanged }
-                    shouldFitContainer = { true }
                     type = 'password'
                     value = { this.state.password } />
             </div>
         );
     }
 
-    _onPasswordChanged: ({ target: { value: * }}) => void;
-
     /**
      * Notifies this dialog that password has changed.
      *
-     * @param {Object} event - The details of the notification/event.
+     * @param {string} value - The details of the notification/event.
      * @private
      * @returns {void}
      */
-    _onPasswordChanged({ target: { value } }) {
+    _onPasswordChanged(value: string) {
         this.setState({
             password: value
         });
     }
-
-    _onCancel: () => boolean;
 
     /**
      * Dispatches action to cancel and dismiss this dialog.
@@ -140,8 +97,6 @@ class PasswordRequiredPrompt extends Component<Props, State> {
 
         return true;
     }
-
-    _onSubmit: () => boolean;
 
     /**
      * Dispatches action to submit value from this dialog.

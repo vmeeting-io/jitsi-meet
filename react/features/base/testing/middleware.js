@@ -1,10 +1,8 @@
-// @flow
-
-import { CONFERENCE_WILL_JOIN } from '../conference';
-import { SET_CONFIG } from '../config';
+import { CONFERENCE_JOIN_IN_PROGRESS } from '../conference/actionTypes';
+import { SET_CONFIG } from '../config/actionTypes';
 import { JitsiConferenceEvents } from '../lib-jitsi-meet';
-import { MiddlewareRegistry } from '../redux';
-import { getJitsiMeetGlobalNS } from '../util';
+import MiddlewareRegistry from '../redux/MiddlewareRegistry';
+import { getJitsiMeetGlobalNS } from '../util/helpers';
 
 import { setConnectionState } from './actions';
 import {
@@ -24,7 +22,7 @@ import logger from './logger';
  */
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
-    case CONFERENCE_WILL_JOIN:
+    case CONFERENCE_JOIN_IN_PROGRESS:
         _bindConferenceConnectionListener(action.conference, store);
         break;
     case SET_CONFIG: {
@@ -70,7 +68,7 @@ function _bindConferenceConnectionListener(conference, { dispatch }) {
 /**
  * Binds all the helper functions needed by torture.
  *
- * @param {Store} store - The redux store.
+ * @param {IStore} store - The redux store.
  * @private
  * @returns {void}
  */
@@ -112,3 +110,4 @@ function _onConnectionEvent(event, dispatch) {
         break;
     }
 }
+

@@ -1,13 +1,8 @@
 // @flow
 
-import { JitsiTrackEvents } from '../base/lib-jitsi-meet';
-import { updateSettings } from '../base/settings';
-
 import { toggleVirtualAvatarEffect } from './actions';
 import { toggleBackgroundEffect } from '../virtual-background/actions';
 let filterSupport;
-
-declare var APP: Object;
 
 /**
  * Checks context filter support.
@@ -19,7 +14,7 @@ export function checkBlurSupport() {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
-        filterSupport = typeof ctx.filter !== 'undefined';
+        filterSupport = typeof ctx?.filter !== 'undefined';
 
         canvas.remove();
     }
@@ -28,16 +23,26 @@ export function checkBlurSupport() {
 }
 
 /**
+ * Checks if virtual avatar is enabled.
+ *
+ * @param {IReduxState} state - The state of the app.
+ * @returns {boolean} True if virtual avatar is enabled and false if virtual avatar is disabled.
+ */
+export function checkVirtualAvatarEnabled(state) {
+    return state['features/base/config'].disableVirtualAvatar !== true;
+}
+
+/**
  * Convert blob to base64.
  *
  * @param {Blob} blob - The link to add info with.
  * @returns {Promise<string>}
  */
-export const blobToData = (blob: Blob): Promise<string> =>
+export const blobToData = (blob: Blob) =>
     new Promise(resolve => {
         const reader = new FileReader();
 
-        reader.onloadend = () => resolve(reader.result.toString());
+        reader.onloadend = () => resolve(reader.result?.toString());
         reader.readAsDataURL(blob);
     });
 

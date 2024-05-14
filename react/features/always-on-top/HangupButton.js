@@ -1,28 +1,57 @@
-// @flow
+import React, { Component } from 'react';
 
 // We need to reference these files directly to avoid loading things that are not available
 // in this environment (e.g. JitsiMeetJS or interfaceConfig)
-import type { Props } from '../base/toolbox/components/AbstractButton';
-import AbstractHangupButton from '../base/toolbox/components/AbstractHangupButton';
+import { IconHangup } from '../base/icons/svg';
+
+import ToolbarButton from './ToolbarButton';
 
 const { api } = window.alwaysOnTop;
 
 /**
  * Stateless hangup button for the Always-on-Top windows.
  */
-export default class HangupButton extends AbstractHangupButton<Props, *> {
+export default class HangupButton extends Component {
 
     accessibilityLabel = 'Hangup';
+    icon = IconHangup;
 
     /**
-     * Helper function to perform the actual hangup action.
+     * Initializes a new {@code HangupButton} instance.
      *
-     * @override
+     * @param {IProps} props - The React {@code Component} props to initialize
+     * the new {@code HangupButton} instance with.
+     */
+    constructor(props) {
+        super(props);
+
+        // Bind event handlers so they are only bound once per instance.
+        this._onClick = this._onClick.bind(this);
+    }
+
+    /**
+     * Handles clicking / pressing the button, and disconnects the conference.
+     *
      * @protected
      * @returns {void}
      */
-    _doHangup() {
+    _onClick() {
         api.executeCommand('hangup');
-        window.close();
+    }
+
+    /**
+     * Implements React's {@link Component#render()}.
+     *
+     * @inheritdoc
+     * @returns {ReactElement}
+     */
+    render() {
+        return (
+            <ToolbarButton
+                accessibilityLabel = { this.accessibilityLabel }
+                customClass = 'hangup-button'
+                icon = { this.icon }
+                onClick = { this._onClick } />
+        );
     }
 }

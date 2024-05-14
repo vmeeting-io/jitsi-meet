@@ -1,26 +1,12 @@
-// @flow
-
-import { PureComponent } from 'react';
+import React, { PureComponent } from 'react';
 
 import isInsecureRoomName from '../../base/util/isInsecureRoomName';
-
-type Props = {
-
-    /**
-     * True of the label should be visible.
-     */
-    _visible: boolean;
-
-    /**
-     * Function to be used to translate i18n labels.
-     */
-    t: Function
-}
+import { isUnsafeRoomWarningEnabled } from '../../prejoin/functions';
 
 /**
- * Abstrsact class for the {@Code InsecureRoomNameLabel} component.
+ * Abstract class for the {@Code InsecureRoomNameLabel} component.
  */
-export default class AbstractInsecureRoomNameLabel extends PureComponent<Props> {
+export default class AbstractInsecureRoomNameLabel extends PureComponent {
     /**
      * Implements {@code Component#render}.
      *
@@ -39,23 +25,24 @@ export default class AbstractInsecureRoomNameLabel extends PureComponent<Props> 
      *
      * @returns {ReactElement}
      */
-    _render: () => Object;
+    _render() {
+        return <></>;
+    }
 }
 
 /**
  * Maps part of the Redux state to the props of this component.
  *
  * @param {Object} state - The Redux state.
- * @returns {Props}
+ * @returns {IProps}
  */
-export function _mapStateToProps(state: Object): $Shape<Props> {
+export function _mapStateToProps(state) {
     const { locked, room } = state['features/base/conference'];
     const { lobbyEnabled } = state['features/lobby'];
-    const { enableInsecureRoomNameWarning = false } = state['features/base/config'];
 
     return {
-        _visible: enableInsecureRoomNameWarning
+        _visible: Boolean(isUnsafeRoomWarningEnabled(state)
             && room && isInsecureRoomName(room)
-            && !(lobbyEnabled || Boolean(locked))
+            && !(lobbyEnabled || Boolean(locked)))
     };
 }

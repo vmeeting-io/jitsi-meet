@@ -1,8 +1,10 @@
 import { uniq } from 'lodash';
 
-import { getCurrentConference, STATUS_COMMAND } from '../base/conference';
-import { getLocalParticipant, participantPresenceChanged } from '../base/participants';
-import { isParticipantVideoMuted } from '../base/tracks';
+import { STATUS_COMMAND } from '../base/conference/constants';
+import { getCurrentConference } from '../base/conference/functions';
+import { participantPresenceChanged } from '../base/participants/actions';
+import { getLocalParticipant } from '../base/participants/functions';
+import { isParticipantVideoMuted } from '../base/tracks/functions';
 import { isPrejoinPageVisible } from '../prejoin/functions';
 import { setAttentionAnalysisReady } from './actions';
 import { STATUS_TABLE } from './constants';

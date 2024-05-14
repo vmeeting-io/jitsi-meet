@@ -1,63 +1,63 @@
-/* @flow */
+import React, { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
 
-import React from 'react';
-
-import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { translate } from '../../../base/i18n';
-import { IconMicrophoneEmptySlash } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import AbstractMuteButton, {
-    _mapStateToProps,
-    type Props
-} from '../AbstractMuteButton';
+import { createRemoteVideoMenuButtonEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { rejectParticipant } from '../../../av-moderation/actions';
+import { IconMicSlash } from '../../../base/icons/svg';
+import { MEDIA_TYPE } from '../../../base/media/constants';
+import { isRemoteTrackMuted } from '../../../base/tracks/functions.any';
+import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
+import { muteRemote } from '../../actions.any';
 
 /**
  * Implements a React {@link Component} which displays a button for audio muting
  * a participant in the conference.
  *
- * NOTE: At the time of writing this is a button that doesn't use the
- * {@code AbstractButton} base component, but is inherited from the same
- * super class ({@code AbstractMuteButton} that extends {@code AbstractButton})
- * for the sake of code sharing between web and mobile. Once web uses the
- * {@code AbstractButton} base component, this can be fully removed.
+ * @returns {JSX.Element|null}
  */
-class MuteButton extends AbstractMuteButton {
-    /**
-     * Instantiates a new {@code Component}.
-     *
-     * @inheritdoc
-     */
-    constructor(props: Props) {
-        super(props);
+const MuteButton = ({
+    notifyClick,
+    notifyMode,
+    participantID
+}) => {
+    const { t } = useTranslation();
+    const dispatch = useDispatch();
+    const tracks = useSelector((state) => state['features/base/tracks']);
+    const audioTrackMuted = useMemo(
+        () => isRemoteTrackMuted(tracks, MEDIA_TYPE.AUDIO, participantID),
+        [ isRemoteTrackMuted, participantID, tracks ]
+    );
 
-        this._handleClick = this._handleClick.bind(this);
-    }
-
-    /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
-    render() {
-        const { _audioTrackMuted, t } = this.props;
-
-        if (_audioTrackMuted) {
-            return null;
+    const handleClick = useCallback(() => {
+        notifyClick?.();
+        if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
+            return;
         }
+        sendAnalytics(createRemoteVideoMenuButtonEvent(
+            'mute',
+            {
+                'participant_id': participantID
+            }));
 
-        return (
-            <ContextMenuItem
-                accessibilityLabel = { t('dialog.muteParticipantButton') }
-                className = 'mutelink'
-                icon = { IconMicrophoneEmptySlash }
-                // eslint-disable-next-line react/jsx-handler-names
-                onClick = { this._handleClick }
-                text = { t('dialog.muteParticipantButton') } />
-        );
+        dispatch(muteRemote(participantID, MEDIA_TYPE.AUDIO));
+        dispatch(rejectParticipant(participantID, MEDIA_TYPE.AUDIO));
+    }, [ dispatch, notifyClick, notifyMode, participantID, sendAnalytics ]);
+
+    if (audioTrackMuted) {
+        return null;
     }
 
-    _handleClick: () => void;
-}
+    return (
+        <ContextMenuItem
+            accessibilityLabel = { t('dialog.muteParticipantButton') }
+            className = 'mutelink'
+            icon = { IconMicSlash }
+            onClick = { handleClick }
+            text = { t('dialog.muteParticipantButton') } />
+    );
+};
 
-export default translate(connect(_mapStateToProps)(MuteButton));
+export default MuteButton;

@@ -1,6 +1,6 @@
 /* global interfaceConfig */
 
-import { parseURIString, safeDecodeURIComponent } from '../base/util';
+import { parseURIString, safeDecodeURIComponent } from '../base/util/uri';
 
 
 /**

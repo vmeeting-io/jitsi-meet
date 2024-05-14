@@ -1,61 +1,18 @@
-/* @flow */
-
-import { Checkbox } from '@atlaskit/checkbox';
-import Spinner from '@atlaskit/spinner';
 import React, { Component } from 'react';
 
-import { translate } from '../../base/i18n';
-import { Platform } from '../../base/react';
+import { translate } from '../../base/i18n/functions';
+import Platform from '../../base/react/Platform.web';
+import Checkbox from '../../base/ui/components/web/Checkbox';
+import Spinner from '../../base/ui/components/web/Spinner';
 
 import DesktopSourcePreview from './DesktopSourcePreview';
-
-/**
- * The type of the React {@code Component} props of {@link DesktopPickerPane}.
- */
-type Props = {
-
-    /**
-     * The handler to be invoked when a DesktopSourcePreview is clicked.
-     */
-    onClick: Function,
-
-    /**
-     * The handler to be invoked when a DesktopSourcePreview is double clicked.
-     */
-    onDoubleClick: Function,
-
-    /**
-     * The handler to be invoked if the users checks the audio screen sharing checkbox.
-     */
-    onShareAudioChecked: Function,
-
-    /**
-     * The id of the DesktopCapturerSource that is currently selected.
-     */
-    selectedSourceId: string,
-
-    /**
-     * An array of DesktopCapturerSources.
-     */
-    sources: Array<Object>,
-
-    /**
-     * The source type of the DesktopCapturerSources to display.
-     */
-    type: string,
-
-    /**
-     * Used to obtain translations.
-     */
-    t: Function
-};
 
 /**
  * React component for showing a grid of DesktopSourcePreviews.
  *
  * @augments Component
  */
-class DesktopPickerPane extends Component<Props> {
+class DesktopPickerPane extends Component {
 
     /**
      * Initializes a new DesktopPickerPane instance.
@@ -63,13 +20,11 @@ class DesktopPickerPane extends Component<Props> {
      * @param {Object} props - The read-only properties with which the new
      * instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this._onShareAudioCheck = this._onShareAudioCheck.bind(this);
     }
-
-    _onShareAudioCheck: (Object) => void;
 
     /**
      * Function to be called when the Checkbox is used.
@@ -111,9 +66,7 @@ class DesktopPickerPane extends Component<Props> {
                         type = { type } />))
                 : (
                     <div className = 'desktop-picker-pane-spinner'>
-                        <Spinner
-                            isCompleting = { false }
-                            size = 'medium' />
+                        <Spinner />
                     </div>
                 );
 

@@ -1,53 +1,20 @@
-// @flow
-
-import {
-    createRemoteVideoMenuButtonEvent,
-    sendAnalytics
-} from '../../analytics';
-import { rejectParticipant } from '../../av-moderation/actions';
-import { IconMicDisabled } from '../../base/icons';
-import { MEDIA_TYPE } from '../../base/media';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
-import { isRemoteTrackMuted } from '../../base/tracks';
+import { createRemoteVideoMenuButtonEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { rejectParticipantAudio } from '../../av-moderation/actions';
+import { IconMicSlash } from '../../base/icons/svg';
+import { MEDIA_TYPE } from '../../base/media/constants';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
+import { isRemoteTrackMuted } from '../../base/tracks/functions.any';
 import { muteRemote } from '../actions.any';
-
-export type Props = AbstractButtonProps & {
-
-    /**
-     * Boolean to indicate if the audio track of the participant is muted or
-     * not.
-     */
-    _audioTrackMuted: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function,
-
-    /**
-     * The ID of the participant object that this button is supposed to
-     * mute/unmute.
-     */
-    participantID: string,
-
-    /**
-     * The function to be used to translate i18n labels.
-     */
-    t: Function
-};
 
 /**
  * An abstract remote video menu button which mutes the remote participant.
  */
-export default class AbstractMuteButton extends AbstractButton<Props, *> {
-    constructor(props) {
-        super(props);
-
-        this.accessibilityLabel = `toolbar.accessibilityLabel.remoteMute'}`;
-        this.icon = IconMicDisabled;
-        this.label = `videothumbnail.domute`;
-        this.toggledLabel = `videothumbnail.muted`;
-    }
+export default class AbstractMuteButton extends AbstractButton {
+    accessibilityLabel = 'toolbar.accessibilityLabel.remoteMute';
+    icon = IconMicSlash;
+    label = 'videothumbnail.domute';
+    toggledLabel = 'videothumbnail.muted';
 
     /**
      * Handles clicking / pressing the button, and mutes the participant.
@@ -56,7 +23,7 @@ export default class AbstractMuteButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { dispatch, participantID, t } = this.props;
+        const { dispatch, participantID } = this.props;
 
         sendAnalytics(createRemoteVideoMenuButtonEvent(
             'mute',
@@ -65,7 +32,7 @@ export default class AbstractMuteButton extends AbstractButton<Props, *> {
             }));
 
         dispatch(muteRemote(participantID, MEDIA_TYPE.AUDIO));
-        dispatch(rejectParticipant(participantID, MEDIA_TYPE.AUDIO));
+        dispatch(rejectParticipantAudio(participantID));
     }
 
     /**
@@ -74,8 +41,7 @@ export default class AbstractMuteButton extends AbstractButton<Props, *> {
      * @inheritdoc
      */
     _isDisabled() {
-        const { _audioTrackMuted, _disableRemoteUnmute } = this.props;
-        return _disableRemoteUnmute ? _audioTrackMuted : false;
+        return this.props._audioTrackMuted;
     }
 
     /**
@@ -84,8 +50,7 @@ export default class AbstractMuteButton extends AbstractButton<Props, *> {
      * @inheritdoc
      */
     _isToggled() {
-        const { _audioTrackMuted, _disableRemoteUnmute } = this.props;
-        return _disableRemoteUnmute ? _audioTrackMuted : false;
+        return this.props._audioTrackMuted;
     }
 }
 
@@ -99,13 +64,11 @@ export default class AbstractMuteButton extends AbstractButton<Props, *> {
  *      _audioTrackMuted: boolean
  *  }}
  */
-export function _mapStateToProps(state: Object, ownProps: Props) {
+export function _mapStateToProps(state, ownProps) {
     const tracks = state['features/base/tracks'];
-    const { disableRemoteUnmute } = state['features/base/config'];
 
     return {
         _audioTrackMuted: isRemoteTrackMuted(
-            tracks, MEDIA_TYPE.AUDIO, ownProps.participantID),
-        _disableRemoteUnmute: disableRemoteUnmute
+            tracks, MEDIA_TYPE.AUDIO, ownProps.participantID)
     };
 }

@@ -3,6 +3,7 @@
 import React, { PureComponent } from 'react';
 import { Text, View } from 'react-native';
 import { Divider } from 'react-native-paper';
+import { connect } from 'react-redux';
 
 import { Avatar } from '../../../base/avatar';
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
@@ -13,7 +14,6 @@ import {
     getParticipantById,
     getParticipantDisplayName
 } from '../../../base/participants';
-import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms';
 import PrivateMessageButton from '../../../chat/components/native/PrivateMessageButton';

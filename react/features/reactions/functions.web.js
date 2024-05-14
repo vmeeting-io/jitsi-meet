@@ -1,4 +1,5 @@
 // @flow
+import { isReactionsEnabled } from './functions.any';
 
 export * from './functions.any';
 
@@ -10,4 +11,16 @@ export * from './functions.any';
  */
 export function getReactionsMenuVisibility(state: Object) {
     return state['features/reactions'].visible;
+}
+
+/**
+ * Whether or not the reactions button is enabled.
+ *
+ * @param {Object} state - The Redux state object.
+ * @returns {boolean}
+ */
+export function isReactionsButtonEnabled(state: Object) {
+    const { toolbarButtons } = state['features/toolbox'];
+
+    return Boolean(toolbarButtons?.includes('reactions')) && isReactionsEnabled(state);
 }

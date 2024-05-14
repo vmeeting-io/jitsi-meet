@@ -1,9 +1,9 @@
 // @flow
 
 import {
+    DELETE_RECENT_LIST_ENTRY,
     _STORE_CURRENT_CONFERENCE,
-    _UPDATE_CONFERENCE_DURATION,
-    DELETE_RECENT_LIST_ENTRY
+    _UPDATE_CONFERENCE_DURATION
 } from './actionTypes';
 
 /**
@@ -31,7 +31,6 @@ export function deleteRecentListEntry(entryId: Object) {
  * @returns {{
  *     type: _STORE_CURRENT_CONFERENCE,
  *     locationURL: Object
- *     siteName: string
  * }}
  */
 export function _storeCurrentConference(locationURL: Object, siteName: string) {

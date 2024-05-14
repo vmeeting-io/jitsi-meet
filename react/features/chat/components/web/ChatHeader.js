@@ -1,18 +1,15 @@
 // @flow
 
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import { translate } from '../../../base/i18n';
-import { Icon, IconClose, IconSearch } from '../../../base/icons';
-import { connect } from '../../../base/redux';
+import Icon from '../../../base/icons/components/Icon';
+import { IconCloseLarge, IconSearch } from '../../../base/icons/svg';
 import { toggleChat } from '../../actions.web';
 
 type Props = {
-
-    /**
-     * Function to be called when pressing the close button.
-     */
-    onCancel: Function,
 
     /**
      * An optional class name.
@@ -25,41 +22,62 @@ type Props = {
     isPollsEnabled: boolean,
 
     /**
-     * Invoked to obtain translated strings.
+     * Function to be called when pressing the close button.
      */
-    t: Function
+    onCancel: Function,
 };
+
+const useStyles = makeStyles()(theme => {
+    return {
+        toolContainer: {
+            display: 'flex',
+            fontSize: 14,
+            fontWeight: 400,
+            gap: 10
+        }
+    };
+});
 
 /**
  * Custom header of the {@code ChatDialog}.
  *
  * @returns {React$Element<any>}
  */
-function Header({
-    onCancel,
-    onToggleSearch,
+function ChatHeader({
     className,
     isPollsEnabled,
+    onToggleSearch,
     renderSearch,
     showSearch,
-    t
 }: Props) {
+
+    const dispatch = useDispatch();
+    const { t } = useTranslation();
+    const { classes } = useStyles();
+
+    const onCancel = useCallback(() => {
+        dispatch(toggleChat());
+    }, []);
 
     const onKeyPressHandler = useCallback(e => {
         if (onCancel && (e.key === ' ' || e.key === 'Enter')) {
             e.preventDefault();
             onCancel();
         }
-    }, [ onCancel ]);
+    }, []);
 
     return (
         <div
-            className = { className || 'chat-dialog-header' }
-            role = 'heading'>
+            className = { className || 'chat-dialog-header' }>
             { !showSearch
-                ? t(isPollsEnabled ? 'chat.titleWithPolls' : 'chat.title')
-                : renderSearch() }
-            <div className='tool-container'>
+                ? (
+                    <span
+                        aria-level = { 1 }
+                        role = 'heading'>
+                        { t(isPollsEnabled ? 'chat.titleWithPolls' : 'chat.title') }
+                    </span>
+                ) : renderSearch() }
+            <div className = { classes.toolContainer }>
                 { !showSearch && <Icon
                     ariaLabel = { t('chat.search') }
                     onClick={ onToggleSearch }
@@ -71,27 +89,11 @@ function Header({
                     onClick = { onCancel }
                     onKeyPress = { onKeyPressHandler }
                     role = 'button'
-                    src = { IconClose }
+                    src = { IconCloseLarge }
                     tabIndex = { 0 } />
             </div>
         </div>
     );
-    return (
-        <div
-            className = { className || 'chat-dialog-header' }
-            role = 'heading'>
-            { t(isPollsEnabled ? 'chat.titleWithPolls' : 'chat.title') }
-            <Icon
-                ariaLabel = { t('toolbar.closeChat') }
-                onClick = { onCancel }
-                onKeyPress = { onKeyPressHandler }
-                role = 'button'
-                src = { IconClose }
-                tabIndex = { 0 } />
-        </div>
-    );
 }
 
-const mapDispatchToProps = { onCancel: toggleChat };
-
-export default translate(connect(null, mapDispatchToProps)(Header));
+export default ChatHeader;

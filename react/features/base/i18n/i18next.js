@@ -1,22 +1,33 @@
 // @flow
 
-declare var APP: Object;
-
 import COUNTRIES_RESOURCES from 'i18n-iso-countries/langs/en.json';
 import i18next from 'i18next';
-import I18nextXHRBackend from 'i18next-xhr-backend';
-import { initReactI18next } from 'react-i18next';
+import I18nextXHRBackend, { HttpBackendOptions } from 'i18next-http-backend';
+import _ from 'lodash';
 
 import LANGUAGES_RESOURCES from '../../../../lang/languages.json';
 import MAIN_RESOURCES from '../../../../lang/main.json';
+import TRANSLATION_LANGUAGES_RESOURCES from '../../../../lang/translation-languages.json';
 
 import { I18NEXT_INITIALIZED, LANGUAGE_CHANGED } from './actionTypes';
 import languageDetector from './languageDetector';
 
 /**
+ * Override certain country names.
+ */
+const COUNTRIES_RESOURCES_OVERRIDES = {
+    countries: {
+        TW: 'Taiwan'
+    }
+};
+
+/**
+ * Merged country names.
+ */
+const COUNTRIES = _.merge({}, COUNTRIES_RESOURCES, COUNTRIES_RESOURCES_OVERRIDES);
+
+/**
  * The available/supported languages.
- *
- * XXX The element at index zero is the default language.
  *
  * @public
  * @type {Array<string>}
@@ -24,14 +35,30 @@ import languageDetector from './languageDetector';
 export const LANGUAGES: Array<string> = Object.keys(LANGUAGES_RESOURCES);
 
 /**
+ * The available/supported translation languages.
+ *
+ * @public
+ * @type {Array<string>}
+ */
+export const TRANSLATION_LANGUAGES: Array<string> = Object.keys(TRANSLATION_LANGUAGES_RESOURCES);
+
+/**
  * The default language.
  *
- * XXX The element at index zero of {@link LANGUAGES} is the default language.
+ * English is the default language.
  *
  * @public
  * @type {string} The default language.
  */
-export const DEFAULT_LANGUAGE = LANGUAGES[0];
+export const DEFAULT_LANGUAGE = 'en';
+
+/**
+ * The available/supported translation languages head. (Languages displayed on the top ).
+ *
+ * @public
+ * @type {Array<string>}
+ */
+export const TRANSLATION_LANGUAGES_HEAD: Array<string> = [ DEFAULT_LANGUAGE ];
 
 /**
  * The options to initialize i18next with.
@@ -40,7 +67,16 @@ export const DEFAULT_LANGUAGE = LANGUAGES[0];
  */
 const options = {
     backend: {
-        loadPath: 'lang/{{ns}}-{{lng}}.json?v=3'
+        loadPath: (lng, ns) => {
+            switch (ns[0]) {
+            case 'countries':
+            case 'main':
+            case 'vmeeting':
+                return 'lang/{{ns}}-{{lng}}.json';
+            default:
+                return 'lang/{{ns}}.json';
+            }
+        }
     },
     defaultNS: 'main',
     fallbackLng: DEFAULT_LANGUAGE,
@@ -48,7 +84,7 @@ const options = {
         escapeValue: false // not needed for react as it escapes by default
     },
     load: 'languageOnly',
-    ns: [ 'main', 'languages', 'countries', 'vmeeting' ],
+    ns: [ 'main', 'languages', 'countries', 'translation-languages', 'vmeeting' ],
     react: {
         // re-render when a new resource bundle is added
         bindI18nStore: 'added',
@@ -65,20 +101,25 @@ const options = {
 i18next
     .use(navigator.product === 'ReactNative' ? {} : I18nextXHRBackend)
     .use(languageDetector)
-    .use(initReactI18next)
     .init(options);
 
 // Add default language which is preloaded from the source code.
 i18next.addResourceBundle(
     DEFAULT_LANGUAGE,
     'countries',
-    COUNTRIES_RESOURCES,
+    COUNTRIES,
     /* deep */ true,
     /* overwrite */ true);
 i18next.addResourceBundle(
     DEFAULT_LANGUAGE,
     'languages',
     LANGUAGES_RESOURCES,
+    /* deep */ true,
+    /* overwrite */ true);
+i18next.addResourceBundle(
+    DEFAULT_LANGUAGE,
+    'translation-languages',
+    TRANSLATION_LANGUAGES_RESOURCES,
     /* deep */ true,
     /* overwrite */ true);
 i18next.addResourceBundle(

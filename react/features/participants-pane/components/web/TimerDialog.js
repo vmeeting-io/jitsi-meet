@@ -1,14 +1,16 @@
 /* @flow */
 
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 
-import { Dialog } from '../../../base/dialog';
-import { translate } from '../../../base/i18n';
-import { connect } from '../../../base/redux';
+import { translate } from '../../../base/i18n/functions';
+import Button from '../../../base/ui/components/web/Button';
+import Dialog from '../../../base/ui/components/web/Dialog';
+import Input from '../../../base/ui/components/web/Input';
+import { showNotification } from '../../../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../../../notifications/constants';
+
 import AbstractTimerDialog from '../AbstractTimerDialog';
-import { FieldTextStateless } from '@atlaskit/field-text';
-import Button, { ButtonGroup } from '@atlaskit/button';
-import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../../../notifications';
 
 /**
  * A React Component for setting timer duration to be set to the user.
@@ -167,26 +169,26 @@ class TimerDialog extends AbstractTimerDialog {
                         <div className='col'>
                         </div>
                         <div className='col'>
-                            <FieldTextStateless
+                            <Input
                                 autoFocus={true}
                                 className='input-control'
                                 label={t('dialog.timerMin')}
                                 name="durantionMinute"
+                                onChange={this._onMinValChange}
                                 placeholder="00"
                                 type="number"
-                                onChange={this._onMinValChange}
                                 value={this.state.min}
                                 // isInvalid={parseInt(this.state.min) > 60}
                             />
                         </div>
                         <div className='col'>
-                            <FieldTextStateless
+                            <Input
                                 className='input-control'
                                 label={t('dialog.timerSec')}
                                 name="durationSeconds"
+                                onChange={this._onSecondsValChange}
                                 placeholder="00"
                                 type="number"
-                                onChange={this._onSecondsValChange}
                                 value={this.state.seconds}
                                 // isInvalid={this.state.seconds > 59}
                             />
@@ -212,7 +214,7 @@ class TimerDialog extends AbstractTimerDialog {
 
                     <div className='row'>
                         <div className='button-group'>
-                            <ButtonGroup>
+                            <div className = { 'buttons-container' }>
                                 <div className='col'>
                                     <Button
                                         onClick={this._add5Min}
@@ -242,7 +244,7 @@ class TimerDialog extends AbstractTimerDialog {
                                     </Button>
                                 </div>
                                
-                            </ButtonGroup>
+                            </div>
                         </div>
                     </div>
                 </div>

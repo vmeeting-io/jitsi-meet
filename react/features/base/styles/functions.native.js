@@ -1,7 +1,5 @@
 // @flow
 
-import { type StyleType } from './functions.any';
-
 export * from './functions.any';
 
 /**
@@ -11,7 +9,7 @@ export * from './functions.any';
  * @param {StyleType} style - The passed style prop to the component.
  * @returns {StyleType}
  */
-export function getFixedPlatformStyle(style: StyleType): StyleType {
+export function getFixedPlatformStyle(style) {
     // There is nothing to do on mobile - yet.
 
     return style;

@@ -2,8 +2,8 @@
 
 import { v4 as uuidv4 } from 'uuid';
 
-import { ReducerRegistry } from "../base/redux";
-import { i18next } from '../base/i18n';
+import ReducerRegistry from "../base/redux/ReducerRegistry";
+import i18next from '../base/i18n/i18next';
 import {
     STT_TOGGLE_MESSAGE,
     STT_TRANSLATION_TOGGLE_MESSAGE,

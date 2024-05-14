@@ -1,6 +1,7 @@
 // @flow
 
-import { PersistenceRegistry, ReducerRegistry } from '../base/redux';
+import PersistenceRegistry from '../base/redux/PersistenceRegistry';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import { AR_ENABLED, SET_AR, AR_APPROVAL_DIALOG } from './actionTypes';
 

@@ -2,7 +2,7 @@
 
 import { Component } from 'react';
 
-import { grantFollowMeModerator } from '../../follow-me';
+import { grantFollowMeModerator } from '../../follow-me/actions';
 
 type Props = {
 

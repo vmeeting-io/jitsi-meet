@@ -86,11 +86,6 @@ class StateListenerRegistry {
      */
     _selectorListeners: Set<SelectorListener> = new Set();
 
-    _listener: ({
-        prevSelections: Map<SelectorListener, any>,
-        store: Store<*, *>
-    }) => void;
-
     /**
      * Invoked by a specific redux store any time an action is dispatched, and
      * some part of the state (tree) may potentially have changed.
@@ -141,6 +136,10 @@ class StateListenerRegistry {
      * @returns {void}
      */
     register(selector: Selector, listener: Listener, options: ?RegistrationOptions) {
+        if (typeof selector !== 'function' || typeof listener !== 'function') {
+            throw new Error('Invalid selector or listener!');
+        }
+
         this._selectorListeners.add({
             listener,
             selector,

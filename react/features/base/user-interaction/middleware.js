@@ -1,7 +1,5 @@
-// @flow
-
-import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../app';
-import { MiddlewareRegistry } from '../redux';
+import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../app/actionTypes';
+import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 
 import { USER_INTERACTION_RECEIVED } from './actionTypes';
 
@@ -63,7 +61,10 @@ function _startListeningForUserInteraction({ dispatch }) {
 
     userInteractionListener = _onUserInteractionReceived.bind(null, dispatch);
 
+    // @ts-ignore
     window.addEventListener('mousedown', userInteractionListener);
+
+    // @ts-ignore
     window.addEventListener('keydown', userInteractionListener);
 }
 
@@ -74,7 +75,10 @@ function _startListeningForUserInteraction({ dispatch }) {
  * @returns {void}
  */
 function _stopListeningForUserInteraction() {
+    // @ts-ignore
     window.removeEventListener('mousedown', userInteractionListener);
+
+    // @ts-ignore
     window.removeEventListener('keydown', userInteractionListener);
 
     userInteractionListener = null;

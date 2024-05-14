@@ -1,4 +1,4 @@
 import { getParticipantDisplayName } from ".";
 
-export const selectParticipantDisplayName = id => state =>
+export const selectParticipantDisplayName = state => id =>
     getParticipantDisplayName(state, id);

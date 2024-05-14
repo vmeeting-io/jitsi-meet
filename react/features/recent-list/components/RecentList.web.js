@@ -2,18 +2,14 @@
 
 import React from 'react';
 import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
-import { translate } from '../../base/i18n';
-import { MeetingsList } from '../../base/react';
-import { connect } from '../../base/redux';
+import { translate } from '../../base/i18n/functions';
+import MeetingsList from '../../base/react/components/web/MeetingsList';
 import { deleteRecentListEntry } from '../actions';
-import { isRecentListEnabled, toDisplayableList } from '../functions';
+import { isRecentListEnabled, toDisplayableList } from '../functions.web';
 
 import AbstractRecentList from './AbstractRecentList';
-
-import axios from 'axios';
-
-import Modal, { ModalTransition } from '@atlaskit/modal-dialog';
 
 /**
  * The type of the React {@code Component} props of {@link RecentList}.
@@ -45,9 +41,9 @@ type Props = {
  * The cross platform container rendering the list of the recently joined rooms.
  *
  */
-class RecentList extends AbstractRecentList<Props, State> {
-    _getRenderListEmptyComponent: () => React$Node;
-    _onPress: string => {};
+class RecentList extends AbstractRecentList {
+    _getRenderListEmptyComponent;
+    _onPress;
 
     /**
      * Initializes a new {@code RecentList} instance.
@@ -62,8 +58,6 @@ class RecentList extends AbstractRecentList<Props, State> {
         this._onPress = this._onPress.bind(this);
         this._onItemDelete = this._onItemDelete.bind(this);
     }
-
-    _onItemDelete: Object => void;
 
     /**
      * Deletes a recent entry.

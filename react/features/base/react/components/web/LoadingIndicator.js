@@ -1,3 +1,1 @@
-/* @flow */
-
-export { default } from '@atlaskit/spinner';
+export { default } from '../../../ui/components/web/Spinner';

@@ -76,14 +76,42 @@ export const SEND_MESSAGE = 'SEND_MESSAGE';
 export const SET_PRIVATE_MESSAGE_RECIPIENT = 'SET_PRIVATE_MESSAGE_RECIPIENT';
 
 /**
- * The type of action which signals the update a _isPollsTabFocused.
+ * The type of action which signals the update a _tabFocused.
  *
  * {
- *     isPollsTabFocused: boolean,
- *     type: SET_PRIVATE_MESSAGE_RECIPIENT
+ *     tabFocused: string,
+ *     type: SET_CHAT_TAB_FOCUSED
  * }
  */
-export const SET_IS_POLL_TAB_FOCUSED = 'SET_IS_POLL_TAB_FOCUSED';
-export const SET_IS_STT_TAB_FOCUSED = 'SET_IS_STT_TAB_FOCUSED';
+export const SET_CHAT_TAB_FOCUSED = 'SET_CHAT_TAB_FOCUSED';
 
 export const FILE_UPLOADED_PERCENTAGE_STATUS = 'FILE_UPLOADED_PERCENTAGE_STATUS';
+
+/**
+ * The type of action which sets the current recipient for lobby messages.
+ *
+ * {
+ *     participant: Object,
+ *     type: SET_LOBBY_CHAT_RECIPIENT
+ * }
+ */
+ export const SET_LOBBY_CHAT_RECIPIENT = 'SET_LOBBY_CHAT_RECIPIENT';
+
+ /**
+  * The type of action sets the state of lobby messaging status.
+  *
+  * {
+  *     type: SET_LOBBY_CHAT_ACTIVE_STATE
+  *     payload: boolean
+  * }
+  */
+ export const SET_LOBBY_CHAT_ACTIVE_STATE = 'SET_LOBBY_CHAT_ACTIVE_STATE';
+
+ /**
+  * The type of action removes the lobby messaging from participant.
+  *
+  * {
+  *     type: REMOVE_LOBBY_CHAT_PARTICIPANT
+  * }
+  */
+ export const REMOVE_LOBBY_CHAT_PARTICIPANT = 'REMOVE_LOBBY_CHAT_PARTICIPANT';

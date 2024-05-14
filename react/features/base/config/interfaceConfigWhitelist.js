@@ -4,7 +4,7 @@
  * @private
  * @type Array
  */
- export default [
+export default [
     'AUDIO_LEVEL_PRIMARY_COLOR',
     'AUDIO_LEVEL_SECONDARY_COLOR',
     'AUTO_PIN_LATEST_SCREEN_SHARE',
@@ -44,7 +44,6 @@
     'SETTINGS_SECTIONS',
     'SHARING_FEATURES',
     'SHOW_CHROME_EXTENSION_BANNER',
-    'SHOW_DEEP_LINKING_IMAGE',
     'SHOW_POWERED_BY',
     'SUPPORT_URL',
     'TILE_VIEW_MAX_COLUMNS',

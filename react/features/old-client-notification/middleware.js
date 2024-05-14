@@ -1,15 +1,12 @@
-// @flow
-
 import React from 'react';
 
-import { APP_WILL_MOUNT } from '../base/app';
-import { MiddlewareRegistry } from '../base/redux';
-import { NOTIFICATION_TIMEOUT_TYPE, showErrorNotification } from '../notifications';
+import { APP_WILL_MOUNT } from '../base/app/actionTypes';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { showErrorNotification } from '../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 
-import { OldElectronAPPNotificationDescription } from './components';
+import OldElectronAPPNotificationDescription from './components/OldElectronAPPNotificationDescription';
 import { isOldJitsiMeetElectronApp } from './functions';
-
-declare var interfaceConfig: Object;
 
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {

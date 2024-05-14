@@ -7,3 +7,19 @@
 export function getSoundsPath() {
     return 'sounds';
 }
+
+/**
+ * Set new audio output device on the global sound elements.
+ *
+ * @param {string } deviceId - The new output deviceId.
+ * @returns {Function}
+ */
+export function setNewAudioOutputDevice(deviceId: string) {
+    return function(_dispatch, getState) {
+        const sounds = getState()['features/base/sounds'];
+
+        for (const [ , sound ] of sounds) {
+            sound.audioElement?.setSinkId?.(deviceId);
+        }
+    };
+}

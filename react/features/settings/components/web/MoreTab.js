@@ -1,110 +1,34 @@
-// @flow
-import { Checkbox } from '@atlaskit/checkbox';
-import DropdownMenu, {
-    DropdownItem,
-    DropdownItemGroup
-} from '@atlaskit/dropdown-menu';
+import { Theme } from '@mui/material';
+import clsx from 'clsx';
 import React from 'react';
+import { withStyles } from 'tss-react/mui';
 
-import keyboardShortcut from '../../../../../modules/keyboardshortcut/keyboardshortcut';
-import { AbstractDialogTab } from '../../../base/dialog';
-import type { Props as AbstractDialogTabProps } from '../../../base/dialog';
-import { translate } from '../../../base/i18n';
-import TouchmoveHack from '../../../chat/components/web/TouchmoveHack';
-import { SS_DEFAULT_FRAME_RATE } from '../../constants';
+import AbstractDialogTab from '../../../base/dialog/components/web/AbstractDialogTab';
+import { translate } from '../../../base/i18n/functions';
+import Checkbox from '../../../base/ui/components/web/Checkbox';
+import Select from '../../../base/ui/components/web/Select';
+import { MAX_ACTIVE_PARTICIPANTS } from '../../../filmstrip/constants';
 
-/**
- * The type of the React {@code Component} props of {@link MoreTab}.
- */
-export type Props = {
-    ...$Exact<AbstractDialogTabProps>,
+const styles = (theme: Theme) => {
+    return {
+        container: {
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '0 2px'
+        },
 
-    /**
-     * The currently selected desktop share frame rate in the frame rate select dropdown.
-     */
-     currentFramerate: string,
+        divider: {
+            margin: `${theme.spacing(4)} 0`,
+            width: '100%',
+            height: '1px',
+            border: 0,
+            backgroundColor: theme.palette.ui03
+        },
 
-    /**
-     * The currently selected language to display in the language select
-     * dropdown.
-     */
-    currentLanguage: string,
-
-    /**
-     * All available desktop capture frame rates.
-     */
-    desktopShareFramerates: Array<number>,
-
-    /**
-     * Whether to show hide self view setting.
-     */
-    disableHideSelfView: boolean,
-
-    /**
-     * Whether or not follow me is currently active (enabled by some other participant).
-     */
-    followMeActive: boolean,
-
-    /**
-     * All available languages to display in the language select dropdown.
-     */
-    languages: Array<string>,
-
-    /**
-     * The types of enabled notifications that can be configured and their specific visibility.
-     */
-    enabledNotifications: Object,
-
-    /**
-     * Whether or not to display the language select dropdown.
-     */
-    showLanguageSettings: boolean,
-
-    /**
-     * Whether or not to display moderator-only settings.
-     */
-    showModeratorSettings: boolean,
-
-    /**
-     * Whether or not to display notifications settings.
-     */
-    showNotificationsSettings: boolean,
-
-    /**
-     * Whether or not to display the prejoin settings section.
-     */
-    showPrejoinSettings: boolean,
-
-    /**
-     * Whether or not to show prejoin screen.
-     */
-    showPrejoinPage: boolean,
-
-    /**
-     * Whether or not to hide self-view screen.
-     */
-    hideSelfView: boolean,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
-
-/**
- * The type of the React {@code Component} state of {@link MoreTab}.
- */
-type State = {
-
-    /**
-     * Whether or not the desktop share frame rate select dropdown is open.
-     */
-     isFramerateSelectOpen: boolean,
-
-    /**
-     * Whether or not the language select dropdown is open.
-     */
-    isLanguageSelectOpen: boolean,
+        checkbox: {
+            margin: `${theme.spacing(3)} 0`
+        }
+    };
 };
 
 /**
@@ -112,30 +36,22 @@ type State = {
  *
  * @augments Component
  */
-class MoreTab extends AbstractDialogTab<Props, State> {
+class MoreTab extends AbstractDialogTab {
     /**
      * Initializes a new {@code MoreTab} instance.
      *
      * @param {Object} props - The read-only properties with which the new
      * instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
-        this.state = {
-            isFramerateSelectOpen: false,
-            isLanguageSelectOpen: false,
-        };
-
         // Bind event handler so it is only bound once for every instance.
-        this._onFramerateDropdownOpenChange = this._onFramerateDropdownOpenChange.bind(this);
-        this._onFramerateItemSelect = this._onFramerateItemSelect.bind(this);
-        this._onLanguageDropdownOpenChange = this._onLanguageDropdownOpenChange.bind(this);
-        this._onLanguageItemSelect = this._onLanguageItemSelect.bind(this);
-        this._onEnabledNotificationsChanged = this._onEnabledNotificationsChanged.bind(this);
         this._onShowPrejoinPageChanged = this._onShowPrejoinPageChanged.bind(this);
-        this._onKeyboardShortcutEnableChanged = this._onKeyboardShortcutEnableChanged.bind(this);
+        this._renderMaxStageParticipantsSelect = this._renderMaxStageParticipantsSelect.bind(this);
+        this._onMaxStageParticipantsSelect = this._onMaxStageParticipantsSelect.bind(this);
         this._onHideSelfViewChanged = this._onHideSelfViewChanged.bind(this);
+        this._onLanguageItemSelect = this._onLanguageItemSelect.bind(this);
     }
 
     /**
@@ -145,77 +61,37 @@ class MoreTab extends AbstractDialogTab<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const content = [];
-
-        content.push(this._renderSettingsLeft());
-        content.push(this._renderSettingsRight());
+        const {
+            showPrejoinSettings,
+            disableHideSelfView,
+            iAmVisitor,
+            hideSelfView,
+            showLanguageSettings,
+            t
+        } = this.props;
+        const classes = withStyles.getClasses(this.props);
 
         return (
             <div
-                className = 'more-tab box'
+                className = { clsx('more-tab', classes.container) }
                 key = 'more'>
-                { content }
+                {showPrejoinSettings && <>
+                    {this._renderPrejoinScreenSettings()}
+                    <hr className = { classes.divider } />
+                </>}
+                {this._renderMaxStageParticipantsSelect()}
+                {!disableHideSelfView && !iAmVisitor && (
+                    <Checkbox
+                        checked = { hideSelfView }
+                        className = { classes.checkbox }
+                        label = { t('videothumbnail.hideSelfView') }
+                        name = 'hide-self-view'
+                        onChange = { this._onHideSelfViewChanged } />
+                )}
+                {showLanguageSettings && this._renderLanguageSelect()}
             </div>
         );
     }
-
-    _onFramerateDropdownOpenChange: (Object) => void;
-
-    /**
-     * Callback invoked to toggle display of the desktop share framerate select dropdown.
-     *
-     * @param {Object} event - The event for opening or closing the dropdown.
-     * @private
-     * @returns {void}
-     */
-    _onFramerateDropdownOpenChange({ isOpen }) {
-        this.setState({ isFramerateSelectOpen: isOpen });
-    }
-
-    _onFramerateItemSelect: (Object) => void;
-
-    /**
-     * Callback invoked to select a frame rate from the select dropdown.
-     *
-     * @param {Object} e - The key event to handle.
-     * @private
-     * @returns {void}
-     */
-    _onFramerateItemSelect(e) {
-        const frameRate = e.currentTarget.getAttribute('data-framerate');
-
-        super._onChange({ currentFramerate: frameRate });
-    }
-
-    _onLanguageDropdownOpenChange: (Object) => void;
-
-    /**
-     * Callback invoked to toggle display of the language select dropdown.
-     *
-     * @param {Object} event - The event for opening or closing the dropdown.
-     * @private
-     * @returns {void}
-     */
-    _onLanguageDropdownOpenChange({ isOpen }) {
-        this.setState({ isLanguageSelectOpen: isOpen });
-    }
-
-    _onLanguageItemSelect: (Object) => void;
-
-    /**
-     * Callback invoked to select a language from select dropdown.
-     *
-     * @param {Object} e - The key event to handle.
-     *
-     * @returns {void}
-     */
-    _onLanguageItemSelect(e) {
-        const language = e.currentTarget.getAttribute('data-language');
-
-        super._onChange({ currentLanguage: language });
-    }
-
-    _onShowPrejoinPageChanged: (Object) => void;
 
     /**
      * Callback invoked to select if the lobby
@@ -225,46 +101,22 @@ class MoreTab extends AbstractDialogTab<Props, State> {
      *
      * @returns {void}
      */
-    _onShowPrejoinPageChanged({ target: { checked } }) {
+    _onShowPrejoinPageChanged({ target: { checked } }: React.ChangeEvent<HTMLInputElement>) {
         super._onChange({ showPrejoinPage: checked });
     }
 
-    _onEnabledNotificationsChanged: (Object, string) => void;
-
     /**
-     * Callback invoked to select if the given type of
-     * notifications should be shown.
+     * Callback invoked to select a max number of stage participants from the select dropdown.
      *
      * @param {Object} e - The key event to handle.
-     * @param {string} type - The type of the notification.
-     *
+     * @private
      * @returns {void}
      */
-    _onEnabledNotificationsChanged({ target: { checked } }, type) {
-        super._onChange({
-            enabledNotifications: {
-                ...this.props.enabledNotifications,
-                [type]: checked
-            }
-        });
+    _onMaxStageParticipantsSelect(e: React.ChangeEvent<HTMLSelectElement>) {
+        const maxParticipants = Number(e.target.value);
+
+        super._onChange({ maxStageParticipants: maxParticipants });
     }
-
-    _onKeyboardShortcutEnableChanged: (Object) => void;
-
-    /**
-     * Callback invoked to select if global keyboard shortcuts
-     * should be enabled.
-     *
-     * @param {Object} e - The key event to handle.
-     *
-     * @returns {void}
-     */
-    _onKeyboardShortcutEnableChanged({ target: { checked } }) {
-        keyboardShortcut.enable(checked);
-        super._onChange({ keyboardShortcutEnable: checked });
-    }
-
-    _onHideSelfViewChanged: (Object) => void;
 
     /**
      * Callback invoked to select if hide self view should be enabled.
@@ -273,110 +125,67 @@ class MoreTab extends AbstractDialogTab<Props, State> {
      *
      * @returns {void}
      */
-    _onHideSelfViewChanged({ target: { checked } }) {
+    _onHideSelfViewChanged({ target: { checked } }: React.ChangeEvent<HTMLInputElement>) {
         super._onChange({ hideSelfView: checked });
     }
 
     /**
-     * Returns the React Element for the desktop share frame rate dropdown.
+     * Callback invoked to select a language from select dropdown.
      *
-     * @returns {ReactElement}
+     * @param {Object} e - The key event to handle.
+     *
+     * @returns {void}
      */
-    _renderFramerateSelect() {
-        const { currentFramerate, desktopShareFramerates, t } = this.props;
-        const frameRateItems = desktopShareFramerates.map(frameRate => (
-            <DropdownItem
-                data-framerate = { frameRate }
-                key = { frameRate }
-                onClick = { this._onFramerateItemSelect }>
-                { `${frameRate} ${t('settings.framesPerSecond')}` }
-            </DropdownItem>));
+    _onLanguageItemSelect(e: React.ChangeEvent<HTMLSelectElement>) {
+        const language = e.target.value;
 
-        return (
-            <div
-                className = 'settings-sub-pane-element'
-                key = 'frameRate'>
-                <h2 className = 'mock-atlaskit-label'>
-                    { t('settings.desktopShareFramerate') }
-                </h2>
-                <div className = 'dropdown-menu'>
-                    <TouchmoveHack
-                        flex = { true }
-                        isModal = { true }>
-                        <DropdownMenu
-                            isOpen = { this.state.isFramerateSelectOpen }
-                            onOpenChange = { this._onFramerateDropdownOpenChange }
-                            shouldFitContainer = { true }
-                            trigger = { currentFramerate
-                                ? `${currentFramerate} ${t('settings.framesPerSecond')}`
-                                : '' }
-                            triggerButtonProps = {{
-                                shouldFitContainer: true
-                            }}
-                            triggerType = 'button'>
-                            <DropdownItemGroup>
-                                { frameRateItems }
-                            </DropdownItemGroup>
-                        </DropdownMenu>
-                    </TouchmoveHack>
-                </div>
-                <div
-                    className = 'mock-atlaskit-label'>
-                    { parseInt(currentFramerate, 10) > SS_DEFAULT_FRAME_RATE
-                        ? t('settings.desktopShareHighFpsWarning')
-                        : t('settings.desktopShareWarning') }
-                </div>
-            </div>
-        );
+        super._onChange({ currentLanguage: language });
     }
 
     /**
-     * Returns the React Element for keyboardShortcut settings.
+     * Returns the React Element for modifying prejoin screen settings.
      *
      * @private
      * @returns {ReactElement}
      */
-    _renderKeyboardShortcutCheckbox() {
-        const { t } = this.props;
+    _renderPrejoinScreenSettings() {
+        const { t, showPrejoinPage } = this.props;
 
         return (
-            <div
-                className = 'settings-sub-pane-element'
-                key = 'keyboard-shortcut'>
-                <h2 className = 'mock-atlaskit-label'>
-                    { t('keyboardShortcuts.keyboardShortcuts') }
-                </h2>
-                <Checkbox
-                    isChecked = { keyboardShortcut.getEnabled() }
-                    label = { t('prejoin.keyboardShortcuts') }
-                    name = 'enable-keyboard-shortcuts'
-                    onChange = { this._onKeyboardShortcutEnableChanged } />
-            </div>
+            <Checkbox
+                checked = { showPrejoinPage }
+                label = { t('prejoin.showScreen') }
+                name = 'show-prejoin-page'
+                onChange = { this._onShowPrejoinPageChanged } />
         );
     }
 
     /**
-     * Returns the React Element for self view setting.
+     * Returns the React Element for the max stage participants dropdown.
      *
-     * @private
      * @returns {ReactElement}
      */
-    _renderSelfViewCheckbox() {
-        const { hideSelfView, t } = this.props;
+    _renderMaxStageParticipantsSelect() {
+        const { maxStageParticipants, t, stageFilmstripEnabled } = this.props;
+
+        if (!stageFilmstripEnabled) {
+            return null;
+        }
+        const maxParticipantsItems = Array(MAX_ACTIVE_PARTICIPANTS).fill(0)
+            .map((no, index) => {
+                return {
+                    value: index + 1,
+                    label: `${index + 1}`
+                };
+            });
 
         return (
-            <div
-                className = 'settings-sub-pane-element'
-                key = 'selfview'>
-                <h2 className = 'mock-atlaskit-label'>
-                    { t('settings.selfView') }
-                </h2>
-                <Checkbox
-                    isChecked = { hideSelfView }
-                    label = { t('videothumbnail.hideSelfView') }
-                    name = 'hide-self-view'
-                    onChange = { this._onHideSelfViewChanged } />
-            </div>
+            <Select
+                id = 'more-maxStageParticipants-select'
+                label = { t('settings.maxStageParticipants') }
+                onChange = { this._onMaxStageParticipantsSelect }
+                options = { maxParticipantsItems }
+                value = { maxStageParticipants } />
         );
     }
 
@@ -394,145 +203,22 @@ class MoreTab extends AbstractDialogTab<Props, State> {
         } = this.props;
 
         const languageItems
-            = languages.map(language => (
-                <DropdownItem
-                    data-language = { language }
-                    key = { language }
-                    onClick = { this._onLanguageItemSelect }>
-                    { t(`languages:${language}`) }
-                </DropdownItem>));
+            = languages.map((language: string) => {
+                return {
+                    value: language,
+                    label: t(`languages:${language}`)
+                };
+            });
 
         return (
-            <div
-                className = 'settings-sub-pane-element'
-                key = 'language'>
-                <h2 className = 'mock-atlaskit-label'>
-                    { t('settings.language') }
-                </h2>
-                <div className = 'dropdown-menu'>
-                    <TouchmoveHack
-                        flex = { true }
-                        isModal = { true }>
-                        <DropdownMenu
-                            isOpen = { this.state.isLanguageSelectOpen }
-                            onOpenChange = { this._onLanguageDropdownOpenChange }
-                            shouldFitContainer = { true }
-                            trigger = { currentLanguage
-                                ? t(`languages:${currentLanguage}`)
-                                : '' }
-                            triggerButtonProps = {{
-                                shouldFitContainer: true
-                            }}
-                            triggerType = 'button'>
-                            <DropdownItemGroup>
-                                { languageItems }
-                            </DropdownItemGroup>
-                        </DropdownMenu>
-                    </TouchmoveHack>
-                </div>
-            </div>
-        );
-    }
-
-    /**
-     * Returns the React Element for modifying prejoin screen settings.
-     *
-     * @private
-     * @returns {ReactElement}
-     */
-    _renderPrejoinScreenSettings() {
-        const { t, showPrejoinPage } = this.props;
-
-        return (
-            <div
-                className = 'settings-sub-pane-element'
-                key = 'prejoin-screen'>
-                <h2 className = 'mock-atlaskit-label'>
-                    { t('prejoin.premeeting') }
-                </h2>
-                <Checkbox
-                    isChecked = { showPrejoinPage }
-                    label = { t('prejoin.showScreen') }
-                    name = 'show-prejoin-page'
-                    onChange = { this._onShowPrejoinPageChanged } />
-            </div>
-        );
-    }
-
-    /**
-     * Returns the React Element for modifying the enabled notifications settings.
-     *
-     * @private
-     * @returns {ReactElement}
-     */
-    _renderNotificationsSettings() {
-        const { t, enabledNotifications } = this.props;
-
-        return (
-            <div
-                className = 'settings-sub-pane-element'
-                key = 'notifications'>
-                <h2 className = 'mock-atlaskit-label'>
-                    { t('notify.displayNotifications') }
-                </h2>
-                {
-                    Object.keys(enabledNotifications).map(key => (
-                        <Checkbox
-                            isChecked = { enabledNotifications[key] }
-                            key = { key }
-                            label = { t(key) }
-                            name = { `show-${key}` }
-                            /* eslint-disable-next-line react/jsx-no-bind */
-                            onChange = { e => this._onEnabledNotificationsChanged(e, key) } />
-                    ))
-                }
-            </div>
-        );
-    }
-
-    /**
-     * Returns the React element that needs to be displayed on the right half of the more tabs.
-     *
-     * @private
-     * @returns {ReactElement}
-     */
-    _renderSettingsRight() {
-        const { showFramerateSelect, showLanguageSettings } = this.props;
-
-        return (
-            <div
-                className = 'settings-sub-pane right'
-                key = 'settings-sub-pane-right'>
-                { showLanguageSettings && this._renderLanguageSelect() }
-                { showFramerateSelect && this._renderFramerateSelect() }
-            </div>
-        );
-    }
-
-    /**
-     * Returns the React element that needs to be displayed on the left half of the more tabs.
-     *
-     * @returns {ReactElement}
-     */
-    _renderSettingsLeft() {
-        const {
-            disableHideSelfView,
-            disableShortcuts,
-            showNotificationsSettings,
-            showPrejoinSettings
-        } = this.props;
-
-        return (
-            <div
-                className = 'settings-sub-pane left'
-                key = 'settings-sub-pane-left'>
-                { showPrejoinSettings && this._renderPrejoinScreenSettings() }
-                { showNotificationsSettings && this._renderNotificationsSettings() }
-                { !disableShortcuts && this._renderKeyboardShortcutCheckbox() }
-                { !disableHideSelfView && this._renderSelfViewCheckbox() }
-            </div>
+            <Select
+                id = 'more-language-select'
+                label = { t('settings.language') }
+                onChange = { this._onLanguageItemSelect }
+                options = { languageItems }
+                value = { currentLanguage } />
         );
     }
 }
 
-export default translate(MoreTab);
+export default withStyles(translate(MoreTab), styles);

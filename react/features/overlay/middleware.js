@@ -1,23 +1,21 @@
-// @flow
-
+import { JitsiConferenceErrors } from '../base/lib-jitsi-meet';
 import {
-    JitsiConferenceErrors,
     isFatalJitsiConferenceError,
     isFatalJitsiConnectionError
-} from '../base/lib-jitsi-meet';
-import { StateListenerRegistry } from '../base/redux';
+} from '../base/lib-jitsi-meet/functions.any';
+import StateListenerRegistry from '../base/redux/StateListenerRegistry';
 
-import { setFatalError } from './actions';
+import { openPageReloadDialog } from './actions';
 
-declare var APP: Object;
 
 /**
- * List of errors that are not fatal (or handled differently) so then the overlays won't kick in.
+ * List of errors that are not fatal (or handled differently) so then the page reload dialog won't kick in.
  */
-const NON_OVERLAY_ERRORS = [
+const RN_NO_RELOAD_DIALOG_ERRORS = [
     JitsiConferenceErrors.CONFERENCE_ACCESS_DENIED,
     JitsiConferenceErrors.CONFERENCE_DESTROYED,
-    JitsiConferenceErrors.CONNECTION_ERROR
+    JitsiConferenceErrors.CONNECTION_ERROR,
+    JitsiConferenceErrors.CONFERENCE_RESTARTED
 ];
 
 const ERROR_TYPES = {
@@ -29,19 +27,18 @@ const ERROR_TYPES = {
 /**
  * Gets the error type and whether it's fatal or not.
  *
- * @param {Function} getState - The redux function for fetching the current state.
+ * @param {Object} state - The redux state.
  * @param {Object|string} error - The error to process.
  * @returns {void}
  */
-const getErrorExtraInfo = (getState, error) => {
-    const state = getState();
+const getErrorExtraInfo = (state, error) => {
     const { error: conferenceError } = state['features/base/conference'];
     const { error: configError } = state['features/base/config'];
     const { error: connectionError } = state['features/base/connection'];
 
     if (error === conferenceError) {
         return {
-            type: ERROR_TYPES.CONFERENCE,
+            type: ERROR_TYPES.CONFERENCE, // @ts-ignore
             isFatal: isFatalJitsiConferenceError(error.name || error)
         };
     }
@@ -55,7 +52,7 @@ const getErrorExtraInfo = (getState, error) => {
 
     if (error === connectionError) {
         return {
-            type: ERROR_TYPES.CONNECTION,
+            type: ERROR_TYPES.CONNECTION, // @ts-ignore
             isFatal: isFatalJitsiConnectionError(error.name || error)
         };
     }
@@ -74,22 +71,23 @@ StateListenerRegistry.register(
 
         return configError || connectionError || conferenceError;
     },
-    /* listener */ (error, { dispatch, getState }) => {
+    /* listener */ (error, store) => {
+        const state = store.getState();
+
         if (!error) {
             return;
         }
 
+        // eslint-disable-next-line no-negated-condition
         if (typeof APP !== 'undefined') {
-            const parsedError = typeof error === 'string' ? { name: error } : error;
-
             APP.API.notifyError({
-                ...parsedError,
-                ...getErrorExtraInfo(getState, error)
+                ...error,
+                ...getErrorExtraInfo(state, error)
             });
-        }
-
-        if (NON_OVERLAY_ERRORS.indexOf(error.name) === -1 && typeof error.recoverable === 'undefined') {
-            dispatch(setFatalError(error));
+        } else if (RN_NO_RELOAD_DIALOG_ERRORS.indexOf(error.name) === -1 && typeof error.recoverable === 'undefined') {
+            setTimeout(() => {
+                store.dispatch(openPageReloadDialog());
+            }, 500);
         }
     }
 );

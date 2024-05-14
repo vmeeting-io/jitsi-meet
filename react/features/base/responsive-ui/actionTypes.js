@@ -8,6 +8,16 @@
 export const CLIENT_RESIZED = 'CLIENT_RESIZED';
 
 /**
+ * The type of (redux) action which indicates that the insets from the SafeAreaProvider have changed.
+ *
+ * {
+ *    type: SAFE_AREA_INSETS_CHANGED,
+ *    insets: Object
+ * }
+ */
+ export const SAFE_AREA_INSETS_CHANGED = 'SAFE_AREA_INSETS_CHANGED';
+
+/**
  * The type of (redux) action which sets the aspect ratio of the app's user
  * interface.
  *
@@ -41,4 +51,16 @@ export const SET_REDUCED_UI = 'SET_REDUCED_UI';
  * }
  */
 export const SET_CONTEXT_MENU_OPEN = 'SET_CONTEXT_MENU_OPEN';
+
+/**
+ * The type of redux action which signals whether we are in narrow layout.
+ *
+ * {
+ *     type: SET_NARROW_LAYOUT,
+ *     isNarrow: boolean
+ * }
+ *
+ * @public
+ */
+export const SET_NARROW_LAYOUT = 'SET_NARROW_LAYOUT';
 

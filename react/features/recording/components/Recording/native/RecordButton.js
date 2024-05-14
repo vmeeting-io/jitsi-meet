@@ -1,10 +1,10 @@
 // @flow
 
 import { Platform } from 'react-native';
+import { connect } from 'react-redux';
 
 import { IOS_RECORDING_ENABLED, RECORDING_ENABLED, getFeatureFlag } from '../../../../base/flags';
 import { translate } from '../../../../base/i18n';
-import { connect } from '../../../../base/redux';
 import AbstractRecordButton, { _mapStateToProps as _abstractMapStateToProps } from '../AbstractRecordButton';
 
 /**

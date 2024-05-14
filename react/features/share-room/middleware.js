@@ -3,11 +3,13 @@
 import { Share } from 'react-native';
 
 import { getName } from '../app/functions';
+import { INVITE_DIAL_IN_ENABLED } from '../base/flags/constants';
+import { getFeatureFlag } from '../base/flags/functions';
 import { MiddlewareRegistry } from '../base/redux';
 import { getShareInfoText } from '../invite';
 
 import { BEGIN_SHARE_ROOM } from './actionTypes';
-import { endShareRoom } from './actions';
+import { endShareRoom, toggleShareDialog } from './actions';
 import logger from './logger';
 
 /**
@@ -36,7 +38,9 @@ MiddlewareRegistry.register(store => next => action => {
  * @returns {void}
  */
 function _shareRoom(roomURL: string, { dispatch, getState }) {
-    getShareInfoText(getState(), roomURL)
+    const dialInEnabled = getFeatureFlag(getState(), INVITE_DIAL_IN_ENABLED, true);
+
+    getShareInfoText(getState(), roomURL, false /* useHtml */, !dialInEnabled /* skipDialIn */)
         .then(message => {
             const title = `${getName()} Conference`;
             const onFulfilled
@@ -60,6 +64,9 @@ function _shareRoom(roomURL: string, { dispatch, getState }) {
                             `Failed to share conference/room URL ${roomURL}:`,
                             reason);
                         onFulfilled(false);
+                    })
+                .finally(() => {
+                    dispatch(toggleShareDialog(false));
                     });
         });
 }

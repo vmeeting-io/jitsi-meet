@@ -1,8 +1,8 @@
 // @flow
 
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { connect } from '../../../base/redux';
 import { removeReaction } from '../../actions.any';
 import { REACTIONS } from '../../constants';
 
@@ -45,12 +45,26 @@ type State = {
  */
 class ReactionEmoji extends Component<Props, State> {
     /**
+     * Initializes a new {@code ReactionEmoji} instance.
+     *
+     * @param {IProps} props - The read-only React {@code Component} props with
+     * which the new instance is to be initialized.
+     */
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            index: props.index % 21
+        };
+    }
+
+    /**
      * Implements React Component's componentDidMount.
      *
      * @inheritdoc
      */
     componentDidMount() {
-        setTimeout(() => this.props.removeReaction(this.props.uid), 5000);
+        setTimeout(() => this.props.reactionRemove(this.props.uid), 5000);
     }
 
     /**
@@ -59,11 +73,12 @@ class ReactionEmoji extends Component<Props, State> {
      * @inheritdoc
      */
     render() {
-        const { isChatOpen, reaction, uid } = this.props;
+        const { reaction, uid } = this.props;
+        const { index } = this.state;
 
         return (
             <div
-                className = { `reaction-emoji${isChatOpen ? ' shift-right' : ''}` }
+                className = { `reaction-emoji reaction-${index}` }
                 id = { uid }>
                 <img src={ REACTIONS[reaction].animoji } alt='animoji' />
             </div>
@@ -71,26 +86,10 @@ class ReactionEmoji extends Component<Props, State> {
     }
 }
 
-/**
- * Maps (parts of) the Redux state to the associated LargeVideo props.
- *
- * @param {Object} state - The Redux state.
- * @private
- * @returns {Props}
- */
-function mapStateToProps(state) {
-    const { isOpen: isChatOpen } = state['features/chat'];
-
+const mapDispatchToProps = (dispatch) => {
     return {
-        isChatOpen,
+        reactionRemove: (uid: string) => dispatch(removeReaction(uid))
     };
-}
-
-const mapDispatchToProps = {
-    removeReaction
 };
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps,
-)(ReactionEmoji);
+export default connect(undefined, mapDispatchToProps)(ReactionEmoji);

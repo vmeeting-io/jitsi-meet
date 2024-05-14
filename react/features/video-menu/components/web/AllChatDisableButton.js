@@ -1,15 +1,17 @@
 // @flow
 
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { IconMessage } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { isEveryoneModerator, isLocalParticipantModerator } from '../../../base/participants'
+import { openDialog } from '../../../base/dialog/actions';
+import { translate } from '../../../base/i18n/functions';
+import { IconMessage } from '../../../base/icons/svg';
+import { isEveryoneModerator, isLocalParticipantModerator } from '../../../base/participants/functions'
 
+
+import DisableChatForAllParticipantsDialog from './DisableChatForAllParticipantsDialog';
+import EnableChatForAllParticipantsDialog from './EnableChatForAllParticipantsDialog';
 import RemoteVideoMenuButton from './RemoteVideoMenuButton';
-import { openDialog } from '../../../base/dialog';
-import { DisableChatForAllParticipantsDialog, EnableChatForAllParticipantsDialog } from '.';
 
 
 export type Props = {

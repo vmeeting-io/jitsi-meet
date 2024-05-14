@@ -1,46 +1,39 @@
-// @flow
-
 import React, { useCallback, useRef } from 'react';
+import { makeStyles } from 'tss-react/mui';
 import { v4 as uuidv4 } from 'uuid';
 
-import { translate } from '../../base/i18n';
-import { Icon, IconPlusCircle } from '../../base/icons';
-import { VIRTUAL_BACKGROUND_TYPE, type Image } from '../constants';
+import { translate } from '../../base/i18n/functions';
+import Icon from '../../base/icons/components/Icon';
+import { IconPlus } from '../../base/icons/svg';
+import { withPixelLineHeight } from '../../base/styles/functions.web';
+import { VIRTUAL_BACKGROUND_TYPE } from '../constants';
 import { resizeImage } from '../functions';
 import logger from '../logger';
 
-type Props = {
+const useStyles = makeStyles()(theme => {
+    return {
+        label: {
+            ...withPixelLineHeight(theme.typography.bodyShortBold),
+            color: theme.palette.link01,
+            marginBottom: theme.spacing(3),
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center'
+        },
 
-    /**
-     * Callback used to set the 'loading' state of the parent component.
-     */
-    setLoading: Function,
+        addBackground: {
+            marginRight: theme.spacing(3),
 
-    /**
-     * Callback used to set the options.
-     */
-    setOptions: Function,
+            '& svg': {
+                fill: `${theme.palette.link01} !important`
+            }
+        },
 
-    /**
-     * Callback used to set the storedImages array.
-     */
-    setStoredImages: Function,
-
-    /**
-     * A list of images locally stored.
-     */
-    storedImages: Array<Image>,
-
-    /**
-     * If a label should be displayed alongside the button.
-     */
-    showLabel: boolean,
-
-    /**
-     * Used for translation.
-     */
-    t: Function
-}
+        input: {
+            display: 'none'
+        }
+    };
+});
 
 /**
  * Component used to upload an image.
@@ -55,8 +48,9 @@ function UploadImageButton({
     showLabel,
     storedImages,
     t
-}: Props) {
-    const uploadImageButton: Object = useRef(null);
+}) {
+    const { classes } = useStyles();
+    const uploadImageButton = useRef(null);
     const uploadImageKeyPress = useCallback(e => {
         if (uploadImageButton.current && (e.key === ' ' || e.key === 'Enter')) {
             e.preventDefault();
@@ -82,10 +76,10 @@ function UploadImageButton({
                 }
             ]);
             setOptions({
+                backgroundEffectEnabled: true,
                 backgroundType: VIRTUAL_BACKGROUND_TYPE.IMAGE,
-                enabled: true,
-                url,
-                selectedThumbnail: uuId
+                selectedThumbnail: uuId,
+                virtualSource: url
             });
         };
         logger.info('New virtual background image uploaded!');
@@ -99,21 +93,20 @@ function UploadImageButton({
     return (
         <>
             {showLabel && <label
-                aria-label = { t('virtualBackground.uploadImage') }
-                className = 'file-upload-label'
+                className = { classes.label }
                 htmlFor = 'file-upload'
                 onKeyPress = { uploadImageKeyPress }
                 tabIndex = { 0 } >
                 <Icon
-                    className = { 'add-background' }
-                    size = { 20 }
-                    src = { IconPlusCircle } />
+                    className = { classes.addBackground }
+                    size = { 24 }
+                    src = { IconPlus } />
                 {t('virtualBackground.addBackground')}
             </label>}
 
             <input
                 accept = 'image/*'
-                className = 'file-upload-btn'
+                className = { classes.input }
                 id = 'file-upload'
                 onChange = { uploadImage }
                 ref = { uploadImageButton }

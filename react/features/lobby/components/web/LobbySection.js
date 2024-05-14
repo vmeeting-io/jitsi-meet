@@ -1,55 +1,23 @@
-// @flow
-
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { isLocalParticipantModerator } from '../../../base/participants';
-import { Switch } from '../../../base/react';
-import { connect } from '../../../base/redux';
-import { isInBreakoutRoom } from '../../../breakout-rooms';
+import { getSecurityUiConfig } from '../../../base/config/functions.any';
+import { translate } from '../../../base/i18n/functions';
+import { isLocalParticipantModerator } from '../../../base/participants/functions';
+import Switch from '../../../base/ui/components/web/Switch';
+import { isInBreakoutRoom } from '../../../breakout-rooms/functions';
 import { toggleLobbyMode } from '../../actions';
-
-type Props = {
-
-    /**
-     * True if lobby is currently enabled in the conference.
-     */
-    _lobbyEnabled: boolean,
-
-    /**
-     * True if the section should be visible.
-     */
-    _visible: boolean,
-
-    /**
-     * The Redux Dispatch function.
-     */
-    dispatch: Function,
-
-    /**
-     * Function to be used to translate i18n labels.
-     */
-    t: Function
-};
-
-type State = {
-
-    /**
-     * True if the lobby switch is toggled on.
-     */
-    lobbyEnabled: boolean
-}
 
 /**
  * Implements a security feature section to control lobby mode.
  */
-class LobbySection extends PureComponent<Props, State> {
+class LobbySection extends PureComponent {
     /**
      * Instantiates a new component.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -64,7 +32,7 @@ class LobbySection extends PureComponent<Props, State> {
      *
      * @inheritdoc
      */
-    static getDerivedStateFromProps(props: Props, state: Object) {
+    static getDerivedStateFromProps(props, state) {
         if (props._lobbyEnabled !== state.lobbyEnabled) {
 
             return {
@@ -88,29 +56,24 @@ class LobbySection extends PureComponent<Props, State> {
         }
 
         return (
-            <>
-                <div id = 'lobby-section'>
-                    <p
-                        className = 'description'
-                        role = 'banner'>
-                        { t('lobby.enableDialogText') }
-                    </p>
-                    <div className = 'control-row'>
-                        <label htmlFor = 'lobby-section-switch'>
-                            { t('lobby.toggleLabel') }
-                        </label>
-                        <Switch
-                            id = 'lobby-section-switch'
-                            onValueChange = { this._onToggleLobby }
-                            value = { this.state.lobbyEnabled } />
-                    </div>
+            <div id = 'lobby-section'>
+                <p
+                    className = 'description'
+                    role = 'banner'>
+                    { t('lobby.enableDialogText') }
+                </p>
+                <div className = 'control-row'>
+                    <label htmlFor = 'lobby-section-switch'>
+                        { t('lobby.toggleLabel') }
+                    </label>
+                    <Switch
+                        checked = { this.state.lobbyEnabled }
+                        id = 'lobby-section-switch'
+                        onChange = { this._onToggleLobby } />
                 </div>
-                <div className = 'separator-line' />
-            </>
+            </div>
         );
     }
-
-    _onToggleLobby: () => void;
 
     /**
      * Callback to be invoked when the user toggles the lobby feature on or off.
@@ -132,16 +95,14 @@ class LobbySection extends PureComponent<Props, State> {
  * Maps part of the Redux state to the props of this component.
  *
  * @param {Object} state - The Redux state.
- * @returns {Props}
+ * @returns {IProps}
  */
-function mapStateToProps(state: Object): $Shape<Props> {
+function mapStateToProps(state) {
     const { conference } = state['features/base/conference'];
-    const { hideLobbyButton } = state['features/base/config'];
+    const { hideLobbyButton } = getSecurityUiConfig(state);
 
     return {
         _lobbyEnabled: state['features/lobby'].lobbyEnabled,
-
-        // $FlowExpectedError
         _visible: conference?.isLobbySupported() && isLocalParticipantModerator(state)
             && !hideLobbyButton && !isInBreakoutRoom(state)
     };

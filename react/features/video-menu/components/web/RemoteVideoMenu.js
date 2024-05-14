@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 
-import { connect } from '../../../base/redux';
+import { connect } from 'react-redux';
 
 /**
  * The type of the React {@code Component} props of {@link RemoteVideoMenu}.

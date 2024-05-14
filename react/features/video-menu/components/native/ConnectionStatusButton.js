@@ -1,35 +1,17 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { openDialog } from '../../../base/dialog';
-import { translate } from '../../../base/i18n';
-import { IconInfo } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import { openDialog } from '../../../base/dialog/actions';
+import { translate } from '../../../base/i18n/functions';
+import { IconInfo } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 
 import ConnectionStatusComponent from './ConnectionStatusComponent';
-
-export type Props = AbstractButtonProps & {
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function,
-
-    /**
-     * The ID of the participant that this button is supposed to pin.
-     */
-    participantID: string,
-
-    /**
-     * The function to be used to translate i18n labels.
-     */
-    t: Function
-};
 
 /**
  * A remote video menu button which shows the connection statistics.
  */
-class ConnectionStatusButton extends AbstractButton<Props, *> {
+class ConnectionStatusButton extends AbstractButton {
     icon = IconInfo;
     label = 'videothumbnail.connectionInfo';
 

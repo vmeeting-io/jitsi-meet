@@ -1,71 +1,33 @@
-// @flow
-
+import clsx from 'clsx';
 import React, { Component } from 'react';
+import { withStyles } from 'tss-react/mui';
 
-import { translate } from '../../../../base/i18n';
-import { doGetJSON } from '../../../../base/util';
+import { translate } from '../../../../base/i18n/functions';
+import { withPixelLineHeight } from '../../../../base/styles/functions.web';
+import { getDialInConferenceID, getDialInNumbers } from '../../../_utils';
 
 import ConferenceID from './ConferenceID';
 import NumbersList from './NumbersList';
 
-declare var config: Object;
-
-/**
- * The type of the React {@code Component} props of {@link DialInSummary}.
- */
-type Props = {
-
-    /**
-     * Additional CSS classnames to append to the root of the component.
-     */
-    className: string,
-
-    /**
-     * Whether or not numbers should include links with the telephone protocol.
-     */
-    clickableNumbers: boolean,
-
-    /**
-     * The name of the conference to show a conferenceID for.
-     */
-    room: string,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
+const styles = (theme) => {
+    return {
+        hasNumbers: {
+            alignItems: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            background: '#1E1E1E',
+            color: theme.palette.text01
+        },
+        scrollable: {
+            height: '100dvh',
+            overflowY: 'scroll'
+        },
+        roomName: {
+            margin: '40px auto 8px',
+            ...withPixelLineHeight(theme.typography.heading5)
+        }
+    };
 };
-
-/**
- * The type of the React {@code Component} state of {@link DialInSummary}.
- */
-type State = {
-
-    /**
-     * The numeric ID of the conference, used as a pin when dialing in.
-     */
-    conferenceID: ?string,
-
-    /**
-     * An error message to display.
-     */
-    error: string,
-
-    /**
-     * Whether or not the app is fetching data.
-     */
-    loading: boolean,
-
-    /**
-     * The dial-in numbers to be displayed.
-     */
-    numbers: ?Array<Object> | ?Object,
-
-    /**
-     * Whether or not dial-in is allowed.
-     */
-    numbersEnabled: ?boolean
-}
 
 /**
  * Displays a page listing numbers for dialing into a conference and pin to
@@ -73,7 +35,7 @@ type State = {
  *
  * @augments Component
  */
-class DialInSummary extends Component<Props, State> {
+class DialInSummary extends Component {
     state = {
         conferenceID: null,
         error: '',
@@ -88,7 +50,7 @@ class DialInSummary extends Component<Props, State> {
      * @param {Object} props - The read-only properties with which the new
      * instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // Bind event handlers so they are only bound once for every instance.
@@ -131,24 +93,30 @@ class DialInSummary extends Component<Props, State> {
         let contents;
 
         const { conferenceID, error, loading, numbersEnabled } = this.state;
+        const { hideError, showTitle, room, clickableNumbers, scrollable, t } = this.props;
+        const classes = withStyles.getClasses(this.props);
 
         if (loading) {
             contents = '';
         } else if (numbersEnabled === false) {
-            contents = this.props.t('info.dialInNotSupported');
+            contents = t('info.dialInNotSupported');
         } else if (error) {
-            contents = error;
+            if (!hideError) {
+                contents = error;
+            }
         } else {
-            className = 'has-numbers';
+            className = clsx(classes.hasNumbers, scrollable && classes.scrollable);
             contents = [
                 conferenceID
-                    ? <ConferenceID
-                        conferenceID = { conferenceID }
-                        conferenceName = { this.props.room }
-                        key = 'conferenceID' />
-                    : null,
+                    ? <>
+                        { showTitle && <div className = { classes.roomName }>{ room }</div> }
+                        <ConferenceID
+                            conferenceID = { conferenceID }
+                            conferenceName = { room }
+                            key = 'conferenceID' />
+                    </> : null,
                 <NumbersList
-                    clickableNumbers = { this.props.clickableNumbers }
+                    clickableNumbers = { clickableNumbers }
                     conferenceID = { conferenceID }
                     key = 'numbers'
                     numbers = { this.state.numbers } />
@@ -156,7 +124,7 @@ class DialInSummary extends Component<Props, State> {
         }
 
         return (
-            <div className = { `${this.props.className} ${className}` }>
+            <div className = { className }>
                 { contents }
             </div>
         );
@@ -171,13 +139,21 @@ class DialInSummary extends Component<Props, State> {
     _getConferenceID() {
         const { room } = this.props;
         const { dialInConfCodeUrl, hosts } = config;
-        const mucURL = hosts && hosts.muc;
+        const mucURL = hosts?.muc;
 
         if (!dialInConfCodeUrl || !mucURL || !room) {
             return Promise.resolve();
         }
 
-        return doGetJSON(`${dialInConfCodeUrl}?conference=${room}@${mucURL}`, true)
+
+        let url = this.props.url || {};
+
+        if (typeof url === 'string' || url instanceof String) {
+            // @ts-ignore
+            url = new URL(url);
+        }
+
+        return getDialInConferenceID(dialInConfCodeUrl, room, mucURL, url)
             .catch(() => Promise.reject(this.props.t('info.genericError')));
     }
 
@@ -190,25 +166,15 @@ class DialInSummary extends Component<Props, State> {
     _getNumbers() {
         const { room } = this.props;
         const { dialInNumbersUrl, hosts } = config;
-        const mucURL = hosts && hosts.muc;
-        let URLSuffix = '';
+        const mucURL = hosts?.muc;
 
         if (!dialInNumbersUrl) {
             return Promise.reject(this.props.t('info.dialInNotSupported'));
         }
 
-        // when room and mucURL are available
-        // provide conference when looking up dial in numbers
-
-        if (room && mucURL) {
-            URLSuffix = `?conference=${room}@${mucURL}`;
-        }
-
-        return doGetJSON(`${dialInNumbersUrl}${URLSuffix}`, true)
+        return getDialInNumbers(dialInNumbersUrl, room, mucURL ?? '')
             .catch(() => Promise.reject(this.props.t('info.genericError')));
     }
-
-    _onGetConferenceIDSuccess: (Object) => void;
 
     /**
      * Callback invoked when fetching the conference ID succeeds.
@@ -217,7 +183,8 @@ class DialInSummary extends Component<Props, State> {
      * @private
      * @returns {void}
      */
-    _onGetConferenceIDSuccess(response = {}) {
+    _onGetConferenceIDSuccess(response = { conference: undefined,
+        id: undefined }) {
         const { conference, id } = response;
 
         if (!conference || !id) {
@@ -226,8 +193,6 @@ class DialInSummary extends Component<Props, State> {
 
         this.setState({ conferenceID: id });
     }
-
-    _onGetNumbersSuccess: (Object) => void;
 
     /**
      * Callback invoked when fetching dial-in numbers succeeds. Sets the
@@ -241,18 +206,15 @@ class DialInSummary extends Component<Props, State> {
      * @private
      * @returns {void}
      */
-    _onGetNumbersSuccess(
-            response: Array<Object> | { numbersEnabled?: boolean }) {
+    _onGetNumbersSuccess(response) {
 
         this.setState({
             numbersEnabled:
-                Array.isArray(response)
-                    ? response.length > 0 : response.numbersEnabled,
+                Boolean(Array.isArray(response)
+                    ? response.length > 0 : response.numbersEnabled),
             numbers: response
         });
     }
-
-    _setErrorMessage: (string) => void;
 
     /**
      * Sets an error message to display on the page instead of content.
@@ -268,4 +230,4 @@ class DialInSummary extends Component<Props, State> {
     }
 }
 
-export default translate(DialInSummary);
+export default translate(withStyles(DialInSummary, styles));

@@ -1,6 +1,4 @@
-// @flow
-
-import { ColorPalette, createStyleSheet } from '../../base/styles';
+import { createStyleSheet } from '../../base/styles/functions.any';
 
 /**
  * For styling explanations, see:
@@ -34,22 +32,8 @@ export default createStyleSheet({
      * Google).
      */
     signOutButton: {
-        alignItems: 'center',
-        borderColor: ColorPalette.lightGrey,
-        borderRadius: 3,
-        borderWidth: 1,
-        color: ColorPalette.white,
-        height: BUTTON_HEIGHT,
-        justifyContent: 'center'
-    },
-
-    /**
-     * Text of the sign out button.
-     */
-    signOutButtonText: {
-        color: ColorPalette.blue,
-        fontSize: 14,
-        fontWeight: 'bold'
+        alignSelf: 'center',
+        maxWidth: 120,
+        width: 'auto'
     }
-
 });

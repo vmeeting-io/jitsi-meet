@@ -1,17 +1,20 @@
 // @flow
 
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import { isMobileBrowser } from '../../../base/environment/utils';
-import { translate } from '../../../base/i18n';
-import { IconArrowUp } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { ToolboxButtonWithIcon } from '../../../base/toolbox/components/web';
-import { getLocalJitsiVideoTrack } from '../../../base/tracks';
-import { toggleVideoSettings, VideoSettingsPopup } from '../../../settings';
-import { getVideoSettingsVisibility } from '../../../settings/functions';
-import { isVideoSettingsButtonDisabled } from '../../functions';
-import VideoMuteButton from '../VideoMuteButton';
+import { translate } from '../../../base/i18n/functions';
+import { IconArrowUp } from '../../../base/icons/svg';
+import { IGUMPendingState } from '../../../base/media/types';
+import ToolboxButtonWithIcon from '../../../base/toolbox/components/web/ToolboxButtonWithIcon';
+import { getLocalJitsiVideoTrack } from '../../../base/tracks/functions.web';
+import { toggleVideoSettings } from '../../../settings/actions.web';
+import VideoSettingsPopup from '../../../settings/components/web/video/VideoSettingsPopup';
+import { getVideoSettingsVisibility } from '../../../settings/functions.web';
+import { isVideoSettingsButtonDisabled } from '../../functions.web';
+
+import VideoMuteButton from './VideoMuteButton';
 
 
 type Props = {
@@ -129,7 +132,7 @@ class VideoSettingsButton extends Component<Props> {
      * @inheritdoc
      */
     render() {
-        const { handleClick, t, visible, isOpen } = this.props;
+        const { gumPending, handleClick, t, visible, isOpen } = this.props;
 
         return visible ? (
             <VideoSettingsPopup>
@@ -139,7 +142,7 @@ class VideoSettingsButton extends Component<Props> {
                     ariaHasPopup = { true }
                     ariaLabel = { this.props.t('toolbar.videoSettings') }
                     icon = { IconArrowUp }
-                    iconDisabled = { this._isIconDisabled() }
+                    iconDisabled = { this._isIconDisabled() || gumPending !== IGUMPendingState.NONE }
                     iconId = 'video-settings-button'
                     iconTooltip = { t('toolbar.videoSettings') }
                     onIconClick = { this._onClick }
@@ -159,13 +162,16 @@ class VideoSettingsButton extends Component<Props> {
  */
 function mapStateToProps(state) {
     const { permissions = {} } = state['features/base/devices'];
+    const { isNarrowLayout } = state['features/base/responsive-ui'];
+    const { gumPending } = state['features/base/media'].video;
 
     return {
+        gumPending,
         hasPermissions: permissions.video,
         hasVideoTrack: Boolean(getLocalJitsiVideoTrack(state)),
         isDisabled: isVideoSettingsButtonDisabled(state),
-        isOpen: getVideoSettingsVisibility(state),
-        visible: !isMobileBrowser()
+        isOpen: Boolean(getVideoSettingsVisibility(state)),
+        visible: !isMobileBrowser() && !isNarrowLayout
     };
 }
 

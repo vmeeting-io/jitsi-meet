@@ -1,56 +1,22 @@
-// @flow
-
 import React, { Component } from 'react';
-import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
-import { setPassword } from '../../base/conference';
-import { InputDialog } from '../../base/dialog';
-import { connect } from '../../base/redux';
+import { setPassword } from '../../base/conference/actions';
+import InputDialog from '../../base/dialog/components/native/InputDialog';
 import { _cancelPasswordRequiredPrompt } from '../actions';
-
-/**
- * {@code PasswordRequiredPrompt}'s React {@code Component} prop types.
- */
-type Props = {
-
-    /**
-     * The previously entered password, if any.
-     */
-    _password: ?string,
-
-    /**
-     * The {@code JitsiConference} which requires a password.
-     *
-     * @type {JitsiConference}
-     */
-    conference: { join: Function },
-
-    /**
-     * The redux dispatch function.
-     */
-    dispatch: Dispatch<any>
-};
-
-type State = {
-
-    /**
-     * The previously entered password, if any.
-     */
-    password: ?string
-}
 
 /**
  * Implements a React {@code Component} which prompts the user when a password
  * is required to join a conference.
  */
-class PasswordRequiredPrompt extends Component<Props, State> {
+class PasswordRequiredPrompt extends Component {
     /**
      * Initializes a new {@code PasswordRequiredPrompt} instance.
      *
-     * @param {Props} props - The read-only React {@code Component} props with
+     * @param {IProps} props - The read-only React {@code Component} props with
      * which the new instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -89,21 +55,27 @@ class PasswordRequiredPrompt extends Component<Props, State> {
      */
     render() {
         const { password } = this.state;
+        const { _passwordNumberOfDigits } = this.props;
+        const textInputProps = {
+            secureTextEntry: true
+        };
+
+        if (_passwordNumberOfDigits) {
+            textInputProps.keyboardType = 'numeric';
+            textInputProps.maxLength = _passwordNumberOfDigits;
+        }
 
         return (
             <InputDialog
-                contentKey = 'dialog.passwordLabel'
+                descriptionKey = 'dialog.passwordLabel'
                 initialValue = { password }
                 messageKey = { password ? 'dialog.incorrectRoomLockPassword' : undefined }
                 onCancel = { this._onCancel }
                 onSubmit = { this._onSubmit }
-                textInputProps = {{
-                    secureTextEntry: true
-                }} />
+                textInputProps = { textInputProps }
+                titleKey = 'dialog.password' />
         );
     }
-
-    _onCancel: () => boolean;
 
     /**
      * Notifies this prompt that it has been dismissed by cancel.
@@ -119,8 +91,6 @@ class PasswordRequiredPrompt extends Component<Props, State> {
         return true;
     }
 
-    _onSubmit: (?string) => boolean;
-
     /**
      * Notifies this prompt that it has been dismissed by submitting a specific
      * value.
@@ -130,8 +100,8 @@ class PasswordRequiredPrompt extends Component<Props, State> {
      * @returns {boolean} If this prompt is to be closed/hidden, {@code true};
      * otherwise, {@code false}.
      */
-    _onSubmit(value: ?string) {
-        const { conference }: { conference: { join: Function } } = this.props;
+    _onSubmit(value?: string) {
+        const { conference } = this.props;
 
         this.props.dispatch(setPassword(conference, conference.join, value));
 
@@ -143,11 +113,14 @@ class PasswordRequiredPrompt extends Component<Props, State> {
  * Maps part of the Redux state to the props of this component.
  *
  * @param {Object} state - The Redux state.
- * @returns {Props}
+ * @returns {IProps}
  */
 function _mapStateToProps(state) {
+    const { roomPasswordNumberOfDigits } = state['features/base/config'];
+
     return {
-        _password: state['features/base/conference'].password
+        _password: state['features/base/conference'].password,
+        _passwordNumberOfDigits: roomPasswordNumberOfDigits
     };
 }
 

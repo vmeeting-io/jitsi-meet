@@ -1,17 +1,17 @@
-/* @flow */
-/* eslint-disable no-invalid-this */
+// @ts-expect-error
 import Logger from '@jitsi/logger';
 import throttle from 'lodash/throttle';
 import { PureComponent } from 'react';
 
-import { sendAnalytics, createSharedVideoEvent as createEvent } from '../../../analytics';
-import { getCurrentConference } from '../../../base/conference';
-import { MEDIA_TYPE } from '../../../base/media';
-import { getLocalParticipant } from '../../../base/participants';
-import { isLocalTrackMuted } from '../../../base/tracks';
-import { NOTIFICATION_TIMEOUT_TYPE } from '../../../notifications';
+import { createSharedVideoEvent as createEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { getCurrentConference } from '../../../base/conference/functions';
+import { MEDIA_TYPE } from '../../../base/media/constants';
+import { getLocalParticipant } from '../../../base/participants/functions';
+import { isLocalTrackMuted } from '../../../base/tracks/functions';
 import { showWarningNotification } from '../../../notifications/actions';
-import { dockToolbox } from '../../../toolbox/actions.web';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../../../notifications/constants';
+import { dockToolbox } from '../../../toolbox/actions';
 import { muteLocal } from '../../../video-menu/actions.any';
 import { setSharedVideoStatus, stopSharedVideo } from '../../actions.any';
 import { PLAYBACK_STATUSES } from '../../constants';
@@ -19,7 +19,7 @@ import { PLAYBACK_STATUSES } from '../../constants';
 const logger = Logger.getLogger(__filename);
 
 /**
- * Return true if the diffenrece between the two timees is larger than 5.
+ * Return true if the difference between the two times is larger than 5.
  *
  * @param {number} newTime - The current time.
  * @param {number} previousTime - The previous time.
@@ -31,97 +31,19 @@ function shouldSeekToPosition(newTime, previousTime) {
 }
 
 /**
- * The type of the React {@link PureComponent} props of {@link AbstractVideoManager}.
- */
-export type Props = {
-
-    /**
-     * The current coference.
-     */
-    _conference: Object,
-
-    /**
-     * Warning that indicates an incorect video url.
-     */
-    _displayWarning: Function,
-
-    /**
-     * Docks the toolbox.
-     */
-    _dockToolbox: Function,
-
-    /**
-     * Action to stop video sharing.
-    */
-    _stopSharedVideo: Function,
-
-    /**
-     * Indicates whether the local audio is muted.
-    */
-    _isLocalAudioMuted: boolean,
-
-    /**
-     * Is the video shared by the local user.
-     *
-     * @private
-     */
-    _isOwner: boolean,
-
-    /**
-     * Store flag for muted state.
-     */
-    _muted: boolean,
-
-    /**
-     * Mutes local audio track.
-     */
-    _muteLocal: Function,
-
-    /**
-     * The shared video owner id.
-     */
-    _ownerId: string,
-
-    /**
-     * Updates the shared video status.
-     */
-    _setSharedVideoStatus: Function,
-
-    /**
-     * The shared video status.
-     */
-     _status: string,
-
-    /**
-     * Seek time in seconds.
-     *
-     */
-    _time: number,
-
-    /**
-     * The video url.
-     */
-     _videoUrl: string,
-
-     /**
-      * The video id.
-      */
-     videoId: string
-}
-
-/**
  * Manager of shared video.
  */
-class AbstractVideoManager extends PureComponent<Props> {
-    throttledFireUpdateSharedVideoEvent: Function;
+class AbstractVideoManager extends PureComponent {
+    throttledFireUpdateSharedVideoEvent;
 
     /**
      * Initializes a new instance of AbstractVideoManager.
      *
+     * @param {IProps} props - Component props.
      * @returns {void}
      */
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
 
         this.throttledFireUpdateSharedVideoEvent = throttle(this.fireUpdateSharedVideoEvent.bind(this), 5000);
 
@@ -144,7 +66,7 @@ class AbstractVideoManager extends PureComponent<Props> {
      *
      * @inheritdoc
      */
-    componentDidUpdate(prevProps: Props) {
+    componentDidUpdate(prevProps) {
         const { _videoUrl } = this.props;
 
         if (prevProps._videoUrl !== _videoUrl) {
@@ -183,8 +105,8 @@ class AbstractVideoManager extends PureComponent<Props> {
 
         const playerTime = this.getTime();
 
-        if (shouldSeekToPosition(_time, playerTime)) {
-            this.seek(_time);
+        if (shouldSeekToPosition(Number(_time), Number(playerTime))) {
+            this.seek(Number(_time));
         }
 
         if (this.getPlaybackStatus() !== _status) {
@@ -209,10 +131,12 @@ class AbstractVideoManager extends PureComponent<Props> {
     /**
      * Handle video error.
      *
+     * @param {Object|undefined} e - The error returned by the API or none.
      * @returns {void}
      */
-    onError() {
-        logger.error('Error in the video player');
+    onError(e) {
+        logger.error('Error in the video player', e?.data,
+            e?.data ? 'Check error code at https://developers.google.com/youtube/iframe_api_reference#onError' : '');
         this.props._stopSharedVideo();
         this.props._displayWarning();
     }
@@ -247,7 +171,7 @@ class AbstractVideoManager extends PureComponent<Props> {
         const volume = this.getVolume();
         const muted = this.isMuted();
 
-        if (volume > 0 && !muted) {
+        if (Number(volume) > 0 && !muted) {
             this.smartAudioMute();
         }
 
@@ -286,7 +210,7 @@ class AbstractVideoManager extends PureComponent<Props> {
 
         const status = this.getPlaybackStatus();
 
-        if (!Object.values(PLAYBACK_STATUSES).includes(status)) {
+        if (!Object.values(PLAYBACK_STATUSES).includes(status ?? '')) {
             return;
         }
 
@@ -316,7 +240,7 @@ class AbstractVideoManager extends PureComponent<Props> {
     isSharedVideoVolumeOn() {
         return this.getPlaybackStatus() === PLAYBACK_STATUSES.PLAYING
                 && !this.isMuted()
-                && this.getVolume() > 0;
+                && Number(this.getVolume()) > 0;
     }
 
     /**
@@ -338,54 +262,93 @@ class AbstractVideoManager extends PureComponent<Props> {
     /**
      * Seeks video to provided time.
      *
-     * @param {number} time
+     * @param {number} _time - Time to seek to.
+     * @returns {void}
      */
-    seek: (time: number) => void;
+    seek(_time) {
+        // to be implemented by subclass
+    }
 
     /**
      * Indicates the playback state of the video.
+     *
+     * @returns {string}
      */
-    getPlaybackStatus: () => boolean;
+    getPlaybackStatus() {
+        return;
+    }
 
     /**
      * Indicates whether the video is muted.
+     *
+     * @returns {boolean}
      */
-    isMuted: () => boolean;
+    isMuted() {
+        return;
+    }
 
     /**
      * Retrieves current volume.
+     *
+     * @returns {number}
      */
-    getVolume: () => number;
+    getVolume() {
+        return 1;
+    }
 
     /**
      * Plays video.
+     *
+     * @returns {void}
      */
-    play: () => void;
+    play() {
+        // to be implemented by subclass
+    }
 
     /**
      * Pauses video.
+     *
+     * @returns {void}
      */
-    pause: () => void;
+    pause() {
+        // to be implemented by subclass
+    }
 
     /**
      * Mutes video.
+     *
+     * @returns {void}
      */
-    mute: () => void;
+    mute() {
+        // to be implemented by subclass
+    }
 
     /**
      * Unmutes video.
+     *
+     * @returns {void}
      */
-    unMute: () => void;
+    unMute() {
+        // to be implemented by subclass
+    }
 
     /**
      * Retrieves current time.
+     *
+     * @returns {number}
      */
-    getTime: () => number;
+    getTime() {
+        return 0;
+    }
 
     /**
      * Disposes current video player.
+     *
+     * @returns {void}
      */
-    dispose: () => void;
+    dispose() {
+        // to be implemented by subclass
+    }
 }
 
 
@@ -395,9 +358,9 @@ export default AbstractVideoManager;
  * Maps part of the Redux store to the props of this component.
  *
  * @param {Object} state - The Redux state.
- * @returns {Props}
+ * @returns {IProps}
  */
-export function _mapStateToProps(state: Object): $Shape<Props> {
+export function _mapStateToProps(state) {
     const { ownerId, status, time, videoUrl, muted } = state['features/shared-video'];
     const localParticipant = getLocalParticipant(state);
     const _isLocalAudioMuted = isLocalTrackMuted(state['features/base/tracks'], MEDIA_TYPE.AUDIO);
@@ -405,7 +368,7 @@ export function _mapStateToProps(state: Object): $Shape<Props> {
     return {
         _conference: getCurrentConference(state),
         _isLocalAudioMuted,
-        _isOwner: ownerId === localParticipant.id,
+        _isOwner: ownerId === localParticipant?.id,
         _muted: muted,
         _ownerId: ownerId,
         _status: status,
@@ -418,22 +381,22 @@ export function _mapStateToProps(state: Object): $Shape<Props> {
  * Maps part of the props of this component to Redux actions.
  *
  * @param {Function} dispatch - The Redux dispatch function.
- * @returns {Props}
+ * @returns {IProps}
  */
-export function _mapDispatchToProps(dispatch: Function): $Shape<Props> {
+export function _mapDispatchToProps(dispatch) {
     return {
         _displayWarning: () => {
             dispatch(showWarningNotification({
                 titleKey: 'dialog.shareVideoLinkError'
             }, NOTIFICATION_TIMEOUT_TYPE.LONG));
         },
-        _dockToolbox: value => {
+        _dockToolbox: (value) => {
             dispatch(dockToolbox(value));
         },
         _stopSharedVideo: () => {
             dispatch(stopSharedVideo());
         },
-        _muteLocal: value => {
+        _muteLocal: (value) => {
             dispatch(muteLocal(value, MEDIA_TYPE.AUDIO));
         },
         _setSharedVideoStatus: ({ videoUrl, status, time, ownerId, muted }) => {

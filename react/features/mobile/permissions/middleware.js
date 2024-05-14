@@ -1,11 +1,9 @@
-/* @flow */
-
 import { Alert } from 'react-native';
 
-import { isRoomValid } from '../../base/conference';
-import { i18next } from '../../base/i18n';
-import { MiddlewareRegistry } from '../../base/redux';
-import { TRACK_CREATE_ERROR } from '../../base/tracks';
+import { isRoomValid } from '../../base/conference/functions';
+import i18next from '../../base/i18n/i18next';
+import MiddlewareRegistry from '../../base/redux/MiddlewareRegistry';
+import { TRACK_CREATE_ERROR } from '../../base/tracks/actionTypes';
 
 import { openSettings } from './functions';
 

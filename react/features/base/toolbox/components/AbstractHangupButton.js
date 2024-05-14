@@ -3,13 +3,11 @@
 import { IconHangup } from '../../icons';
 
 import AbstractButton from './AbstractButton';
-import type { Props } from './AbstractButton';
 
 /**
  * An abstract implementation of a button for disconnecting a conference.
  */
-export default class AbstractHangupButton<P : Props, S: *>
-    extends AbstractButton<P, S> {
+export default class AbstractHangupButton extends AbstractButton {
 
     icon = IconHangup;
 

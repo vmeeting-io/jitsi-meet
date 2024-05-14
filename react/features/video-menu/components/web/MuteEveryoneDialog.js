@@ -1,37 +1,19 @@
-// @flow
-
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { Dialog } from '../../../base/dialog';
-import { translate } from '../../../base/i18n';
-import { Switch } from '../../../base/react';
-import { connect } from '../../../base/redux';
-import AbstractMuteEveryoneDialog, { abstractMapStateToProps, type Props }
+import { translate } from '../../../base/i18n/functions';
+import Dialog from '../../../base/ui/components/web/Dialog';
+import Switch from '../../../base/ui/components/web/Switch';
+import AbstractMuteEveryoneDialog, { abstractMapStateToProps }
     from '../AbstractMuteEveryoneDialog';
 
 /**
  * A React Component with the contents for a dialog that asks for confirmation
- * from the user before muting a remote participant.
+ * from the user before muting all remote participants.
  *
  * @augments AbstractMuteEveryoneDialog
  */
-class MuteEveryoneDialog extends AbstractMuteEveryoneDialog<Props> {
-
-    /**
-     * Toggles advanced moderation switch.
-     *
-     * @returns {void}
-     */
-    _onToggleModeration() {
-        this.setState(state => {
-            return {
-                audioModerationEnabled: !state.audioModerationEnabled,
-                content: this.props.t(state.audioModerationEnabled
-                    ? 'dialog.muteEveryoneDialog' : 'dialog.muteEveryoneDialogModerationOn'
-                )
-            };
-        });
-    }
+class MuteEveryoneDialog extends AbstractMuteEveryoneDialog {
 
     /**
      * Implements React's {@link Component#render()}.
@@ -42,10 +24,9 @@ class MuteEveryoneDialog extends AbstractMuteEveryoneDialog<Props> {
     render() {
         return (
             <Dialog
-                okKey = 'dialog.muteParticipantButton'
+                ok = {{ translationKey: 'dialog.muteParticipantButton' }}
                 onSubmit = { this._onSubmit }
-                titleString = { this.props.title }
-                width = 'small'>
+                title = { this.props.title }>
                 <div className = 'mute-dialog'>
                     { this.state.content }
                     { this.props.isModerationSupported && this.props.exclude.length === 0 && (
@@ -56,9 +37,9 @@ class MuteEveryoneDialog extends AbstractMuteEveryoneDialog<Props> {
                                     {this.props.t('dialog.moderationAudioLabel')}
                                 </label>
                                 <Switch
+                                    checked = { !this.state.audioModerationEnabled }
                                     id = 'moderation-switch'
-                                    onValueChange = { this._onToggleModeration }
-                                    value = { !this.state.audioModerationEnabled } />
+                                    onChange = { this._onToggleModeration } />
                             </div>
                         </>
                     )}
@@ -66,8 +47,6 @@ class MuteEveryoneDialog extends AbstractMuteEveryoneDialog<Props> {
             </Dialog>
         );
     }
-
-    _onSubmit: () => boolean;
 }
 
 export default translate(connect(abstractMapStateToProps)(MuteEveryoneDialog));

@@ -2,9 +2,9 @@
 
 import React, { useCallback } from 'react';
 import { StatusBar } from 'react-native';
+import { connect } from 'react-redux';
 
 import { ColorSchemeRegistry } from '../../color-scheme';
-import { connect } from '../../redux';
 import { isDarkColor } from '../../styles';
 
 // Register style

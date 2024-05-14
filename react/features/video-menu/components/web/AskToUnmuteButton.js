@@ -1,59 +1,66 @@
 // @flow
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
 import { approveParticipant } from '../../../av-moderation/actions';
-import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { IconCamera, IconMicrophoneEmpty } from '../../../base/icons';
-import { MEDIA_TYPE } from '../../../base/media';
+import { IconMic, IconVideo } from '../../../base/icons/svg';
+import { MEDIA_TYPE, MediaType } from '../../../base/media/constants';
+import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 
-type Props = {
 
-    /**
-     * Whether or not the participant is audio muted.
-     */
-    isAudioMuted: boolean,
-
-    /**
-     * Whether or not the participant is video muted.
-     */
-    isVideoMuted: boolean,
-
-    /**
-     * The ID for the participant on which the button will act.
-     */
-    participantID: string
-}
-
-const AskToUnmuteButton = ({ isAudioMuted, isVideoMuted, participantID }: Props) => {
+/**
+ * Implements a React {@link Component} which displays a button that
+ * allows the moderator to request from a participant to mute themselves.
+ *
+ * @returns {JSX.Element}
+ */
+const AskToUnmuteButton = ({
+    buttonType,
+    notifyMode,
+    notifyClick,
+    participantID
+}) => {
     const dispatch = useDispatch();
     const { t } = useTranslation();
-
     const _onClick = useCallback(() => {
-        if (isAudioMuted) {
+        notifyClick?.();
+        if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
+            return;
+        }
+        if (buttonType === MEDIA_TYPE.AUDIO) {
             dispatch(approveParticipant(participantID, MEDIA_TYPE.AUDIO));
-        } else if (isVideoMuted) {
+        } else if (buttonType === MEDIA_TYPE.VIDEO) {
             dispatch(approveParticipant(participantID, MEDIA_TYPE.VIDEO));
         }
-    }, [ participantID, isAudioMuted ]);
+    }, [ buttonType, dispatch, notifyClick, notifyMode, participantID ]);
 
-    if (!isAudioMuted && !isVideoMuted) {
-        return null;
-    }
+    const text = useMemo(() => {
+        if (buttonType === MEDIA_TYPE.AUDIO) {
+            return t('participantsPane.actions.askUnmute');
+        } else if (buttonType === MEDIA_TYPE.VIDEO) {
+            return t('participantsPane.actions.allowVideo');
+        }
 
-    const text = isAudioMuted
-        ? t('participantsPane.actions.askUnmute')
-        : t('participantsPane.actions.allowVideo');
+        return '';
+    }, [ buttonType ]);
 
-    const icon = isAudioMuted ? IconMicrophoneEmpty : IconCamera;
+    const icon = useMemo(() => {
+        if (buttonType === MEDIA_TYPE.AUDIO) {
+            return IconMic;
+        } else if (buttonType === MEDIA_TYPE.VIDEO) {
+            return IconVideo;
+        }
+    }, [ buttonType ]);
 
     return (
         <ContextMenuItem
             accessibilityLabel = { text }
             icon = { icon }
             onClick = { _onClick }
+            testId = { `unmute-${buttonType}-${participantID}` }
             text = { text } />
     );
 };

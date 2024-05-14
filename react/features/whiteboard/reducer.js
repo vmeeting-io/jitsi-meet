@@ -1,10 +1,12 @@
 // @flow
 
-import { ReducerRegistry } from '../base/redux';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
+    RESET_WHITEBOARD,
     SET_WHITEBOARD_STATUS,
     SET_WHITEBOARD_URL,
+    SETUP_WHITEBOARD
 } from './actionTypes';
 
 const DEFAULT_STATE = {
@@ -21,6 +23,8 @@ const DEFAULT_STATE = {
      * @type {boolean}
      */
     editing: false,
+    isOpen: false,
+    collabDetails: undefined
 };
 
 /**
@@ -30,6 +34,15 @@ ReducerRegistry.register(
     'features/whiteboard',
     (state = DEFAULT_STATE, action) => {
         switch (action.type) {
+        case SETUP_WHITEBOARD: {
+            return {
+                ...state,
+                isOpen: true,
+                collabDetails: action.collabDetails
+            };
+        }
+        case RESET_WHITEBOARD:
+            return DEFAULT_STATE;
         case SET_WHITEBOARD_STATUS:
             return {
                 ...state,
@@ -41,8 +54,7 @@ ReducerRegistry.register(
                 ...state,
                 url: action.url
             };
-
-        default:
-            return state;
         }
+
+        return state;
     });

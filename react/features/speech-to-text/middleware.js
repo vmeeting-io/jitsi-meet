@@ -21,11 +21,12 @@ import {
     STT_RETRY_REQUEST
 } from './actionTypes';
 import logger from './logger';
-import { getLocalJitsiAudioTrack } from '../base/tracks';
-import { i18next } from '../base/i18n';
+import { getLocalJitsiAudioTrack } from '../base/tracks/functions';
+import i18next from '../base/i18n/i18next';
 
 import './subscriber';
-import { showNotification, NOTIFICATION_TIMEOUT_TYPE } from '../notifications';
+import { showNotification } from '../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 
 import {
     MESSAGE_TYPE_LOCAL,

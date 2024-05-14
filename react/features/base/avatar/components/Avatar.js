@@ -1,109 +1,18 @@
-// @flow
-
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 
-import { getParticipantById } from '../../participants';
-import { connect } from '../../redux';
+import { IconUser } from '../../icons/svg';
+import { getParticipantById } from '../../participants/functions';
 import { getAvatarColor, getInitials, isCORSAvatarURL } from '../functions';
 
-import { StatelessAvatar } from '.';
-
-export type Props = {
-
-    /**
-     * The URL patterns for URLs that needs to be handled with CORS.
-     */
-    _corsAvatarURLs: Array<string>,
-
-    /**
-     * Custom avatar backgrounds from branding.
-     */
-    _customAvatarBackgrounds: Array<string>,
-
-    /**
-     * The string we base the initials on (this is generated from a list of precedences).
-     */
-    _initialsBase: ?string,
-
-    /**
-     * An URL that we validated that it can be loaded.
-     */
-    _loadableAvatarUrl: ?string,
-
-    /**
-     * Indicates whether _loadableAvatarUrl should use CORS or not.
-     */
-    _loadableAvatarUrlUseCORS: ?boolean,
-
-    /**
-     * A prop to maintain compatibility with web.
-     */
-    className?: string,
-
-    /**
-     * A string to override the initials to generate a color of. This is handy if you don't want to make
-     * the background color match the string that the initials are generated from.
-     */
-    colorBase?: string,
-
-    /**
-     * Display name of the entity to render an avatar for (if any). This is handy when we need
-     * an avatar for a non-participasnt entity (e.g. A recent list item).
-     */
-    displayName?: string,
-
-    /**
-     * Whether or not to update the background color of the avatar.
-     */
-    dynamicColor?: Boolean,
-
-    /**
-     * ID of the element, if any.
-     */
-    id?: string,
-
-    /**
-     * The ID of the participant to render an avatar for (if it's a participant avatar).
-     */
-    participantId?: string,
-
-    /**
-     * The size of the avatar.
-     */
-    size: number,
-
-    /**
-     * One of the expected status strings (e.g. 'available') to render a badge on the avatar, if necessary.
-     */
-    status?: ?string,
-
-    /**
-     * TestId of the element, if any.
-     */
-    testId?: string,
-
-    /**
-     * URL of the avatar, if any.
-     */
-    url: ?string,
-
-    /**
-     * Indicates whether to load the avatar using CORS or not.
-     */
-    useCORS?: ?boolean
-}
-
-type State = {
-    avatarFailed: boolean,
-    isUsingCORS: boolean
-}
+import { StatelessAvatar } from './';
 
 export const DEFAULT_SIZE = 65;
 
 /**
  * Implements a class to render avatars in the app.
  */
-class Avatar<P: Props> extends PureComponent<P, State> {
+class Avatar extends PureComponent {
     /**
      * Default values for {@code Avatar} component's properties.
      *
@@ -118,7 +27,7 @@ class Avatar<P: Props> extends PureComponent<P, State> {
      *
      * @inheritdoc
      */
-    constructor(props: P) {
+    constructor(props) {
         super(props);
 
         const {
@@ -140,7 +49,7 @@ class Avatar<P: Props> extends PureComponent<P, State> {
      *
      * @inheritdoc
      */
-    componentDidUpdate(prevProps: P) {
+    componentDidUpdate(prevProps) {
         const { _corsAvatarURLs, url } = this.props;
 
         if (prevProps.url !== url) {
@@ -212,10 +121,14 @@ class Avatar<P: Props> extends PureComponent<P, State> {
 
         if (initials) {
             if (dynamicColor) {
-                avatarProps.color = getAvatarColor(colorBase || _initialsBase, _customAvatarBackgrounds);
+                avatarProps.color = getAvatarColor(colorBase || _initialsBase, _customAvatarBackgrounds ?? []);
             }
 
             avatarProps.initials = initials;
+        }
+
+        if (navigator.product !== 'ReactNative') {
+            avatarProps.iconUser = IconUser;
         }
 
         return (
@@ -223,8 +136,6 @@ class Avatar<P: Props> extends PureComponent<P, State> {
                 { ...avatarProps } />
         );
     }
-
-    _onAvatarLoadError: () => void;
 
     /**
      * Callback to handle the error while loading of the avatar URI.
@@ -254,12 +165,12 @@ class Avatar<P: Props> extends PureComponent<P, State> {
  * Maps part of the Redux state to the props of this component.
  *
  * @param {Object} state - The Redux state.
- * @param {Props} ownProps - The own props of the component.
- * @returns {Props}
+ * @param {IProps} ownProps - The own props of the component.
+ * @returns {IProps}
  */
-export function _mapStateToProps(state: Object, ownProps: Props) {
+export function _mapStateToProps(state, ownProps) {
     const { colorBase, displayName, participantId } = ownProps;
-    const _participant: ?Object = participantId && getParticipantById(state, participantId);
+    const _participant = participantId ? getParticipantById(state, participantId) : undefined;
     const _initialsBase = _participant?.name ?? displayName;
     const { corsAvatarURLs } = state['features/base/config'];
 

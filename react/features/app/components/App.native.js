@@ -1,51 +1,34 @@
-// @flow
-
-import React from 'react';
+import React, { ComponentType } from 'react';
+import { NativeModules, Platform, StyleSheet, View } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SplashScreen from 'react-native-splash-screen';
 
-import { DialogContainer } from '../../base/dialog';
+import BottomSheetContainer from '../../base/dialog/components/native/BottomSheetContainer';
+import DialogContainer from '../../base/dialog/components/native/DialogContainer';
 import { updateFlags } from '../../base/flags/actions';
-import { CALL_INTEGRATION_ENABLED, SERVER_URL_CHANGE_ENABLED } from '../../base/flags/constants';
-import { getFeatureFlag } from '../../base/flags/functions';
-import { Platform } from '../../base/react';
-import { DimensionsDetector, clientResized } from '../../base/responsive-ui';
-import { updateSettings } from '../../base/settings';
+import { CALL_INTEGRATION_ENABLED } from '../../base/flags/constants';
+import { clientResized, setSafeAreaInsets } from '../../base/responsive-ui/actions';
+import DimensionsDetector from '../../base/responsive-ui/components/DimensionsDetector.native';
+import { updateSettings } from '../../base/settings/actions';
+import JitsiThemePaperProvider from '../../base/ui/components/JitsiThemeProvider.native';
+import { _getRouteToRender } from '../getRouteToRender.native';
 import logger from '../logger';
 
 import { AbstractApp } from './AbstractApp';
-import type { Props as AbstractAppProps } from './AbstractApp';
 
 // Register middlewares and reducers.
-import '../middlewares';
-import '../reducers';
+import '../middlewares.native';
+import '../reducers.native';
+
 
 declare var __DEV__;
 
-/**
- * The type of React {@code Component} props of {@link App}.
- */
-type Props = AbstractAppProps & {
+const { AppInfo } = NativeModules;
 
-    /**
-     * An object of colors that override the default colors of the app/sdk.
-     */
-    colorScheme: ?Object,
-
-    /**
-     * Identifier for this app on the native side.
-     */
-    externalAPIScope: string,
-
-    /**
-     * An object with the feature flags.
-     */
-    flags: Object,
-
-    /**
-     * An object with user information (display name, email, avatar URL).
-     */
-    userInfo: ?Object
-};
+const DialogContainerWrapper = Platform.select({
+    default: View
+});
 
 /**
  * Root app {@code Component} on mobile/React Native.
@@ -53,15 +36,14 @@ type Props = AbstractAppProps & {
  * @augments AbstractApp
  */
 export class App extends AbstractApp {
-    _init: Promise<*>;
 
     /**
      * Initializes a new {@code App} instance.
      *
-     * @param {Props} props - The read-only React {@code Component} props with
+     * @param {IProps} props - The read-only React {@code Component} props with
      * which the new instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // In the Release configuration, React Native will (intentionally) throw
@@ -72,6 +54,7 @@ export class App extends AbstractApp {
 
         // Bind event handler so it is only bound once per instance.
         this._onDimensionsChanged = this._onDimensionsChanged.bind(this);
+        this._onSafeAreaInsetsChanged = this._onSafeAreaInsetsChanged.bind(this);
     }
 
     /**
@@ -81,40 +64,97 @@ export class App extends AbstractApp {
      *
      * @returns {void}
      */
-    componentDidMount() {
-        super.componentDidMount();
+    async componentDidMount() {
+        await super.componentDidMount();
 
         SplashScreen.hide();
 
-        this._init.then(() => {
-            const { dispatch, getState } = this.state.store;
+        const liteTxt = AppInfo.isLiteSDK ? ' (lite)' : '';
 
-            // We set these early enough so then we avoid any unnecessary re-renders.
-            dispatch(updateFlags(this.props.flags));
+        logger.info(`Loaded SDK ${AppInfo.sdkVersion}${liteTxt}`);
+    }
 
-            // Check if serverURL is configured externally and not allowed to change.
-            const serverURLChangeEnabled = getFeatureFlag(getState(), SERVER_URL_CHANGE_ENABLED, true);
+    /**
+     * Implements React's {@link Component#render()}.
+     *
+     * @inheritdoc
+     * @returns {ReactElement}
+     */
+    render() {
+        return (
+            <JitsiThemePaperProvider>
+                { super.render() }
+            </JitsiThemePaperProvider>
+        );
+    }
 
-            if (!serverURLChangeEnabled) {
-                // As serverURL is provided externally, so we push it to settings.
-                if (typeof this.props.url !== 'undefined') {
-                    const { serverURL } = this.props.url;
+    /**
+     * Initializes feature flags and updates settings.
+     *
+     * @returns {void}
+     */
+    async _extraInit() {
+        const { dispatch, getState } = this.state.store ?? {};
+        const { flags = {}, url, userInfo } = this.props;
+        let callIntegrationEnabled = flags[CALL_INTEGRATION_ENABLED];
 
-                    if (typeof serverURL !== 'undefined') {
-                        dispatch(updateSettings({ serverURL }));
-                    }
+        // CallKit does not work on the simulator, make sure we disable it.
+        if (Platform.OS === 'ios' && DeviceInfo.isEmulatorSync()) {
+            flags[CALL_INTEGRATION_ENABLED] = false;
+            callIntegrationEnabled = false;
+            logger.info('Disabling CallKit because this is a simulator');
+        }
+
+        // Disable Android ConnectionService by default.
+        if (Platform.OS === 'android' && typeof callIntegrationEnabled === 'undefined') {
+            flags[CALL_INTEGRATION_ENABLED] = false;
+            callIntegrationEnabled = false;
+        }
+
+        // We set these early enough so then we avoid any unnecessary re-renders.
+        dispatch?.(updateFlags(flags));
+
+        const route = await _getRouteToRender();
+
+        // We need the root navigator to be set early.
+        await this._navigate(route);
+
+        // HACK ALERT!
+        // Wait until the root navigator is ready.
+        // We really need to break the inheritance relationship between App,
+        // AbstractApp and BaseApp, it's very inflexible and cumbersome right now.
+        const rootNavigationReady = new Promise<void>(resolve => {
+            const i = setInterval(() => {
+                // @ts-ignore
+                const { ready } = getState()['features/app'] || {};
+
+                if (ready) {
+                    clearInterval(i);
+                    resolve();
                 }
-            }
-
-            dispatch(updateSettings(this.props.userInfo || {}));
-
-            // Update settings with feature-flag.
-            const callIntegrationEnabled = this.props.flags[CALL_INTEGRATION_ENABLED];
-
-            if (typeof callIntegrationEnabled !== 'undefined') {
-                dispatch(updateSettings({ disableCallIntegration: !callIntegrationEnabled }));
-            }
+            }, 50);
         });
+
+        await rootNavigationReady;
+
+        // Update specified server URL.
+        if (typeof url !== 'undefined') {
+
+            // @ts-ignore
+            const { serverURL } = url;
+
+            if (typeof serverURL !== 'undefined') {
+                dispatch?.(updateSettings({ serverURL }));
+            }
+        }
+
+        // @ts-ignore
+        dispatch?.(updateSettings(userInfo || {}));
+
+        // Update settings with feature-flag.
+        if (typeof callIntegrationEnabled !== 'undefined') {
+            dispatch?.(updateSettings({ disableCallIntegration: !callIntegrationEnabled }));
+        }
     }
 
     /**
@@ -123,12 +163,15 @@ export class App extends AbstractApp {
      *
      * @override
      */
-    _createMainElement(component, props) {
+    _createMainElement(component: ComponentType<any>, props: Object) {
         return (
-            <DimensionsDetector
-                onDimensionsChanged = { this._onDimensionsChanged }>
-                { super._createMainElement(component, props) }
-            </DimensionsDetector>
+            <SafeAreaProvider>
+                <DimensionsDetector
+                    onDimensionsChanged = { this._onDimensionsChanged }
+                    onSafeAreaInsetsChanged = { this._onSafeAreaInsetsChanged }>
+                    { super._createMainElement(component, props) }
+                </DimensionsDetector>
+            </SafeAreaProvider>
         );
     }
 
@@ -160,16 +203,18 @@ export class App extends AbstractApp {
             return;
         }
 
+        // @ts-ignore
         const oldHandler = global.ErrorUtils.getGlobalHandler();
         const newHandler = _handleException;
 
         if (!oldHandler || oldHandler !== newHandler) {
+            // @ts-ignore
             newHandler.next = oldHandler;
+
+            // @ts-ignore
             global.ErrorUtils.setGlobalHandler(newHandler);
         }
     }
-
-    _onDimensionsChanged: (width: number, height: number) => void;
 
     /**
      * Updates the known available size for the app to occupy.
@@ -180,9 +225,26 @@ export class App extends AbstractApp {
      * @returns {void}
      */
     _onDimensionsChanged(width: number, height: number) {
-        const { dispatch } = this.state.store;
+        const { dispatch } = this.state.store ?? {};
 
-        dispatch(clientResized(width, height));
+        dispatch?.(clientResized(width, height));
+    }
+
+    /**
+     * Updates the safe are insets values.
+     *
+     * @param {Object} insets - The insets.
+     * @param {number} insets.top - The top inset.
+     * @param {number} insets.right - The right inset.
+     * @param {number} insets.bottom - The bottom inset.
+     * @param {number} insets.left - The left inset.
+     * @private
+     * @returns {void}
+     */
+    _onSafeAreaInsetsChanged(insets: Object) {
+        const { dispatch } = this.state.store ?? {};
+
+        dispatch?.(setSafeAreaInsets(insets));
     }
 
     /**
@@ -192,7 +254,12 @@ export class App extends AbstractApp {
      */
     _renderDialogContainer() {
         return (
-            <DialogContainer />
+            <DialogContainerWrapper
+                pointerEvents = 'box-none'
+                style = { StyleSheet.absoluteFill }>
+                <BottomSheetContainer />
+                <DialogContainer />
+            </DialogContainerWrapper>
         );
     }
 }
@@ -208,7 +275,7 @@ export class App extends AbstractApp {
  * @private
  * @returns {void}
  */
-function _handleException(error, fatal) {
+function _handleException(error: Error, fatal: boolean) {
     if (fatal) {
         // In the Release configuration, React Native will (intentionally) throw
         // an unhandled JavascriptException for an unhandled JavaScript error.
@@ -217,6 +284,7 @@ function _handleException(error, fatal) {
         logger.error(error);
     } else {
         // Forward to the next globalHandler of ErrorUtils.
+        // @ts-ignore
         const { next } = _handleException;
 
         typeof next === 'function' && next(error, fatal);

@@ -1,63 +1,47 @@
-// @flow
-
-import InlineMessage from '@atlaskit/inline-message';
+import { Theme } from '@mui/material';
 import React from 'react';
-import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
+import { withStyles } from 'tss-react/mui';
 
-import { Avatar } from '../../../../base/avatar';
-import { translate, translateToHTML } from '../../../../base/i18n';
-import { Icon, IconPhone } from '../../../../base/icons';
-import { getLocalParticipant } from '../../../../base/participants';
-import { MultiSelectAutocomplete } from '../../../../base/react';
-import { connect } from '../../../../base/redux';
+import Avatar from '../../../../base/avatar/components/Avatar';
+import { translate } from '../../../../base/i18n/functions';
+import Icon from '../../../../base/icons/components/Icon';
+import { IconPhoneRinging } from '../../../../base/icons/svg';
+import MultiSelectAutocomplete from '../../../../base/react/components/web/MultiSelectAutocomplete';
+import Button from '../../../../base/ui/components/web/Button';
+import { BUTTON_TYPES } from '../../../../base/ui/constants.any';
 import { isVpaasMeeting } from '../../../../jaas/functions';
-import { hideAddPeopleDialog } from '../../../actions';
+import { hideAddPeopleDialog } from '../../../actions.web';
 import { INVITE_TYPES } from '../../../constants';
 import AbstractAddPeopleDialog, {
-    type Props as AbstractProps,
-    type State,
     _mapStateToProps as _abstractMapStateToProps
 } from '../AbstractAddPeopleDialog';
 
-declare var interfaceConfig: Object;
-
-type Props = AbstractProps & {
-
-    /**
-     * The {@link JitsiMeetConference} which will be used to invite "room" participants.
-     */
-    _conference: Object,
-
-    /**
-     * Whether to show a footer text after the search results as a last element.
-     */
-    _footerTextEnabled: boolean,
-
-    /**
-     * Whether the meeting belongs to JaaS user.
-     */
-    _isVpaas: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Dispatch<any>,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function,
+const styles = (theme: Theme) => {
+    return {
+        formWrap: {
+            marginTop: theme.spacing(2)
+        },
+        inviteButtons: {
+            display: 'flex',
+            justifyContent: 'end',
+            marginTop: theme.spacing(2),
+            '& .invite-button': {
+                marginLeft: theme.spacing(2)
+            }
+        }
+    };
 };
 
 /**
  * Form that enables inviting others to the call.
  */
-class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
+class InviteContactsForm extends AbstractAddPeopleDialog {
     _multiselect = null;
 
-    _resourceClient: Object;
+    _resourceClient;
 
-    _translations: Object;
+    _translations;
 
     state = {
         addToCallError: false,
@@ -71,7 +55,7 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
      * @param {Object} props - The read-only properties with which the new
      * instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // Bind event handlers so they are only bound once per instance.
@@ -83,7 +67,6 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
         this._onSubmitKeyPress = this._onSubmitKeyPress.bind(this);
         this._parseQueryResults = this._parseQueryResults.bind(this);
         this._setMultiSelectElement = this._setMultiSelectElement.bind(this);
-        this._renderFooterText = this._renderFooterText.bind(this);
         this._onKeyDown = this._onKeyDown.bind(this);
 
         this._resourceClient = {
@@ -105,8 +88,8 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
     /**
      * React Component method that executes once component is updated.
      *
-     * @param {Object} prevProps - The state object before the update.
-     * @param {Object} prevState - The state object before the update.
+     * @param {Props} prevProps - The props object before the update.
+     * @param {State} prevState - The state object before the update.
      * @returns {void}
      */
     componentDidUpdate(prevProps, prevState) {
@@ -135,7 +118,7 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
             _sipInviteEnabled,
             t
         } = this.props;
-        const footerText = this._renderFooterText();
+        const classes = withStyles.getClasses(this.props);
         let isMultiSelectDisabled = this.state.addToCallInProgress;
         const loadingMessage = 'addPeople.searching';
         const noMatches = 'addPeople.noResults';
@@ -159,11 +142,10 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
 
         return (
             <div
-                className = 'add-people-form-wrap'
+                className = { classes.formWrap }
                 onKeyDown = { this._onKeyDown }>
-                { this._renderErrorMessage() }
                 <MultiSelectAutocomplete
-                    footer = { footerText }
+                    id = 'invite-contacts-input'
                     isDisabled = { isMultiSelectDisabled }
                     loadingMessage = { t(loadingMessage) }
                     noMatchesFound = { t(noMatches) }
@@ -180,17 +162,13 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
         );
     }
 
-    _invite: Array<Object> => Promise<*>;
-
     _isAddDisabled: () => boolean;
-
-    _onItemSelected: (Object) => Object;
 
     /**
      * Callback invoked when a selection has been made but before it has been
      * set as selected.
      *
-     * @param {Object} item - The item that has just been selected.
+     * @param {IInviteSelectItem} item - The item that has just been selected.
      * @private
      * @returns {Object} The item to display as selected in the input.
      */
@@ -202,12 +180,10 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
         return item;
     }
 
-    _onSelectionChange: (Map<*, *>) => void;
-
     /**
      * Handles a selection change.
      *
-     * @param {Array} selectedItems - The list of selected items.
+     * @param {Array<IInviteSelectItem>} selectedItems - The list of selected items.
      * @private
      * @returns {void}
      */
@@ -217,7 +193,6 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
         });
     }
 
-    _onSubmit: () => void;
 
     /**
      * Submits the selection for inviting.
@@ -230,49 +205,43 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
         const invitees = inviteItems.map(({ item }) => item);
 
         this._invite(invitees)
-            .then(invitesLeftToSend => {
+            .then((invitesLeftToSend) => {
                 if (invitesLeftToSend.length) {
                     const unsentInviteIDs
                         = invitesLeftToSend.map(invitee =>
                             invitee.id || invitee.user_id || invitee.number);
-                    const itemsToSelect
-                        = inviteItems.filter(({ item }) =>
-                            unsentInviteIDs.includes(item.id || item.user_id || item.number));
+                    const itemsToSelect = inviteItems.filter(({ item }) =>
+                        unsentInviteIDs.includes(item.id || item.user_id || item.number));
 
                     if (this._multiselect) {
                         this._multiselect.setSelectedItems(itemsToSelect);
                     }
-                } else {
-                    this.props.dispatch(hideAddPeopleDialog());
                 }
-            });
+            })
+            .finally(() => this.props.dispatch(hideAddPeopleDialog()));
     }
-
-    _onSubmitKeyPress: (Object) => void;
 
     /**
      * KeyPress handler for accessibility.
      *
-     * @param {Object} e - The key event to handle.
+     * @param {KeyboardEvent} e - The key event to handle.
      *
      * @returns {void}
      */
-    _onSubmitKeyPress(e) {
+    _onSubmitKeyPress(e: React.KeyboardEvent) {
         if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             this._onSubmit();
         }
     }
 
-    _onKeyDown: (Object) => void;
-
     /**
      * Handles 'Enter' key in the form to trigger the invite.
      *
-     * @param {Object} event - The key event.
+     * @param {KeyboardEvent} event - The key event.
      * @returns {void}
      */
-    _onKeyDown(event) {
+    _onKeyDown(event: React.KeyboardEvent) {
         const { inviteItems } = this.state;
 
         if (event.key === 'Enter') {
@@ -283,20 +252,19 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
         }
     }
 
-    _parseQueryResults: (?Array<Object>) => Array<Object>;
-
     /**
      * Returns the avatar component for a user.
      *
-     * @param {Object} user - The user.
+     * @param {any} user - The user.
      * @param {string} className - The CSS class for the avatar component.
      * @private
      * @returns {ReactElement}
      */
-    _getAvatar(user, className = 'avatar-small') {
+    _getAvatar(user: any, className = 'avatar-small') {
         return (
             <Avatar
                 className = { className }
+                size = { 32 }
                 status = { user.status }
                 url = { user.avatar } />
         );
@@ -402,37 +370,6 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
         ];
     }
 
-    _query: (string) => Promise<Array<Object>>;
-
-    _renderFooterText: () => Object;
-
-    /**
-     * Sets up the rendering of the footer text, if enabled.
-     *
-     * @returns {Object | undefined}
-     */
-    _renderFooterText() {
-        const { _footerTextEnabled, t } = this.props;
-        let footerText;
-
-        if (_footerTextEnabled) {
-            footerText = {
-                content: <div className = 'footer-text-wrap'>
-                    <div>
-                        <span className = 'footer-telephone-icon'>
-                            <Icon src = { IconPhone } />
-                        </span>
-                    </div>
-                    { translateToHTML(t, 'addPeople.footerText') }
-                </div>
-            };
-        }
-
-        return footerText;
-    }
-
-    _onClearItems: () => void;
-
     /**
      * Clears the selected items from state and form.
      *
@@ -445,16 +382,14 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
         this.setState({ inviteItems: [] });
     }
 
-    _onClearItemsKeyPress: () => void;
-
     /**
      * Clears the selected items from state and form.
      *
-     * @param {Object} e - The key event to handle.
+     * @param {KeyboardEvent} e - The key event to handle.
      *
      * @returns {void}
      */
-    _onClearItemsKeyPress(e) {
+    _onClearItemsKeyPress(e: KeyboardEvent) {
         if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             this._onClearItems();
@@ -469,75 +404,30 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
     _renderFormActions() {
         const { inviteItems } = this.state;
         const { t } = this.props;
+        const classes = withStyles.getClasses(this.props);
 
         if (!inviteItems.length) {
             return null;
         }
 
         return (
-            <div className = { `invite-more-dialog invite-buttons${this._isAddDisabled() ? ' disabled' : ''}` }>
-                <a
+            <div className = { classes.inviteButtons }>
+                <Button
                     aria-label = { t('dialog.Cancel') }
-                    className = 'invite-more-dialog invite-buttons-cancel'
+                    className = 'invite-button'
+                    label = { t('dialog.Cancel') }
                     onClick = { this._onClearItems }
                     onKeyPress = { this._onClearItemsKeyPress }
                     role = 'button'
-                    tabIndex = { 0 }>
-                    {t('dialog.Cancel')}
-                </a>
-                <a
+                    type = { BUTTON_TYPES.SECONDARY } />
+                <Button
                     aria-label = { t('addPeople.add') }
-                    className = 'invite-more-dialog invite-buttons-add'
+                    className = 'invite-button'
+                    disabled = { this._isAddDisabled() }
+                    label = { t('addPeople.add') }
                     onClick = { this._onSubmit }
                     onKeyPress = { this._onSubmitKeyPress }
-                    role = 'button'
-                    tabIndex = { 0 }>
-                    {t('addPeople.add')}
-                </a>
-            </div>
-        );
-    }
-
-    /**
-     * Renders the error message if the add doesn't succeed.
-     *
-     * @private
-     * @returns {ReactElement|null}
-     */
-    _renderErrorMessage() {
-        if (!this.state.addToCallError) {
-            return null;
-        }
-
-        const { t } = this.props;
-        const supportString = t('inlineDialogFailure.supportMsg');
-        const supportLink = interfaceConfig.SUPPORT_URL;
-
-        const supportLinkContent = supportLink ? (
-            <span>
-                <span>
-                    { supportString.padEnd(supportString.length + 1) }
-                </span>
-                <span>
-                    <a
-                        aria-label = { supportLink }
-                        href = { supportLink }
-                        rel = 'noopener noreferrer'
-                        target = '_blank'>
-                        { t('inlineDialogFailure.support') }
-                    </a>
-                </span>
-                <span>.</span>
-            </span>
-        ) : null;
-
-        return (
-            <div className = 'modal-dialog-form-error'>
-                <InlineMessage
-                    title = { t('addPeople.failedToAdd') }
-                    type = 'error'>
-                    { supportLinkContent }
-                </InlineMessage>
+                    role = 'button' />
             </div>
         );
     }
@@ -550,19 +440,15 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
      */
     _renderTelephoneIcon() {
         return (
-            <span className = 'add-telephone-icon'>
-                <Icon src = { IconPhone } />
-            </span>
+            <Icon src = { IconPhoneRinging } />
         );
     }
-
-    _setMultiSelectElement: (React$ElementRef<*> | null) => void;
 
     /**
      * Sets the instance variable for the multi select component
      * element so it can be accessed directly.
      *
-     * @param {Object} element - The DOM element for the component's dialog.
+     * @param {MultiSelectAutocomplete} element - The DOM element for the component's dialog.
      * @private
      * @returns {void}
      */
@@ -575,27 +461,15 @@ class InviteContactsForm extends AbstractAddPeopleDialog<Props, State> {
  * Maps (parts of) the Redux state to the associated
  * {@code AddPeopleDialog}'s props.
  *
- * @param {Object} state - The Redux state.
+ * @param {IReduxState} state - The Redux state.
  * @private
  * @returns {Props}
  */
 function _mapStateToProps(state) {
-    const { enableFeaturesBasedOnToken } = state['features/base/config'];
-    let footerTextEnabled = false;
-
-    if (enableFeaturesBasedOnToken) {
-        const { features = {} } = getLocalParticipant(state);
-
-        if (String(features['outbound-call']) !== 'true') {
-            footerTextEnabled = true;
-        }
-    }
-
     return {
         ..._abstractMapStateToProps(state),
-        _footerTextEnabled: footerTextEnabled,
         _isVpaas: isVpaasMeeting(state)
     };
 }
 
-export default translate(connect(_mapStateToProps)(InviteContactsForm));
+export default translate(connect(_mapStateToProps)(withStyles(InviteContactsForm, styles)));

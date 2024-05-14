@@ -1,15 +1,10 @@
-// @flow
-
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { Dialog } from '../../../../base/dialog';
-import { translate } from '../../../../base/i18n';
-import { connect } from '../../../../base/redux';
-import { toggleScreenshotCaptureSummary } from '../../../../screenshot-capture';
-import AbstractStopRecordingDialog, {
-    type Props,
-    _mapStateToProps
-} from '../AbstractStopRecordingDialog';
+import { translate } from '../../../../base/i18n/functions';
+import Dialog from '../../../../base/ui/components/web/Dialog';
+import { toggleScreenshotCaptureSummary } from '../../../../screenshot-capture/actions';
+import AbstractStopRecordingDialog, { _mapStateToProps } from '../AbstractStopRecordingDialog';
 
 /**
  * React Component for getting confirmation to stop a file recording session in
@@ -17,7 +12,7 @@ import AbstractStopRecordingDialog, {
  *
  * @augments Component
  */
-class StopRecordingDialog extends AbstractStopRecordingDialog<Props> {
+class StopRecordingDialog extends AbstractStopRecordingDialog {
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -25,15 +20,14 @@ class StopRecordingDialog extends AbstractStopRecordingDialog<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { t } = this.props;
+        const { t, localRecordingVideoStop } = this.props;
 
         return (
             <Dialog
-                okKey = 'dialog.confirm'
+                ok = {{ translationKey: 'dialog.confirm' }}
                 onSubmit = { this._onSubmit }
-                titleKey = 'dialog.recording'
-                width = 'small'>
-                { t('dialog.stopRecordingWarning') }
+                titleKey = 'dialog.recording'>
+                {t(localRecordingVideoStop ? 'recording.localRecordingVideoStop' : 'dialog.stopRecordingWarning') }
             </Dialog>
         );
     }

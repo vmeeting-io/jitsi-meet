@@ -1,32 +1,33 @@
-// @flow
-
 import React from 'react';
 import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import CopyButton from '../../base/buttons/CopyButton';
-import { getInviteURL } from '../../base/connection';
-import { Dialog } from '../../base/dialog';
-import { translate } from '../../base/i18n';
+import CopyButton from '../../base/buttons/CopyButton.web';
+import { getInviteURL } from '../../base/connection/functions';
+import { translate } from '../../base/i18n/functions';
+import Dialog from '../../base/ui/components/web/Dialog';
+import Input from '../../base/ui/components/web/Input';
 
-type Props = {
+const useStyles = makeStyles()(theme => {
+    return {
+        container: {
+            paddingTop: theme.spacing(1)
+        },
 
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function,
-
-    /**
-     * The URL of the conference.
-     */
-    url: string
-};
+        button: {
+            marginTop: theme.spacing(3)
+        }
+    };
+});
 
 /**
  * Allow users to embed a jitsi meeting in an iframe.
  *
  * @returns {React$Element<any>}
  */
-function EmbedMeeting({ t, url }: Props) {
+function EmbedMeeting({ t, url }) {
+    const { classes } = useStyles();
+
     /**
      * Get the embed code for a jitsi meeting.
      *
@@ -38,20 +39,21 @@ function EmbedMeeting({ t, url }: Props) {
 
     return (
         <Dialog
-            hideCancelButton = { true }
-            submitDisabled = { true }
-            titleKey = { 'embedMeeting.title' }
-            width = 'small'>
-            <div className = 'embed-meeting-dialog'>
-                <textarea
-                    aria-label = { t('dialog.embedMeeting') }
-                    className = 'embed-meeting-code'
+            cancel = {{ hidden: true }}
+            ok = {{ hidden: true }}
+            titleKey = { 'embedMeeting.title' }>
+            <div className = { classes.container }>
+                <Input
+                    accessibilityLabel = { t('dialog.embedMeeting') }
+                    id = 'embed-meeting-input'
                     readOnly = { true }
+                    textarea = { true }
                     value = { getEmbedCode() } />
                 <CopyButton
-                    aria-label = { t('addPeople.copyLink') }
-                    className = 'embed-meeting-copy'
+                    accessibilityText = { t('addPeople.copyLink') }
+                    className = { classes.button }
                     displayedText = { t('dialog.copy') }
+                    id = 'embed-meeting-copy-button'
                     textOnCopySuccess = { t('dialog.copied') }
                     textOnHover = { t('dialog.copy') }
                     textToCopy = { getEmbedCode() } />
@@ -60,7 +62,7 @@ function EmbedMeeting({ t, url }: Props) {
     );
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         url: getInviteURL(state)
     };

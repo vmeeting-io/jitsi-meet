@@ -1,30 +1,105 @@
-// @flow
-
 import React, { useCallback, useState } from 'react';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import { translate } from '../../../i18n';
-import { Icon, IconArrowDownSmall, IconWifi1Bar, IconWifi2Bars, IconWifi3Bars } from '../../../icons';
-import { connect } from '../../../redux';
+import { translate } from '../../../i18n/functions';
+import Icon from '../../../icons/components/Icon';
+import { IconArrowDown, IconWifi1Bar, IconWifi2Bars, IconWifi3Bars } from '../../../icons/svg';
+import { withPixelLineHeight } from '../../../styles/functions.web';
+import { PREJOIN_DEFAULT_CONTENT_WIDTH } from '../../../ui/components/variables';
 import { CONNECTION_TYPE } from '../../constants';
 import { getConnectionData } from '../../functions';
 
-type Props = {
+const useStyles = makeStyles()(theme => {
+    return {
+        connectionStatus: {
+            color: '#fff',
+            ...withPixelLineHeight(theme.typography.bodyShortRegular),
+            position: 'absolute',
+            width: '100%',
 
-    /**
-     * List of strings with details about the connection.
-     */
-    connectionDetails: string[],
+            [theme.breakpoints.down(400)]: {
+                margin: 0,
+                width: '100%'
+            },
 
-    /**
-     * The type of the connection. Can be: 'none', 'poor', 'nonOptimal' or 'good'.
-     */
-    connectionType: string,
+            '@media (max-width: 720px)': {
+                margin: `${theme.spacing(4)} auto`,
+                position: 'fixed',
+                top: 0,
+                width: PREJOIN_DEFAULT_CONTENT_WIDTH
+            },
 
-    /**
-     * Used for translation.
-     */
-    t: Function
-}
+            // mobile phone landscape
+            '@media (max-height: 420px)': {
+                display: 'none'
+            },
+
+            '& .con-status-header': {
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                alignItems: 'center',
+                display: 'flex',
+                padding: '12px 16px',
+                borderRadius: theme.shape.borderRadius
+            },
+
+            '& .con-status-circle': {
+                borderRadius: '50%',
+                display: 'inline-block',
+                padding: theme.spacing(1),
+                marginRight: theme.spacing(2)
+            },
+
+            '& .con-status--good': {
+                background: '#31B76A'
+            },
+
+            '& .con-status--poor': {
+                background: '#E12D2D'
+            },
+
+            '& .con-status--non-optimal': {
+                background: '#E39623'
+            },
+
+            '& .con-status-arrow': {
+                marginLeft: 'auto',
+                transition: 'background-color 0.16s ease-out'
+            },
+
+            '& .con-status-arrow--up': {
+                transform: 'rotate(180deg)'
+            },
+
+            '& .con-status-arrow > svg': {
+                cursor: 'pointer'
+            },
+
+            '& .con-status-arrow:hover': {
+                backgroundColor: 'rgba(1, 1, 1, 0.1)'
+            },
+
+            '& .con-status-text': {
+                textAlign: 'center'
+            },
+
+            '& .con-status-details': {
+                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                borderTop: '1px solid #5E6D7A',
+                padding: theme.spacing(3),
+                transition: 'opacity 0.16s ease-out'
+            },
+
+            '& .con-status-details-visible': {
+                opacity: 1
+            },
+
+            '& .con-status-details-hidden': {
+                opacity: 0
+            }
+        }
+    };
+});
 
 const CONNECTION_TYPE_MAP = {
     [CONNECTION_TYPE.POOR]: {
@@ -47,20 +122,17 @@ const CONNECTION_TYPE_MAP = {
 /**
  * Component displaying information related to the connection & audio/video quality.
  *
- * @param {Props} props - The props of the component.
+ * @param {IProps} props - The props of the component.
  * @returns {ReactElement}
  */
-function ConnectionStatus({ connectionDetails, t, connectionType }: Props) {
-    if (connectionType === CONNECTION_TYPE.NONE) {
-        return null;
-    }
+function ConnectionStatus({ connectionDetails, t, connectionType }) {
+    const { classes } = useStyles();
 
-    const { connectionClass, icon, connectionText } = CONNECTION_TYPE_MAP[connectionType];
     const [ showDetails, toggleDetails ] = useState(false);
     const arrowClassName = showDetails
         ? 'con-status-arrow con-status-arrow--up'
         : 'con-status-arrow';
-    const detailsText = connectionDetails.map(t).join(' ');
+    const detailsText = connectionDetails?.map(d => t(d)).join(' ');
     const detailsClassName = showDetails
         ? 'con-status-details-visible'
         : 'con-status-details-hidden';
@@ -77,8 +149,14 @@ function ConnectionStatus({ connectionDetails, t, connectionType }: Props) {
         }
     }, [ showDetails, toggleDetails ]);
 
+    if (connectionType === CONNECTION_TYPE.NONE) {
+        return null;
+    }
+
+    const { connectionClass, icon, connectionText } = CONNECTION_TYPE_MAP[connectionType ?? ''];
+
     return (
-        <div className = 'con-status'>
+        <div className = { classes.connectionStatus }>
             <div
                 aria-level = { 1 }
                 className = 'con-status-header'
@@ -100,11 +178,11 @@ function ConnectionStatus({ connectionDetails, t, connectionType }: Props) {
                     onKeyPress = { onKeyPressToggleDetails }
                     role = 'button'
                     size = { 24 }
-                    src = { IconArrowDownSmall }
+                    src = { IconArrowDown }
                     tabIndex = { 0 } />
             </div>
             <div
-                aria-level = '2'
+                aria-level = { 2 }
                 className = { `con-status-details ${detailsClassName}` }
                 role = 'heading'>
                 {detailsText}</div>
@@ -118,8 +196,8 @@ function ConnectionStatus({ connectionDetails, t, connectionType }: Props) {
  * @param {Object} state - The redux state.
  * @returns {Object}
  */
-function mapStateToProps(state): Object {
-    const { connectionDetails, connectionType } = getConnectionData(state);
+function mapStateToProps() {
+    const { connectionDetails, connectionType } = getConnectionData();
 
     return {
         connectionDetails,

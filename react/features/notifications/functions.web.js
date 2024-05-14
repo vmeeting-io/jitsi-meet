@@ -1,8 +1,8 @@
 import Swal from 'sweetalert2';
 
-import { NOTIFICATION_TYPE } from './constants';
-import { i18next } from '../base/i18n';
+import i18next from '../base/i18n/i18next';
 import { showToolbox } from '../toolbox/actions.web';
+import { NOTIFICATION_TYPE } from './constants';
 
 export * from './functions.any';
 

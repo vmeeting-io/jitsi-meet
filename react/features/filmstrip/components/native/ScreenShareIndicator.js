@@ -1,9 +1,7 @@
-// @flow
-
 import React from 'react';
 
-import { IconShareDesktop } from '../../../base/icons';
-import { BaseIndicator } from '../../../base/react';
+import { IconScreenshare } from '../../../base/icons/svg';
+import BaseIndicator from '../../../base/react/components/native/BaseIndicator';
 
 /**
  * Thumbnail badge for displaying if a participant is sharing their screen.
@@ -12,8 +10,6 @@ import { BaseIndicator } from '../../../base/react';
  */
 export default function ScreenShareIndicator() {
     return (
-        <BaseIndicator
-            highlight = { false }
-            icon = { IconShareDesktop } />
+        <BaseIndicator icon = { IconScreenshare } />
     );
 }

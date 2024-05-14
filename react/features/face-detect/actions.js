@@ -1,10 +1,10 @@
 import { difference, filter, flattenDeep, isEmpty, last, map } from 'lodash';
 
-import { getCurrentConference } from '../base/conference';
+import { getCurrentConference } from '../base/conference/functions';
 import {
     getLocalParticipant,
     getRemoteParticipants,
-} from '../base/participants';
+} from '../base/participants/functions';
 import { getBreakoutRooms } from '../breakout-rooms/functions';
 
 import {

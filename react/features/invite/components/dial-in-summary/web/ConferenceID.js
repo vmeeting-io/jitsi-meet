@@ -1,60 +1,64 @@
-// @flow
+import React from 'react';
+import { makeStyles } from 'tss-react/mui';
 
-import React, { Component } from 'react';
-
-import { translate } from '../../../../base/i18n';
+import { translate } from '../../../../base/i18n/functions';
+import { withPixelLineHeight } from '../../../../base/styles/functions.web';
 import { _formatConferenceIDPin } from '../../../_utils';
 
-/**
- * The type of the React {@code Component} props of {@link ConferenceID}.
- */
-type Props = {
 
-    /**
-     * The conference ID for dialing in.
-     */
-    conferenceID: number,
+const useStyles = makeStyles()((theme) => {
+    return {
+        container: {
+            marginTop: 32,
+            maxWidth: 310,
+            padding: '16px 12px',
+            background: theme.palette.ui02,
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: 6,
 
-    /**
-     * The name of the conference.
-     */
-    conferenceName: ?string,
+            '& *': {
+                userSelect: 'text'
+            }
+        },
+        confNameLabel: {
+            ...withPixelLineHeight(theme.typography.heading6),
+            marginBottom: 18,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+        },
+        descriptionLabel: {
+            ...withPixelLineHeight(theme.typography.bodyShortRegularLarge),
+            marginBottom: 18
+        },
+        separator: {
+            width: '100%',
+            height: 1,
+            background: theme.palette.ui04,
+            marginBottom: 18
+        },
+        pinLabel: {
+            ...withPixelLineHeight(theme.typography.heading6)
+        }
+    };
+});
 
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
+const ConferenceID = ({ conferenceID, t }) => {
+    const { classes: styles } = useStyles();
 
-/**
- * Displays a conference ID used as a pin for dialing into a conference.
- *
- * @augments Component
- */
-class ConferenceID extends Component<Props> {
-    /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
-    render() {
-        const { conferenceID, conferenceName, t } = this.props;
-
-        return (
-            <div className = 'dial-in-conference-id'>
-                <div className = 'dial-in-conference-name'>
-                    { conferenceName }
-                </div>
-                <div className = 'dial-in-conference-description'>
-                    { t('info.dialANumber') }
-                </div>
-                <div className = 'dial-in-conference-pin'>
-                    { `${t('info.dialInConferenceID')} ${_formatConferenceIDPin(conferenceID)}` }
-                </div>
+    return (
+        <div className = { styles.container }>
+            <div className = { styles.descriptionLabel }>
+                { t('info.dialANumber') }
             </div>
-        );
-    }
-}
+            <div className = { styles.separator } />
+            <div className = { styles.pinLabel }>
+                { `${t('info.dialInConferenceID')} ${_formatConferenceIDPin(conferenceID ?? '')}` }
+            </div>
+        </div>
+    );
+};
 
 export default translate(ConferenceID);

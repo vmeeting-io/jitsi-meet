@@ -1,5 +1,3 @@
-// @flow
-
 import React, { Component } from 'react';
 import { FlatList } from 'react-native';
 
@@ -7,24 +5,16 @@ import { MESSAGE_TYPE_LOCAL, MESSAGE_TYPE_REMOTE } from '../../constants';
 
 import ChatMessage from './ChatMessage';
 
-type Props = {
-
-  /**
-   * The messages array to render.
-   */
-  messages: Array<Object>
-}
-
 /**
  * Implements a container to render all the chat messages in a conference.
  */
-export default class ChatMessageGroup extends Component<Props> {
+export default class ChatMessageGroup extends Component {
     /**
      * Instantiates a new instance of the component.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this._keyExtractor = this._keyExtractor.bind(this);
@@ -46,21 +36,17 @@ export default class ChatMessageGroup extends Component<Props> {
         );
     }
 
-    _keyExtractor: Object => string;
-
     /**
      * Key extractor for the flatlist.
      *
-     * @param {Object} item - The flatlist item that we need the key to be
+     * @param {Object} _item - The flatlist item that we need the key to be
      * generated for.
      * @param {number} index - The index of the element.
      * @returns {string}
      */
-    _keyExtractor(item, index) {
+    _keyExtractor(_item: Object, index: number) {
         return `key_${index}`;
     }
-
-    _renderMessage: Object => React$Element<*>;
 
     /**
      * Renders a single chat message.

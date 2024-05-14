@@ -1,10 +1,8 @@
-// @flow
-
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { ConfirmDialog } from '../../../base/dialog';
-import { translate } from '../../../base/i18n';
-import { connect } from '../../../base/redux';
+import ConfirmDialog from '../../../base/dialog/components/native/ConfirmDialog';
+import { translate } from '../../../base/i18n/functions';
 import { AbstractChatPrivacyDialog, _mapDispatchToProps, _mapStateToProps } from '../AbstractChatPrivacyDialog';
 
 /**
@@ -20,17 +18,13 @@ class ChatPrivacyDialog extends AbstractChatPrivacyDialog {
     render() {
         return (
             <ConfirmDialog
-                cancelKey = 'dialog.sendPrivateMessageCancel'
-                contentKey = 'dialog.sendPrivateMessage'
-                okKey = 'dialog.sendPrivateMessageOk'
+                cancelLabel = 'dialog.sendPrivateMessageCancel'
+                confirmLabel = 'dialog.sendPrivateMessageOk'
+                descriptionKey = 'dialog.sendPrivateMessage'
                 onCancel = { this._onSendGroupMessage }
                 onSubmit = { this._onSendPrivateMessage } />
         );
     }
-
-    _onSendGroupMessage: () => boolean;
-
-    _onSendPrivateMessage: () => boolean;
 }
 
 export default translate(connect(_mapStateToProps, _mapDispatchToProps)(ChatPrivacyDialog));

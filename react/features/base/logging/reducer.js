@@ -1,11 +1,24 @@
-// @flow
+import _ from 'lodash';
 
-import { equals, ReducerRegistry, set } from '../redux';
+import ReducerRegistry from '../redux/ReducerRegistry';
+import { equals, set } from '../redux/functions';
 
-import { SET_LOG_COLLECTOR, SET_LOGGING_CONFIG } from './actionTypes';
+import { SET_LOGGING_CONFIG, SET_LOG_COLLECTOR } from './actionTypes';
 
-// eslint-disable-next-line
-const LOGGING_CONFIG = require('../../../../logging_config.js');
+const DEFAULT_LOGGING_CONFIG = {
+    // default log level for the app and lib-jitsi-meet
+    defaultLogLevel: 'trace',
+
+    // Option to disable LogCollector (which stores the logs)
+    // disableLogCollector: true,
+
+    loggers: {
+        // The following are too verbose in their logging with the
+        // {@link #defaultLogLevel}:
+        'modules/RTC/TraceablePeerConnection.js': 'info',
+        'modules/xmpp/strophe.util.js': 'log'
+    }
+};
 
 /**
  * The default/initial redux state of the feature base/logging.
@@ -15,7 +28,7 @@ const LOGGING_CONFIG = require('../../../../logging_config.js');
  * }}
  */
 const DEFAULT_STATE = {
-    config: LOGGING_CONFIG,
+    config: DEFAULT_LOGGING_CONFIG,
 
     /**
      * The log collector.
@@ -23,18 +36,18 @@ const DEFAULT_STATE = {
     logCollector: undefined
 };
 
-// Reduce verbosity on mobile, it kills performance.
+// Reduce default verbosity on mobile, it kills performance.
 if (navigator.product === 'ReactNative') {
-    const RN_LOGGING_CONFIG = {
+    const RN_LOGGERS = {
         'modules/sdp/SDPUtil.js': 'info',
         'modules/xmpp/ChatRoom.js': 'warn',
         'modules/xmpp/JingleSessionPC.js': 'info',
         'modules/xmpp/strophe.jingle.js': 'info'
     };
 
-    DEFAULT_STATE.config = {
-        ...LOGGING_CONFIG,
-        ...RN_LOGGING_CONFIG
+    DEFAULT_STATE.config.loggers = {
+        ...DEFAULT_LOGGING_CONFIG.loggers,
+        ...RN_LOGGERS
     };
 }
 
@@ -64,20 +77,15 @@ ReducerRegistry.register(
  * reduction of the specified action.
  */
 function _setLoggingConfig(state, action) {
-    const config = {
-        // The config of DEFAULT_STATE is the default configuration of the
-        // feature base/logging.
-        ...DEFAULT_STATE.config,
-        ...action.config
-    };
+    const newConfig = _.merge({}, DEFAULT_STATE.config, action.config);
 
-    if (equals(state.config, config)) {
+    if (equals(state.config, newConfig)) {
         return state;
     }
 
     return {
         ...state,
-        config
+        config: newConfig
     };
 }
 

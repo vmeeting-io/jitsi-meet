@@ -1,43 +1,29 @@
-// @flow
-
-import InlineDialog from '@atlaskit/inline-dialog';
-import React from 'react';
+import React, { ReactNode } from 'react';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
 import {
-    getVideoDeviceIds,
     setVideoInputDeviceAndUpdateSettings
-} from '../../../../base/devices';
-import { connect } from '../../../../base/redux';
+} from '../../../../base/devices/actions.web';
+import {
+    getVideoDeviceIds
+} from '../../../../base/devices/functions.web';
+import Popover from '../../../../base/popover/components/Popover.web';
 import { SMALL_MOBILE_WIDTH } from '../../../../base/responsive-ui/constants';
-import { getCurrentCameraDeviceId } from '../../../../base/settings';
+import { getCurrentCameraDeviceId } from '../../../../base/settings/functions.web';
 import { toggleVideoSettings } from '../../../actions';
-import { getVideoSettingsVisibility } from '../../../functions';
+import { getVideoSettingsVisibility } from '../../../functions.web';
 
-import VideoSettingsContent, { type Props as VideoSettingsProps } from './VideoSettingsContent';
+import VideoSettingsContent from './VideoSettingsContent';
 
-
-type Props = VideoSettingsProps & {
-
-   /**
-    * Component children (the Video button).
-    */
-    children: React$Node,
-
-   /**
-    * Flag controlling the visibility of the popup.
-    */
-    isOpen: boolean,
-
-   /**
-    * Callback executed when the popup closes.
-    */
-    onClose: Function,
-
-    /**
-     * The popup placement enum value.
-     */
-     popupPlacement: string
-}
+const useStyles = makeStyles()(() => {
+    return {
+        container: {
+            background: 'none',
+            display: 'inline-block'
+        }
+    };
+});
 
 /**
  * Popup with a preview of all the video devices.
@@ -52,20 +38,25 @@ function VideoSettingsPopup({
     popupPlacement,
     setVideoInputDevice,
     videoDeviceIds
-}: Props) {
+}) {
+    const { classes, cx } = useStyles();
+
     return (
-        <div className = 'video-preview'>
-            <InlineDialog
+        <div className = { cx('video-preview', classes.container) }>
+            <Popover
+                allowClick = { true }
                 content = { <VideoSettingsContent
                     currentCameraDeviceId = { currentCameraDeviceId }
                     setVideoInputDevice = { setVideoInputDevice }
                     toggleVideoSettings = { onClose }
                     videoDeviceIds = { videoDeviceIds } /> }
-                isOpen = { isOpen }
-                onClose = { onClose }
-                placement = { popupPlacement }>
+                headingId = 'video-settings-button'
+                onPopoverClose = { onClose }
+                position = { popupPlacement }
+                trigger = 'click'
+                visible = { isOpen }>
                 { children }
-            </InlineDialog>
+            </Popover>
         </div>
     );
 }
@@ -82,9 +73,9 @@ function mapStateToProps(state) {
 
     return {
         currentCameraDeviceId: getCurrentCameraDeviceId(state),
-        isOpen: getVideoSettingsVisibility(state),
-        popupPlacement: clientWidth <= SMALL_MOBILE_WIDTH ? 'auto' : 'top-start',
-        videoDeviceIds: getVideoDeviceIds(state)
+        isOpen: Boolean(getVideoSettingsVisibility(state)),
+        popupPlacement: clientWidth <= Number(SMALL_MOBILE_WIDTH) ? 'auto' : 'top-end',
+        videoDeviceIds: getVideoDeviceIds(state) ?? []
     };
 }
 

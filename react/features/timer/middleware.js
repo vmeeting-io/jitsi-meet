@@ -1,9 +1,9 @@
 // @flow
 
-import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app';
+import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app/actionTypes';
 
-import { MiddlewareRegistry } from '../base/redux';
-import { registerSound, unregisterSound } from '../base/sounds';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { registerSound, unregisterSound } from '../base/sounds/actions';
 
 import { TIMER_OFF_SOUND_ID } from './constants';
 import { TIMER_OFF_SOUND_FILE } from './sounds';

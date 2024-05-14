@@ -1,22 +1,34 @@
-// @flow
+import React, { Component } from 'react';
+import { View } from 'react-native';
+import { connect } from 'react-redux';
 
-import React from 'react';
+import { IconRaiseHand } from '../../../base/icons/svg';
+import { getParticipantById, hasRaisedHand } from '../../../base/participants/functions';
+import BaseIndicator from '../../../base/react/components/native/BaseIndicator';
 
-import { IconRaisedHand } from '../../../base/icons';
-import { BaseIndicator } from '../../../base/react';
-import { connect } from '../../../base/redux';
-import BaseTheme from '../../../base/ui/components/BaseTheme.native';
-import AbstractRaisedHandIndicator, {
-    type Props,
-    _mapStateToProps
-} from '../AbstractRaisedHandIndicator';
+import styles from './styles';
+
 
 /**
  * Thumbnail badge showing that the participant would like to speak.
  *
  * @augments Component
  */
-class RaisedHandIndicator extends AbstractRaisedHandIndicator<Props> {
+class RaisedHandIndicator extends Component {
+
+    /**
+     * Implements {@code Component#render}.
+     *
+     * @inheritdoc
+     */
+    render() {
+        if (!this.props._raisedHand) {
+            return null;
+        }
+
+        return this._renderIndicator();
+    }
+
     /**
      * Renders the platform specific indicator element.
      *
@@ -24,14 +36,28 @@ class RaisedHandIndicator extends AbstractRaisedHandIndicator<Props> {
      */
     _renderIndicator() {
         return (
-            <BaseIndicator
-                backgroundColor = { BaseTheme.palette.warning02 }
-                highlight = { true }
-                icon = { IconRaisedHand }
-                iconSize = { 16 }
-                iconStyle = {{ color: BaseTheme.palette.uiBackground }} />
+            <View style = { styles.raisedHandIndicator }>
+                <BaseIndicator
+                    icon = { IconRaiseHand }
+                    iconStyle = { styles.raisedHandIcon } />
+            </View>
         );
     }
+}
+
+/**
+ * Maps part of the Redux state to the props of this component.
+ *
+ * @param {Object} state - The Redux state.
+ * @param {IProps} ownProps - The own props of the component.
+ * @returns {Object}
+ */
+function _mapStateToProps(state, ownProps) {
+    const participant = getParticipantById(state, ownProps.participantId);
+
+    return {
+        _raisedHand: hasRaisedHand(participant)
+    };
 }
 
 export default connect(_mapStateToProps)(RaisedHandIndicator);

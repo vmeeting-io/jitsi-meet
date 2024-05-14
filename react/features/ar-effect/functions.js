@@ -2,8 +2,8 @@
 
 import { getAuthUrl } from '../../api/url';
 import { JitsiTrackEvents } from '../base/lib-jitsi-meet';
-import { updateSettings } from '../base/settings';
-import { getLocalVideoTrack } from '../base/tracks';
+import { updateSettings } from '../base/settings/actions';
+import { getLocalVideoTrack } from '../base/tracks/functions';
 
 import { toggleAREffect } from './actions';
 let filterSupport;

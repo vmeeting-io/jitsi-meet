@@ -2,23 +2,25 @@
 
 /* eslint-disable react/jsx-no-bind */
 
-import { withStyles } from '@material-ui/styles';
-import React, { Component } from 'react';
-import { bindActionCreators } from 'redux';
+import React, { useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import {
-    createReactionMenuEvent,
-    createToolbarEvent,
-    sendAnalytics
-} from '../../../analytics';
-import { isMobileBrowser } from '../../../base/environment/utils';
-import { translate } from '../../../base/i18n';
-import { getLocalParticipant, hasRaisedHand, raiseHand } from '../../../base/participants';
-import { connect } from '../../../base/redux';
+import { createReactionMenuEvent, createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { raiseHand } from '../../../base/participants/actions';
+import { getLocalParticipant, hasRaisedHand } from '../../../base/participants/functions';
 import { dockToolbox } from '../../../toolbox/actions.web';
+import { areKeyboardShortcutsEnabled } from '../../../keyboard-shortcuts/functions';
 import { addReactionToBuffer } from '../../actions.any';
 import { toggleReactionsMenuVisibility } from '../../actions.web';
-import { REACTIONS, REACTIONS_MENU_HEIGHT } from '../../constants';
+import {
+    RAISE_HAND_ROW_HEIGHT, REACTIONS,
+    REACTIONS_MENU_HEIGHT_DRAWER,
+    REACTIONS_MENU_HEIGHT_IN_OVERFLOW_MENU
+} from '../../constants';
+import { IReactionsMenuParent } from '../../types';
 
 import ReactionButton from './ReactionButton';
 
@@ -45,30 +47,59 @@ type Props = {
     _raisedHand: boolean,
 
     /**
-     * An object containing the CSS classes.
-     */
-    classes: Object,
-
-    /**
      * The Redux Dispatch function.
      */
     dispatch: Function,
 
     /**
-     * Whether or not it's displayed in the overflow menu.
+     * Indicates the parent of the reactions menu.
      */
-    overflowMenu: boolean,
+    parent: IReactionsMenuParent;
 
     /**
-     * Used for translation.
+     * Whether to show the raised hand button.
      */
-    t: Function
+    showRaisedHand?: boolean;
 };
 
 declare var APP: Object;
 
-const styles = theme => {
+const useStyles = makeStyles()((theme, props) => {
+    const { parent, showRaisedHand } = props;
+    let reactionsMenuHeight = REACTIONS_MENU_HEIGHT_DRAWER;
+
+    if (parent === IReactionsMenuParent.OverflowDrawer || parent === IReactionsMenuParent.OverflowMenu) {
+        if (parent === IReactionsMenuParent.OverflowMenu) {
+            reactionsMenuHeight = REACTIONS_MENU_HEIGHT_IN_OVERFLOW_MENU;
+        }
+        if (!showRaisedHand) {
+            reactionsMenuHeight -= RAISE_HAND_ROW_HEIGHT;
+        }
+    }
+
     return {
+        reactionsMenuInOverflowMenu: {
+            '&.reactions-menu': {
+                '.reactions-row': {
+                    '.toolbox-icon': {
+                        width: '24px',
+                        height: '24px',
+
+                        'span.emoji': {
+                            width: '24px',
+                            height: '24px',
+                            lineHeight: '24px',
+                            fontSize: '16px'
+                        }
+                    }
+                },
+                '.raise-hand-row': {
+                    '.toolbox-icon': {
+                        height: '32px'
+                    }
+                }
+            }
+        },
         overflow: {
             width: 'auto',
             paddingBottom: 'max(env(safe-area-inset-bottom, 0), 16px)',
@@ -77,152 +108,107 @@ const styles = theme => {
             borderRadius: 0,
             position: 'relative',
             boxSizing: 'border-box',
-            height: `${REACTIONS_MENU_HEIGHT}px`
+            height: `${reactionsMenuHeight}px`
         }
     };
+});
+
+const _getReactionButtons = (dispatch, t, _enabledShortcut) => {
+    let modifierKey = 'Alt';
+
+    if (window.navigator?.platform) {
+        if (window.navigator.platform.indexOf('Mac') !== -1) {
+            modifierKey = '⌥';
+        }
+    }
+
+    return Object.keys(REACTIONS).map(key => {
+        /**
+         * Sends reaction message.
+         *
+         * @returns {void}
+         */
+        function doSendReaction() {
+            dispatch(addReactionToBuffer(key));
+            sendAnalytics(createReactionMenuEvent(key));
+        }
+
+        const tooltip = _enabledShortcut
+            ? `${t(`toolbar.${key}`)} (${modifierKey} + ${REACTIONS[key].shortcutChar})`
+            : t(`toolbar.${key}`);
+
+        return (<ReactionButton
+            accessibilityLabel = { t(`toolbar.accessibilityLabel.${key}`) }
+            icon = { REACTIONS[key].emoji }
+            key = { key }
+            // eslint-disable-next-line react/jsx-no-bind
+            onClick = { doSendReaction }
+            toggled = { false }
+            tooltip = { tooltip } />);
+    });
 };
 
-/**
- * Implements the reactions menu.
- *
- * @returns {ReactElement}
- */
-class ReactionsMenu extends Component<Props> {
-    /**
-     * Initializes a new {@code ReactionsMenu} instance.
-     *
-     * @param {Props} props - The read-only React {@code Component} props with
-     * which the new instance is to be initialized.
-     */
-    constructor(props: Props) {
-        super(props);
+const ReactionsMenu = (props) => {
+    const {
+        _dockToolbox,
+        _enabledShortcut,
+        _raisedHand,
+        dispatch,
+        parent,
+        showRaisedHand = false
+    } = props;
+    const isInOverflowMenu
+        = parent === IReactionsMenuParent.OverflowDrawer || parent === IReactionsMenuParent.OverflowMenu;
+    const { classes, cx } = useStyles(props);
+    const { t } = useTranslation();
 
-        this._onToolbarToggleRaiseHand = this._onToolbarToggleRaiseHand.bind(this);
-        this._getReactionButtons = this._getReactionButtons.bind(this);
-    }
+    useEffect(() => {
+        _dockToolbox(true);
 
-    _onToolbarToggleRaiseHand: () => void;
+        return () => {
+            _dockToolbox(false);
+        };
+    }, []);
 
-    _getReactionButtons: () => Array<React$Element<*>>;
+    const _doToggleRaiseHand = useCallback(() => {
+        dispatch(raiseHand(!_raisedHand));
+    }, [ _raisedHand ]);
 
-    /**
-     * Implements React Component's componentDidMount.
-     *
-     * @inheritdoc
-     */
-    componentDidMount() {
-        this.props._dockToolbox(true);
-    }
-
-    /**
-     * Implements React Component's componentWillUnmount.
-     *
-     * @inheritdoc
-     */
-    componentWillUnmount() {
-        this.props._dockToolbox(false);
-    }
-
-    /**
-     * Creates an analytics toolbar event and dispatches an action for toggling
-     * raise hand.
-     *
-     * @returns {void}
-     */
-    _onToolbarToggleRaiseHand() {
-        const { dispatch, _raisedHand } = this.props;
-
+    const _onToolbarToggleRaiseHand = useCallback(() => {
         sendAnalytics(createToolbarEvent(
             'raise.hand',
             { enable: !_raisedHand }));
-        this._doToggleRaiseHand();
+        _doToggleRaiseHand();
         dispatch(toggleReactionsMenuVisibility());
-    }
+    }, [ _raisedHand ]);
 
-    /**
-     * Dispatches an action to toggle the local participant's raised hand state.
-     *
-     * @private
-     * @returns {void}
-     */
-    _doToggleRaiseHand() {
-        const { _raisedHand } = this.props;
+    const buttons = _getReactionButtons(dispatch, t, _enabledShortcut);
 
-        this.props.dispatch(raiseHand(!_raisedHand));
-    }
-
-    /**
-     * Sends reaction message.
-     *
-     * @returns {void}
-     */
-    doSendReaction(key) {
-        const { dispatch } = this.props;
-
-        return () => {
-            dispatch(addReactionToBuffer(key));
-            dispatch(toggleReactionsMenuVisibility());
-            sendAnalytics(createReactionMenuEvent(key));
-        }
-    }
-
-    /**
-     * Returns the emoji reaction buttons.
-     *
-     * @returns {Array}
-     */
-    _getReactionButtons() {
-        const { t, dispatch } = this.props;
-        let modifierKey = 'Alt';
-
-        if (window.navigator?.platform) {
-            if (window.navigator.platform.indexOf('Mac') !== -1) {
-                modifierKey = '⌥';
-            }
-        }
-
-        return Object.keys(REACTIONS).map(key => {
-            return (<ReactionButton
-                accessibilityLabel = { t(`toolbar.accessibilityLabel.${key}`) }
-                icon = { REACTIONS[key].emoji }
-                key = { key }
-                onClick = { this.doSendReaction(key) }
-                toggled = { false }
-                tooltip = { `${t(`toolbar.${key}`)} (${modifierKey} + ${REACTIONS[key].shortcutChar})` } />);
-        });
-    }
-
-    /**
-     * Implements React's {@link Component#render}.
-     *
-     * @inheritdoc
-     */
-    render() {
-        const { _raisedHand, t, overflowMenu, _isMobile, classes } = this.props;
-
-        return (
-            <div className = { `reactions-menu ${overflowMenu ? `overflow ${classes.overflow}` : ''}` }>
-                <div className = 'reactions-row'>
-                    { this._getReactionButtons() }
-                </div>
-                {_isMobile && (
-                    <div className = 'raise-hand-row'>
-                        <ReactionButton
-                            accessibilityLabel = { t('toolbar.accessibilityLabel.raiseHand') }
-                            icon = '✋'
-                            key = 'raisehand'
-                            label = {
-                                `${t(`toolbar.${_raisedHand ? 'lowerYourHand' : 'raiseYourHand'}`)}
-                                ${overflowMenu ? '' : ' (R)'}`
-                            }
-                            onClick = { this._onToolbarToggleRaiseHand }
-                            toggled = { true } />
-                    </div>
-                )}
+    return (
+        <div
+            className = { cx('reactions-menu',
+                parent === IReactionsMenuParent.OverflowMenu && classes.reactionsMenuInOverflowMenu,
+                isInOverflowMenu && `overflow ${classes.overflow}`) }>
+            <div className = 'reactions-row'>
+                { buttons }
             </div>
-        );
-    }
-}
+            {showRaisedHand && (
+                <div className = 'raise-hand-row'>
+                    <ReactionButton
+                        accessibilityLabel = { t('toolbar.accessibilityLabel.raiseHand') }
+                        icon = '✋'
+                        key = 'raisehand'
+                        label = {
+                            `${t(`toolbar.${_raisedHand ? 'lowerYourHand' : 'raiseYourHand'}`)}
+                                ${isInOverflowMenu ? '' : ' (R)'}`
+                        }
+                        onClick = { _onToolbarToggleRaiseHand }
+                        toggled = { true } />
+                </div>
+            )}
+        </div>
+    );
+};
 
 /**
  * Function that maps parts of Redux state tree into component props.
@@ -234,8 +220,8 @@ function mapStateToProps(state) {
     const localParticipant = getLocalParticipant(state);
 
     return {
-        _localParticipantID: localParticipant.id,
-        _isMobile: isMobileBrowser(),
+        _enabledShortcut: areKeyboardShortcutsEnabled(state),
+        _localParticipantID: localParticipant?.id,
         _raisedHand: hasRaisedHand(localParticipant)
     };
 }
@@ -249,14 +235,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         dispatch,
-        ...bindActionCreators(
-        {
-            _dockToolbox: dockToolbox
-        }, dispatch)
+        _dockToolbox: (dock) => dispatch(dockToolbox(dock))
     };
 }
 
-export default translate(connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(withStyles(styles)(ReactionsMenu)));
+export default connect(mapStateToProps, mapDispatchToProps)(ReactionsMenu);

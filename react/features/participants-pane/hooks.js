@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { approveKnockingParticipant, rejectKnockingParticipant } from '../lobby/actions';
+import { handleLobbyChatInitialized } from '../chat/actions.web';
+import { approveKnockingParticipant, rejectKnockingParticipant } from '../lobby/actions.web';
 
 /**
  * Hook used to create admit/reject lobby actions.
@@ -16,14 +17,18 @@ export function useLobbyActions(participant, closeDrawer) {
     return [
         useCallback(e => {
             e.stopPropagation();
-            dispatch(approveKnockingParticipant(participant && participant.participantID));
-            closeDrawer && closeDrawer();
-        }, [ dispatch, closeDrawer ]),
+            dispatch(approveKnockingParticipant(participant?.participantID ?? ''));
+            closeDrawer?.();
+        }, [ dispatch, closeDrawer, participant?.participantID ]),
 
         useCallback(() => {
-            dispatch(rejectKnockingParticipant(participant && participant.participantID));
-            closeDrawer && closeDrawer();
-        }, [ dispatch, closeDrawer ])
+            dispatch(rejectKnockingParticipant(participant?.participantID ?? ''));
+            closeDrawer?.();
+        }, [ dispatch, closeDrawer, participant?.participantID ]),
+
+        useCallback(() => {
+            dispatch(handleLobbyChatInitialized(participant?.participantID ?? ''));
+        }, [ dispatch, participant?.participantID ])
     ];
 }
 
@@ -36,7 +41,7 @@ export function useParticipantDrawer() {
     const [ drawerParticipant, openDrawerForParticipant ] = useState(null);
     const closeDrawer = useCallback(() => {
         openDrawerForParticipant(null);
-    });
+    }, []);
 
     return [
         drawerParticipant,

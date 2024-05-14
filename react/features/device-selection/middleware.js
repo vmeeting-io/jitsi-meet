@@ -1,7 +1,7 @@
 // @flow
 
-import { UPDATE_DEVICE_LIST } from '../base/devices';
-import { MiddlewareRegistry } from '../base/redux';
+import { UPDATE_DEVICE_LIST } from '../base/devices/actionTypes';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 
 declare var APP: Object;
 

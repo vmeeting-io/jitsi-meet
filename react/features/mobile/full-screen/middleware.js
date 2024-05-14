@@ -1,16 +1,12 @@
-// @flow
+import ImmersiveMode from 'react-native-immersive-mode';
 
-import { Immersive } from 'react-native-immersive';
+import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../../base/app/actionTypes';
+import MiddlewareRegistry from '../../base/redux/MiddlewareRegistry';
+import StateListenerRegistry from '../../base/redux/StateListenerRegistry';
 
-import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../../base/app';
-import { getCurrentConference } from '../../base/conference';
-import { isAnyDialogOpen } from '../../base/dialog/functions';
-import { FULLSCREEN_ENABLED, getFeatureFlag } from '../../base/flags';
-import { Platform } from '../../base/react';
-import { MiddlewareRegistry, StateListenerRegistry } from '../../base/redux';
-
-import { _SET_IMMERSIVE_LISTENER } from './actionTypes';
-import { _setImmersiveListener as _setImmersiveListenerA } from './actions';
+import { _setImmersiveSubscription } from './actions';
+import { shouldUseFullScreen } from './functions';
+import logger from './logger';
 
 /**
  * Middleware that captures conference actions and activates or deactivates the
@@ -25,20 +21,14 @@ import { _setImmersiveListener as _setImmersiveListenerA } from './actions';
  */
 MiddlewareRegistry.register(store => next => action => {
     switch (action.type) {
-    case _SET_IMMERSIVE_LISTENER:
-        return _setImmersiveListenerF(store, next, action);
-
     case APP_WILL_MOUNT: {
-        const result = next(action);
+        _setImmersiveListener(store, _onImmersiveChange.bind(undefined, store));
 
-        store.dispatch(
-            _setImmersiveListenerA(_onImmersiveChange.bind(undefined, store)));
-
-        return result;
+        break;
     }
 
     case APP_WILL_UNMOUNT:
-        store.dispatch(_setImmersiveListenerA(undefined));
+        _setImmersiveListener(store, undefined);
         break;
 
     }
@@ -47,14 +37,7 @@ MiddlewareRegistry.register(store => next => action => {
 });
 
 StateListenerRegistry.register(
-    /* selector */ state => {
-        const { enabled: audioOnly } = state['features/base/audio-only'];
-        const conference = getCurrentConference(state);
-        const dialogOpen = isAnyDialogOpen(state);
-        const fullscreenEnabled = getFeatureFlag(state, FULLSCREEN_ENABLED, true);
-
-        return conference ? !audioOnly && !dialogOpen && fullscreenEnabled : false;
-    },
+    /* selector */ shouldUseFullScreen,
     /* listener */ fullScreen => _setFullScreen(fullScreen)
 );
 
@@ -72,13 +55,7 @@ function _onImmersiveChange({ getState }) {
     const { appState } = state['features/background'];
 
     if (appState === 'active') {
-        const { enabled: audioOnly } = state['features/base/audio-only'];
-        const conference = getCurrentConference(state);
-        const dialogOpen = isAnyDialogOpen(state);
-        const fullscreenEnabled = getFeatureFlag(state, FULLSCREEN_ENABLED, true);
-        const fullScreen = conference ? !audioOnly && !dialogOpen && fullscreenEnabled : false;
-
-        _setFullScreen(fullScreen);
+        _setFullScreen(shouldUseFullScreen(state));
     }
 }
 
@@ -91,12 +68,10 @@ function _onImmersiveChange({ getState }) {
  * @private
  * @returns {void}
  */
-function _setFullScreen(fullScreen: boolean) {
-    // XXX The React Native module Immersive is only implemented on Android and
-    // throws on other platforms.
-    if (Platform.OS === 'android') {
-        fullScreen ? Immersive.on() : Immersive.off();
-    }
+function _setFullScreen(fullScreen) {
+    logger.info(`Setting full-screen mode: ${fullScreen}`);
+    ImmersiveMode.fullLayout(fullScreen);
+    ImmersiveMode.setBarMode(fullScreen ? 'Full' : 'Normal');
 }
 
 /**
@@ -106,29 +81,14 @@ function _setFullScreen(fullScreen: boolean) {
  *
  * @param {Store} store - The redux store in which the specified action is being
  * dispatched.
- * @param {Dispatch} next - The redux dispatch function to dispatch the
- * specified action to the specified store.
- * @param {Action} action - The redux action {@code _SET_IMMERSIVE_LISTENER}
- * which is being dispatched in the specified store.
+ * @param {Function} listener - Listener for immersive state.
  * @private
  * @returns {Object} The value returned by {@code next(action)}.
  */
-function _setImmersiveListenerF({ getState }, next, action) {
-    // XXX The React Native module Immersive is only implemented on Android and
-    // throws on other platforms.
-    if (Platform.OS === 'android') {
-        // Remove the old Immersive listener and add the new one.
-        const { listener: oldListener } = getState()['features/full-screen'];
-        const result = next(action);
-        const { listener: newListener } = getState()['features/full-screen'];
+function _setImmersiveListener({ dispatch, getState }, listener) {
+    const { subscription } = getState()['features/full-screen'];
 
-        if (oldListener !== newListener) {
-            oldListener && Immersive.removeImmersiveListener(oldListener);
-            newListener && Immersive.addImmersiveListener(newListener);
-        }
+    subscription?.remove();
 
-        return result;
-    }
-
-    return next(action);
+    dispatch(_setImmersiveSubscription(listener ? ImmersiveMode.addEventListener(listener) : undefined));
 }

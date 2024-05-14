@@ -1,7 +1,3 @@
-// @flow
-
-import clipboardCopy from 'clipboard-copy';
-
 /**
  * A helper function that behaves similar to Object.assign, but only reassigns a
  * property in target if it's defined in source.
@@ -26,22 +22,6 @@ export function assignIfDefined(target: Object, source: Object) {
     return to;
 }
 
-/**
- * Tries to copy a given text to the clipboard.
- * Returns true if the action succeeds.
- *
- * @param {string} textToCopy - Text to be copied.
- * @returns {Promise<boolean>}
- */
-export async function copyText(textToCopy: string) {
-    try {
-        await clipboardCopy(textToCopy);
-
-        return true;
-    } catch (e) {
-        return false;
-    }
-}
 
 /**
  * Creates a deferred object.
@@ -87,7 +67,7 @@ export function getBaseUrl(w: Object = window) {
     const doc = w.document;
     const base = doc.querySelector('base');
 
-    if (base && base.href) {
+    if (base?.href) {
         return base.href;
     }
 
@@ -104,44 +84,44 @@ export function getBaseUrl(w: Object = window) {
  * 
  * This method may throw an error while fetching data from a cross-origin site; luckily all our files uploads are contained within the same site
  */
- export function getFileSize(url)
- {
-    let fileSize = '';
-    let http = new XMLHttpRequest();
-    http.open('HEAD', url, false); // false = Synchronous
+export function getFileSize(url)
+{
+   let fileSize = '';
+   let http = new XMLHttpRequest();
+   http.open('HEAD', url, false); // false = Synchronous
 
-    http.send(null); // it will stop here until this http request is complete
- 
-    if (http.status === 200) {
-        fileSize = http.getResponseHeader("Content-Length");
-    }
- 
-    return fileSize;
+   http.send(null); // it will stop here until this http request is complete
+
+   if (http.status === 200) {
+       fileSize = http.getResponseHeader("Content-Length");
+   }
+
+   return fileSize;
 }
 
 /**
- * Given the size of a file (in units bytes) converts appropriately into KB or MB
- * 
- * @param {number} fsize 
- * @returns {string}
- */
+* Given the size of a file (in units bytes) converts appropriately into KB or MB
+* 
+* @param {number} fsize 
+* @returns {string}
+*/
 export function processFileSize(fsize) 
 {
-    const oneMB = 1024 * 1024; // units in bytes
-    const oneKB = 1024;
-    if(fsize < oneMB) {
-        const sizeinKB = parseFloat(fsize / oneKB).toFixed(2);
-        return `${sizeinKB} KB`;
-    } else {
-        const sizeinMB = parseFloat(fsize / oneMB).toFixed(2);
-        return `${sizeinMB} MB`;
-    }
+   const oneMB = 1024 * 1024; // units in bytes
+   const oneKB = 1024;
+   if(fsize < oneMB) {
+       const sizeinKB = parseFloat(fsize / oneKB).toFixed(2);
+       return `${sizeinKB} KB`;
+   } else {
+       const sizeinMB = parseFloat(fsize / oneMB).toFixed(2);
+       return `${sizeinMB} MB`;
+   }
 }
 
 export function truncateDateTimeStamp(filename) {
-    const x = filename.lastIndexOf('_')
-    const y = filename.lastIndexOf('.')
-    return filename.substring(0,x) + filename.substring(y,filename.length);
+   const x = filename.lastIndexOf('_')
+   const y = filename.lastIndexOf('.')
+   return filename.substring(0,x) + filename.substring(y,filename.length);
 }
 
 /**
@@ -172,7 +152,7 @@ export function getJitsiMeetGlobalNS() {
  */
 export function reportError(e: Object, msg: string = '') {
     console.error(msg, e);
-    window.onerror && window.onerror(msg, null, null, null, e);
+    window.onerror?.(msg, undefined, undefined, undefined, e);
 }
 
 /**
@@ -213,7 +193,7 @@ export function setColorAlpha(color: string, opacity: number) {
 /**
  * Gets the hexa rgb values for a shorthand css color.
  *
- * @param {string} color -
+ * @param {string} color - The shorthand css color.
  * @returns {Array<number>} - Array containing parsed r, g, b values of the color.
  */
 function parseShorthandColor(color) {

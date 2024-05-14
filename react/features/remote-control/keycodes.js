@@ -1,3 +1,5 @@
+import React from 'react';
+
 /**
  * Enumerates the supported keys.
  * NOTE: The maps represents physical keys on the keyboard, not chars.
@@ -65,10 +67,11 @@ export const KEYS = {
     BACKSLASH: '\\',
     MINUS: '-',
     EQUAL: '=',
-    SLASH: '/'
+    SLASH: '/',
+    ASTERISK: '*',
+    PLUS: '+'
 };
 
-/* eslint-disable max-len */
 /**
  * Mapping between the key codes and keys defined in KEYS.
  * The mappings are based on
@@ -112,6 +115,11 @@ const keyCodeToKey = {
     103: KEYS.NUMPAD_7,
     104: KEYS.NUMPAD_8,
     105: KEYS.NUMPAD_9,
+    106: KEYS.ASTERISK,
+    107: KEYS.PLUS,
+    109: KEYS.MINUS,
+    110: KEYS.PERIOD,
+    111: KEYS.SLASH,
     112: KEYS.F1,
     113: KEYS.F2,
     114: KEYS.F3,
@@ -145,7 +153,7 @@ const keyCodeToKey = {
  * Generate codes for digit keys (0-9).
  */
 for (let i = 0; i < 10; i++) {
-    keyCodeToKey[i + 48] = `${i}`;
+    keyCodeToKey[(i + 48)] = `${i}`;
 }
 
 /**

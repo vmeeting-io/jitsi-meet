@@ -1,38 +1,17 @@
-// @flow
-
-import type { Dispatch } from 'redux';
-
-import { createToolbarEvent, sendAnalytics } from '../../../analytics';
-import {
-    getFeatureFlag,
-    LOBBY_MODE_ENABLED,
-    MEETING_PASSWORD_ENABLED,
-    SECURITY_OPTIONS_ENABLED
-} from '../../../base/flags';
-import { IconSecurityOff, IconSecurityOn } from '../../../base/icons';
-import { isLocalParticipantModerator } from '../../../base/participants';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { isInBreakoutRoom } from '../../../breakout-rooms';
-
-export type Props = AbstractButtonProps & {
-
-    /**
-     * Whether the shared document is being edited or not.
-     */
-    _locked: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Dispatch<any>
-};
+import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { getSecurityUiConfig } from '../../../base/config/functions.any';
+import { LOBBY_MODE_ENABLED, MEETING_PASSWORD_ENABLED, SECURITY_OPTIONS_ENABLED } from '../../../base/flags/constants';
+import { getFeatureFlag } from '../../../base/flags/functions';
+import { IconSecurityOff, IconSecurityOn } from '../../../base/icons/svg';
+import { isLocalParticipantModerator } from '../../../base/participants/functions';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 
 
 /**
  * Implements an {@link AbstractButton} to open the security dialog/screen.
  */
-export default class AbstractSecurityDialogButton<P: Props, S:*>
-    extends AbstractButton<P, S> {
+export default class AbstractSecurityDialogButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.security';
     icon = IconSecurityOff;
     label = 'toolbar.security';
@@ -57,13 +36,7 @@ export default class AbstractSecurityDialogButton<P: Props, S:*>
      * @returns {void}
      */
     _handleClick() {
-        const { _locked, handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
+        const { _locked } = this.props;
 
         sendAnalytics(createToolbarEvent('toggle.security', { enable: !_locked }));
         this._handleClickSecurityButton();
@@ -84,22 +57,21 @@ export default class AbstractSecurityDialogButton<P: Props, S:*>
  * Maps part of the redux state to the component's props.
  *
  * @param {Object} state - The redux store/state.
- * @returns {Props}
+ * @returns {IProps}
  */
-export function _mapStateToProps(state: Object) {
+export function _mapStateToProps(state) {
     const { conference } = state['features/base/conference'];
-    const { hideLobbyButton, autoLobbyEnabled } = state['features/base/config'];
+    const { hideLobbyButton } = getSecurityUiConfig(state);
     const { locked } = state['features/base/conference'];
     const { lobbyEnabled } = state['features/lobby'];
-    const lobbySupported = conference && conference.isLobbySupported();
+    const lobbySupported = conference?.isLobbySupported();
     const lobby = lobbySupported && isLocalParticipantModerator(state) && !hideLobbyButton;
-    const enabledFlag = getFeatureFlag(state, SECURITY_OPTIONS_ENABLED, !Boolean(autoLobbyEnabled));
-    const enabledLobbyModeFlag = getFeatureFlag(state, LOBBY_MODE_ENABLED, !Boolean(autoLobbyEnabled)) && lobby;
-    const enabledMeetingPassFlag = getFeatureFlag(state, MEETING_PASSWORD_ENABLED, !Boolean(autoLobbyEnabled));
-    const isBreakoutRoom = isInBreakoutRoom(state);
+    const enabledFlag = getFeatureFlag(state, SECURITY_OPTIONS_ENABLED, true);
+    const enabledLobbyModeFlag = getFeatureFlag(state, LOBBY_MODE_ENABLED, true) && lobby;
+    const enabledMeetingPassFlag = getFeatureFlag(state, MEETING_PASSWORD_ENABLED, true);
 
     return {
-        _locked: locked || lobbyEnabled,
-        visible: !isBreakoutRoom && (enabledFlag || (enabledLobbyModeFlag || enabledMeetingPassFlag))
+        _locked: Boolean(locked || lobbyEnabled),
+        visible: enabledFlag && (enabledLobbyModeFlag || enabledMeetingPassFlag)
     };
 }

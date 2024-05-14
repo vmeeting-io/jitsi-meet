@@ -1,56 +1,26 @@
-// @flow
-
 import React, { Component } from 'react';
-import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
-import {
-    createCalendarClickedEvent,
-    sendAnalytics
-} from '../../analytics';
-import { translate } from '../../base/i18n';
-import { Icon, IconAdd } from '../../base/icons';
-import { connect } from '../../base/redux';
-import { Tooltip } from '../../base/tooltip';
-import { updateCalendarEvent } from '../actions';
-
-/**
- * The type of the React {@code Component} props of {@link AddMeetingUrlButton}.
- */
-type Props = {
-
-    /**
-     * The calendar ID associated with the calendar event.
-     */
-    calendarId: string,
-
-    /**
-     * Invoked to add a meeting URL to a calendar event.
-     */
-    dispatch: Dispatch<any>,
-
-    /**
-     * The ID of the calendar event that will have a meeting URL added on click.
-     */
-    eventId: string,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
+import { createCalendarClickedEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { translate } from '../../base/i18n/functions';
+import Icon from '../../base/icons/components/Icon';
+import { IconPlus } from '../../base/icons/svg';
+import Tooltip from '../../base/tooltip/components/Tooltip';
+import { updateCalendarEvent } from '../actions.web';
 
 /**
  * A React Component for adding a meeting URL to an existing calendar event.
  *
  * @augments Component
  */
-class AddMeetingUrlButton extends Component<Props> {
+class AddMeetingUrlButton extends Component {
     /**
      * Initializes a new {@code AddMeetingUrlButton} instance.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // Bind event handler so it is only bound once for every instance.
@@ -71,13 +41,11 @@ class AddMeetingUrlButton extends Component<Props> {
                     onClick = { this._onClick }
                     onKeyPress = { this._onKeyPress }
                     role = 'button'>
-                    <Icon src = { IconAdd } />
+                    <Icon src = { IconPlus } />
                 </div>
             </Tooltip>
         );
     }
-
-    _onClick: () => void;
 
     /**
      * Dispatches an action to adding a meeting URL to a calendar event.
@@ -92,8 +60,6 @@ class AddMeetingUrlButton extends Component<Props> {
         dispatch(updateCalendarEvent(eventId, calendarId));
     }
 
-    _onKeyPress: (Object) => void;
-
     /**
      * KeyPress handler for accessibility.
      *
@@ -101,7 +67,7 @@ class AddMeetingUrlButton extends Component<Props> {
      *
      * @returns {void}
      */
-    _onKeyPress(e) {
+    _onKeyPress(e: React.KeyboardEvent) {
         if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             this._onClick();

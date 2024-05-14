@@ -1,6 +1,6 @@
 /* global _paq */
 
-import { getJitsiMeetGlobalNS } from '../../base/util';
+import { getJitsiMeetGlobalNS } from '../../base/util/helpers';
 
 import AbstractHandler from './AbstractHandler';
 
@@ -8,11 +8,12 @@ import AbstractHandler from './AbstractHandler';
  * Analytics handler for Matomo.
  */
 export default class MatomoHandler extends AbstractHandler {
+    _userProperties: Object;
 
     /**
      * Creates new instance of the Matomo handler.
      *
-     * @param {Object} options -
+     * @param {Object} options - The matomo options.
      * @param {string} options.matomoEndpoint - The Matomo endpoint.
      * @param {string} options.matomoSiteID   - The site ID.
      */
@@ -38,7 +39,7 @@ export default class MatomoHandler extends AbstractHandler {
     /**
      * Initializes the _paq object.
      *
-     * @param {Object} options -
+     * @param {Object} options - The matomo options.
      * @param {string} options.matomoEndpoint - The Matomo endpoint.
      * @param {string} options.matomoSiteID   - The site ID.
      * @returns {void}
@@ -70,7 +71,7 @@ export default class MatomoHandler extends AbstractHandler {
             g.async = true;
             g.defer = true;
             g.src = `${u}matomo.js`;
-            s.parentNode.insertBefore(g, s);
+            s.parentNode?.insertBefore(g, s);
         })();
     }
 
@@ -85,10 +86,10 @@ export default class MatomoHandler extends AbstractHandler {
      * @private
      */
     _extractValue(event) {
-        const value = event && event.attributes && event.attributes.value;
+        const value = event?.attributes?.value;
 
         // Try to extract an integer from the 'value' attribute.
-        return Math.round(parseFloat(value));
+        return Math.round(parseFloat(value ?? ''));
     }
 
     /**

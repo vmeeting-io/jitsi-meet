@@ -1,7 +1,7 @@
 // @flow
 
 /**
- * The size of the chat.
+ * The size of the chat. Equal to $sidebarWidth SCSS variable.
  */
 export const CHAT_SIZE = 315;
 
@@ -37,3 +37,19 @@ export const BUTTON_MODES = {
     CONTAINED: 'contained',
     TEXT: 'text'
 };
+
+/**
+ * Lobby message type.
+ */
+export const LOBBY_CHAT_MESSAGE = 'LOBBY_CHAT_MESSAGE';
+
+export const CHAT_TABS = {
+    POLLS: 'polls-tab',
+    CHAT: 'chat-tab',
+    STT: 'stt-tab'
+};
+
+/**
+ * Formatter string to display the message timestamp.
+ */
+export const TIMESTAMP_FORMAT = 'H:mm';

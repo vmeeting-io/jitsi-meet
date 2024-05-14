@@ -1,43 +1,15 @@
-// @flow
-
-import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 
-import { QuickActionButton } from '../../../base/components';
-import { Icon, IconHorizontalPoints } from '../../../base/icons';
+import { IconDotsHorizontal } from '../../../base/icons/svg';
+import Button from '../../../base/ui/components/web/Button';
 
-type Props = {
-
-    /**
-     * Label used for accessibility.
-     */
-    accessibilityLabel: string,
-
-    /**
-     * Click handler function.
-     */
-    onClick: Function
-}
-
-const useStyles = makeStyles(() => {
-    return {
-        button: {
-            padding: '6px'
-        }
-    };
-});
-
-const ParticipantActionEllipsis = ({ accessibilityLabel, onClick }: Props) => {
-    const styles = useStyles();
-
-    return (
-        <QuickActionButton
-            accessibilityLabel = { accessibilityLabel }
-            className = { styles.button }
-            onClick = { onClick }>
-            <Icon src = { IconHorizontalPoints } />
-        </QuickActionButton>
-    );
-};
+const ParticipantActionEllipsis = ({ accessibilityLabel, onClick, participantID }) => (
+    <Button
+        accessibilityLabel = { accessibilityLabel }
+        icon = { IconDotsHorizontal }
+        onClick = { onClick }
+        size = 'small'
+        testId = { participantID ? `participant-more-options-${participantID}` : undefined } />
+);
 
 export default ParticipantActionEllipsis;

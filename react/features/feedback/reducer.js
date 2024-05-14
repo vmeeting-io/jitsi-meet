@@ -1,6 +1,4 @@
-import {
-    ReducerRegistry
-} from '../base/redux';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     CANCEL_FEEDBACK,

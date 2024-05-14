@@ -1,31 +1,8 @@
-// @flow
-
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { translate } from '../../base/i18n';
-import { connect } from '../../base/redux';
-import { getDialInfoPageURL, shouldDisplayDialIn } from '../../invite';
-
-/**
- * The type of the React {@code Component} props of {@link DialInLink}.
- */
-type Props = {
-
-    /**
-     * The redux state representing the dial-in numbers feature.
-     */
-    _dialIn: Object,
-
-    /**
-     * The url of the page containing the dial-in numbers list.
-     */
-    _dialInfoPageUrl: string,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
+import { translate } from '../../base/i18n/functions';
+import { getDialInfoPageURL, shouldDisplayDialIn } from '../../invite/functions';
 
 /**
  * React {@code Component} responsible for displaying a telephone number and
@@ -33,7 +10,7 @@ type Props = {
  *
  * @augments Component
  */
-class DialInLink extends Component<Props> {
+class DialInLink extends Component {
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -66,7 +43,7 @@ class DialInLink extends Component<Props> {
  *
  * @param {Object} state - The Redux state.
  * @private
- * @returns {Props}
+ * @returns {IProps}
  */
 function _mapStateToProps(state) {
     return {

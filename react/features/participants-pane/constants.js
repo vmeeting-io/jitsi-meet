@@ -2,14 +2,13 @@
 
 import React from 'react';
 
+import Icon from '../base/icons/components/Icon';
 import {
-    Icon,
-    IconCameraEmpty,
-    IconCameraEmptyDisabled,
-    IconMicrophoneEmpty,
-    IconMicrophoneEmptySlash,
-    IconShareDesktop
-} from '../base/icons';
+    IconMic,
+    IconMicSlash,
+    IconVideo,
+    IconVideoOff
+} from '../base/icons/svg';
 
 /**
  * Reducer key for the feature.
@@ -50,14 +49,12 @@ export type QuickActionButtonType = 'Mute' | 'AskToUnmute' | 'None';
 /**
  * Enum of possible participant mute button states.
  */
-export const QUICK_ACTION_BUTTON: {
-    MUTE: QuickActionButtonType,
-    ASK_TO_UNMUTE: QuickActionButtonType,
-    NONE: QuickActionButtonType
-} = {
+export const QUICK_ACTION_BUTTON = {
+    ALLOW_VIDEO: 'AllowVideo',
     MUTE: 'Mute',
     ASK_TO_UNMUTE: 'AskToUnmute',
-    NONE: 'None'
+    NONE: 'None',
+    STOP_VIDEO: 'StopVideo'
 };
 
 /**
@@ -68,23 +65,23 @@ export const AudioStateIcons: {[MediaState]: React$Element<any> | null} = {
         <Icon
             className = 'jitsi-icon-dominant-speaker'
             size = { 16 }
-            src = { IconMicrophoneEmpty } />
+            src = { IconMic } />
     ),
     [MEDIA_STATE.FORCE_MUTED]: (
         <Icon
             color = '#E04757'
             size = { 16 }
-            src = { IconMicrophoneEmptySlash } />
+            src = { IconMicSlash } />
     ),
     [MEDIA_STATE.MUTED]: (
         <Icon
             size = { 16 }
-            src = { IconMicrophoneEmptySlash } />
+            src = { IconMicSlash } />
     ),
     [MEDIA_STATE.UNMUTED]: (
         <Icon
             size = { 16 }
-            src = { IconMicrophoneEmpty } />
+            src = { IconMic } />
     ),
     [MEDIA_STATE.NONE]: null
 };
@@ -93,45 +90,32 @@ export const AudioStateIcons: {[MediaState]: React$Element<any> | null} = {
  * Icon mapping for possible participant video states.
  */
 export const VideoStateIcons = {
+    [MEDIA_STATE.DOMINANT_SPEAKER]: null,
     [MEDIA_STATE.FORCE_MUTED]: (
         <Icon
             color = '#E04757'
             id = 'videoMuted'
             size = { 16 }
-            src = { IconCameraEmptyDisabled } />
+            src = { IconVideoOff } />
     ),
     [MEDIA_STATE.MUTED]: (
         <Icon
             id = 'videoMuted'
             size = { 16 }
-            src = { IconCameraEmptyDisabled } />
+            src = { IconVideoOff } />
     ),
     [MEDIA_STATE.UNMUTED]: (
         <Icon
             size = { 16 }
-            src = { IconCameraEmpty } />
+            src = { IconVideo } />
     ),
     [MEDIA_STATE.NONE]: null
 };
 
 /**
- * Icon mapping for possible participant video states.
+ * Mobile web context menu avatar size.
  */
-export const PresenterStateIcons = {
-    [MEDIA_STATE.FORCE_MUTED]: (
-        <Icon
-            color = '#E04757'
-            id = 'presenterMuted'
-            size = { 16 }
-            src = { IconShareDesktop } />
-    ),
-    [MEDIA_STATE.UNMUTED]: (
-        <Icon
-            size = { 16 }
-            src = { IconShareDesktop } />
-    ),
-    [MEDIA_STATE.NONE]: null
-};
+export const AVATAR_SIZE = 20;
 
 export const COMMAND_TIMER_END_TIME = 'timer-end-time';
 export const COMMAND_CLEAR_RAISED_HANDS = 'clear-raised-hands';

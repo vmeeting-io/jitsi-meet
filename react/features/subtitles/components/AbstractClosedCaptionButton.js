@@ -1,35 +1,17 @@
 // @flow
 
-import { createToolbarEvent, sendAnalytics } from '../../analytics';
-import { isLocalParticipantModerator } from '../../base/participants';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { createToolbarEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { MEET_FEATURES } from '../../base/jwt/constants';
+import { isLocalParticipantModerator } from '../../base/participants/functions';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
 import { maybeShowPremiumFeatureDialog } from '../../jaas/actions';
-import { FEATURES } from '../../jaas/constants';
-import { toggleRequestingSubtitles } from '../actions';
-
-export type AbstractProps = AbstractButtonProps & {
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function,
-
-    /**
-     * Invoked to Dispatch an Action to the redux store.
-     */
-    dispatch: Function,
-
-    /**
-     * Whether the local participant is currently requesting subtitles.
-     */
-    _requestingSubtitles: Boolean
-};
+import { toggleRequestingSubtitles } from '../actions.any';
 
 /**
  * The button component which starts/stops the transcription.
  */
-export class AbstractClosedCaptionButton
-    extends AbstractButton<AbstractProps, *> {
+export class AbstractClosedCaptionButton extends AbstractButton {
     /**
      * Handles clicking / pressing the button.
      *
@@ -52,7 +34,7 @@ export class AbstractClosedCaptionButton
             }));
 
 
-        const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(FEATURES.RECORDING));
+        const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(MEET_FEATURES.RECORDING));
 
         if (!dialogShown) {
             dispatch(toggleRequestingSubtitles());

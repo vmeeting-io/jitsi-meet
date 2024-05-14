@@ -8,9 +8,9 @@ import {
 } from 'react-native';
 import { withSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
 import { getLocalParticipant, getParticipantCountWithFake } from '../../../base/participants';
-import { connect } from '../../../base/redux';
 import { shouldHideSelfView } from '../../../base/settings/functions.any';
 import { setVisibleRemoteParticipants } from '../../actions.web';
 

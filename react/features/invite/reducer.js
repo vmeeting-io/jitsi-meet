@@ -1,6 +1,6 @@
 // @flow
 
-import { ReducerRegistry } from '../base/redux';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     ADD_PENDING_INVITE_REQUEST,
@@ -59,6 +59,7 @@ ReducerRegistry.register('features/invite', (state = DEFAULT_STATE, action) => {
             return {
                 ...state,
                 conferenceID: action.conferenceID,
+                error: undefined,
                 numbers: action.dialInNumbers,
                 sipUri: action.sipUri,
                 numbersEnabled: true,
@@ -74,6 +75,7 @@ ReducerRegistry.register('features/invite', (state = DEFAULT_STATE, action) => {
         return {
             ...state,
             conferenceID: action.conferenceID,
+            error: undefined,
             numbers: action.dialInNumbers,
             numbersEnabled,
             numbersFetched: true

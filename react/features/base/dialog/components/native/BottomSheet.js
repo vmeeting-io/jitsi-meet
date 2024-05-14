@@ -2,10 +2,10 @@
 
 import React, { PureComponent, type Node } from 'react';
 import { PanResponder, SafeAreaView, ScrollView, View } from 'react-native';
+import { connect } from 'react-redux';
 
 import { ColorSchemeRegistry } from '../../../color-scheme';
 import { SlidingView } from '../../../react';
-import { connect } from '../../../redux';
 import { StyleType } from '../../../styles';
 
 import { bottomSheetStyles as styles } from './styles';

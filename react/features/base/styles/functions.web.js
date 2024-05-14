@@ -1,7 +1,5 @@
 // @flow
 
-import { type StyleType } from './functions.any';
-
 export * from './functions.any';
 
 /**
@@ -11,7 +9,7 @@ export * from './functions.any';
  * @param {StyleType} style - The passed style prop to the component.
  * @returns {StyleType}
  */
-export function getFixedPlatformStyle(style: StyleType): StyleType {
+export function getFixedPlatformStyle(style) {
     if (Array.isArray(style)) {
         const _style = {};
 
@@ -32,7 +30,7 @@ export function getFixedPlatformStyle(style: StyleType): StyleType {
  * @param {Object} base - The base object containing the `lineHeight` property.
  * @returns {Object}
  */
-export function withPixelLineHeight(base: Object): Object {
+export function withPixelLineHeight(base) {
     return {
         ...base,
         lineHeight: `${base.lineHeight}px`

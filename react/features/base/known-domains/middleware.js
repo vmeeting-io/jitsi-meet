@@ -1,10 +1,8 @@
-// @flow
-
 import { getDefaultURL } from '../../app/functions';
-import { APP_WILL_MOUNT } from '../app';
-import { SET_ROOM } from '../conference';
-import { MiddlewareRegistry } from '../redux';
-import { parseURIString } from '../util';
+import { APP_WILL_MOUNT } from '../app/actionTypes';
+import { SET_ROOM } from '../conference/actionTypes';
+import MiddlewareRegistry from '../redux/MiddlewareRegistry';
+import { parseURIString } from '../util/uri';
 
 import { addKnownDomains } from './actions';
 
@@ -35,7 +33,7 @@ MiddlewareRegistry.register(store => next => action => {
 function _appWillMount({ dispatch, getState }) {
     const defaultURL = parseURIString(getDefaultURL(getState));
 
-    dispatch(addKnownDomains(defaultURL.host));
+    dispatch(addKnownDomains(defaultURL?.host));
 }
 
 /**

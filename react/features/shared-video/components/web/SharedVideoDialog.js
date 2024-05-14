@@ -1,12 +1,10 @@
-// @flow
-
-import { FieldTextStateless } from '@atlaskit/field-text';
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { Dialog } from '../../../base/dialog';
-import { translate } from '../../../base/i18n';
-import { getFieldValue } from '../../../base/react';
-import { connect } from '../../../base/redux';
+import { hideDialog } from '../../../base/dialog/actions';
+import { translate } from '../../../base/i18n/functions';
+import Dialog from '../../../base/ui/components/web/Dialog';
+import Input from '../../../base/ui/components/web/Input';
 import AbstractSharedVideoDialog from '../AbstractSharedVideoDialog';
 
 /**
@@ -14,43 +12,38 @@ import AbstractSharedVideoDialog from '../AbstractSharedVideoDialog';
  *
  * @returns {React$Element<any>}
  */
-class SharedVideoDialog extends AbstractSharedVideoDialog<*> {
+class SharedVideoDialog extends AbstractSharedVideoDialog<any> {
 
     /**
      * Instantiates a new component.
      *
      * @inheritdoc
      */
-    constructor(props) {
+    constructor(props: any) {
         super(props);
 
         this.state = {
             value: '',
-            okDisabled: true
+            okDisabled: true,
+            error: false
         };
 
         this._onChange = this._onChange.bind(this);
         this._onSubmitValue = this._onSubmitValue.bind(this);
     }
 
-    _onChange: Object => void;
-
     /**
      * Callback for the onChange event of the field.
      *
-     * @param {Object} evt - The static event.
+     * @param {string} value - The static event.
      * @returns {void}
      */
-    _onChange(evt: Object) {
-        const linkValue = getFieldValue(evt);
-
+    _onChange(value: string) {
         this.setState({
-            value: linkValue,
-            okDisabled: !linkValue
+            value,
+            okDisabled: !value
         });
     }
-
-    _onSubmitValue: () => boolean;
 
     /**
      * Callback to be invoked when the value of the link input is submitted.
@@ -58,7 +51,17 @@ class SharedVideoDialog extends AbstractSharedVideoDialog<*> {
      * @returns {boolean}
      */
     _onSubmitValue() {
-        return super._onSetVideoLink(this.state.value);
+        const result = super._onSetVideoLink(this.state.value);
+
+        if (result) {
+            this.props.dispatch(hideDialog());
+        } else {
+            this.setState({
+                error: true
+            });
+        }
+
+        return result;
     }
 
     /**
@@ -68,31 +71,32 @@ class SharedVideoDialog extends AbstractSharedVideoDialog<*> {
      */
     render() {
         const { t } = this.props;
+        const { error } = this.state;
 
         return (
             <Dialog
-                hideCancelButton = { false }
-                okDisabled = { this.state.okDisabled }
-                okKey = { t('dialog.Share') }
+                disableAutoHideOnSubmit = { true }
+                ok = {{
+                    disabled: this.state.okDisabled,
+                    translationKey: 'dialog.Share'
+                }}
                 onSubmit = { this._onSubmitValue }
-                titleKey = { t('dialog.shareVideoTitle') }
-                width = { 'small' }>
-                <FieldTextStateless
+                titleKey = 'dialog.shareVideoTitle'>
+                <Input
                     autoFocus = { true }
-                    className = 'input-control'
-                    compact = { false }
+                    bottomLabel = { error && t('dialog.sharedVideoDialogError') }
+                    className = 'dialog-bottom-margin'
+                    error = { error }
+                    id = 'shared-video-url-input'
                     label = { t('dialog.videoLink') }
                     name = 'sharedVideoUrl'
                     onChange = { this._onChange }
                     placeholder = { t('dialog.sharedVideoLinkPlaceholder') }
-                    shouldFitContainer = { true }
                     type = 'text'
                     value = { this.state.value } />
             </Dialog>
         );
     }
-
-    _onChange: Object => void;
 }
 
 export default translate(connect()(SharedVideoDialog));

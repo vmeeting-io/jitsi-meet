@@ -2,18 +2,24 @@
 
 import { API_ID } from '../../../modules/API/constants';
 import { getName as getAppName } from '../app/functions';
+import { getAnalyticsRoomName } from '../base/conference/functions';
+import checkChromeExtensionsInstalled from '../base/environment/checkChromeExtensionsInstalled';
 import {
-    checkChromeExtensionsInstalled,
     isMobileBrowser
 } from '../base/environment/utils';
 import JitsiMeetJS, {
     analytics,
-    browser,
-    isAnalyticsEnabled
+    browser
 } from '../base/lib-jitsi-meet';
-import { getJitsiMeetGlobalNS, loadScript, parseURIString } from '../base/util';
+import { isAnalyticsEnabled } from '../base/lib-jitsi-meet/functions.any';
+import { getJitsiMeetGlobalNS } from '../base/util/helpers';
+import { inIframe } from '../base/util/iframeUtils';
+import { loadScript } from '../base/util/loadScript';
+import { parseURIString } from '../base/util/uri';
+import { isPrejoinPageVisible } from '../prejoin/functions';
 
-import { AmplitudeHandler, MatomoHandler } from './handlers';
+import AmplitudeHandler from './handlers/AmplitudeHandler';
+import MatomoHandler from './handlers/MatomoHandler';
 import logger from './logger';
 
 /**
@@ -59,7 +65,6 @@ export function resetAnalytics() {
  */
 export async function createHandlers({ getState }: { getState: Function }) {
     getJitsiMeetGlobalNS().analyticsHandlers = [];
-    window.analyticsHandlers = []; // Legacy support.
 
     if (!isAnalyticsEnabled(getState)) {
         // Avoid all analytics processing if there are no handlers, since no event would be sent.
@@ -78,6 +83,7 @@ export async function createHandlers({ getState }: { getState: Function }) {
     } = config;
     const {
         amplitudeAPPKey,
+        amplitudeIncludeUTM,
         blackListedEvents,
         scriptURLs,
         googleAnalyticsTrackingId,
@@ -88,16 +94,17 @@ export async function createHandlers({ getState }: { getState: Function }) {
     const { group, user } = state['features/base/jwt'];
     const handlerConstructorOptions = {
         amplitudeAPPKey,
+        amplitudeIncludeUTM,
         blackListedEvents,
-        envType: (deploymentInfo && deploymentInfo.envType) || 'dev',
+        envType: deploymentInfo?.envType || 'dev',
         googleAnalyticsTrackingId,
         matomoEndpoint,
         matomoSiteID,
         group,
         host,
-        product: deploymentInfo && deploymentInfo.product,
-        subproduct: deploymentInfo && deploymentInfo.environment,
-        user: user && user.id,
+        product: deploymentInfo?.product,
+        subproduct: deploymentInfo?.environment,
+        user: user?.id,
         version: JitsiMeetJS.version,
         whiteListedEvents
     };
@@ -152,11 +159,13 @@ export async function createHandlers({ getState }: { getState: Function }) {
  *
  * @param {Store} store - The redux store in which the specified {@code action} is being dispatched.
  * @param {Array<Object>} handlers - The analytics handlers.
- * @returns {void}
+ * @returns {boolean} - True if the analytics were successfully initialized and false otherwise.
  */
-export function initAnalytics({ getState }: { getState: Function }, handlers: Array<Object>) {
+export function initAnalytics(store, handlers) {
+    const { getState, dispatch } = store;
+
     if (!isAnalyticsEnabled(getState) || handlers.length === 0) {
-        return;
+        return false;
     }
 
     const state = getState();
@@ -165,7 +174,6 @@ export function initAnalytics({ getState }: { getState: Function }, handlers: Ar
         deploymentInfo
     } = config;
     const { group, server } = state['features/base/jwt'];
-    const roomName = state['features/base/conference'].room;
     const { locationURL = {} } = state['features/base/connection'];
     const { tenant } = parseURIString(locationURL.href) || {};
     const permanentProperties = {};
@@ -191,6 +199,16 @@ export function initAnalytics({ getState }: { getState: Function }, handlers: Ar
 
     // Report the tenant from the URL.
     permanentProperties.tenant = tenant || '/';
+
+    permanentProperties.wasPrejoinDisplayed = isPrejoinPageVisible(state);
+
+    // Currently we don't know if there will be lobby. We will update it to true if we go through lobby.
+    permanentProperties.wasLobbyVisible = false;
+
+    // Setting visitor properties to false by default. We will update them later if it turns out we are visitor.
+    permanentProperties.isVisitor = false;
+    permanentProperties.isPromotedFromVisitor = false;
+
     // Optionally, include local deployment information based on the
     // contents of window.config.deploymentInfo.
     if (deploymentInfo) {
@@ -201,13 +219,17 @@ export function initAnalytics({ getState }: { getState: Function }, handlers: Ar
         }
     }
 
-    analytics.addPermanentProperties(permanentProperties);
-    analytics.setConferenceName(roomName);
+    analytics.addPermanentProperties({
+        ...permanentProperties,
+        ...getState()['features/analytics'].initialPermanentProperties
+    });
+
+    analytics.setConferenceName(getAnalyticsRoomName(state, dispatch));
 
     // Set the handlers last, since this triggers emptying of the cache
     analytics.setAnalyticsHandlers(handlers);
 
-    if (!isMobileBrowser() && browser.isChrome()) {
+    if (!isMobileBrowser() && browser.isChromiumBased()) {
         const bannerCfg = state['features/base/config'].chromeExtensionBanner;
 
         checkChromeExtensionsInstalled(bannerCfg).then(extensionsInstalled => {
@@ -218,24 +240,8 @@ export function initAnalytics({ getState }: { getState: Function }, handlers: Ar
             }
         });
     }
-}
 
-/**
- * Checks whether we are loaded in iframe.
- *
- * @returns {boolean} Returns {@code true} if loaded in iframe.
- * @private
- */
-export function inIframe() {
-    if (navigator.product === 'ReactNative') {
-        return false;
-    }
-
-    try {
-        return window.self !== window.top;
-    } catch (e) {
-        return true;
-    }
+    return true;
 }
 
 /**
@@ -272,16 +278,9 @@ function _loadHandlers(scriptURLs = [], handlerConstructorOptions) {
             }
         }
 
-        // analyticsHandlers is the handlers we want to use
-        // we search for them in the JitsiMeetGlobalNS, but also
-        // check the old location to provide legacy support
-        const analyticsHandlers = [
-            ...getJitsiMeetGlobalNS().analyticsHandlers,
-            ...window.analyticsHandlers
-        ];
         const handlers = [];
 
-        for (const Handler of analyticsHandlers) {
+        for (const Handler of getJitsiMeetGlobalNS().analyticsHandlers) {
             // Catch any error while loading to avoid skipping analytics in case
             // of multiple scripts.
             try {

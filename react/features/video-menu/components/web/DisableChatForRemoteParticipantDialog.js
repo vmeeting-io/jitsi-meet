@@ -1,11 +1,11 @@
 // @flow
 
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { Dialog } from '../../../base/dialog';
-import { translate } from '../../../base/i18n';
-import { getParticipantDisplayName } from '../../../base/participants';
-import { connect } from '../../../base/redux';
+import { translate } from '../../../base/i18n/functions';
+import { getParticipantDisplayName } from '../../../base/participants/functions';
+import Dialog from '../../../base/ui/components/web/Dialog';
 import AbstractDisableChatForRemoteParticipantDialog
     from '../AbstractDisableChatForRemoteParticipantDialog';
 

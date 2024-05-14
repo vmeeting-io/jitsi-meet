@@ -1,43 +1,31 @@
-// @flow
-
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import { translate } from '../../../../base/i18n';
-import { connect } from '../../../../base/redux';
+import { withPixelLineHeight } from '../../../../base/styles/functions.web';
 import { getDialInfoPageURL, hasMultipleNumbers } from '../../../functions';
 
 import DialInNumber from './DialInNumber';
 
-type Props = {
+const useStyles = makeStyles()(theme => {
+    return {
+        container: {
+            '& .info-label': {
+                ...withPixelLineHeight(theme.typography.bodyLongBold)
+            }
+        },
 
-    /**
-     * The numeric identifier for the current conference, used after dialing a
-     * the number to join the conference.
-     */
-    _conferenceID: number,
+        link: {
+            ...withPixelLineHeight(theme.typography.bodyLongRegular),
+            color: theme.palette.link01,
 
-    /**
-     * The url of the page containing the dial-in numbers list.
-     */
-    _dialInfoPageUrl: string,
-
-    /**
-     * If multiple dial-in numbers are available.
-     */
-    _hasMultipleNumbers: boolean;
-
-    /**
-     * The phone number to dial to begin the process of dialing into a
-     * conference.
-     */
-    phoneNumber: string,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-
-};
+            '&:hover': {
+                color: theme.palette.link01Hover
+            }
+        }
+    };
+});
 
 /**
  * Returns a ReactElement for showing how to dial into the conference, if
@@ -47,20 +35,22 @@ type Props = {
  * @returns {null|ReactElement}
  */
 function DialInSection({
-    _conferenceID,
-    _dialInfoPageUrl,
-    _hasMultipleNumbers,
-    phoneNumber,
-    t
-}: Props) {
+    phoneNumber
+}) {
+    const { classes, cx } = useStyles();
+    const conferenceID = useSelector((state) => state['features/invite'].conferenceID);
+    const dialInfoPageUrl = useSelector(getDialInfoPageURL);
+    const showMoreNumbers = useSelector((state) => hasMultipleNumbers(state['features/invite'].numbers));
+    const { t } = useTranslation();
+
     return (
-        <div className = 'invite-more-dialog dial-in-display'>
+        <div className = { classes.container }>
             <DialInNumber
-                conferenceID = { _conferenceID }
+                conferenceID = { conferenceID ?? '' }
                 phoneNumber = { phoneNumber } />
-            {_hasMultipleNumbers ? <a
-                className = 'more-numbers'
-                href = { _dialInfoPageUrl }
+            {showMoreNumbers ? <a
+                className = { cx('more-numbers', classes.link) }
+                href = { dialInfoPageUrl }
                 rel = 'noopener noreferrer'
                 target = '_blank'>
                 { t('info.moreNumbers') }
@@ -69,23 +59,4 @@ function DialInSection({
     );
 }
 
-
-/**
- * Maps (parts of) the Redux state to the associated props for the
- * {@code DialInLink} component.
- *
- * @param {Object} state - The Redux state.
- * @private
- * @returns {Props}
- */
-function _mapStateToProps(state) {
-    const dialIn = state['features/invite'];
-
-    return {
-        _conferenceID: dialIn.conferenceID,
-        _dialInfoPageUrl: getDialInfoPageURL(state),
-        _hasMultipleNumbers: hasMultipleNumbers(dialIn.numbers)
-    };
-}
-
-export default translate(connect(_mapStateToProps)(DialInSection));
+export default DialInSection;

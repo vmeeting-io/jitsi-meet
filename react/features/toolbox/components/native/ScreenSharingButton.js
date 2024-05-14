@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { Platform } from 'react-native';
+import { connect } from 'react-redux';
 
-import { connect } from '../../../base/redux';
 
 import ScreenSharingAndroidButton from './ScreenSharingAndroidButton.js';
 import ScreenSharingIosButton from './ScreenSharingIosButton.js';

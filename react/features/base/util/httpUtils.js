@@ -1,3 +1,5 @@
+import base64js from 'base64-js';
+
 import { timeoutPromise } from './timeoutPromise';
 
 /**
@@ -13,11 +15,12 @@ const RETRY_TIMEOUT = 3000;
  *
  * @param {string} url - The URL to perform a GET against.
  * @param {?boolean} retry - Whether the request will be retried after short timeout.
+ * @param {?Object} options - The request options.
  * @returns {Promise<Object>} The response body, in JSON format, will be
  * through the Promise.
  */
-export function doGetJSON(url, retry) {
-    const fetchPromise = fetch(url)
+export function doGetJSON(url, retry, options) {
+    const fetchPromise = fetch(url, options)
         .then(response => {
             const jsonify = response.json();
 
@@ -42,3 +45,37 @@ export function doGetJSON(url, retry) {
 
     return fetchPromise;
 }
+
+/**
+ * Encodes strings to Base64URL.
+ *
+ * @param {any} data - The byte array to encode.
+ * @returns {string}
+ */
+export const encodeToBase64URL = (data: string): string => base64js
+    .fromByteArray(new window.TextEncoder().encode(data))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+
+/**
+ * Decodes strings from Base64URL.
+ *
+ * @param {string} data - The byte array to decode.
+ * @returns {string}
+ */
+export const decodeFromBase64URL = (data: string): string => {
+    let s = data;
+
+    // Convert from Base64URL to Base64.
+    if (s.length % 4 === 2) {
+        s += '==';
+    } else if (s.length % 4 === 3) {
+        s += '=';
+    }
+
+    s = s.replace(/-/g, '+').replace(/_/g, '/');
+
+    // Convert Base64 to a byte array.
+    return new window.TextDecoder().decode(base64js.toByteArray(s));
+};

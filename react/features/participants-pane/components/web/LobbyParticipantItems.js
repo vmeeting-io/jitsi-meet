@@ -1,26 +1,15 @@
-// @flow
-
 import React from 'react';
+import { makeStyles } from 'tss-react/mui';
 
 import { LobbyParticipantItem } from './LobbyParticipantItem';
 
-type Props = {
-
-    /**
-     * Opens a drawer with actions for a knocking participant.
-     */
-    openDrawerForParticipant: Function,
-
-    /**
-     * If a drawer with actions should be displayed.
-     */
-    overflowDrawer: boolean,
-
-    /**
-     * List with the knocking participants.
-     */
-    participants: Array<Object>
-}
+const useStyles = makeStyles()(theme => {
+    return {
+        container: {
+            margin: `${theme.spacing(3)} 0`
+        }
+    };
+});
 
 /**
  * Component used to display a list of knocking participants.
@@ -28,10 +17,13 @@ type Props = {
  * @param {Object} props - The props of the component.
  * @returns {ReactNode}
  */
-function LobbyParticipantItems({ openDrawerForParticipant, overflowDrawer, participants }: Props) {
+function LobbyParticipantItems({ openDrawerForParticipant, overflowDrawer, participants }) {
+    const { classes } = useStyles();
 
     return (
-        <div>
+        <div
+            className = { classes.container }
+            id = 'lobby-list'>
             {participants.map(p => (
                 <LobbyParticipantItem
                     key = { p.id }
@@ -44,4 +36,4 @@ function LobbyParticipantItems({ openDrawerForParticipant, overflowDrawer, parti
 }
 
 // Memoize the component in order to avoid rerender on drawer open/close.
-export default React.memo<Props>(LobbyParticipantItems);
+export default React.memo(LobbyParticipantItems);

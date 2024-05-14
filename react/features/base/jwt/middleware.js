@@ -58,7 +58,7 @@ function _overwriteLocalParticipant(
     let localParticipant;
 
     // add an additional parameter birthDate to check for newProperties
-    if ((avatarURL || email || name || birthDate)
+    if ((avatarURL || email || name || features || birthDate)
             && (localParticipant = getLocalParticipant(getState))) {
         const newProperties: Object = {
             id: localParticipant.id,
@@ -109,12 +109,10 @@ function _setConfigOrLocationURL({ dispatch, getState }, next, action) {
     const result = next(action);
 
     const { locationURL } = getState()['features/base/connection'];
-    const jwt = parseJWTFromURLParams(locationURL);
-
-    if (jwt) {
-        dispatch(setJWT(jwt));
-    }
-
+    
+    dispatch(
+        setJWT(locationURL ? parseJWTFromURLParams(locationURL) : undefined));
+    
     return result;
 }
 
@@ -161,13 +159,26 @@ function _setJWT(store, next, action) {
                     action.siteName = context.siteName;
                     action.user = user;
 
-                    user && _overwriteLocalParticipant(
-                        store, { ...user,
+                    const newUser = user ? { ...user } : {};
+                    _overwriteLocalParticipant(
+                        store, { ...newUser,
                             features: context.features });
 
                     axios.interceptors.request.use(function(config) {
                         config.headers.Authorization = `Bearer ${jwt}`;
                         return config;
+                    });
+
+                    // eslint-disable-next-line max-depth
+                    if (context.user && context.user.role === 'visitor') {
+                        action.preferVisitor = true;
+                    }
+                } else if (jwtPayload.name || jwtPayload.picture || jwtPayload.email) {
+                    // there are some tokens (firebase) having picture and name on the main level.
+                    _overwriteLocalParticipant(store, {
+                        avatarURL: jwtPayload.picture,
+                        name: jwtPayload.name,
+                        email: jwtPayload.email
                     });
                 }
             }
@@ -242,9 +253,10 @@ function _undoOverwriteLocalParticipant(
  *     id: ?string,
  *     name: ?string,
  *     birthDate: ?string
+ *     hidden-from-recorder: ?boolean
  * }}
  */
-function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, isSiteStaff, background, birthDate, phoneNumber }) { 
+function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, isSiteStaff, background, birthDate, phoneNumber, hiddenFromRecorder }) { 
     // we added additional functional parameter birthDate which is received from context object in _setJWT function
     const participant = {};
 
@@ -285,6 +297,10 @@ function _user2participant({ avatar, avatarUrl, email, email_verified, id, name,
 
     if (typeof phoneNumber === 'string') {
         participant.phoneNumber = phoneNumber;
+    }
+
+    if (hiddenFromRecorder === 'true' || hiddenFromRecorder === true) {
+        participant.hiddenFromRecorder = true;
     }
 
     return Object.keys(participant).length ? participant : undefined;

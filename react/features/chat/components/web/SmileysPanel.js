@@ -38,8 +38,6 @@ class SmileysPanel extends PureComponent<Props> {
         this._onEscKey = this._onEscKey.bind(this);
     }
 
-    _onEscKey: (Object) => void;
-
     /**
      * KeyPress handler for accessibility.
      *
@@ -56,8 +54,6 @@ class SmileysPanel extends PureComponent<Props> {
         }
     }
 
-    _onKeyPress: (Object) => void;
-
     /**
      * KeyPress handler for accessibility.
      *
@@ -71,8 +67,6 @@ class SmileysPanel extends PureComponent<Props> {
             this.props.onSmileySelect(e.target.id && smileys[e.target.id]);
         }
     }
-
-    _onClick: (Object) => void;
 
     /**
      * Click handler for to select emoji.

@@ -1,9 +1,16 @@
 // @flow
 
 import type { Dispatch } from 'redux';
+import UIEvents from '../../../service/UI/UIEvents';
+import { VIDEO_MUTE, createToolbarEvent } from '../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../analytics/functions';
+import { setAudioOnly } from '../base/audio-only/actions';
+import { setVideoMuted } from '../base/media/actions';
+import { VIDEO_MUTISM_AUTHORITY } from '../base/media/constants';
 
 import {
     SET_TOOLBOX_ENABLED,
+    SET_TOOLBOX_SHIFT_UP,
     SET_TOOLBOX_VISIBLE,
     TOGGLE_TOOLBOX_VISIBLE
 } from './actionTypes';
@@ -17,7 +24,7 @@ import {
  *     enabled: boolean
  * }}
  */
-export function setToolboxEnabled(enabled: boolean): Object {
+export function setToolboxEnabled(enabled: boolean) {
     return {
         type: SET_TOOLBOX_ENABLED,
         enabled
@@ -30,9 +37,10 @@ export function setToolboxEnabled(enabled: boolean): Object {
  * @param {boolean} visible - True to show the toolbox or false to hide it.
  * @returns {Function}
  */
-export function setToolboxVisible(visible: boolean): Object {
+export function setToolboxVisible(visible: boolean) {
     return (dispatch: Dispatch<any>, getState: Function) => {
-        const { toolbarConfig: { alwaysVisible } } = getState()['features/base/config'];
+        const { toolbarConfig } = getState()['features/base/config'];
+        const alwaysVisible = toolbarConfig?.alwaysVisible;
 
         if (!visible && alwaysVisible) {
             return;
@@ -53,7 +61,8 @@ export function setToolboxVisible(visible: boolean): Object {
 export function toggleToolboxVisible() {
     return (dispatch: Dispatch<any>, getState: Function) => {
         const state = getState();
-        const { toolbarConfig: { alwaysVisible } } = state['features/base/config'];
+        const { toolbarConfig } = getState()['features/base/config'];
+        const alwaysVisible = toolbarConfig?.alwaysVisible;
         const { visible } = state['features/toolbox'];
 
         if (visible && alwaysVisible) {
@@ -63,5 +72,52 @@ export function toggleToolboxVisible() {
         dispatch({
             type: TOGGLE_TOOLBOX_VISIBLE
         });
+    };
+}
+
+
+/**
+ * Action to handle toggle video from toolbox's video buttons.
+ *
+ * @param {boolean} muted - Whether to mute or unmute.
+ * @param {boolean} showUI - When set to false will not display any error.
+ * @param {boolean} ensureTrack - True if we want to ensure that a new track is
+ * created if missing.
+ * @returns {Function}
+ */
+export function handleToggleVideoMuted(muted: boolean, showUI: boolean, ensureTrack: boolean) {
+    return (dispatch: Dispatch<any>, getState: Function) => {
+        const state = getState();
+        const { enabled: audioOnly } = state['features/base/audio-only'];
+
+        sendAnalytics(createToolbarEvent(VIDEO_MUTE, { enable: muted }));
+        if (audioOnly) {
+            dispatch(setAudioOnly(false));
+        }
+
+        dispatch(
+            setVideoMuted(
+                muted,
+                VIDEO_MUTISM_AUTHORITY.USER,
+                ensureTrack));
+
+        // FIXME: The old conference logic still relies on this event being
+        // emitted.
+        typeof APP === 'undefined'
+            || APP.UI.emitEvent(UIEvents.VIDEO_MUTED, muted, showUI);
+
+    };
+}
+
+/**
+ * Sets whether the toolbox should be shifted up or not.
+ *
+ * @param {boolean} shiftUp - Whether the toolbox should shift up or not.
+ * @returns {Object}
+ */
+export function setShiftUp(shiftUp: boolean) {
+    return {
+        type: SET_TOOLBOX_SHIFT_UP,
+        shiftUp
     };
 }

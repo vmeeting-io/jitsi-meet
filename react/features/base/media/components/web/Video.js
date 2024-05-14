@@ -1,149 +1,14 @@
-/* @flow */
+import React, { Component, ReactEventHandler } from 'react';
 
-import React, { Component } from 'react';
-
-/**
- * The type of the React {@code Component} props of {@link Video}.
- */
-type Props = {
-
-    /**
-     * CSS classes to add to the video element.
-     */
-    className: string,
-
-    /**
-     * The value of the id attribute of the video. Used by the torture tests to
-     * locate video elements.
-     */
-    id: string,
-
-    /**
-     * Optional callback to invoke once the video starts playing.
-     */
-    onVideoPlaying?: Function,
-
-    /**
-     * The JitsiLocalTrack to display.
-     */
-    videoTrack: ?Object,
-
-    /**
-     * Used to determine the value of the autoplay attribute of the underlying
-     * video element.
-     */
-    autoPlay: boolean,
-
-    /**
-     * Used to determine the value of the autoplay attribute of the underlying
-     * video element.
-     */
-    playsinline: boolean,
-
-    /**
-     * A map of the event handlers for the video HTML element.
-     */
-    eventHandlers?: {|
-
-        /**
-         * OnAbort event handler.
-         */
-        onAbort?: ?Function,
-
-        /**
-         * OnCanPlay event handler.
-         */
-        onCanPlay?: ?Function,
-
-        /**
-         * OnCanPlayThrough event handler.
-         */
-        onCanPlayThrough?: ?Function,
-
-        /**
-         * OnEmptied event handler.
-         */
-        onEmptied?: ?Function,
-
-        /**
-         * OnEnded event handler.
-         */
-        onEnded?: ?Function,
-
-        /**
-         * OnError event handler.
-         */
-        onError?: ?Function,
-
-        /**
-         * OnLoadedData event handler.
-         */
-        onLoadedData?: ?Function,
-
-        /**
-         * OnLoadedMetadata event handler.
-         */
-        onLoadedMetadata?: ?Function,
-
-        /**
-         * OnLoadStart event handler.
-         */
-        onLoadStart?: ?Function,
-
-        /**
-         * OnPause event handler.
-         */
-        onPause?: ?Function,
-
-        /**
-         * OnPlay event handler.
-         */
-        onPlay?: ?Function,
-
-        /**
-         * OnPlaying event handler.
-         */
-        onPlaying?: ?Function,
-
-        /**
-         * OnRateChange event handler.
-         */
-        onRateChange?: ?Function,
-
-        /**
-         * OnStalled event handler.
-         */
-        onStalled?: ?Function,
-
-        /**
-         * OnSuspend event handler.
-         */
-        onSuspend?: ?Function,
-
-        /**
-         * OnWaiting event handler.
-         */
-        onWaiting?: ?Function
-    |},
-
-    /**
-     * A styles that will be applied on the video element.
-     */
-    style?: Object,
-
-    /**
-     * The value of the muted attribute for the underlying video element.
-     */
-    muted?: boolean
-};
+import logger from '../../logger';
 
 /**
  * Component that renders a video element for a passed in video track.
  *
  * @augments Component
  */
-class Video extends Component<Props> {
-    _videoElement: ?Object;
+class Video extends Component {
+    _videoElement: HTMLVideoElement | null;
     _mounted: boolean;
 
     /**
@@ -164,7 +29,7 @@ class Video extends Component<Props> {
      * @param {Object} props - The read-only properties with which the new
      * instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         /**
@@ -197,13 +62,14 @@ class Video extends Component<Props> {
             this._videoElement.onplaying = this._onVideoPlaying;
         }
 
-        this._attachTrack(this.props.videoTrack);
+        this._attachTrack(this.props.videoTrack).finally(() => {
+            console.log('after _attachedTrack:', this._videoElement, this.props.autoPlay, this.props.videoTrack);
+            if (this._videoElement && this.props.autoPlay) {
+                // Ensure the video gets play() called on it. This may be necessary in the
+                // case where the local video container was moved and re-attached, in which
+                // case video does not autoplay.
 
-        if (this._videoElement && this.props.autoPlay) {
-            // Ensure the video gets play() called on it. This may be necessary in the
-            // case where the local video container was moved and re-attached, in which
-            // case video does not autoplay.
-            this._videoElement.play()
+                this._videoElement.play()
                 .catch(error => {
                     // Prevent uncaught "DOMException: The play() request was interrupted by a new load request"
                     // when video playback takes long to start and it starts after the component was unmounted.
@@ -211,7 +77,8 @@ class Video extends Component<Props> {
                         throw error;
                     }
                 });
-        }
+            }
+        });
     }
 
     /**
@@ -235,15 +102,15 @@ class Video extends Component<Props> {
      * @returns {boolean} - False is always returned to blackbox this component
      * from React.
      */
-    shouldComponentUpdate(nextProps: Props) {
-        const currentJitsiTrack = this.props.videoTrack
-            && this.props.videoTrack.jitsiTrack;
-        const nextJitsiTrack = nextProps.videoTrack
-            && nextProps.videoTrack.jitsiTrack;
+    shouldComponentUpdate(nextProps) {
+        const currentJitsiTrack = this.props.videoTrack?.jitsiTrack;
+        const nextJitsiTrack = nextProps.videoTrack?.jitsiTrack;
 
         if (currentJitsiTrack !== nextJitsiTrack) {
             this._detachTrack(this.props.videoTrack);
-            this._attachTrack(nextProps.videoTrack);
+            this._attachTrack(nextProps.videoTrack).catch((_error) => {
+                // Ignore the error. We are already logging it.
+            });
         }
 
         if (this.props.style !== nextProps.style || this.props.className !== nextProps.className) {
@@ -293,11 +160,22 @@ class Video extends Component<Props> {
      * @returns {void}
      */
     _attachTrack(videoTrack) {
-        if (!videoTrack || !videoTrack.jitsiTrack) {
-            return;
+        const { id } = this.props;
+
+        if (!videoTrack?.jitsiTrack) {
+            logger.warn(`Attach is called on video element ${id} without tracks passed!`);
+
+            // returning Promise.resolve just keep the previous logic.
+            // TODO: Check if it make sense to call play on this element or we can just return promise.reject().
+            return Promise.resolve();
         }
 
-        videoTrack.jitsiTrack.attach(this._videoElement);
+        return videoTrack.jitsiTrack.attach(this._videoElement)
+            .catch((error) => {
+                logger.error(
+                    `Attaching the remote track ${videoTrack.jitsiTrack} to video with id ${id} has failed with `,
+                    error);
+            });
     }
 
     /**
@@ -316,8 +194,6 @@ class Video extends Component<Props> {
         }
     }
 
-    _onVideoPlaying: () => void;
-
     /**
      * Invokes the onvideoplaying callback if defined.
      *
@@ -329,8 +205,6 @@ class Video extends Component<Props> {
             this.props.onVideoPlaying();
         }
     }
-
-    _setVideoElement: () => void;
 
     /**
      * Sets an instance variable for the component's video element so it can be

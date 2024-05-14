@@ -1,40 +1,15 @@
-// @flow
-
 import { Component } from 'react';
 
-import {
-    createRecordingDialogEvent,
-    sendAnalytics
-} from '../../../analytics';
+import { createRecordingDialogEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
+import { setVideoMuted } from '../../../base/media/actions';
+import { setRequestingSubtitles } from '../../../subtitles/actions.any';
+import { stopLocalVideoRecording } from '../../actions';
+import { RECORDING_METADATA_ID } from '../../constants';
 import { getActiveSession } from '../../functions';
 
-/**
- * The type of the React {@code Component} props of
- * {@link AbstractStopRecordingDialog}.
- */
-export type Props = {
-
-    /**
-     * The {@code JitsiConference} for the current conference.
-     */
-    _conference: Object,
-
-    /**
-     * The redux representation of the recording session to be stopped.
-     */
-    _fileRecordingSession: Object,
-
-    /**
-     * The redux dispatch function.
-     */
-    dispatch: Function,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
+import LocalRecordingManager from './LocalRecordingManager';
 
 /**
  * Abstract React Component for getting confirmation to stop a file recording
@@ -42,22 +17,19 @@ export type Props = {
  *
  * @augments Component
  */
-export default class AbstractStopRecordingDialog<P: Props>
-    extends Component<P> {
+export default class AbstractStopRecordingDialog extends Component {
     /**
      * Initializes a new {@code AbstrStopRecordingDialog} instance.
      *
      * @inheritdoc
      */
-    constructor(props: P) {
+    constructor(props) {
         super(props);
 
         // Bind event handler so it is only bound once for every instance.
         this._onSubmit = this._onSubmit.bind(this);
         this._toggleScreenshotCapture = this._toggleScreenshotCapture.bind(this);
     }
-
-    _onSubmit: () => boolean;
 
     /**
      * Stops the recording session.
@@ -68,20 +40,44 @@ export default class AbstractStopRecordingDialog<P: Props>
     _onSubmit() {
         sendAnalytics(createRecordingDialogEvent('stop', 'confirm.button'));
 
-        const { _fileRecordingSession } = this.props;
+        const {
+            _conference,
+            _displaySubtitles,
+            _fileRecordingSession,
+            _localRecording,
+            _subtitlesLanguage,
+            dispatch,
+            localRecordingVideoStop
+        } = this.props;
 
-        if (_fileRecordingSession) {
-            this.props._conference.stopRecording(_fileRecordingSession.id);
+        if (_localRecording) {
+            dispatch(stopLocalVideoRecording());
+            if (localRecordingVideoStop) {
+                dispatch(setVideoMuted(true));
+            }
+        } else if (_fileRecordingSession) {
+            _conference?.stopRecording(_fileRecordingSession.id);
             this._toggleScreenshotCapture();
         }
+
+        // TODO: this should be an action in transcribing. -saghul
+        this.props.dispatch(setRequestingSubtitles(Boolean(_displaySubtitles), _displaySubtitles, _subtitlesLanguage));
+
+        this.props._conference?.getMetadataHandler().setMetadata(RECORDING_METADATA_ID, {
+            isTranscribingEnabled: false
+        });
 
         return true;
     }
 
     /**
-     * To be overwritten by web component.
+     * Toggles screenshot capture feature.
+     *
+     * @returns {void}
      */
-    _toggleScreenshotCapture: () => void;
+    _toggleScreenshotCapture() {
+        // To be implemented by subclass.
+    }
 }
 
 /**
@@ -90,15 +86,20 @@ export default class AbstractStopRecordingDialog<P: Props>
  *
  * @param {Object} state - The Redux state.
  * @private
- * @returns {{
- *     _conference: JitsiConference,
- *     _fileRecordingSession: Object
- * }}
+ * @returns {IProps}
  */
-export function _mapStateToProps(state: Object) {
+export function _mapStateToProps(state) {
+    const {
+        _displaySubtitles,
+        _language: _subtitlesLanguage
+    } = state['features/subtitles'];
+
     return {
         _conference: state['features/base/conference'].conference,
+        _displaySubtitles,
         _fileRecordingSession:
-            getActiveSession(state, JitsiRecordingConstants.mode.FILE)
+            getActiveSession(state, JitsiRecordingConstants.mode.FILE),
+        _localRecording: LocalRecordingManager.isRecordingLocally(),
+        _subtitlesLanguage
     };
 }

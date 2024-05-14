@@ -5,10 +5,12 @@ import axios from 'axios';
 import tokenLocalStorage from "../../api/tokenLocalStorage";
 import { getAuthUrl } from "../../api/url";
 
-import { openDialog } from '../base/dialog';
-import { setJWT } from "../base/jwt";
+import { openDialog } from '../base/dialog/actions';
+import { setJWT } from '../base/jwt/actions';
 import { isAttentionAnalysisEnabled } from '../face-detect/functions';
-import { DIDProcessingDialog, LoginDialogDID } from './components/web';
+import DIDProcessingDialog from './components/web/DIDProcessingDialog';
+import LoginDialogDID from './components/web/LoginDialogDID';
+
 import { PERMIT_DATA_REQUEST } from './actionTypes';
 
 /**

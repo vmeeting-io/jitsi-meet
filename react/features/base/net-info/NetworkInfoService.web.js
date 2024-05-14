@@ -6,6 +6,8 @@ import { ONLINE_STATE_CHANGED_EVENT } from './events';
  * The network info service implementation for web (Chrome, Firefox and Safari).
  */
 export default class NetworkInfoService extends EventEmitter {
+    _onlineStateListener: any;
+    _offlineStateListener: any;
 
     /**
      * Creates new instance...

@@ -5,8 +5,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { openDialog } from '../../base/dialog';
-import { translate } from '../../base/i18n';
+import { openDialog } from '../../base/dialog/actions';
+import { translate } from '../../base/i18n/functions';
 
 import EmbedMeetingDialog from './EmbedMeetingDialog';
 

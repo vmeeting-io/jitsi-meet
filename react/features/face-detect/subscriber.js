@@ -2,11 +2,11 @@
 
 import axios from 'axios';
 import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
-import { getCurrentConference } from '../base/conference';
-import { isHost } from '../base/jwt';
-import { StateListenerRegistry } from '../base/redux';
+import { getCurrentConference } from '../base/conference/functions';
+import { isHost } from '../base/jwt/functions';
+import StateListenerRegistry from '../base/redux/StateListenerRegistry';
 import { getAuthUrl } from '../../api/url';
-import { updateSettings } from '../base/settings';
+import { updateSettings } from '../base/settings/actions';
 
 /**
  * Sends the face detect command, when a local property change occurs.

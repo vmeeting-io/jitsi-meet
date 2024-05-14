@@ -1,75 +1,13 @@
-/* @flow */
-
-import { makeStyles } from '@material-ui/core';
 import React from 'react';
+import { makeStyles } from 'tss-react/mui';
 
-import { translate } from '../../../i18n';
-import { Icon } from '../../../icons';
-import { Tooltip } from '../../../tooltip';
+import { translate } from '../../../i18n/functions';
+import Icon from '../../../icons/components/Icon';
+import Tooltip from '../../../tooltip/components/Tooltip';
 
-/**
- * The type of the React {@code Component} props of {@link BaseIndicator}.
- */
-type Props = {
-
-    /**
-     * Additional CSS class name.
-     */
-    className: string,
-
-    /**
-     * The icon component to use.
-     */
-    icon: Object,
-
-    /**
-     * The CSS classnames to set on the icon element of the component.
-    */
-    iconClassName: string,
-
-    /**
-     * The color of the icon.
-     */
-    iconColor: ?string,
-
-    /**
-     * Id of the icon to be rendered.
-     */
-    iconId?: string,
-
-    /**
-     * The font size for the icon.
-     */
-    iconSize: string,
-
-    /**
-     * The ID attribute to set on the root element of the component.
-     */
-    id: string,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function,
-
-    /**
-     * The translation key to use for displaying a tooltip when hovering over
-     * the component.
-     */
-    tooltipKey: string,
-
-    /**
-     * From which side of the indicator the tooltip should appear from,
-     * defaulting to "top".
-     */
-    tooltipPosition: string
-};
-
-const useStyles = makeStyles(() => {
+const useStyles = makeStyles()(() => {
     return {
         indicator: {
-            width: '20px',
-            height: '20px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -93,8 +31,8 @@ const BaseIndicator = ({
     t,
     tooltipKey,
     tooltipPosition = 'top'
-}: Props) => {
-    const styles = useStyles();
+}) => {
+    const { classes: styles } = useStyles();
     const style = {};
 
     if (iconSize) {
@@ -110,6 +48,7 @@ const BaseIndicator = ({
                     className = { className }
                     id = { id }>
                     <Icon
+                        alt = { t(tooltipKey) }
                         className = { iconClassName }
                         color = { iconColor }
                         id = { iconId }

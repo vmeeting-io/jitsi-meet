@@ -1,48 +1,24 @@
-// @flow
-
 import { Component } from 'react';
 
-import {
-    createRemoteVideoMenuButtonEvent,
-    sendAnalytics
-} from '../../analytics';
-import { kickParticipant } from '../../base/participants';
-
-type Props = {
-
-    /**
-     * The Redux dispatch function.
-     */
-    dispatch: Function,
-
-    /**
-     * The ID of the remote participant to be kicked.
-     */
-    participantID: string,
-
-    /**
-     * Function to translate i18n labels.
-     */
-    t: Function
-};
+import { createRemoteVideoMenuButtonEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { kickParticipant } from '../../base/participants/actions';
 
 /**
  * Abstract dialog to confirm a remote participant kick action.
  */
 export default class AbstractKickRemoteParticipantDialog
-    extends Component<Props> {
+    extends Component {
     /**
      * Initializes a new {@code AbstractKickRemoteParticipantDialog} instance.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this._onSubmit = this._onSubmit.bind(this);
     }
-
-    _onSubmit: () => boolean;
 
     /**
      * Callback for the confirm button.

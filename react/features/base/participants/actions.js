@@ -1,24 +1,32 @@
-import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../../notifications';
-import { set } from '../redux';
+import { showNotification } from '../../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
+import { set } from '../redux/functions';
 
 import {
     DOMINANT_SPEAKER_CHANGED,
+    GRANT_MODERATOR,
     HIDDEN_PARTICIPANT_JOINED,
     HIDDEN_PARTICIPANT_LEFT,
-    GRANT_MODERATOR,
     KICK_PARTICIPANT,
+    LOCAL_PARTICIPANT_AUDIO_LEVEL_CHANGED,
     LOCAL_PARTICIPANT_RAISE_HAND,
     MUTE_REMOTE_PARTICIPANT,
+    OVERWRITE_PARTICIPANTS_NAMES,
+    OVERWRITE_PARTICIPANT_NAME,
     PARTICIPANT_ID_CHANGED,
     PARTICIPANT_JOINED,
     PARTICIPANT_KICKED,
     PARTICIPANT_LEFT,
+    PARTICIPANT_SOURCES_UPDATED,
     PARTICIPANT_UPDATED,
     PIN_PARTICIPANT,
     PIN_TILES,
     SET_PINNED_TILES,
-    SET_LOADABLE_AVATAR_URL,
+    RAISE_HAND_CLEAR,
     RAISE_HAND_UPDATED,
+    SCREENSHARE_PARTICIPANT_NAME_CHANGED,
+    SET_LOADABLE_AVATAR_URL,
+    SET_LOCAL_PARTICIPANT_RECORDING_STATUS,
     PARTICIPANT_BIRTHDAY_HAT_FLAG_UPDATED
 } from './actionTypes';
 import {
@@ -27,16 +35,19 @@ import {
 import {
     getLocalParticipant,
     getNormalizedDisplayName,
+    getParticipantById,
     getParticipantDisplayName,
-    getParticipantById
+    getVirtualScreenshareParticipantOwnerId
 } from './functions';
 import logger from './logger';
+import { FakeParticipant } from './types';
 
 /**
  * Create an action for when dominant speaker changes.
  *
  * @param {string} dominantSpeaker - Participant ID of the dominant speaker.
  * @param {Array<string>} previousSpeakers - Participant IDs of the previous speakers.
+ * @param {boolean} silence - Whether the dominant speaker is silent or not.
  * @param {JitsiConference} conference - The {@code JitsiConference} associated
  * with the participant identified by the specified {@code id}. Only the local
  * participant is allowed to not specify an associated {@code JitsiConference}
@@ -46,17 +57,19 @@ import logger from './logger';
  *     participant: {
  *         conference: JitsiConference,
  *         id: string,
- *         previousSpeakers: Array<string>
+ *         previousSpeakers: Array<string>,
+ *         silence: boolean
  *     }
  * }}
  */
-export function dominantSpeakerChanged(dominantSpeaker, previousSpeakers, conference) {
+export function dominantSpeakerChanged(dominantSpeaker, previousSpeakers, silence, conference) {
     return {
         type: DOMINANT_SPEAKER_CHANGED,
         participant: {
             conference,
             id: dominantSpeaker,
-            previousSpeakers
+            previousSpeakers,
+            silence
         }
     };
 }
@@ -70,7 +83,7 @@ export function dominantSpeakerChanged(dominantSpeaker, previousSpeakers, confer
  *     id: string
  * }}
  */
-export function grantModerator(id) {
+export function grantModerator(id: string) {
     return {
         type: GRANT_MODERATOR,
         id
@@ -86,31 +99,10 @@ export function grantModerator(id) {
  *     id: string
  * }}
  */
-export function kickParticipant(id) {
+export function kickParticipant(id: string) {
     return {
         type: KICK_PARTICIPANT,
         id
-    };
-}
-
-/**
- * Creates an action to signal the connection status of the local participant
- * has changed.
- *
- * @param {string} connectionStatus - The current connection status of the local
- * participant, as enumerated by the library's participantConnectionStatus
- * constants.
- * @returns {Function}
- */
-export function localParticipantConnectionStatusChanged(connectionStatus) {
-    return (dispatch, getState) => {
-        const participant = getLocalParticipant(getState);
-
-        if (participant) {
-            return dispatch(participantConnectionStatusChanged(
-                participant.id,
-                connectionStatus));
-        }
     };
 }
 
@@ -122,7 +114,7 @@ export function localParticipantConnectionStatusChanged(connectionStatus) {
  * @param {string} id - New ID for local participant.
  * @returns {Function}
  */
-export function localParticipantIdChanged(id) {
+export function localParticipantIdChanged(id: string) {
     return (dispatch, getState) => {
         const participant = getLocalParticipant(getState);
 
@@ -149,7 +141,7 @@ export function localParticipantIdChanged(id) {
  *     participant: Participant
  * }}
  */
-export function localParticipantJoined(participant = {}) {
+export function localParticipantJoined(participant = { id: '' }) {
     return participantJoined(set(participant, 'local', true));
 }
 
@@ -188,7 +180,7 @@ export function localParticipantLeft() {
  * @param {string} role - The new role of the local participant.
  * @returns {Function}
  */
-export function localParticipantRoleChanged(role) {
+export function localParticipantRoleChanged(role: string) {
     return (dispatch, getState) => {
         const participant = getLocalParticipant(getState);
 
@@ -209,30 +201,12 @@ export function localParticipantRoleChanged(role) {
  *     mediaType: MEDIA_TYPE
  * }}
  */
-export function muteRemoteParticipant(id, mediaType) {
+export function muteRemoteParticipant(id: string, mediaType: string) {
     return {
         type: MUTE_REMOTE_PARTICIPANT,
         id,
         mediaType
     };
-}
-
-/**
- * Action to update a participant's connection status.
- *
- * @param {string} id - Participant's ID.
- * @param {string} connectionStatus - The new connection status of the
- * participant.
- * @returns {{
- *     type: PARTICIPANT_UPDATED,
- *     participant: {
- *         connectionStatus: string,
- *         id: string
- *     }
- * }}
- */
-export function participantConnectionStatusChanged(id, connectionStatus) {
-    return participantUpdated({ connectionStatus, id });
 }
 
 /**
@@ -283,6 +257,40 @@ export function participantJoined(participant) {
 }
 
 /**
+ * Updates the sources of a remote participant.
+ *
+ * @param {any} jitsiParticipant - The IJitsiParticipant instance.
+ * @returns {{
+ *      type: PARTICIPANT_SOURCES_UPDATED,
+ *      participant: IParticipant
+ * }}
+ */
+export function participantSourcesUpdated(jitsiParticipant: any) {
+    return (dispatch, getState) => {
+        const id = jitsiParticipant.getId();
+        const participant = getParticipantById(getState(), id);
+
+        if (participant?.local) {
+            return;
+        }
+        const sources = jitsiParticipant.getSources();
+
+        console.log('participantSourcesUpdated:', participant, sources);
+        if (!sources?.size) {
+            return;
+        }
+
+        return dispatch({
+            type: PARTICIPANT_SOURCES_UPDATED,
+            participant: {
+                id,
+                sources
+            }
+        });
+    };
+}
+
+/**
  * Updates the features of a remote participant.
  *
  * @param {JitsiParticipant} jitsiParticipant - The ID of the participant.
@@ -291,7 +299,7 @@ export function participantJoined(participant) {
  *     participant: Participant
  * }}
  */
-export function updateRemoteParticipantFeatures(jitsiParticipant) {
+export function updateRemoteParticipantFeatures(jitsiParticipant: any) {
     return (dispatch, getState) => {
         if (!jitsiParticipant) {
             return;
@@ -336,7 +344,7 @@ export function updateRemoteParticipantFeatures(jitsiParticipant) {
  *     id: string
  * }}
  */
-export function hiddenParticipantJoined(id, displayName) {
+export function hiddenParticipantJoined(id: string, displayName: string) {
     return {
         type: HIDDEN_PARTICIPANT_JOINED,
         id,
@@ -353,7 +361,7 @@ export function hiddenParticipantJoined(id, displayName) {
  *     id: string
  * }}
  */
-export function hiddenParticipantLeft(id) {
+export function hiddenParticipantLeft(id: string) {
     return {
         type: HIDDEN_PARTICIPANT_LEFT,
         id
@@ -368,7 +376,11 @@ export function hiddenParticipantLeft(id) {
  * with the participant identified by the specified {@code id}. Only the local
  * participant is allowed to not specify an associated {@code JitsiConference}
  * instance.
- * @param {boolean} isReplaced - Whether the participant is to be replaced in the meeting.
+ * @param {Object} participantLeftProps - Other participant properties.
+ * @typedef {Object} participantLeftProps
+ * @param {FakeParticipant|undefined} participantLeftProps.fakeParticipant - The type of fake participant.
+ * @param {boolean} participantLeftProps.isReplaced - Whether the participant is to be replaced in the meeting.
+ *
  * @returns {{
  *     type: PARTICIPANT_LEFT,
  *     participant: {
@@ -377,13 +389,14 @@ export function hiddenParticipantLeft(id) {
  *     }
  * }}
  */
-export function participantLeft(id, conference, isReplaced) {
+export function participantLeft(id, conference, participantLeftProps = {}) {
     return {
         type: PARTICIPANT_LEFT,
         participant: {
             conference,
+            fakeParticipant: participantLeftProps.fakeParticipant,
             id,
-            isReplaced
+            isReplaced: participantLeftProps.isReplaced
         }
     };
 }
@@ -418,10 +431,29 @@ export function participantPresenceChanged(id, presence) {
  *     }
  * }}
  */
-export function participantRoleChanged(id, role) {
+export function participantRoleChanged(id: string, role: string) {
+    return participantUpdated({
+        id,
+        role
+    });
+}
+
+/**
+ * Action to signal that a participant's display name has changed.
+ *
+ * @param {string} id - Screenshare participant's ID.
+ * @param {name} name - The new display name of the screenshare participant's owner.
+ * @returns {{
+ *     type: SCREENSHARE_PARTICIPANT_NAME_CHANGED,
+ *     id: string,
+ *     name: string
+ * }}
+ */
+export function screenshareParticipantDisplayNameChanged(id: string, name: string) {
     return {
-        type: PARTICIPANT_UPDATED,
-        participant: { id, role }
+        type: SCREENSHARE_PARTICIPANT_NAME_CHANGED,
+        id,
+        name
     };
 }
 
@@ -437,7 +469,7 @@ export function participantRoleChanged(id, role) {
  *     participant: Participant
  * }}
  */
-export function participantUpdated(participant = {}) {
+export function participantUpdated(participant = { id: '' }) {
     const participantToUpdate = {
         ...participant
     };
@@ -459,7 +491,7 @@ export function participantUpdated(participant = {}) {
  * @param {JitsiLocalTrack} track - Information about the track that has been muted.
  * @returns {Promise}
  */
-export function participantMutedUs(participant, track) {
+export function participantMutedUs(participant: any, track: any) {
     return (dispatch, getState) => {
         if (!participant) {
             return;
@@ -472,7 +504,30 @@ export function participantMutedUs(participant, track) {
             titleArguments: {
                 participantDisplayName: getParticipantDisplayName(getState, participant.getId())
             }
-        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+        }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
+    };
+}
+
+/**
+ * Action to create a virtual screenshare participant.
+ *
+ * @param {(string)} sourceName - The source name of the JitsiTrack instance.
+ * @param {(boolean)} local - Whether it's a local or remote participant.
+ * @param {JitsiConference} conference - The conference instance for which the participant is to be created.
+ * @returns {Function}
+ */
+export function createVirtualScreenshareParticipant(sourceName: string, local: boolean, conference: any) {
+    return (dispatch, getState) => {
+        const state = getState();
+        const ownerId = getVirtualScreenshareParticipantOwnerId(sourceName);
+        const ownerName = getParticipantDisplayName(state, ownerId);
+
+        dispatch(participantJoined({
+            conference,
+            fakeParticipant: local ? FakeParticipant.LocalScreenShare : FakeParticipant.RemoteScreenShare,
+            id: sourceName,
+            name: ownerName
+        }));
     };
 }
 
@@ -483,7 +538,7 @@ export function participantMutedUs(participant, track) {
  * @param {JitsiParticipant} kicked - Information about participant that was kicked.
  * @returns {Promise}
  */
-export function participantKicked(kicker, kicked) {
+export function participantKicked(kicker: any, kicked: any) {
     return (dispatch, getState) => {
 
         dispatch({
@@ -492,12 +547,11 @@ export function participantKicked(kicker, kicked) {
             kicker: kicker?.getId()
         });
 
-        if (kicked.isReplaced && kicked.isReplaced()) {
+        if (kicked.isReplaced?.()) {
             return;
         }
 
         dispatch(showNotification({
-            titleKey: 'notify.kickParticipant',
             titleArguments: {
                 kicked:
                     getParticipantDisplayName(getState, kicked.getId()),
@@ -521,7 +575,7 @@ export function participantKicked(kicker, kicked) {
  *     }
  * }}
  */
-export function pinParticipant(id) {
+export function pinParticipant(id?: string | null) {
     return {
         type: PIN_PARTICIPANT,
         participant: {
@@ -545,7 +599,7 @@ export function pinParticipant(id) {
  *     }
  * }}
 */
-export function setLoadableAvatarUrl(participantId, url, useCORS) {
+export function setLoadableAvatarUrl(participantId: string, url: string, useCORS: boolean) {
     return {
         type: SET_LOADABLE_AVATAR_URL,
         participant: {
@@ -560,16 +614,28 @@ export function setLoadableAvatarUrl(participantId, url, useCORS) {
  * Raise hand for the local participant.
  *
  * @param {boolean} enabled - Raise or lower hand.
- * @param {string} kind - Raised kind.
  * @returns {{
  *     type: LOCAL_PARTICIPANT_RAISE_HAND,
- *     raisedHandTimestamp: string
+ *     raisedHandTimestamp: number
  * }}
  */
 export function raiseHand(enabled, kind) {
     return {
         type: LOCAL_PARTICIPANT_RAISE_HAND,
         raisedHandTimestamp: enabled ? `${Date.now()}${kind ? '_' + kind : ''}` : null
+    };
+}
+
+/**
+ * Clear the raise hand queue.
+ *
+ * @returns {{
+*     type: RAISE_HAND_CLEAR
+* }}
+*/
+export function raiseHandClear() {
+    return {
+        type: RAISE_HAND_CLEAR
     };
 }
 
@@ -586,6 +652,68 @@ export function raiseHandUpdateQueue(participant) {
     return {
         type: RAISE_HAND_UPDATED,
         participant
+    };
+}
+
+/**
+ * Notifies if the local participant audio level has changed.
+ *
+ * @param {number} level - The audio level.
+ * @returns {{
+ *      type: LOCAL_PARTICIPANT_AUDIO_LEVEL_CHANGED,
+ *      level: number
+ * }}
+ */
+export function localParticipantAudioLevelChanged(level: number) {
+    return {
+        type: LOCAL_PARTICIPANT_AUDIO_LEVEL_CHANGED,
+        level
+    };
+}
+
+/**
+ * Overwrites the name of the participant with the given id.
+ *
+ * @param {string} id - Participant id;.
+ * @param {string} name - New participant name.
+ * @returns {Object}
+ */
+export function overwriteParticipantName(id: string, name: string) {
+    return {
+        type: OVERWRITE_PARTICIPANT_NAME,
+        id,
+        name
+    };
+}
+
+/**
+ * Overwrites the names of the given participants.
+ *
+ * @param {Array<Object>} participantList - The list of participants to overwrite.
+ * @returns {Object}
+ */
+export function overwriteParticipantsNames(participantList) {
+    return {
+        type: OVERWRITE_PARTICIPANTS_NAMES,
+        participantList
+    };
+}
+
+/**
+ * Local video recording status for the local participant.
+ *
+ * @param {boolean} recording - If local recording is ongoing.
+ * @param {boolean} onlySelf - If recording only local streams.
+ * @returns {{
+ *     type: SET_LOCAL_PARTICIPANT_RECORDING_STATUS,
+ *     recording: boolean
+ * }}
+ */
+export function updateLocalRecordingStatus(recording: boolean, onlySelf?: boolean) {
+    return {
+        type: SET_LOCAL_PARTICIPANT_RECORDING_STATUS,
+        recording,
+        onlySelf
     };
 }
 

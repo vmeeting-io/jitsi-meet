@@ -2,10 +2,10 @@
 
 import React, { PureComponent } from 'react';
 import { Divider } from 'react-native-paper';
+import { connect } from 'react-redux';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { BottomSheet, hideDialog, isDialogOpen } from '../../../base/dialog';
-import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import { BreakoutRoomButton } from '../../../breakout-rooms';
 import { WhiteboardButton } from '../../../whiteboard';
@@ -18,7 +18,7 @@ import SecurityDialogButton
     from '../../../security/components/security-dialog/native/SecurityDialogButton';
 import { SharedVideoButton } from '../../../shared-video/components';
 import SpeakerStatsButton from '../../../speaker-stats/components/native/SpeakerStatsButton';
-import { ClosedCaptionButton } from '../../../subtitles';
+import ClosedCaptionButton from '../../../subtitles/components/native/ClosedCaptionButton';
 import { TileViewButton } from '../../../video-layout';
 import styles from '../../../video-menu/components/native/styles';
 import { getMovableButtons } from '../../functions.native';

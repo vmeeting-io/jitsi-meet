@@ -4,12 +4,12 @@ import React, { Component } from 'react';
 import { Linking, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { type Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
 import { openDialog } from '../../../../base/dialog';
 import { translate } from '../../../../base/i18n';
 import JitsiScreen from '../../../../base/modal/components/JitsiScreen';
 import { LoadingIndicator } from '../../../../base/react';
-import { connect } from '../../../../base/redux';
 import { screen } from '../../../../conference/components/native/routes';
 import { renderArrowBackButton } from '../../../../welcome/functions.native';
 import { getDialInfoPageURLForURIString } from '../../../functions';

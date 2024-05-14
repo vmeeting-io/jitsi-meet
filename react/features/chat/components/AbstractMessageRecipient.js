@@ -2,15 +2,26 @@
 
 import { PureComponent } from 'react';
 
-import { getParticipantDisplayName } from '../../base/participants';
-import { setPrivateMessageRecipient } from '../actions';
+import { getParticipantDisplayName, isLocalParticipantModerator } from '../../base/participants/functions';
+import { setLobbyChatActiveState, setPrivateMessageRecipient } from '../actions.any';
+
 
 export type Props = {
 
     /**
-     * Function used to translate i18n labels.
+      * Is lobby messaging active.
+      */
+    _isLobbyChatActive: boolean,
+
+    /**
+      * The name of the lobby message recipient, if any.
+      */
+    _lobbyMessageRecipient?: string,
+
+    /**
+     * Function to make the lobby message recipient inactive.
      */
-    t: Function,
+    _onHideLobbyChatRecipient: Function,
 
     /**
      * Function to remove the recipent setting of the chat window.
@@ -20,7 +31,12 @@ export type Props = {
     /**
      * The name of the message recipient, if any.
      */
-    _privateMessageRecipient: ?string
+    _privateMessageRecipient: ?string,
+
+    /**
+      * Shows widget if it is necessary.
+      */
+    _visible: boolean,
 };
 
 /**
@@ -40,6 +56,9 @@ export function _mapDispatchToProps(dispatch: Function): $Shape<Props> {
     return {
         _onRemovePrivateMessageRecipient: () => {
             dispatch(setPrivateMessageRecipient());
+        },
+        _onHideLobbyChatRecipient: () => {
+            dispatch(setLobbyChatActiveState(false));
         }
     };
 }
@@ -51,10 +70,14 @@ export function _mapDispatchToProps(dispatch: Function): $Shape<Props> {
  * @returns {Props}
  */
 export function _mapStateToProps(state: Object): $Shape<Props> {
-    const { privateMessageRecipient } = state['features/chat'];
+    const { privateMessageRecipient, lobbyMessageRecipient, isLobbyChatActive } = state['features/chat'];
 
     return {
         _privateMessageRecipient:
-            privateMessageRecipient ? getParticipantDisplayName(state, privateMessageRecipient.id) : undefined
+            privateMessageRecipient ? getParticipantDisplayName(state, privateMessageRecipient.id) : undefined,
+        _isLobbyChatActive: isLobbyChatActive,
+        _lobbyMessageRecipient:
+                isLobbyChatActive && lobbyMessageRecipient ? lobbyMessageRecipient.name : undefined,
+        _visible: isLobbyChatActive ? isLocalParticipantModerator(state) : true
     };
 }

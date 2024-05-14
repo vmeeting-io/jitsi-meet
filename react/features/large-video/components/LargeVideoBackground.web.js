@@ -1,9 +1,7 @@
-// @flow
-
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { connect } from '../../base/redux';
-import { shouldDisplayTileView } from '../../video-layout';
+import { shouldDisplayTileView } from '../../video-layout/functions.web';
 
 /**
  * Constants to describe the dimensions of the video. Landscape videos
@@ -18,48 +16,6 @@ export const ORIENTATION = {
     PORTRAIT: 'portrait'
 };
 
-/**
- * The type of the React {@code Component} props of
- * {@link LargeVideoBackgroundCanvas}.
- */
-type Props = {
-
-   /**
-     * Whether or not the layout should change to support tile view mode.
-     *
-     * @protected
-     * @type {boolean}
-     */
-    _shouldDisplayTileView: boolean,
-
-    /**
-     * Additional CSS class names to add to the root of the component.
-     */
-    className: String,
-
-    /**
-     * Whether or not the background should have its visibility hidden.
-     */
-    hidden: boolean,
-
-    /**
-     * Whether or not the video should display flipped horizontally, so left
-     * becomes right and right becomes left.
-     */
-    mirror: boolean,
-
-    /**
-     * Whether the component should ensure full width of the video is displayed
-     * (landscape) or full height (portrait).
-     */
-    orientationFit: string,
-
-    /**
-     * The video stream to display.
-     */
-    videoElement: Object
-};
-
 
 /**
  * Implements a React Component which shows a video element intended to be used
@@ -67,10 +23,10 @@ type Props = {
  *
  * @augments Component
  */
-export class LargeVideoBackground extends Component<Props> {
-    _canvasEl: Object;
+export class LargeVideoBackground extends Component {
+    _canvasEl;
 
-    _updateCanvasInterval: *;
+    _updateCanvasInterval;
 
     /**
      * Initializes new {@code LargeVideoBackground} instance.
@@ -78,7 +34,7 @@ export class LargeVideoBackground extends Component<Props> {
      * @param {*} props - The read-only properties with which the new instance
      * is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // Bind event handlers so they are only bound once per instance.
@@ -107,7 +63,7 @@ export class LargeVideoBackground extends Component<Props> {
      *
      * @inheritdoc
      */
-    componentDidUpdate(prevProps: Props) {
+    componentDidUpdate(prevProps) {
         const wasCanvasUpdating = !prevProps.hidden && !prevProps._shouldDisplayTileView && prevProps.videoElement;
         const shouldCanvasUpdating
             = !this.props.hidden && !this.props._shouldDisplayTileView && this.props.videoElement;
@@ -163,7 +119,7 @@ export class LargeVideoBackground extends Component<Props> {
     _clearCanvas() {
         const cavnasContext = this._canvasEl.getContext('2d');
 
-        cavnasContext.clearRect(
+        cavnasContext?.clearRect(
             0, 0, this._canvasEl.width, this._canvasEl.height);
     }
 
@@ -176,8 +132,6 @@ export class LargeVideoBackground extends Component<Props> {
     _clearUpdateCanvasInterval() {
         clearInterval(this._updateCanvasInterval);
     }
-
-    _setCanvasEl: () => void;
 
     /**
      * Sets the instance variable for the component's canvas element so it can
@@ -199,10 +153,8 @@ export class LargeVideoBackground extends Component<Props> {
      */
     _setUpdateCanvasInterval() {
         this._clearUpdateCanvasInterval();
-        this._updateCanvasInterval = setInterval(this._updateCanvas, 200);
+        this._updateCanvasInterval = window.setInterval(this._updateCanvas, 200);
     }
-
-    _updateCanvas: () => void;
 
     /**
      * Draws the current frame of the passed in video element onto the canvas.
@@ -230,17 +182,17 @@ export class LargeVideoBackground extends Component<Props> {
             height: canvasHeight,
             width: canvasWidth
         } = this._canvasEl;
-        const cavnasContext = this._canvasEl.getContext('2d');
+        const canvasContext = this._canvasEl.getContext('2d');
 
         if (this.props.orientationFit === ORIENTATION.LANDSCAPE) {
             const heightScaledToFit = (canvasWidth / videoWidth) * videoHeight;
 
-            cavnasContext.drawImage(
+            canvasContext?.drawImage(
                 videoElement, 0, 0, canvasWidth, heightScaledToFit);
         } else {
             const widthScaledToFit = (canvasHeight / videoHeight) * videoWidth;
 
-            cavnasContext.drawImage(
+            canvasContext?.drawImage(
                 videoElement, 0, 0, widthScaledToFit, canvasHeight);
         }
     }

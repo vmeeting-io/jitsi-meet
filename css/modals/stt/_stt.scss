@@ -10,6 +10,7 @@
             width: 90%;
             height: 1px;
             background: #5E6D7A;
+            box-sizing: unset;
 
             &:last-child {
                 display: none;

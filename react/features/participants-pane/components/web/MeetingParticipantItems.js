@@ -1,66 +1,6 @@
-// @flow
-
 import React from 'react';
 
 import MeetingParticipantItem from './MeetingParticipantItem';
-
-type Props = {
-
-    /**
-     * The translated ask unmute text for the qiuck action buttons.
-     */
-    askUnmuteText: string,
-
-    /**
-     * Callback for the mouse leaving this item.
-     */
-    lowerMenu: Function,
-
-    /**
-     * Callback for the activation of this item's context menu.
-     */
-    toggleMenu: Function,
-
-    /**
-     * Callback used to open a confirmation dialog for audio muting.
-     */
-    muteAudio: Function,
-
-    /**
-     * The meeting participants.
-     */
-    participantIds: Array<string>,
-
-    /**
-     * Callback used to open an actions drawer for a participant.
-     */
-    openDrawerForParticipant: Function,
-
-    /**
-     * True if an overflow drawer should be displayed.
-     */
-    overflowDrawer: boolean,
-
-    /**
-     * The if of the participant for which the context menu should be open.
-     */
-    raiseContextId?: string,
-
-    /**
-     * The aria-label for the ellipsis action.
-     */
-    participantActionEllipsisLabel: string,
-
-    /**
-     * Current search string.
-     */
-    searchString?: string,
-
-    /**
-     * The translated "you" text.
-     */
-    youText: string
-}
 
 /**
  * Component used to display a list of meeting participants.
@@ -68,7 +8,7 @@ type Props = {
  * @returns {ReactNode}
  */
 function MeetingParticipantItems({
-    askUnmuteText,
+    isInBreakoutRoom,
     lowerMenu,
     toggleMenu,
     muteAudio,
@@ -78,12 +18,13 @@ function MeetingParticipantItems({
     raiseContextId,
     participantActionEllipsisLabel,
     searchString,
+    stopVideo,
     youText
-}: Props) {
-    const renderParticipant = id => (
+}) {
+    const renderParticipant = (id: string) => (
         <MeetingParticipantItem
-            askUnmuteText = { askUnmuteText }
             isHighlighted = { raiseContextId === id }
+            isInBreakoutRoom = { isInBreakoutRoom }
             key = { id }
             muteAudio = { muteAudio }
             onContextMenu = { toggleMenu(id) }
@@ -93,11 +34,14 @@ function MeetingParticipantItems({
             participantActionEllipsisLabel = { participantActionEllipsisLabel }
             participantID = { id }
             searchString = { searchString }
+            stopVideo = { stopVideo }
             youText = { youText } />
     );
 
-    return participantIds.map(renderParticipant);
+    return (<>
+        {participantIds.map(renderParticipant)}
+    </>);
 }
 
 // Memoize the component in order to avoid rerender on drawer open/close.
-export default React.memo<Props>(MeetingParticipantItems);
+export default React.memo(MeetingParticipantItems);

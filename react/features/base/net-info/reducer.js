@@ -1,5 +1,6 @@
 // @flow
-import { assign, ReducerRegistry } from '../redux';
+import ReducerRegistry from '../redux/ReducerRegistry';
+import { assign } from '../redux/functions';
 
 import { SET_NETWORK_INFO, _STORE_NETWORK_INFO_CLEANUP } from './actionTypes';
 import { STORE_NAME } from './constants';

@@ -1,7 +1,5 @@
-/* @flow */
+import { Middleware, applyMiddleware } from 'redux';
 
-import { applyMiddleware } from 'redux';
-import type { Middleware } from 'redux';
 
 /**
  * A registry for Redux middleware, allowing features to register their

@@ -1,25 +1,11 @@
-// @flow
-
 /* eslint-disable react/jsx-no-bind */
 
 import React, { useState } from 'react';
 
-import { translate } from '../../../../base/i18n';
-import { Icon, IconCheck, IconCopy } from '../../../../base/icons';
-import { copyText } from '../../../../base/util';
-
-type Props = {
-
-    /**
-     * The current known URL for a live stream in progress.
-     */
-    liveStreamViewURL: string,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-}
+import { translate } from '../../../../base/i18n/functions';
+import Icon from '../../../../base/icons/components/Icon';
+import { IconCheck, IconCopy } from '../../../../base/icons/svg';
+import { copyText } from '../../../../base/util/copyText.web';
 
 /**
  * Section of the {@code AddPeopleDialog} that renders the
@@ -27,7 +13,7 @@ type Props = {
  *
  * @returns {React$Element<any>}
  */
-function LiveStreamSection({ liveStreamViewURL, t }: Props) {
+function LiveStreamSection({ liveStreamViewURL, t }) {
     const [ isClicked, setIsClicked ] = useState(false);
     const [ isHovered, setIsHovered ] = useState(false);
 

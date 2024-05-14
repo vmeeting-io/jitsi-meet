@@ -1,36 +1,10 @@
-// @flow
-
-import React from 'react';
-
 import { requestDisableModeration, requestEnableModeration } from '../../av-moderation/actions';
 import { isEnabledFromState, isSupported } from '../../av-moderation/functions';
-import { Dialog } from '../../base/dialog';
-import { MEDIA_TYPE } from '../../base/media';
-import { getLocalParticipant, getParticipantDisplayName } from '../../base/participants';
+import { MEDIA_TYPE } from '../../base/media/constants';
+import { getLocalParticipant, getParticipantDisplayName } from '../../base/participants/functions';
 import { muteAllParticipants } from '../actions';
 
-import AbstractMuteRemoteParticipantDialog, {
-    type Props as AbstractProps
-} from './AbstractMuteRemoteParticipantDialog';
-
-/**
- * The type of the React {@code Component} props of
- * {@link AbstractMuteEveryoneDialog}.
- */
-export type Props = AbstractProps & {
-
-    content: string,
-    exclude: Array<string>,
-    title: string,
-    showAdvancedModerationToggle: boolean,
-    isAudioModerationEnabled: boolean,
-    isModerationSupported: boolean
-};
-
-type State = {
-    audioModerationEnabled: boolean,
-    content: string
-};
+import AbstractMuteRemoteParticipantDialog from './AbstractMuteRemoteParticipantDialog';
 
 /**
  *
@@ -39,7 +13,7 @@ type State = {
  *
  * @augments AbstractMuteRemoteParticipantDialog
  */
-export default class AbstractMuteEveryoneDialog<P: Props> extends AbstractMuteRemoteParticipantDialog<P, State> {
+export default class AbstractMuteEveryoneDialog extends AbstractMuteRemoteParticipantDialog {
     static defaultProps = {
         exclude: [],
         muteLocal: false
@@ -51,7 +25,7 @@ export default class AbstractMuteEveryoneDialog<P: Props> extends AbstractMuteRe
      * @param {Object} props - The read-only properties with which the new
      * instance is to be initialized.
      */
-    constructor(props: P) {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -67,30 +41,20 @@ export default class AbstractMuteEveryoneDialog<P: Props> extends AbstractMuteRe
     }
 
     /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
-    render() {
-        const { content, title } = this.props;
-
-        return (
-            <Dialog
-                okKey = 'dialog.muteParticipantButton'
-                onSubmit = { this._onSubmit }
-                titleString = { title }
-                width = 'small'>
-                <div>
-                    { content }
-                </div>
-            </Dialog>
-        );
+      * Toggles advanced moderation switch.
+      *
+      * @returns {void}
+      */
+    _onToggleModeration() {
+        this.setState(state => {
+            return {
+                audioModerationEnabled: !state.audioModerationEnabled,
+                content: this.props.t(state.audioModerationEnabled
+                    ? 'dialog.muteEveryoneDialog' : 'dialog.muteEveryoneDialogModerationOn'
+                )
+            };
+        });
     }
-
-    _onSubmit: () => boolean;
-
-    _onToggleModeration: () => void;
 
     /**
      * Callback to be invoked when the value of this dialog is submitted.
@@ -117,16 +81,16 @@ export default class AbstractMuteEveryoneDialog<P: Props> extends AbstractMuteRe
 /**
  * Maps (parts of) the Redux state to the associated {@code AbstractMuteEveryoneDialog}'s props.
  *
- * @param {Object} state - The redux state.
+ * @param {IReduxState} state - The redux state.
  * @param {Object} ownProps - The properties explicitly passed to the component.
- * @returns {Props}
+ * @returns {IProps}
  */
-export function abstractMapStateToProps(state: Object, ownProps: Props) {
+export function abstractMapStateToProps(state, ownProps) {
     const { exclude = [], t } = ownProps;
 
     const whom = exclude
         // eslint-disable-next-line no-confusing-arrow
-        .map(id => id === getLocalParticipant(state).id
+        .map(id => id === getLocalParticipant(state)?.id
             ? t('dialog.muteEveryoneSelf')
             : getParticipantDisplayName(state, id))
         .join(', ');

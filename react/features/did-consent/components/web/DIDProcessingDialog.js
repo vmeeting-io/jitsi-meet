@@ -2,8 +2,8 @@
 
 import React, { PureComponent } from 'react';
 
-import { translate, translateToHTML } from '../../../base/i18n';
-import Dialog from '../../../base/dialog/components/web/Dialog';
+import { translate, translateToHTML } from '../../../base/i18n/functions';
+import Dialog from '../../../base/ui/components/web/Dialog';
 
 
 

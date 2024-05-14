@@ -1,6 +1,9 @@
 /* global $, APP, interfaceConfig */
 
-import { getWhiteboardUrl, setWhiteboardState } from '../../../react/features/whiteboard';
+import { DEFAULT_FILMSTRIP_WIDTH } from '../../../react/features/filmstrip/constants';
+import { setWhiteboardState } from '../../../react/features/whiteboard/actions';
+import { getWhiteboardUrl } from '../../../react/features/whiteboard/functions';
+
 import Filmstrip from '../videolayout/Filmstrip';
 import LargeContainer from '../videolayout/LargeContainer';
 import VideoLayout from '../videolayout/VideoLayout';
@@ -85,11 +88,11 @@ class Whiteboard extends LargeContainer {
                 // not yet loaded when the whiteboard iframe is loaded
                 const outer = doc.getElementsByName('ace_outer')[0];
 
-                bubbleIframeMouseMove(outer);
+                // bubbleIframeMouseMove(outer);
 
                 const inner = doc.getElementsByName('ace_inner')[0];
 
-                bubbleIframeMouseMove(inner);
+                // bubbleIframeMouseMove(inner);
             }, 2000);
         };
 
@@ -113,12 +116,15 @@ class Whiteboard extends LargeContainer {
     /**
      *
      */
-    resize(containerWidth, containerHeight) {
+    resize(containerWidth, containerHeight, animate = false) {
+        const state = APP.store.getState();
+        const verticalFilmstripWidth = state['features/filmstrip'].width?.current;
+
         let height, width;
 
         if (interfaceConfig.VERTICAL_FILMSTRIP) {
             height = containerHeight;
-            width = containerWidth - Filmstrip.getVerticalFilmstripWidth();
+            width = containerWidth - (verticalFilmstripWidth ? 0 : Filmstrip.getVerticalFilmstripWidth());
         } else {
             height = containerHeight - Filmstrip.getFilmstripHeight();
             width = containerWidth;

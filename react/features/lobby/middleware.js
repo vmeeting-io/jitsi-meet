@@ -2,37 +2,74 @@
 
 import { batch } from 'react-redux';
 
-import { appNavigate } from '../app/actions';
-import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app';
+import { appNavigate, maybeRedirectToWelcomePage } from '../app/actions';
+import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app/actionTypes';
 import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
-    conferenceWillJoin
-} from '../base/conference';
+    ENDPOINT_MESSAGE_RECEIVED
+} from '../base/conference/actionTypes';
+import { conferenceWillJoin } from '../base/conference/actions';
 import { disconnect } from '../base/connection';
-import { browser, JitsiConferenceErrors, JitsiConferenceEvents } from '../base/lib-jitsi-meet';
-import { getFirstLoadableAvatarUrl, getParticipantDisplayName } from '../base/participants';
-import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
-import { playSound, registerSound, unregisterSound } from '../base/sounds';
-import { isTestModeEnabled } from '../base/testing';
 import {
+    browser,
+    JitsiConferenceErrors,
+    JitsiConferenceEvents
+} from '../base/lib-jitsi-meet';
+import {
+    getFirstLoadableAvatarUrl,
+    getParticipantDisplayName
+} from '../base/participants/functions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import StateListenerRegistry from '../base/redux/StateListenerRegistry';
+import {
+    playSound,
+    registerSound,
+    unregisterSound
+} from '../base/sounds/actions';
+import { isTestModeEnabled } from '../base/testing/functions';
+import { BUTTON_TYPES } from '../base/ui/constants.any';
+import { openChat } from '../chat/actions';
+import {
+    handleLobbyChatInitialized,
+    removeLobbyChatParticipant
+} from '../chat/actions.any';
+import { arePollsDisabled } from '../conference/functions.any';
+import { hideNotification, showNotification } from '../notifications/actions';
+import {
+    LOBBY_NOTIFICATION_ID,
+    NOTIFICATION_ICON,
     NOTIFICATION_TIMEOUT_TYPE,
-    saveErrorNotification,
-    showNotification
-} from '../notifications';
-import { shouldAutoKnock } from '../prejoin/functions';
-
-import { KNOCKING_PARTICIPANT_ARRIVED_OR_UPDATED } from './actionTypes';
+    NOTIFICATION_TYPE
+} from '../notifications/constants';
+import { saveErrorNotification } from '../notifications/functions';
+import { open as openParticipantsPane } from '../participants-pane/actions';
+import { getParticipantsPaneOpen } from '../participants-pane/functions';
 import {
+    isPrejoinEnabledInConfig,
+    isPrejoinPageVisible,
+    shouldAutoKnock
+} from '../prejoin/functions';
+
+import {
+    KNOCKING_PARTICIPANT_ARRIVED_OR_UPDATED,
+    KNOCKING_PARTICIPANT_LEFT
+} from './actionTypes';
+import {
+    approveKnockingParticipant,
     hideLobbyScreen,
     knockingParticipantLeft,
     openLobbyScreen,
     participantIsKnockingOrUpdated,
+    rejectKnockingParticipant,
+    setLobbyMessageListener,
     setLobbyModeEnabled,
-    startKnocking,
-    setPasswordJoinFailed
+    setPasswordJoinFailed,
+    startKnocking
 } from './actions';
+import { updateLobbyParticipantOnLeave } from './actions.any';
 import { KNOCKING_PARTICIPANT_SOUND_ID } from './constants';
+import { getKnockingParticipants, showLobbyChatButton } from './functions';
 import { KNOCKING_PARTICIPANT_FILE } from './sounds';
 
 declare var APP: Object;
@@ -49,11 +86,27 @@ MiddlewareRegistry.register(store => next => action => {
         return _conferenceFailed(store, next, action);
     case CONFERENCE_JOINED:
         return _conferenceJoined(store, next, action);
+    case ENDPOINT_MESSAGE_RECEIVED: {
+        const { participant, data } = action;
+
+        _maybeSendLobbyNotification(participant, data, store);
+
+        break;
+    }
     case KNOCKING_PARTICIPANT_ARRIVED_OR_UPDATED: {
         // We need the full update result to be in the store already
         const result = next(action);
 
         _findLoadableAvatarForKnockingParticipant(store, action.participant);
+        _handleLobbyNotification(store);
+
+        return result;
+    }
+    case KNOCKING_PARTICIPANT_LEFT: {
+        // We need the full update result to be in the store already
+        const result = next(action);
+
+        _handleLobbyNotification(store);
 
         return result;
     }
@@ -72,9 +125,14 @@ StateListenerRegistry.register(
         if (conference && !previousConference) {
             conference.on(JitsiConferenceEvents.MEMBERS_ONLY_CHANGED, enabled => {
                 dispatch(setLobbyModeEnabled(enabled));
+                if (enabled) {
+                    dispatch(setLobbyMessageListener());
+                }
             });
 
             conference.on(JitsiConferenceEvents.LOBBY_USER_JOINED, (id, name) => {
+                const { soundsParticipantKnocking } = getState()['features/base/settings'];
+
                 batch(() => {
                     dispatch(
                         participantIsKnockingOrUpdated({
@@ -82,13 +140,27 @@ StateListenerRegistry.register(
                             name
                         })
                     );
-                    dispatch(playSound(KNOCKING_PARTICIPANT_SOUND_ID));
+                    if (soundsParticipantKnocking) {
+                        dispatch(playSound(KNOCKING_PARTICIPANT_SOUND_ID));
+                    }
+
+                    const isParticipantsPaneVisible = getParticipantsPaneOpen(getState());
+
                     if (typeof APP !== 'undefined') {
                         APP.API.notifyKnockingParticipant({
                             id,
                             name
                         });
                     }
+
+                    if (isParticipantsPaneVisible || navigator.product === 'ReactNative') {
+                        return;
+                    }
+
+                    _handleLobbyNotification({
+                        dispatch,
+                        getState
+                    });
                 });
             });
 
@@ -102,18 +174,91 @@ StateListenerRegistry.register(
             });
 
             conference.on(JitsiConferenceEvents.LOBBY_USER_LEFT, id => {
-                dispatch(knockingParticipantLeft(id));
+                batch(() => {
+                    dispatch(knockingParticipantLeft(id));
+                    dispatch(removeLobbyChatParticipant());
+                    dispatch(updateLobbyParticipantOnLeave(id));
+                });
             });
-
-            conference.on(JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED, (origin, sender) =>
-                _maybeSendLobbyNotification(origin, sender, {
-                    dispatch,
-                    getState
-                })
-            );
         }
     }
 );
+
+/**
+ * Function to handle the lobby notification.
+ *
+ * @param {Object} store - The Redux store.
+ * @returns {void}
+ */
+function _handleLobbyNotification(store: any) {
+    const { dispatch, getState } = store;
+    const knockingParticipants = getKnockingParticipants(getState());
+
+    if (knockingParticipants.length === 0) {
+        dispatch(hideNotification(LOBBY_NOTIFICATION_ID));
+
+        return;
+    }
+
+    let notificationTitle;
+    let customActionNameKey;
+    let customActionHandler;
+    let customActionType;
+    let descriptionKey;
+    let icon;
+
+    if (knockingParticipants.length === 1) {
+        const firstParticipant = knockingParticipants[0];
+        const showChat = showLobbyChatButton(firstParticipant)(getState());
+
+        descriptionKey = 'notify.participantWantsToJoin';
+        notificationTitle = firstParticipant.name;
+        icon = NOTIFICATION_ICON.PARTICIPANT;
+        customActionNameKey = [ 'participantsPane.actions.admit', 'participantsPane.actions.reject' ];
+        customActionType = [ BUTTON_TYPES.PRIMARY, BUTTON_TYPES.DESTRUCTIVE ];
+        customActionHandler = [ () => batch(() => {
+            dispatch(hideNotification(LOBBY_NOTIFICATION_ID));
+            dispatch(approveKnockingParticipant(firstParticipant.id));
+        }),
+        () => batch(() => {
+            dispatch(hideNotification(LOBBY_NOTIFICATION_ID));
+            dispatch(rejectKnockingParticipant(firstParticipant.id));
+        }) ];
+
+        // This checks if lobby chat button is available
+        // and, if so, it adds it to the customActionNameKey array
+        if (showChat) {
+            customActionNameKey.splice(1, 0, 'lobby.chat');
+            customActionType.splice(1, 0, BUTTON_TYPES.SECONDARY);
+            customActionHandler.splice(1, 0, () => batch(() => {
+                dispatch(handleLobbyChatInitialized(firstParticipant.id));
+                dispatch(openChat({}, arePollsDisabled(getState())));
+            }));
+        }
+    } else {
+        descriptionKey = 'notify.participantsWantToJoin';
+        notificationTitle = i18n.t('notify.waitingParticipants', {
+            waitingParticipants: knockingParticipants.length
+        });
+        icon = NOTIFICATION_ICON.PARTICIPANTS;
+        customActionNameKey = [ 'notify.viewLobby' ];
+        customActionType = [ BUTTON_TYPES.PRIMARY ];
+        customActionHandler = [ () => batch(() => {
+            dispatch(hideNotification(LOBBY_NOTIFICATION_ID));
+            dispatch(openParticipantsPane());
+        }) ];
+    }
+
+    dispatch(showNotification({
+        title: notificationTitle,
+        descriptionKey,
+        uid: LOBBY_NOTIFICATION_ID,
+        customActionNameKey,
+        customActionType,
+        customActionHandler,
+        icon
+    }, NOTIFICATION_TIMEOUT_TYPE.STICKY));
+}
 
 /**
  * Function to handle the conference failed event and navigate the user to the lobby screen
@@ -129,17 +274,24 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
     const state = getState();
     const { membersOnly } = state['features/base/conference'];
     const nonFirstFailure = Boolean(membersOnly);
+    const { isDisplayNameRequiredError } = state['features/lobby'];
 
     if (error.name === JitsiConferenceErrors.MEMBERS_ONLY_ERROR) {
         if (typeof error.recoverable === 'undefined') {
             error.recoverable = true;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const [ _lobbyJid, lobbyWaitingForHost ] = error.params;
+
         const result = next(action);
 
         dispatch(openLobbyScreen());
 
-        if (shouldAutoKnock(state)) {
+        // if there was an error about display name and pre-join is not enabled
+        if (shouldAutoKnock(state)
+                || (isDisplayNameRequiredError && !isPrejoinEnabledInConfig(state))
+                || lobbyWaitingForHost) {
             dispatch(startKnocking());
         }
 
@@ -149,6 +301,18 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
         }
 
         dispatch(setPasswordJoinFailed(nonFirstFailure));
+
+        return result;
+    } else if (error.name === JitsiConferenceErrors.DISPLAY_NAME_REQUIRED) {
+        const [ isLobbyEnabled ] = error.params;
+
+        const result = next(action);
+
+        // if the error is due to required display name because lobby is enabled for the room
+        // if not showing the prejoin page then show lobby UI
+        if (isLobbyEnabled && !isPrejoinPageVisible(state)) {
+            dispatch(openLobbyScreen());
+        }
 
         return result;
     }
@@ -164,6 +328,7 @@ function _conferenceFailed({ dispatch, getState }, next, action) {
             dispatch(appNavigate(undefined));
         } else {
             dispatch(disconnect(false));
+            dispatch(maybeRedirectToWelcomePage());
         }
     }
 

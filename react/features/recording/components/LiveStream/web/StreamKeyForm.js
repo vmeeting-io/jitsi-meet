@@ -1,34 +1,43 @@
-// @flow
-
-import { FieldTextStateless } from '@atlaskit/field-text';
+import { Theme } from '@mui/material';
 import React from 'react';
+import { connect } from 'react-redux';
+import { withStyles } from 'tss-react/mui';
 
-import { translate } from '../../../../base/i18n';
+import { translate } from '../../../../base/i18n/functions';
+import { withPixelLineHeight } from '../../../../base/styles/functions.web';
+import Input from '../../../../base/ui/components/web/Input';
 import AbstractStreamKeyForm, {
-    type Props
+    _mapStateToProps
 } from '../AbstractStreamKeyForm';
-import { GOOGLE_PRIVACY_POLICY, YOUTUBE_TERMS_URL } from '../constants';
+
+const styles = (theme: Theme) => {
+    return {
+        helperLink: {
+            cursor: 'pointer',
+            color: theme.palette.link01,
+            transition: 'color .2s ease',
+            ...withPixelLineHeight(theme.typography.labelBold),
+            marginLeft: 'auto',
+            marginTop: theme.spacing(1),
+
+            '&:hover': {
+                textDecoration: 'underline',
+                color: theme.palette.link01Hover
+            },
+
+            '&:active': {
+                color: theme.palette.link01Active
+            }
+        }
+    };
+};
 
 /**
  * A React Component for entering a key for starting a YouTube live stream.
  *
  * @augments Component
  */
-class StreamKeyForm extends AbstractStreamKeyForm<Props> {
-
-    /**
-     * Initializes a new {@code StreamKeyForm} instance.
-     *
-     * @param {Props} props - The React {@code Component} props to initialize
-     * the new {@code StreamKeyForm} instance with.
-     */
-    constructor(props: Props) {
-        super(props);
-
-        // Bind event handlers so they are only bound once per instance.
-        this._onOpenHelp = this._onOpenHelp.bind(this);
-        this._onOpenHelpKeyPress = this._onOpenHelpKeyPress.bind(this);
-    }
+class StreamKeyForm extends AbstractStreamKeyForm {
 
     /**
      * Implements React's {@link Component#render()}.
@@ -38,21 +47,19 @@ class StreamKeyForm extends AbstractStreamKeyForm<Props> {
      */
     render() {
         const { t, value } = this.props;
+        const classes = withStyles.getClasses(this.props);
 
         return (
             <div className = 'stream-key-form'>
-                <FieldTextStateless
+                <Input
                     autoFocus = { true }
-                    compact = { true }
-                    isSpellCheckEnabled = { false }
+                    id = 'streamkey-input'
                     label = { t('dialog.streamKey') }
                     name = 'streamId'
-                    okDisabled = { !value }
                     onChange = { this._onInputChange }
                     placeholder = { t('liveStreaming.enterStreamKey') }
-                    shouldFitContainer = { true }
                     type = 'text'
-                    value = { this.props.value } />
+                    value = { value } />
                 <div className = 'form-footer'>
                     <div className = 'help-container'>
                         {
@@ -62,29 +69,27 @@ class StreamKeyForm extends AbstractStreamKeyForm<Props> {
                                 </span>
                                 : null
                         }
-                        { this.helpURL
+                        { this.props._liveStreaming.helpURL
                             ? <a
-                                aria-label = { t('liveStreaming.streamIdHelp') }
-                                className = 'helper-link'
-                                onClick = { this._onOpenHelp }
-                                onKeyPress = { this._onOpenHelpKeyPress }
-                                role = 'link'
-                                tabIndex = { 0 }>
+                                className = { classes.helperLink }
+                                href = { this.props._liveStreaming.helpURL }
+                                rel = 'noopener noreferrer'
+                                target = '_blank'>
                                 { t('liveStreaming.streamIdHelp') }
                             </a>
                             : null
                         }
                     </div>
                     <a
-                        className = 'helper-link'
-                        href = { YOUTUBE_TERMS_URL }
+                        className = { classes.helperLink }
+                        href = { this.props._liveStreaming.termsURL }
                         rel = 'noopener noreferrer'
                         target = '_blank'>
                         { t('liveStreaming.youtubeTerms') }
                     </a>
                     <a
-                        className = 'helper-link'
-                        href = { GOOGLE_PRIVACY_POLICY }
+                        className = { classes.helperLink }
+                        href = { this.props._liveStreaming.dataPrivacyURL }
                         rel = 'noopener noreferrer'
                         target = '_blank'>
                         { t('liveStreaming.googlePrivacyPolicy') }
@@ -93,39 +98,6 @@ class StreamKeyForm extends AbstractStreamKeyForm<Props> {
             </div>
         );
     }
-
-    _onInputChange: Object => void;
-
-    _onOpenHelp: () => void;
-
-    /**
-     * Opens a new tab with information on how to manually locate a YouTube
-     * broadcast stream key.
-     *
-     * @private
-     * @returns {void}
-     */
-    _onOpenHelp() {
-        window.open(this.helpURL, '_blank', 'noopener');
-    }
-
-    _onOpenHelpKeyPress: () => void;
-
-    /**
-     * Opens a new tab with information on how to manually locate a YouTube
-     * broadcast stream key.
-     *
-     * @param {Object} e - The key event to handle.
-     *
-     * @private
-     * @returns {void}
-     */
-    _onOpenHelpKeyPress(e) {
-        if (e.key === ' ') {
-            e.preventDefault();
-            this._onOpenHelp();
-        }
-    }
 }
 
-export default translate(StreamKeyForm);
+export default translate(connect(_mapStateToProps)(withStyles(StreamKeyForm, styles)));

@@ -1,180 +1,149 @@
 // @flow
 
 import React from 'react';
-import { toArray } from 'react-emoji-render';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import { 
-    Icon,
-    IconShareExcel,
-    IconShareHTML,
-    IconShareHWP,
-    IconShareFile,
-    IconShareMP3,
-    IconShareMP4,
-    IconSharePDF,
-    IconSharePPT,
-    IconShareWord,
-    IconShareZip
-} from '../../../base/icons';
-import { translate } from '../../../base/i18n';
-import { Linkify } from '../../../base/react';
-import { getBaseUrl, getFileSize, processFileSize, truncateDateTimeStamp } from '../../../base/util';
+import { translate } from '../../../base/i18n/functions';
+import Message from '../../../base/react/components/web/Message';
+import { withPixelLineHeight } from '../../../base/styles/functions.web';
 import { MESSAGE_TYPE_LOCAL } from '../../constants';
-import AbstractChatMessage, { type Props } from '../AbstractChatMessage';
+import { getFormattedTimestamp, getMessageText, getPrivateNoticeMessage } from '../../functions';
 
 import PrivateMessageButton from './PrivateMessageButton';
 
+const useStyles = makeStyles()((theme: Theme) => {
+    return {
+        chatMessageWrapper: {
+            maxWidth: '100%'
+        },
+
+        chatMessage: {
+            display: 'inline-flex',
+            padding: '12px',
+            backgroundColor: theme.palette.ui02,
+            borderRadius: '4px 12px 12px 12px',
+            maxWidth: '100%',
+            marginTop: '4px',
+            boxSizing: 'border-box',
+
+            '&.privatemessage': {
+                backgroundColor: theme.palette.support05
+            },
+
+            '&.local': {
+                backgroundColor: theme.palette.ui04,
+                borderRadius: '12px 4px 12px 12px',
+
+                '&.privatemessage': {
+                    backgroundColor: theme.palette.support05
+                }
+            },
+
+            '&.error': {
+                backgroundColor: 'rgb(215, 121, 118)',
+                borderRadius: 0,
+                fontWeight: 100
+            },
+
+            '&.lobbymessage': {
+                backgroundColor: theme.palette.support05
+            }
+        },
+
+        replyWrapper: {
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            maxWidth: '100%'
+        },
+
+        messageContent: {
+            maxWidth: '100%',
+            overflow: 'hidden',
+            flex: 1
+        },
+
+        replyButtonContainer: {
+            display: 'flex',
+            alignItems: 'flex-start',
+            height: '100%'
+        },
+
+        replyButton: {
+            padding: '2px'
+        },
+
+        displayName: {
+            ...withPixelLineHeight(theme.typography.labelBold),
+            color: theme.palette.text02,
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
+            marginBottom: theme.spacing(1)
+        },
+
+        userMessage: {
+            ...withPixelLineHeight(theme.typography.bodyShortRegular),
+            color: theme.palette.text01,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word'
+        },
+
+        privateMessageNotice: {
+            ...withPixelLineHeight(theme.typography.labelRegular),
+            color: theme.palette.text02,
+            marginTop: theme.spacing(1)
+        },
+
+        timestamp: {
+            ...withPixelLineHeight(theme.typography.labelRegular),
+            color: theme.palette.text03,
+            marginTop: theme.spacing(1)
+        }
+    };
+});
+
 /**
  * Renders a single chat message.
+ *
+ * @param {IProps} props - Component's props.
+ * @returns {JSX}
  */
-class ChatMessage extends AbstractChatMessage<Props> {
+const ChatMessage = ({
+    knocking,
+    message,
+    showDisplayName,
+    showTimestamp,
+    type,
+    t
+}) => {
+    const { classes, cx } = useStyles();
+
     /**
-     * Implements React's {@link Component#render()}.
+     * Renders the display name of the sender.
      *
-     * @inheritdoc
-     * @returns {ReactElement}
+     * @returns {React$Element<*>}
      */
-
-    render() {
-        let key = 1024;
-        const { message, t } = this.props;
-        const processedMessage = [];
-        const serverURL = getBaseUrl();
-        const downloadBaseURL = `${serverURL}download`;
-        const txt = this._getMessageText();
-
-        // Tokenize the text in order to avoid emoji substitution for URLs.
-        const tokens = txt.split(' ');
-
-        // Content is an array of text and emoji components
-        const content = [];
-
-        for (const token of tokens) {
-            if (token.includes('\n')) {
-                for (const line of token.split('\n')) {
-                    if (line.includes('://')) {
-                        content.push(line);
-                    } else {
-                        content.push(...toArray(line, { className: 'smiley' }));
-                    }
-                    content.push(React.createElement('br', { key }));
-                    key += 1;
-                }
-            } else {
-                if (token.includes('://')) {
-                    // It contains a link, bypass the emojification.
-                    content.push(token);
-                } else {
-                    content.push(...toArray(token, { className: 'smiley' }));
-                }
-            }
-            content.push(' ');
-        }
-
-        content.forEach(msg => {
-
-            if (typeof msg === 'string' && msg.startsWith(downloadBaseURL)) {
-                let filename = msg.split('/').pop(); // use pop to fetch the last element contained in the array after using split
-                if ((filename !== undefined) && (filename !== '')) {
-
-                    const fsize = getFileSize(msg);
-                    const processedSize = processFileSize(fsize);
-                    let decodedFileName = decodeURIComponent(filename);
-                    let rawFileNameWOTS = truncateDateTimeStamp(decodedFileName);
-
-                    // poetic way to check whether the file extension types
-                    if(/\.(jpe?g|png|gif|bmp)$/i.test(msg)) {
-                        processedMessage.push(<a target="_blank" key = 'chatmessage-uploadedImage' href={ msg } download={ rawFileNameWOTS }><img className = 'chatmessage-uploadedImage' key = { msg } src = { msg } /></a>);
-                    }
-                    else if(/\.(pdf)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconSharePDF, rawFileNameWOTS, processedSize));
-                    }
-                    else if(/\.(ppt|pptx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconSharePPT, rawFileNameWOTS, processedSize));
-                    }
-                    else if(/\.(html|htm)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareHTML, rawFileNameWOTS, processedSize));
-                    }
-                    else if(/\.(doc|docx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareWord, rawFileNameWOTS, processedSize));
-                    }
-                    else if(/\.(hwp)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareHWP, rawFileNameWOTS, processedSize));
-                    }
-                    else if(/\.(xls|xlsx)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareExcel, rawFileNameWOTS, processedSize));
-                    }
-                    else if(/\.(zip)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareZip, rawFileNameWOTS, processedSize));
-                    }
-                    else if(/\.(mp3)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareMP3, rawFileNameWOTS, processedSize));
-                    }
-                    else if(/\.(mp4)$/i.test(msg) && (filename !== undefined) && (filename !== '')) {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareMP4, rawFileNameWOTS, processedSize));
-                    }
-                    // else it is an uploaded file but we don't have corresponding icon, we use the base icon
-                    else {
-                        processedMessage.push(this._renderFileUploads(msg, IconShareFile, rawFileNameWOTS, processedSize));
-                    }
-                // when someone is just sending a message with the URL of the server but nothing more
-                } else {
-                    processedMessage.push(msg);
-                }
-
-            }
-            else if (typeof msg === 'string' && msg !== ' ') {
-                processedMessage.push(<Linkify key = { msg }>{ msg }</Linkify>);
-            }
-            else {
-                processedMessage.push(msg);
-            }
-        });
-
+    function _renderDisplayName() {
         return (
             <div
-                className = {`chatmessage-wrapper ${message.messageType}`}
-                tabIndex = { -1 }>
-                <div className = { `chatmessage ${message.privateMessage ? 'privatemessage' : ''}` }>
-                    <div className = 'replywrapper'>
-                        <div className = 'messagecontent'>
-                            { this.props.showDisplayName && this._renderDisplayName() }
-                            <div className = 'usermessage'>
-                                { processedMessage }
-                            </div>
-                            { message.privateMessage && this._renderPrivateNotice() }
-                        </div>
-                        { message.privateMessage && message.messageType !== MESSAGE_TYPE_LOCAL
-                            && (
-                                <div className = 'messageactions'>
-                                    <PrivateMessageButton
-                                        participantID = { message.id }
-                                        reply = { true }
-                                        showLabel = { false } />
-                                </div>
-                            ) }
-                    </div>
-                </div>
-                { this.props.showTimestamp && this._renderTimestamp() }
+                aria-hidden = { true }
+                className = { cx('display-name', classes.displayName) }>
+                {message.displayName}
             </div>
         );
     }
-
-    _getFormattedTimestamp: () => string;
-
-    _getMessageText: () => string;
-
-    _getPrivateNoticeMessage: () => string;
 
     /**
      * Renders the message privacy notice.
      *
      * @returns {React$Element<*>}
      */
-    _renderPrivateNotice() {
+    function _renderPrivateNotice() {
         return (
-            <div className = 'privatemessagenotice'>
-                { this._getPrivateNoticeMessage() }
+            <div className = { classes.privateMessageNotice }>
+                {getPrivateNoticeMessage(message)}
             </div>
         );
     }
@@ -184,49 +153,60 @@ class ChatMessage extends AbstractChatMessage<Props> {
      *
      * @returns {React$Element<*>}
      */
-    _renderTimestamp() {
+    function _renderTimestamp() {
         return (
-            <div className = 'timestamp'>
-                { this._getFormattedTimestamp() }
+            <div className = { cx('timestamp', classes.timestamp) }>
+                {getFormattedTimestamp(message)}
             </div>
         );
     }
 
-    /**
-     * Renders the display name of the sender.
-     *
-     * @returns {React$Element<*>}
-     */
-    _renderDisplayName() {
-        return (
+    return (
+        <div
+            className = { cx(classes.chatMessageWrapper, type) }
+            id = { message.messageId }
+            tabIndex = { -1 }>
             <div
-                aria-hidden = { true }
-                className = 'display-name'>
-                { this.props.message.displayName }
-            </div>
-        );
-    }
-
-    _renderFileUploads(msg, icon, fileName, fsize) {
-        const { t } = this.props;
-        return(
-            <a target="_blank" key = { msg } href={ msg } download={ fileName }>
-                <div className = "userfiles">
-                    <div className = "userfiles-icons">
-                        <Icon src={ icon } size= { 50 } />
-                    </div>
-                    <div className = "userfilesnamesize">
-                        <div className = "userfilesname">
-                            { fileName }
+                className = { cx('chatmessage', classes.chatMessage, type,
+                    message.privateMessage && 'privatemessage',
+                    message.lobbyChat && !knocking && 'lobbymessage') }>
+                <div className = { classes.replyWrapper }>
+                    <div className = { cx('messagecontent', classes.messageContent) }>
+                        <div className = { cx('usermessage', classes.userMessage) }>
+                            <Message text = { getMessageText(message) } />
                         </div>
-                        <div className = "userfilessize">
-                            { t('chat.filesize') + fsize }
-                        </div>
+                        {(message.privateMessage || (message.lobbyChat && !knocking))
+                            && _renderPrivateNotice()}
                     </div>
+                    {(message.privateMessage || (message.lobbyChat && !knocking))
+                        && message.messageType !== MESSAGE_TYPE_LOCAL
+                        && (
+                            <div
+                                className = { classes.replyButtonContainer }>
+                                <PrivateMessageButton
+                                    isLobbyMessage = { message.lobbyChat }
+                                    participantID = { message.id } />
+                            </div>
+                        )}
                 </div>
-            </a>
-        );
-    }
+            </div>
+            {showTimestamp && _renderTimestamp()}
+        </div>
+    );
+};
+
+/**
+ * Maps part of the Redux store to the props of this component.
+ *
+ * @param {Object} state - The Redux state.
+ * @returns {IProps}
+ */
+function _mapStateToProps(state) {
+    const { knocking } = state['features/lobby'];
+
+    return {
+        knocking
+    };
 }
 
-export default translate(ChatMessage);
+export default translate(connect(_mapStateToProps)(ChatMessage));

@@ -1,6 +1,4 @@
-// @flow
-
-import { getParticipantById } from '../base/participants';
+import { getParticipantById } from '../base/participants/functions';
 
 /**
  * Selector for the participant currently displaying on the large video.
@@ -8,8 +6,8 @@ import { getParticipantById } from '../base/participants';
  * @param {Object} state - The redux state.
  * @returns {Object}
  */
-export function getLargeVideoParticipant(state: Object) {
+export function getLargeVideoParticipant(state) {
     const { participantId } = state['features/large-video'];
 
-    return getParticipantById(state, participantId);
+    return getParticipantById(state, participantId ?? '');
 }

@@ -1,11 +1,11 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { makeStyles } from '@material-ui/styles';
+import { makeStyles } from 'tss-react/mui';
 
 import { getParticipantCount } from '../../../base/participants/functions';
 import { withPixelLineHeight } from '../../../base/styles/functions.web';
 
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles()(theme => {
     return {
         badge: {
             backgroundColor: theme.palette.ui03,
@@ -25,10 +25,10 @@ const useStyles = makeStyles(theme => {
 });
 
 const ParticipantsCounter = () => {
-    const styles = useStyles();
+    const { classes } = useStyles();
     const participantsCount = useSelector(getParticipantCount);
 
-    return <span className = { styles.badge }>{participantsCount}</span>;
+    return <span className = { classes.badge }>{participantsCount}</span>;
 };
 
 export default ParticipantsCounter;

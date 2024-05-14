@@ -1,31 +1,21 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { openDialog } from '../../../base/dialog';
-import { getFeatureFlag, OVERFLOW_MENU_ENABLED } from '../../../base/flags';
-import { translate } from '../../../base/i18n';
-import { IconHorizontalPoints } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import { openDialog } from '../../../base/dialog/actions';
+import { OVERFLOW_MENU_ENABLED } from '../../../base/flags/constants';
+import { getFeatureFlag } from '../../../base/flags/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconDotsHorizontal } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 
 import OverflowMenu from './OverflowMenu';
 
 /**
- * The type of the React {@code Component} props of {@link OverflowMenuButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
-
-/**
  * An implementation of a button for showing the {@code OverflowMenu}.
  */
-class OverflowMenuButton extends AbstractButton<Props, *> {
+class OverflowMenuButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.moreActions';
-    icon = IconHorizontalPoints;
+    icon = IconDotsHorizontal;
     label = 'toolbar.moreActions';
 
     /**

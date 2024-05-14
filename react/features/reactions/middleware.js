@@ -2,47 +2,46 @@
 
 import { batch } from 'react-redux';
 
-import { createReactionSoundsDisabledEvent, sendAnalytics } from '../analytics';
-import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app';
-import {
-    CONFERENCE_WILL_JOIN,
-    SET_START_REACTIONS_MUTED,
-    setStartReactionsMuted
-} from '../base/conference';
+import { createReactionSoundsDisabledEvent } from '../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../analytics/functions';
+import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app/actionTypes';
+import { CONFERENCE_JOIN_IN_PROGRESS, SET_START_REACTIONS_MUTED } from '../base/conference/actionTypes';
+import { setStartReactionsMuted } from '../base/conference/actions';
 import {
     getParticipantById,
     getParticipantCount,
     isLocalParticipantModerator
-} from '../base/participants';
-import { MiddlewareRegistry } from '../base/redux';
+} from '../base/participants/functions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 import { SETTINGS_UPDATED } from '../base/settings/actionTypes';
 import { updateSettings } from '../base/settings/actions';
-import { playSound, registerSound, unregisterSound } from '../base/sounds';
+import { playSound, registerSound, unregisterSound } from '../base/sounds/actions';
 import { getDisabledSounds } from '../base/sounds/functions.any';
-import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../notifications';
+import { showNotification } from '../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 
 import {
     ADD_REACTION_BUFFER,
     FLUSH_REACTION_BUFFER,
-    SEND_REACTIONS,
     PUSH_REACTIONS,
+    SEND_REACTIONS,
     SHOW_SOUNDS_NOTIFICATION
 } from './actionTypes';
-import { displayReactionSoundsNotification } from './actions';
 import {
     addReactionsToChat,
+    displayReactionSoundsNotification,
     flushReactionBuffer,
     pushReactions,
     sendReactions,
     setReactionQueue
-} from './actions.any';
+} from './actions';
 import {
     ENDPOINT_REACTION_NAME,
+    MUTE_REACTIONS_COMMAND,
     RAISE_HAND_SOUND_ID,
     REACTIONS,
     REACTION_SOUND,
-    SOUNDS_THRESHOLDS,
-    MUTE_REACTIONS_COMMAND
+    SOUNDS_THRESHOLDS
 } from './constants';
 import {
     getReactionMessageFromBuffer,
@@ -95,7 +94,7 @@ MiddlewareRegistry.register(store => next => action => {
         const { timeoutID, buffer } = getState()['features/reactions'];
         const { reaction } = action;
 
-        clearTimeout(timeoutID);
+        clearTimeout(timeoutID ?? 0);
         buffer.push(reaction);
         action.buffer = buffer;
         action.timeoutID = setTimeout(() => {
@@ -104,7 +103,7 @@ MiddlewareRegistry.register(store => next => action => {
 
         break;
     }
-    case CONFERENCE_WILL_JOIN: {
+    case CONFERENCE_JOIN_IN_PROGRESS: {
         const { conference } = action;
 
         conference.addCommandListener(
@@ -204,7 +203,7 @@ MiddlewareRegistry.register(store => next => action => {
         if (isModerator && !disableReactionsModeration) {
             customActions.push('notify.reactionSoundsForAll');
             customFunctions.push(() => batch(() => {
-                dispatch(setStartReactionsMuted(true, true));
+                dispatch(setStartReactionsMuted(true));
                 dispatch(updateSettings({ soundsReactions: false }));
             }));
         }
@@ -248,17 +247,18 @@ function _onMuteReactionsCommand(attributes = {}, id, store) {
 
     // The Command(s) API will send us our own commands and we don't want
     // to act upon them.
-    if (participantSendingCommand.local) {
+    if (participantSendingCommand?.local) {
         return;
     }
 
-    if (participantSendingCommand.role !== 'moderator') {
+    if (participantSendingCommand?.role !== 'moderator') {
         logger.warn('Received mute-reactions command not from moderator');
 
         return;
     }
 
     const oldState = Boolean(state['features/base/conference'].startReactionsMuted);
+
     const newState = attributes.startReactionsMuted === 'true';
 
     if (oldState !== newState) {

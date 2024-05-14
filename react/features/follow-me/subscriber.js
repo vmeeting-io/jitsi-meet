@@ -1,11 +1,11 @@
 // @flow
 
-import { getCurrentConference } from '../base/conference';
+import { getCurrentConference } from '../base/conference/functions';
 import {
     getPinnedParticipant,
     isLocalParticipantModerator
-} from '../base/participants';
-import { StateListenerRegistry } from '../base/redux';
+} from '../base/participants/functions';
+import StateListenerRegistry from '../base/redux/StateListenerRegistry';
 import { shouldDisplayTileView } from '../video-layout/functions';
 
 import { FOLLOW_ME_COMMAND } from './constants';

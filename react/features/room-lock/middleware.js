@@ -1,27 +1,21 @@
-// @flow
-
+// @ts-expect-error
 import UIEvents from '../../../service/UI/UIEvents';
 import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
     LOCK_STATE_CHANGED,
     SET_PASSWORD_FAILED
-} from '../base/conference';
-import { hideDialog } from '../base/dialog';
+} from '../base/conference/actionTypes';
+import { hideDialog } from '../base/dialog/actions';
 import { JitsiConferenceErrors } from '../base/lib-jitsi-meet';
-import { MiddlewareRegistry } from '../base/redux';
-import { isInBreakoutRoom } from '../breakout-rooms';
-import {
-    NOTIFICATION_TIMEOUT_TYPE,
-    showNotification
-} from '../notifications';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { showErrorNotification, showNotification } from '../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 
 import { _openPasswordRequiredPrompt } from './actions';
-import { PasswordRequiredPrompt } from './components';
+import PasswordRequiredPrompt from './components/PasswordRequiredPrompt';
 import { LOCKED_REMOTELY } from './constants';
 import logger from './logger';
-
-declare var APP: Object;
 
 /**
  * Middleware that captures conference failed and checks for password required
@@ -56,9 +50,7 @@ MiddlewareRegistry.register(store => next => action => {
                 showNotification({
                     titleKey: 'notify.passwordSetRemotely'
                 }, NOTIFICATION_TIMEOUT_TYPE.SHORT));
-        } else if (previousLockedState === LOCKED_REMOTELY
-            && !currentLockedState
-            && !isInBreakoutRoom(store.getState())) {
+        } else if (previousLockedState === LOCKED_REMOTELY && !currentLockedState) {
             store.dispatch(
                 showNotification({
                     titleKey: 'notify.passwordRemovedRemotely'
@@ -152,10 +144,10 @@ function _setPasswordFailed(store, next, action) {
             descriptionKey = 'dialog.lockMessage';
             titleKey = 'dialog.lockTitle';
         }
-        APP.UI.messageHandler.showError({
+        APP.store.dispatch(showErrorNotification({
             descriptionKey,
             titleKey
-        });
+        }, NOTIFICATION_TIMEOUT_TYPE.LONG));
     }
 
     return next(action);

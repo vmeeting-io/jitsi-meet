@@ -1,83 +1,46 @@
-// @flow
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { IconShareDesktop } from '../../../base/icons';
+import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconScreenshare } from '../../../base/icons/svg';
 import JitsiMeetJS from '../../../base/lib-jitsi-meet/_';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { isForceMuted } from '../../../participants-pane/functions';
-import { isScreenMediaShared, isScreenVideoShared } from '../../../screen-share';
 import { getLocalParticipant } from '../../../base/participants';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import { isForceMuted } from '../../../participants-pane/functions';
+import { startScreenShareFlow } from '../../../screen-share/actions.web';
+import { isScreenVideoShared } from '../../../screen-share/functions';
 
-type Props = AbstractButtonProps & {
-
-     /**
-     * Whether or not screensharing is initialized.
-     */
-      _desktopSharingEnabled: boolean,
-
-    /**
-     * The tooltip key to use when screensharing is disabled. Or undefined
-     * if non to be shown and the button to be hidden.
-     */
-    _desktopSharingDisabledTooltipKey: string,
-
-    /**
-     * Whether or not the local participant is screensharing.
-     */
-     _screensharing: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-     dispatch: Function,
-};
+import { closeOverflowMenuIfOpen } from '../../actions.web';
+import { isDesktopShareButtonDisabled } from '../../functions';
 
 /**
  * Implementation of a button for sharing desktop / windows.
  */
-class ShareDesktopButton extends AbstractButton<Props, *> {
+class ShareDesktopButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.shareYourScreen';
-    label = 'toolbar.screenSharing';
-    icon = IconShareDesktop;
-    tooltip = 'toolbar.accessibilityLabel.shareYourScreen';
+    toggledAccessibilityLabel = 'toolbar.accessibilityLabel.stopScreenSharing';
+    label = 'toolbar.startScreenSharing';
+    icon = IconScreenshare;
+    toggledLabel = 'toolbar.stopScreenSharing';
 
     /**
      * Retrieves tooltip dynamically.
+     *
+     * @returns {string}
      */
-    get tooltip() {
-        const { _desktopSharingDisabledTooltipKey, _desktopSharingEnabled, _screensharing } = this.props;
+    _getTooltip() {
+        const { _desktopSharingEnabled, _screensharing } = this.props;
 
         if (_desktopSharingEnabled) {
-            return 'toolbar.screenSharing';
+            if (_screensharing) {
+                return 'toolbar.stopScreenSharing';
+            }
+
+            return 'toolbar.startScreenSharing';
         }
 
-        return _desktopSharingDisabledTooltipKey;
-    }
-
-    /**
-     * Required by linter due to AbstractButton overwritten prop being writable.
-     *
-     * @param {string} _value - The icon value.
-     */
-    set tooltip(_value) {
-        // Unused.
-    }
-
-    /**
-     * Handles clicking / pressing the button, and opens the appropriate dialog.
-     *
-     * @protected
-     * @returns {void}
-     */
-    _handleClick() {
-        const { handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
+        return 'dialog.shareYourScreenDisabled';
     }
 
     /**
@@ -101,6 +64,23 @@ class ShareDesktopButton extends AbstractButton<Props, *> {
     _isDisabled() {
         return !this.props._desktopSharingEnabled;
     }
+
+    /**
+     * Handles clicking the button, and toggles the chat.
+     *
+     * @private
+     * @returns {void}
+     */
+    _handleClick() {
+        const { dispatch, _screensharing } = this.props;
+
+        sendAnalytics(createToolbarEvent(
+            'toggle.screen.sharing',
+            { enable: !_screensharing }));
+
+        dispatch(closeOverflowMenuIfOpen());
+        dispatch(startScreenShareFlow(!_screensharing));
+    }
 }
 
 /**
@@ -109,33 +89,18 @@ class ShareDesktopButton extends AbstractButton<Props, *> {
  * @param {Object} state - Redux state.
  * @returns {Object}
  */
-const mapStateToProps = state => {
-    const { muted, unmuteBlocked } = state['features/base/media'].video;
-    const videoOrShareInProgress = isScreenMediaShared(state) || !muted;
-    const local = getLocalParticipant(state);
-    const _approved = !isForceMuted(local, 'presenter', state);
-
+const mapStateToProps = (state) => {
     // Disable the screenshare button if the video sender limit is reached and there is no video or media share in
     // progress.
-    let desktopSharingEnabled = JitsiMeetJS.isDesktopSharingEnabled()
-        && !(unmuteBlocked && !videoOrShareInProgress);
-    const { enableFeaturesBasedOnToken } = state['features/base/config'];
-
-    let desktopSharingDisabledTooltipKey;
-
-    if (enableFeaturesBasedOnToken) {
-        // we enable desktop sharing if any participant already have this
-        // feature enabled
-        desktopSharingEnabled = state['features/base/participants'].haveParticipantWithScreenSharingFeature;
-        desktopSharingDisabledTooltipKey = 'dialog.shareYourScreenDisabled';
-    } else if (!_approved) {
-        desktopSharingEnabled = false;
-    }
+    const local = getLocalParticipant(state);
+    const approvedPresenter = !isForceMuted(local, 'presenter', state);
+    const desktopSharingEnabled
+        = JitsiMeetJS.isDesktopSharingEnabled() && !isDesktopShareButtonDisabled(state) && approvedPresenter;
 
     return {
-        _desktopSharingDisabledTooltipKey: desktopSharingDisabledTooltipKey,
         _desktopSharingEnabled: desktopSharingEnabled,
-        _screensharing: isScreenVideoShared(state)
+        _screensharing: isScreenVideoShared(state),
+        visible: JitsiMeetJS.isDesktopSharingEnabled()
     };
 };
 

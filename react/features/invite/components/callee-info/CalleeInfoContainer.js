@@ -1,24 +1,7 @@
-// @flow
-
 import React, { Component } from 'react';
-
-import { connect } from '../../../base/redux';
+import { connect } from 'react-redux';
 
 import CalleeInfo from './CalleeInfo';
-
-/**
- * The type of the React {@code Component} props of {@code CalleeInfoContainer}.
- */
-type Props = {
-
-    /**
-     * The indicator which determines whether {@code CalleeInfo} is to be
-     * rendered.
-     *
-     * @private
-     */
-    _calleeInfoVisible: boolean
-};
 
 /**
  * Implements a React {@link Component} which depicts the establishment of a
@@ -26,7 +9,7 @@ type Props = {
  *
  * @augments Component
  */
-class CalleeInfoContainer extends Component<Props> {
+class CalleeInfoContainer extends Component {
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -49,7 +32,7 @@ class CalleeInfoContainer extends Component<Props> {
  *     _calleeInfoVisible: boolean
  * }}
  */
-function _mapStateToProps(state: Object): Object {
+function _mapStateToProps(state) {
     return {
         /**
          * The indicator which determines whether {@code CalleeInfo} is to be
@@ -58,7 +41,7 @@ function _mapStateToProps(state: Object): Object {
          * @private
          * @type {boolean}
          */
-        _calleeInfoVisible: state['features/invite'].calleeInfoVisible
+        _calleeInfoVisible: Boolean(state['features/invite'].calleeInfoVisible)
     };
 }
 

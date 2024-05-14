@@ -1,10 +1,11 @@
 // @flow
 
-import { hasAvailableDevices } from '../base/devices';
-import { TOOLBOX_ALWAYS_VISIBLE, getFeatureFlag, TOOLBOX_ENABLED } from '../base/flags';
-import { getParticipantCountWithFake } from '../base/participants';
-import { toState } from '../base/redux';
-import { isLocalVideoTrackDesktop } from '../base/tracks';
+import { hasAvailableDevices } from '../base/devices/functions';
+import { TOOLBOX_ALWAYS_VISIBLE, TOOLBOX_ENABLED } from '../base/flags/constants';
+import { getFeatureFlag } from '../base/flags/functions';
+import { getParticipantCountWithFake } from '../base/participants/functions';
+import { toState } from '../base/redux/functions';
+import { isLocalVideoTrackDesktop } from '../base/tracks/functions';
 
 export * from './functions.any';
 
@@ -27,7 +28,7 @@ export function getMovableButtons(width: number): Set<string> {
 
     switch (true) {
     case width >= WIDTH.FIT_9_ICONS: {
-        buttons = [ 'togglecamera', 'chat', 'participantspane', 'raisehand', 'tileview' ];
+        buttons = [ 'chat', 'togglecamera', 'screensharing', 'raisehand', 'tileview' ];
         break;
     }
     case width >= WIDTH.FIT_8_ICONS: {
@@ -51,6 +52,19 @@ export function getMovableButtons(width: number): Set<string> {
     }
 
     return new Set(buttons);
+}
+
+/**
+ * Indicates if the desktop share button is disabled or not.
+ *
+ * @param {IReduxState} state - The state from the Redux store.
+ * @returns {boolean}
+ */
+export function isDesktopShareButtonDisabled(state: Object) {
+    const { muted, unmuteBlocked } = state['features/base/media'].video;
+    const videoOrShareInProgress = !muted || isLocalVideoTrackDesktop(state);
+
+    return unmuteBlocked && !videoOrShareInProgress;
 }
 
 /**

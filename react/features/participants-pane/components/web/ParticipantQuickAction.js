@@ -1,99 +1,83 @@
-// @flow
-
-import { makeStyles } from '@material-ui/styles';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
 import { approveParticipant } from '../../../av-moderation/actions';
-import { QuickActionButton } from '../../../base/components';
-import { MEDIA_TYPE } from '../../../base/media';
+import { MEDIA_TYPE } from '../../../base/media/constants';
+import Button from '../../../base/ui/components/web/Button';
 import { QUICK_ACTION_BUTTON } from '../../constants';
 
-type Props = {
-
-    /**
-     * The translated ask unmute aria label.
-     */
-    ariaLabel?: boolean,
-
-    /**
-     * The translated "ask unmute" text.
-     */
-    askUnmuteText: string,
-
-    /**
-     * The type of button to be displayed.
-     */
-    buttonType: string,
-
-    /**
-     * Callback used to open a confirmation dialog for audio muting.
-     */
-    muteAudio: Function,
-
-    /**
-     * Label for mute participant button.
-     */
-    muteParticipantButtonText: string,
-
-    /**
-     * The ID of the participant.
-     */
-    participantID: string,
-
-    /**
-     * The name of the participant.
-     */
-    participantName: string
-}
-
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles()(theme => {
     return {
         button: {
-            marginRight: `${theme.spacing(2)}px`
+            marginRight: theme.spacing(2)
         }
     };
 });
 
 const ParticipantQuickAction = ({
-    askUnmuteText,
     buttonType,
     muteAudio,
-    muteParticipantButtonText,
     participantID,
-    participantName
-}: Props) => {
-    const styles = useStyles();
+    participantName,
+    stopVideo
+}) => {
+    const { classes: styles } = useStyles();
     const dispatch = useDispatch();
     const { t } = useTranslation();
 
-    const askToUnmute = useCallback(e => {
-        e.stopPropagation();
+    const askToUnmute = useCallback(() => {
         dispatch(approveParticipant(participantID, MEDIA_TYPE.AUDIO));
+    }, [ dispatch, participantID ]);
+
+    const allowVideo = useCallback(() => {
+        dispatch(approveParticipant(participantID, MEDIA_TYPE.VIDEO));
     }, [ dispatch, participantID ]);
 
     switch (buttonType) {
     case QUICK_ACTION_BUTTON.MUTE: {
         return (
-            <QuickActionButton
+            <Button
                 accessibilityLabel = { `${t('participantsPane.actions.mute')} ${participantName}` }
                 className = { styles.button }
+                label = { t('participantsPane.actions.mute') }
                 onClick = { muteAudio(participantID) }
-                testId = { `mute-${participantID}` }>
-                {muteParticipantButtonText}
-            </QuickActionButton>
+                size = 'small'
+                testId = { `mute-audio-${participantID}` } />
         );
     }
     case QUICK_ACTION_BUTTON.ASK_TO_UNMUTE: {
         return (
-            <QuickActionButton
+            <Button
                 accessibilityLabel = { `${t('participantsPane.actions.askUnmute')} ${participantName}` }
                 className = { styles.button }
+                label = { t('participantsPane.actions.askUnmute') }
                 onClick = { askToUnmute }
-                testId = { `unmute-${participantID}` }>
-                { askUnmuteText }
-            </QuickActionButton>
+                size = 'small'
+                testId = { `unmute-audio-${participantID}` } />
+        );
+    }
+    case QUICK_ACTION_BUTTON.ALLOW_VIDEO: {
+        return (
+            <Button
+                accessibilityLabel = { `${t('participantsPane.actions.askUnmute')} ${participantName}` }
+                className = { styles.button }
+                label = { t('participantsPane.actions.allowVideo') }
+                onClick = { allowVideo }
+                size = 'small'
+                testId = { `unmute-video-${participantID}` } />
+        );
+    }
+    case QUICK_ACTION_BUTTON.STOP_VIDEO: {
+        return (
+            <Button
+                accessibilityLabel = { `${t('participantsPane.actions.mute')} ${participantName}` }
+                className = { styles.button }
+                label = { t('participantsPane.actions.stopVideo') }
+                onClick = { stopVideo(participantID) }
+                size = 'small'
+                testId = { `mute-video-${participantID}` } />
         );
     }
     default: {

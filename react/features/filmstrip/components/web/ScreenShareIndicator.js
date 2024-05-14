@@ -1,32 +1,21 @@
-// @flow
-
 import React from 'react';
 
-import { IconShareDesktop } from '../../../base/icons';
-import { BaseIndicator } from '../../../base/react';
-
-
-type Props = {
-
-    /**
-     * From which side of the indicator the tooltip should appear from.
-     */
-    tooltipPosition: string
-};
+import { IconScreenshare } from '../../../base/icons/svg';
+import BaseIndicator from '../../../base/react/components/web/BaseIndicator';
 
 /**
  * React {@code Component} for showing a screen-sharing icon with a tooltip.
  *
- * @param {Props} props - React props passed to this component.
+ * @param {IProps} props - React props passed to this component.
  * @returns {React$Element<any>}
  */
-export default function ScreenShareIndicator(props: Props) {
+export default function ScreenShareIndicator(props) {
     return (
         <BaseIndicator
-            icon = { IconShareDesktop }
+            icon = { IconScreenshare }
             iconId = 'share-desktop'
-            iconSize = { 15 }
-            tooltipKey = 'videothumbnail.videomute'
+            iconSize = { 16 }
+            tooltipKey = 'videothumbnail.screenSharing'
             tooltipPosition = { props.tooltipPosition } />
     );
 }

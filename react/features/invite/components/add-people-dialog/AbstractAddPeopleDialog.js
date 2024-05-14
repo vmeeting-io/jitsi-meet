@@ -1,13 +1,11 @@
-// @flow
-
 import { Component } from 'react';
 
-import { createInviteDialogEvent, sendAnalytics } from '../../../analytics';
-import {
-    NOTIFICATION_TIMEOUT_TYPE,
-    showNotification
-} from '../../../notifications';
-import { invite } from '../../actions';
+import { createInviteDialogEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { getMeetingRegion } from '../../../base/config/functions.any';
+import { showErrorNotification, showNotification } from '../../../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../../../notifications/constants';
+import { invite } from '../../actions.any';
 import { INVITE_TYPES } from '../../constants';
 import {
     getInviteResultsForQuery,
@@ -18,84 +16,16 @@ import {
 } from '../../functions';
 import logger from '../../logger';
 
-export type Props = {
-
-    /**
-     * Whether or not to show Add People functionality.
-     */
-    _addPeopleEnabled: boolean,
-
-    /**
-     * Whether or not call flows are enabled.
-     */
-    _callFlowsEnabled: boolean,
-
-    /**
-     * The URL for validating if a phone number can be called.
-     */
-    _dialOutAuthUrl: string,
-
-    /**
-     * Whether or not to show Dial Out functionality.
-     */
-    _dialOutEnabled: boolean,
-
-    /**
-     * Whether or not to allow sip invites.
-     */
-     _sipInviteEnabled: boolean,
-
-    /**
-     * The JWT token.
-     */
-    _jwt: string,
-
-    /**
-     * The query types used when searching people.
-     */
-    _peopleSearchQueryTypes: Array<string>,
-
-    /**
-     * The URL pointing to the service allowing for people search.
-     */
-    _peopleSearchUrl: string,
-
-    /**
-     * The Redux dispatch function.
-     */
-    dispatch: Function
-};
-
-export type State = {
-
-    /**
-     * Indicating that an error occurred when adding people to the call.
-     */
-    addToCallError: boolean,
-
-    /**
-     * Indicating that we're currently adding the new people to the
-     * call.
-     */
-    addToCallInProgress: boolean,
-
-    /**
-     * The list of invite items.
-     */
-    inviteItems: Array<Object>,
-};
-
 /**
  * Implements an abstract dialog to invite people to the conference.
  */
-export default class AbstractAddPeopleDialog<P: Props, S: State>
-    extends Component<P, S> {
+export default class AbstractAddPeopleDialog extends Component {
     /**
      * Constructor of the component.
      *
      * @inheritdoc
      */
-    constructor(props: P) {
+    constructor(props) {
         super(props);
 
         this._query = this._query.bind(this);
@@ -104,7 +34,7 @@ export default class AbstractAddPeopleDialog<P: Props, S: State>
     /**
      * Retrieves the notification display name for the invitee.
      *
-     * @param {Object} invitee - The invitee object.
+     * @param {IInvitee} invitee - The invitee object.
      * @returns {string}
      */
     _getDisplayName(invitee) {
@@ -116,7 +46,7 @@ export default class AbstractAddPeopleDialog<P: Props, S: State>
             return invitee.address;
         }
 
-        return invitee.name;
+        return invitee.name ?? '';
     }
 
     /**
@@ -127,8 +57,8 @@ export default class AbstractAddPeopleDialog<P: Props, S: State>
      * no invites left to send. If any are left, that means an invite failed
      * and an error state should display.
      *
-     * @param {Array<Object>} invitees - The items to be invited.
-     * @returns {Promise<Array<Object>>}
+     * @param {Array<IInvitee>} invitees - The items to be invited.
+     * @returns {Promise<Array<any>>}
      */
     _invite(invitees) {
         const inviteTypeCounts = getInviteTypeCounts(invitees);
@@ -150,7 +80,7 @@ export default class AbstractAddPeopleDialog<P: Props, S: State>
         const { _callFlowsEnabled, dispatch } = this.props;
 
         return dispatch(invite(invitees))
-            .then(invitesLeftToSend => {
+            .then((invitesLeftToSend) => {
                 this.setState({
                     addToCallInProgress: false
                 });
@@ -168,10 +98,9 @@ export default class AbstractAddPeopleDialog<P: Props, S: State>
                         'error', 'invite', {
                             ...erroredInviteTypeCounts
                         }));
-
-                    this.setState({
-                        addToCallError: true
-                    });
+                    dispatch(showErrorNotification({
+                        titleKey: 'addPeople.failedToAdd'
+                    }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
                 } else if (!_callFlowsEnabled) {
                     const invitedCount = invitees.length;
                     let notificationProps;
@@ -180,7 +109,7 @@ export default class AbstractAddPeopleDialog<P: Props, S: State>
                         notificationProps = {
                             titleArguments: {
                                 name: this._getDisplayName(invitees[0]),
-                                count: invitedCount - 1
+                                count: `${invitedCount - 1}`
                             },
                             titleKey: 'notify.invitedThreePlusMembers'
                         };
@@ -223,8 +152,6 @@ export default class AbstractAddPeopleDialog<P: Props, S: State>
             || this.state.addToCallInProgress;
     }
 
-    _query: (?string) => Promise<Array<Object>>;
-
     /**
      * Performs a people and phone number search request.
      *
@@ -235,20 +162,26 @@ export default class AbstractAddPeopleDialog<P: Props, S: State>
     _query(query = '') {
         const {
             _addPeopleEnabled: addPeopleEnabled,
+            _appId: appId,
             _dialOutAuthUrl: dialOutAuthUrl,
+            _dialOutRegionUrl: dialOutRegionUrl,
             _dialOutEnabled: dialOutEnabled,
             _jwt: jwt,
             _peopleSearchQueryTypes: peopleSearchQueryTypes,
             _peopleSearchUrl: peopleSearchUrl,
+            _region: region,
             _sipInviteEnabled: sipInviteEnabled
         } = this.props;
         const options = {
             addPeopleEnabled,
+            appId,
             dialOutAuthUrl,
             dialOutEnabled,
+            dialOutRegionUrl,
             jwt,
             peopleSearchQueryTypes,
             peopleSearchUrl,
+            region,
             sipInviteEnabled
         };
 
@@ -271,22 +204,26 @@ export default class AbstractAddPeopleDialog<P: Props, S: State>
  *     _peopleSearchUrl: string
  * }}
  */
-export function _mapStateToProps(state: Object) {
+export function _mapStateToProps(state) {
     const {
         callFlowsEnabled,
         dialOutAuthUrl,
+        dialOutRegionUrl,
         peopleSearchQueryTypes,
         peopleSearchUrl
     } = state['features/base/config'];
 
     return {
         _addPeopleEnabled: isAddPeopleEnabled(state),
-        _callFlowsEnabled: callFlowsEnabled,
-        _dialOutAuthUrl: dialOutAuthUrl,
+        _appId: state['features/base/jwt']?.tenant ?? '',
+        _callFlowsEnabled: callFlowsEnabled ?? false,
+        _dialOutAuthUrl: dialOutAuthUrl ?? '',
+        _dialOutRegionUrl: dialOutRegionUrl ?? '',
         _dialOutEnabled: isDialOutEnabled(state),
-        _jwt: state['features/base/jwt'].jwt,
-        _peopleSearchQueryTypes: peopleSearchQueryTypes,
-        _peopleSearchUrl: peopleSearchUrl,
+        _jwt: state['features/base/jwt'].jwt ?? '',
+        _peopleSearchQueryTypes: peopleSearchQueryTypes ?? [],
+        _peopleSearchUrl: peopleSearchUrl ?? '',
+        _region: getMeetingRegion(state),
         _sipInviteEnabled: isSipInviteEnabled(state)
     };
 }

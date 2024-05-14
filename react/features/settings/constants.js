@@ -1,16 +1,14 @@
 export const SETTINGS_TABS = {
+    AUDIO: 'audio_tab',
     CALENDAR: 'calendar_tab',
-    DEVICES: 'devices_tab',
     MORE: 'more_tab',
     MODERATOR: 'moderator-tab',
+    NOTIFICATIONS: 'notifications_tab',
     PROFILE: 'profile_tab',
-    SOUNDS: 'sounds_tab'
+    SHORTCUTS: 'shortcuts_tab',
+    VIDEO: 'video_tab',
+    VIRTUAL_BACKGROUND: 'virtual-background_tab'
 };
-
-/**
- * View ID for the Settings modal.
- */
-export const SETTINGS_VIEW_ID = 'SETTINGS_VIEW_ID';
 
 /**
  * Default frame rate to be used for capturing screenshare.

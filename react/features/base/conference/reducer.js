@@ -1,10 +1,9 @@
-// @flow
-
-import { LOCKED_LOCALLY, LOCKED_REMOTELY } from '../../room-lock';
-import { SET_PUBLIC_SCOPE_ENABLED } from '../../security';
-import { CONNECTION_WILL_CONNECT, SET_LOCATION_URL } from '../connection';
+import { LOCKED_LOCALLY, LOCKED_REMOTELY } from '../../room-lock/constants';
+import { CONNECTION_WILL_CONNECT, SET_LOCATION_URL } from '../connection/actionTypes';
 import { JitsiConferenceErrors } from '../lib-jitsi-meet';
-import { assign, PersistenceRegistry, ReducerRegistry, set } from '../redux';
+import ReducerRegistry from '../redux/ReducerRegistry';
+import PersistenceRegistry from '../redux/PersistenceRegistry';
+import { assign, set } from '../redux/functions';
 
 import {
     AUTH_STATUS_CHANGED,
@@ -19,27 +18,32 @@ import {
     CONFERENCE_WILL_LEAVE,
     LOCK_STATE_CHANGED,
     P2P_STATUS_CHANGED,
+    SET_ASSUMED_BANDWIDTH_BPS,
     SET_FOLLOW_ME,
     SET_NOTICE_MESSAGE,
+    SET_OBFUSCATED_ROOM,
     SET_PASSWORD,
     SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
     SET_ROOM_INFO,
     SET_SITE,
     SET_START_MUTED_POLICY,
+    SET_START_REACTIONS_MUTED,
     START_RANDOM_SELECTION_COUNTDOWN,
     START_TIMER,
-    SET_START_REACTIONS_MUTED
+    UPDATE_CONFERENCE_METADATA
 } from './actionTypes';
 import { isRoomValid } from './functions';
 
 const DEFAULT_STATE = {
+    assumedBandwidthBps: undefined,
     conference: undefined,
     e2eeSupported: undefined,
     joining: undefined,
     leaving: undefined,
     locked: undefined,
     membersOnly: undefined,
+    metadata: undefined,
     password: undefined,
     passwordRequired: undefined,
     roomInfo: undefined,
@@ -93,6 +97,13 @@ ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
     case P2P_STATUS_CHANGED:
         return _p2pStatusChanged(state, action);
 
+    case SET_ASSUMED_BANDWIDTH_BPS: {
+        const assumedBandwidthBps = action.assumedBandwidthBps >= 0
+            ? Number(action.assumedBandwidthBps)
+            : undefined;
+
+        return set(state, 'assumedBandwidthBps', assumedBandwidthBps);
+    }
     case SET_FOLLOW_ME:
         return set(state, 'followMeEnabled', action.enabled);
 
@@ -102,11 +113,24 @@ ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
     case SET_LOCATION_URL:
         return set(state, 'room', undefined);
 
+    case SET_OBFUSCATED_ROOM:
+        return { ...state,
+            obfuscatedRoom: action.obfuscatedRoom,
+            obfuscatedRoomSource: action.obfuscatedRoomSource
+        };
+
     case SET_PASSWORD:
         return _setPassword(state, action);
 
     case SET_PENDING_SUBJECT_CHANGE:
         return set(state, 'pendingSubjectChange', action.subject);
+
+    case SET_NOTICE_MESSAGE:
+        return set(
+            state,
+            'noticeMessage',
+            action.noticeMessage
+        );
 
     case SET_ROOM:
         return _setRoom(state, action);
@@ -123,7 +147,7 @@ ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
             startAudioMutedPolicy: action.startAudioMutedPolicy,
             startVideoMutedPolicy: action.startVideoMutedPolicy
         };
-    
+
     case START_TIMER:
         return {
             ...state,
@@ -138,18 +162,11 @@ ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
             startCountdown: action.startCountdown
         }
 
-    case SET_PUBLIC_SCOPE_ENABLED:
-        return set(
-            state,
-            'roomInfo',
-            { ...state.roomInfo, scope: action.enabled }
-        );
-    case SET_NOTICE_MESSAGE:
-        return set(
-            state,
-            'noticeMessage',
-            action.noticeMessage
-        );
+    case UPDATE_CONFERENCE_METADATA:
+        return {
+            ...state,
+            metadata: action.metadata
+        };
     }
 
     return state;
@@ -165,7 +182,8 @@ ReducerRegistry.register(STORE_NAME, (state = DEFAULT_STATE, action) => {
  * @returns {Object} The new state of the feature base/conference after the
  * reduction of the specified action.
  */
-function _authStatusChanged(state, { authEnabled, authLogin }) {
+function _authStatusChanged(state,
+        { authEnabled, authLogin }) {
     return assign(state, {
         authEnabled,
         authLogin
@@ -184,7 +202,7 @@ function _authStatusChanged(state, { authEnabled, authLogin }) {
  */
 function _conferenceFailed(state, { conference, error }) {
     // The current (similar to getCurrentConference in
-    // base/conference/functions.js) conference which is joining or joined:
+    // base/conference/functions.any.js) conference which is joining or joined:
     const conference_ = state.conference || state.joining;
 
     if (conference_ && conference_ !== conference) {
@@ -194,6 +212,7 @@ function _conferenceFailed(state, { conference, error }) {
     let authRequired;
     let membersOnly;
     let passwordRequired;
+    let lobbyWaitingForHost;
 
     switch (error.name) {
     case JitsiConferenceErrors.AUTHENTICATION_REQUIRED:
@@ -201,9 +220,16 @@ function _conferenceFailed(state, { conference, error }) {
         break;
 
     case JitsiConferenceErrors.CONFERENCE_ACCESS_DENIED:
-    case JitsiConferenceErrors.MEMBERS_ONLY_ERROR:
+    case JitsiConferenceErrors.MEMBERS_ONLY_ERROR: {
         membersOnly = conference;
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const [ _lobbyJid, _lobbyWaitingForHost ] = error.params;
+
+        lobbyWaitingForHost = _lobbyWaitingForHost;
+
         break;
+    }
 
     case JitsiConferenceErrors.PASSWORD_REQUIRED:
         passwordRequired = conference;
@@ -217,6 +243,7 @@ function _conferenceFailed(state, { conference, error }) {
         error,
         joining: undefined,
         leaving: undefined,
+        lobbyWaitingForHost,
 
         /**
          * The indicator of how the conference/room is locked. If falsy, the
@@ -254,7 +281,7 @@ function _conferenceJoined(state, { conference }) {
     // library does not fire LOCK_STATE_CHANGED upon joining a JitsiConference
     // with a password.
     // FIXME Technically JitsiConference.room is a private field.
-    const locked = conference.room && conference.room.locked ? LOCKED_REMOTELY : undefined;
+    const locked = conference.room?.locked ? LOCKED_REMOTELY : undefined;
 
     return assign(state, {
         authRequired: undefined,
@@ -272,6 +299,8 @@ function _conferenceJoined(state, { conference }) {
         joining: undefined,
         membersOnly: undefined,
         leaving: undefined,
+
+        lobbyWaitingForHost: undefined,
 
         /**
          * The indicator which determines whether the conference is locked.
@@ -466,10 +495,14 @@ function _setRoom(state, action) {
      */
     return assign(state, {
         error: undefined,
+        localSubject: undefined,
+        pendingSubjectChange: undefined,
         room,
-        roomInfo
+        roomInfo,
+        subject: undefined
     });
 }
+
 
 /**
  * Reduces a specific Redux action SET_ROOM of the feature base/conference.

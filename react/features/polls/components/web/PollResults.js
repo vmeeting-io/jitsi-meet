@@ -1,10 +1,107 @@
-// @flow
-
 import React from 'react';
+import { makeStyles } from 'tss-react/mui';
 
-import AbstractPollResults from '../AbstractPollResults';
-import type { AbstractProps } from '../AbstractPollResults';
+import { withPixelLineHeight } from '../../../base/styles/functions.web';
+import AbstractPollResults, { AbstractProps } from '../AbstractPollResults';
 
+const useStyles = makeStyles()(theme => {
+    return {
+        container: {
+            margin: '24px',
+            padding: '16px',
+            backgroundColor: theme.palette.ui02,
+            borderRadius: '8px',
+            wordBreak: 'break-word'
+        },
+        header: {
+            marginBottom: '16px'
+        },
+        question: {
+            ...withPixelLineHeight(theme.typography.heading6),
+            color: theme.palette.text01,
+            marginBottom: '8px'
+        },
+        creator: {
+            ...withPixelLineHeight(theme.typography.bodyShortRegular),
+            color: theme.palette.text02
+        },
+        resultList: {
+            listStyleType: 'none',
+            margin: 0,
+            padding: 0,
+
+            '& li': {
+                marginBottom: '16px'
+            }
+        },
+        answerName: {
+            display: 'flex',
+            flexShrink: 1,
+            overflowWrap: 'anywhere',
+            ...withPixelLineHeight(theme.typography.bodyShortRegular),
+            color: theme.palette.text01,
+            marginBottom: '4px'
+        },
+        answerResultContainer: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            minWidth: '10em'
+        },
+        barContainer: {
+            backgroundColor: theme.palette.ui03,
+            borderRadius: '4px',
+            height: '6px',
+            maxWidth: '160px',
+            width: '158px',
+            flexGrow: 1,
+            marginTop: '2px'
+        },
+        bar: {
+            height: '6px',
+            borderRadius: '4px',
+            backgroundColor: theme.palette.action01
+        },
+        voteCount: {
+            flex: 1,
+            textAlign: 'right',
+            ...withPixelLineHeight(theme.typography.bodyShortBold),
+            color: theme.palette.text01
+        },
+        voters: {
+            margin: 0,
+            marginTop: '4px',
+            listStyleType: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: theme.palette.ui03,
+            borderRadius: theme.shape.borderRadius,
+            padding: '8px 16px',
+
+            '& li': {
+                ...withPixelLineHeight(theme.typography.bodyShortRegular),
+                color: theme.palette.text01,
+                margin: 0,
+                marginBottom: '2px',
+
+                '&:last-of-type': {
+                    marginBottom: 0
+                }
+            }
+        },
+        buttonsContainer: {
+            display: 'flex',
+            justifyContent: 'space-between',
+
+            '& button': {
+                border: 0,
+                backgroundColor: 'transparent',
+                ...withPixelLineHeight(theme.typography.bodyShortRegular),
+                color: theme.palette.link01
+            }
+        }
+    };
+});
 
 /**
  * Component that renders the poll results.
@@ -12,68 +109,65 @@ import type { AbstractProps } from '../AbstractPollResults';
  * @param {Props} props - The passed props.
  * @returns {React.Node}
  */
-const PollResults = (props: AbstractProps) => {
-    const {
-        answers,
-        changeVote,
-        creatorName,
-        haveVoted,
-        showDetails,
-        question,
-        t,
-        toggleIsDetailed
-    } = props;
+const PollResults = ({
+    answers,
+    changeVote,
+    creatorName,
+    haveVoted,
+    showDetails,
+    question,
+    t,
+    toggleIsDetailed
+}: AbstractProps) => {
+    const { classes } = useStyles();
 
     return (
-        <div className = 'poll-results'>
-            <div className = 'poll-header'>
-                <div className = 'poll-question'>
-                    <strong>{ question }</strong>
+        <div className = { classes.container }>
+            <div className = { classes.header }>
+                <div className = { classes.question }>
+                    {question}
                 </div>
-                <div className = 'poll-creator'>
-                    { t('polls.by', { name: creatorName }) }
+                <div className = { classes.creator }>
+                    {t('polls.by', { name: creatorName })}
                 </div>
             </div>
-            <ol className = 'poll-result-list'>
+            <ul className = { classes.resultList }>
                 {answers.map(({ name, percentage, voters, voterCount }, index) =>
                     (<li key = { index }>
-                        <div className = 'poll-answer-header'>
-                            <span className = 'poll-answer-vote-name' >{name}</span>
+                        <div className = { classes.answerName }>
+                            {name}
                         </div>
-                        <div className = 'poll-answer-short-results'>
-                            <span className = 'poll-bar-container'>
+                        <div className = { classes.answerResultContainer }>
+                            <span className = { classes.barContainer }>
                                 <div
-                                    className = 'poll-bar'
+                                    className = { classes.bar }
                                     style = {{ width: `${percentage}%` }} />
                             </span>
-                            <div className = 'poll-answer-vote-count-container'>
-                                <span className = 'poll-answer-vote-count'>({voterCount}) {percentage}%</span>
+                            <div className = { classes.voteCount }>
+                                {voterCount} ({percentage}%)
                             </div>
                         </div>
-                        { showDetails && voters && voterCount > 0
-                            && <ul className = 'poll-answer-voters'>
-                                {voters.map(voter =>
-                                    <li key = { voter.id }>{voter.name}</li>
-                                )}
-                            </ul>}
+                        {showDetails && voters && voterCount > 0
+                        && <ul className = { classes.voters }>
+                            {voters.map(voter =>
+                                <li key = { voter?.id }>{voter?.name}</li>
+                            )}
+                        </ul>}
                     </li>)
                 )}
-            </ol>
-            <div className = { 'poll-result-links' }>
-                <a
-                    className = { 'poll-detail-link' }
+            </ul>
+            <div className = { classes.buttonsContainer }>
+                <button
                     onClick = { toggleIsDetailed }>
                     {showDetails ? t('polls.results.hideDetailedResults') : t('polls.results.showDetailedResults')}
-                </a>
-                <a
-                    className = { 'poll-change-vote-link' }
+                </button>
+                <button
                     onClick = { changeVote }>
                     {haveVoted ? t('polls.results.changeVote') : t('polls.results.vote')}
-                </a>
+                </button>
             </div>
         </div>
     );
-
 };
 
 /*

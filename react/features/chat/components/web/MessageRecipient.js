@@ -1,86 +1,101 @@
 // @flow
 
-import React from 'react';
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
-import { translate } from '../../../base/i18n';
-import { Icon, IconCancelSelection } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import AbstractMessageRecipient, {
+import { IconCloseLarge } from '../../../base/icons/svg';
+import { withPixelLineHeight } from '../../../base/styles/functions.web';
+import Button from '../../../base/ui/components/web/Button';
+import { BUTTON_TYPES } from '../../../base/ui/constants.any';
+import {
     _mapDispatchToProps,
     _mapStateToProps,
     type Props
 } from '../AbstractMessageRecipient';
 
+const useStyles = makeStyles()(theme => {
+    return {
+        container: {
+            margin: '0 16px 8px',
+            padding: '6px',
+            paddingLeft: '16px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            backgroundColor: theme.palette.support05,
+            borderRadius: theme.shape.borderRadius,
+            ...withPixelLineHeight(theme.typography.bodyShortRegular),
+            color: theme.palette.text01
+        },
 
-/**
- * Class to implement the displaying of the recipient of the next message.
- */
-class MessageRecipient extends AbstractMessageRecipient<Props> {
-    /**
-     * Initializes a new {@code MessageRecipient} instance.
-     *
-     * @param {*} props - The read-only properties with which the new instance
-     * is to be initialized.
-     */
-    constructor(props) {
-        super(props);
+        text: {
+            maxWidth: 'calc(100% - 30px)',
+            overflow: 'hidden',
+            whiteSpace: 'break-spaces',
+            wordBreak: 'break-all'
+        },
 
+        iconButton: {
+            padding: '2px',
 
-        // Bind event handler so it is only bound once for every instance.
-        this._onKeyPress = this._onKeyPress.bind(this);
-    }
+            '&:hover': {
+                backgroundColor: theme.palette.action03
+            }
+        }
+    };
+});
 
-    _onKeyPress: (Object) => void;
+const MessageRecipient = ({
+    _privateMessageRecipient,
+    _isLobbyChatActive,
+    _lobbyMessageRecipient,
+    _onRemovePrivateMessageRecipient,
+    _onHideLobbyChatRecipient,
+    _visible
+}: Props) => {
+    const { classes } = useStyles();
+    const { t } = useTranslation();
 
-    /**
-     * KeyPress handler for accessibility.
-     *
-     * @param {Object} e - The key event to handle.
-     *
-     * @returns {void}
-     */
-    _onKeyPress(e) {
-        if (this.props._onRemovePrivateMessageRecipient && (e.key === ' ' || e.key === 'Enter')) {
+    const _onKeyPress = useCallback((e: React.KeyboardEvent) => {
+        if (
+            (_onRemovePrivateMessageRecipient || _onHideLobbyChatRecipient)
+            && (e.key === ' ' || e.key === 'Enter')
+        ) {
             e.preventDefault();
-            this.props._onRemovePrivateMessageRecipient();
+            if (_isLobbyChatActive && _onHideLobbyChatRecipient) {
+                _onHideLobbyChatRecipient();
+            } else if (_onRemovePrivateMessageRecipient) {
+                _onRemovePrivateMessageRecipient();
+            }
         }
+    }, [ _onRemovePrivateMessageRecipient, _onHideLobbyChatRecipient, _isLobbyChatActive ]);
+
+    if ((!_privateMessageRecipient && !_isLobbyChatActive) || !_visible) {
+        return null;
     }
 
-    /**
-     * Implements {@code PureComponent#render}.
-     *
-     * @inheritdoc
-     */
-    render() {
-        const { _privateMessageRecipient } = this.props;
+    return (
+        <div
+            className = { classes.container }
+            id = 'chat-recipient'
+            role = 'alert'>
+            <span className = { classes.text }>
+                {t(_isLobbyChatActive ? 'chat.lobbyChatMessageTo' : 'chat.messageTo', {
+                    recipient: _isLobbyChatActive ? _lobbyMessageRecipient : _privateMessageRecipient
+                })}
+            </span>
+            <Button
+                accessibilityLabel = { t('dialog.close') }
+                className = { classes.iconButton }
+                icon = { IconCloseLarge }
+                onClick = { _isLobbyChatActive
+                    ? _onHideLobbyChatRecipient : _onRemovePrivateMessageRecipient }
+                onKeyPress = { _onKeyPress }
+                type = { BUTTON_TYPES.TERTIARY } />
+        </div>
+    );
+};
 
-        if (!_privateMessageRecipient) {
-            return null;
-        }
-
-        const { t } = this.props;
-
-        return (
-            <div
-                id = 'chat-recipient'
-                role = 'alert'>
-                <span>
-                    { t('chat.messageTo', {
-                        recipient: _privateMessageRecipient
-                    }) }
-                </span>
-                <div
-                    aria-label = { t('dialog.close') }
-                    onClick = { this.props._onRemovePrivateMessageRecipient }
-                    onKeyPress = { this._onKeyPress }
-                    role = 'button'
-                    tabIndex = { 0 }>
-                    <Icon
-                        src = { IconCancelSelection } />
-                </div>
-            </div>
-        );
-    }
-}
-
-export default translate(connect(_mapStateToProps, _mapDispatchToProps)(MessageRecipient));
+export default connect(_mapStateToProps, _mapDispatchToProps)(MessageRecipient);

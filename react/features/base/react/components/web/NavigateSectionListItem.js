@@ -1,28 +1,7 @@
-// @flow
-
 import React, { Component } from 'react';
-
-import type { Item } from '../../Types';
 
 import Container from './Container';
 import Text from './Text';
-
-/**
- * The type of the React {@code Component} props of
- * {@link NavigateSectionListItem}.
- */
-type Props = {
-
-    /**
-     * Function to be invoked when an item is pressed. The item's URL is passed.
-     */
-    onPress: ?Function,
-
-    /**
-     * A item containing data to be rendered.
-     */
-    item: Item
-};
 
 /**
  * Implements a React/Web {@link Component} for displaying an item in a
@@ -30,8 +9,7 @@ type Props = {
  *
  * @augments Component
  */
-export default class NavigateSectionListItem<P: Props>
-    extends Component<P> {
+export default class NavigateSectionListItem extends Component {
 
     /**
      * Renders the content of this component.

@@ -1,65 +1,24 @@
-// @flow
-
-import Spinner from '@atlaskit/spinner';
 import React from 'react';
+import { connect } from 'react-redux';
 
-import {
-    createCalendarClickedEvent,
-    sendAnalytics
-} from '../../analytics';
-import { translate } from '../../base/i18n';
-import { Icon, IconPlusCalendar } from '../../base/icons';
-import { AbstractPage } from '../../base/react';
-import { connect } from '../../base/redux';
-import { openSettingsDialog, SETTINGS_TABS } from '../../settings';
-import { refreshCalendar } from '../actions';
+import { createCalendarClickedEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { translate } from '../../base/i18n/functions';
+import Icon from '../../base/icons/components/Icon';
+import { IconCalendar } from '../../base/icons/svg';
+import AbstractPage from '../../base/react/components/AbstractPage';
+import Spinner from '../../base/ui/components/web/Spinner';
+import { openSettingsDialog } from '../../settings/actions.web';
+import { SETTINGS_TABS } from '../../settings/constants';
+import { refreshCalendar } from '../actions.web';
 import { ERRORS } from '../constants';
 
-import CalendarListContent from './CalendarListContent';
-
-declare var interfaceConfig: Object;
-
-/**
- * The type of the React {@code Component} props of {@link CalendarList}.
- */
-type Props = {
-
-    /**
-     * The error object containing details about any error that has occurred
-     * while interacting with calendar integration.
-     */
-    _calendarError: ?Object,
-
-    /**
-     * Whether or not a calendar may be connected for fetching calendar events.
-     */
-    _hasIntegrationSelected: boolean,
-
-    /**
-     * Whether or not events have been fetched from a calendar.
-     */
-    _hasLoadedEvents: boolean,
-
-    /**
-     * Indicates if the list is disabled or not.
-     */
-    disabled: boolean,
-
-    /**
-     * The Redux dispatch function.
-     */
-    dispatch: Function,
-
-    /**
-     * The translate function.
-     */
-    t: Function
-};
+import CalendarListContent from './CalendarListContent.web';
 
 /**
  * Component to display a list of events from the user's calendar.
  */
-class CalendarList extends AbstractPage<Props> {
+class CalendarList extends AbstractPage {
     /**
      * Initializes a new {@code CalendarList} instance.
      *
@@ -87,7 +46,7 @@ class CalendarList extends AbstractPage<Props> {
         return (
             CalendarListContent
                 ? <CalendarListContent
-                    disabled = { disabled }
+                    disabled = { Boolean(disabled) }
                     listEmptyComponent
                         = { this._getRenderListEmptyComponent() } />
                 : null
@@ -102,7 +61,7 @@ class CalendarList extends AbstractPage<Props> {
      * @returns {React$Component}
      */
     _getErrorMessage() {
-        const { _calendarError = {}, t } = this.props;
+        const { _calendarError = { error: undefined }, t } = this.props;
 
         let errorMessageKey = 'calendarSync.error.generic';
         let showRefreshButton = true;
@@ -142,8 +101,6 @@ class CalendarList extends AbstractPage<Props> {
         );
     }
 
-    _getRenderListEmptyComponent: () => Object;
-
     /**
      * Returns a list empty component if a custom one has to be rendered instead
      * of the default one in the {@link NavigateSectionList}.
@@ -177,10 +134,7 @@ class CalendarList extends AbstractPage<Props> {
         } else if (_hasIntegrationSelected && !_hasLoadedEvents) {
             return (
                 <div className = 'meetings-list-empty'>
-                    <Spinner
-                        invertColor = { true }
-                        isCompleting = { false }
-                        size = 'medium' />
+                    <Spinner />
                 </div>
             );
         }
@@ -202,17 +156,16 @@ class CalendarList extends AbstractPage<Props> {
                     className = 'meetings-list-empty-button'
                     onClick = { this._onOpenSettings }
                     onKeyPress = { this._onKeyPressOpenSettings }
-                    role = 'button'>
+                    role = 'button'
+                    tabIndex = { 0 }>
                     <Icon
                         className = 'meetings-list-empty-icon'
-                        src = { IconPlusCalendar } />
+                        src = { IconCalendar } />
                     <span>{ t('welcomepage.connectCalendarButton') }</span>
                 </div>
             </div>
         );
     }
-
-    _onOpenSettings: () => void;
 
     /**
      * Opens {@code SettingsDialog}.
@@ -226,8 +179,6 @@ class CalendarList extends AbstractPage<Props> {
         this.props.dispatch(openSettingsDialog(SETTINGS_TABS.CALENDAR));
     }
 
-    _onKeyPressOpenSettings: (Object) => void;
-
     /**
      * KeyPress handler for accessibility.
      *
@@ -235,14 +186,12 @@ class CalendarList extends AbstractPage<Props> {
      *
      * @returns {void}
      */
-    _onKeyPressOpenSettings(e) {
+    _onKeyPressOpenSettings(e: React.KeyboardEvent) {
         if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             this._onOpenSettings();
         }
     }
-
-    _onRefreshEvents: () => void;
 
 
     /**

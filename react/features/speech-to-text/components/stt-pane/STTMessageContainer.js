@@ -7,7 +7,6 @@ import AbstractSTTMessageContainer, { type Props }
     from './AbstractSTTMessageContainer';
 
 import ChatMessageGroup from '../../../chat/components/web/ChatMessageGroup';
-import FileUploadStatusBox from '../../../chat/components/web/FileUploadStatusBox';
 
 /**
  * Displays all received chat messages, grouped by sender.

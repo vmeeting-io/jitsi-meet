@@ -1,136 +1,27 @@
-// @flow
-
 import { Component } from 'react';
 
-import {
-    createRecordingDialogEvent,
-    sendAnalytics
-} from '../../../analytics';
+import { createRecordingDialogEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
 import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
-import {
-    getDropboxData,
-    isEnabled as isDropboxEnabled,
-    getNewAccessToken,
-    updateDropboxToken
-} from '../../../dropbox';
-import { NOTIFICATION_TIMEOUT_TYPE, showErrorNotification } from '../../../notifications';
-import { toggleRequestingSubtitles } from '../../../subtitles';
-import { setSelectedRecordingService } from '../../actions';
-import { RECORDING_TYPES } from '../../constants';
-
-type Props = {
-
-    /**
-     * Requests subtitles when recording is turned on.
-     */
-    _autoCaptionOnRecord: boolean,
-
-    /**
-     * The {@code JitsiConference} for the current conference.
-     */
-    _conference: Object,
-
-    /**
-     * The app key for the dropbox authentication.
-     */
-    _appKey: string,
-
-    /**
-     * Whether to show file recordings service, even if integrations
-     * are enabled.
-     */
-    _fileRecordingsServiceEnabled: boolean,
-
-    /**
-     * Whether to show the possibility to share file recording with other people (e.g. Meeting participants), based on
-     * the actual implementation on the backend.
-     */
-    _fileRecordingsServiceSharingEnabled: boolean,
-
-    /**
-     * If true the dropbox integration is enabled, otherwise - disabled.
-     */
-    _isDropboxEnabled: boolean,
-
-    /**
-     * The dropbox refresh token.
-     */
-    _rToken: string,
-
-    /**
-     * Whether or not the local participant is screensharing.
-     */
-    _screensharing: boolean,
-
-    /**
-     * Whether or not the screenshot capture feature is enabled.
-     */
-    _screenshotCaptureEnabled: boolean,
-
-    /**
-     * Access token's expiration date as UNIX timestamp.
-     */
-    _tokenExpireDate?: number,
-
-    /**
-     * The dropbox access token.
-     */
-    _token: string,
-
-    /**
-     * The redux dispatch function.
-     */
-    dispatch: Function,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-}
-
-type State = {
-
-    /**
-     * <tt>true</tt> if we have valid oauth token.
-     */
-    isTokenValid: boolean,
-
-    /**
-     * <tt>true</tt> if we are in process of validating the oauth token.
-     */
-    isValidating: boolean,
-
-    /**
-     * The currently selected recording service of type: RECORDING_TYPES.
-     */
-    selectedRecordingService: ?string,
-
-    /**
-     * True if the user requested the service to share the recording with others.
-     */
-    sharingEnabled: boolean,
-
-    /**
-     * Number of MiB of available space in user's Dropbox account.
-     */
-    spaceLeft: ?number,
-
-    /**
-     * The display name of the user's Dropbox account.
-     */
-    userName: ?string
-};
+import { updateDropboxToken } from '../../../dropbox/actions';
+import { getDropboxData, getNewAccessToken, isEnabled as isDropboxEnabled } from '../../../dropbox/functions.any';
+import { showErrorNotification } from '../../../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../../../notifications/constants';
+import { setRequestingSubtitles } from '../../../subtitles/actions.any';
+import { setSelectedRecordingService, startLocalVideoRecording } from '../../actions';
+import { RECORDING_METADATA_ID, RECORDING_TYPES } from '../../constants';
+import { isRecordingSharingEnabled, shouldAutoTranscribeOnRecord, supportsLocalRecording } from '../../functions';
 
 /**
  * Component for the recording start dialog.
  */
-class AbstractStartRecordingDialog extends Component<Props, State> {
+class AbstractStartRecordingDialog extends Component {
     /**
      * Initializes a new {@code StartRecordingDialog} instance.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // Bind event handler so it is only bound once for every instance.
@@ -139,8 +30,11 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
             = this._onSelectedRecordingServiceChanged.bind(this);
         this._onSharingSettingChanged = this._onSharingSettingChanged.bind(this);
         this._toggleScreenshotCapture = this._toggleScreenshotCapture.bind(this);
+        this._onLocalRecordingSelfChange = this._onLocalRecordingSelfChange.bind(this);
+        this._onTranscriptionChange = this._onTranscriptionChange.bind(this);
+        this._onRecordAudioAndVideoChange = this._onRecordAudioAndVideoChange.bind(this);
 
-        let selectedRecordingService;
+        let selectedRecordingService = '';
 
         // TODO: Potentially check if we need to handle changes of
         // _fileRecordingsServiceEnabled and _areIntegrationsEnabled()
@@ -148,7 +42,11 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
                 || !this._areIntegrationsEnabled()) {
             selectedRecordingService = RECORDING_TYPES.JITSI_REC_SERVICE;
         } else if (this._areIntegrationsEnabled()) {
-            selectedRecordingService = RECORDING_TYPES.DROPBOX;
+            if (props._localRecordingEnabled && supportsLocalRecording()) {
+                selectedRecordingService = RECORDING_TYPES.LOCAL;
+            } else {
+                selectedRecordingService = RECORDING_TYPES.DROPBOX;
+            }
         }
 
         this.state = {
@@ -156,8 +54,11 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
             isValidating: false,
             userName: undefined,
             sharingEnabled: true,
+            shouldRecordAudioAndVideo: this.props._recordAudioAndVideo,
+            shouldRecordTranscription: this.props._autoTranscribeOnRecord,
             spaceLeft: undefined,
-            selectedRecordingService
+            selectedRecordingService,
+            localRecordingOnlySelf: false
         };
     }
 
@@ -179,13 +80,11 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
      * @inheritdoc
      * @returns {void}
      */
-    componentDidUpdate(prevProps: Props) {
+    componentDidUpdate(prevProps) {
         if (this.props._token !== prevProps._token) {
             this._onTokenUpdated();
         }
     }
-
-    _areIntegrationsEnabled: () => boolean;
 
     /**
      * Returns true if the integrations with third party services are enabled
@@ -198,8 +97,6 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
         return this.props._isDropboxEnabled;
     }
 
-    _onSharingSettingChanged: () => void;
-
     /**
      * Callback to handle sharing setting change from the dialog.
      *
@@ -211,7 +108,16 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
         });
     }
 
-    _onSelectedRecordingServiceChanged: (string) => void;
+    /**
+     * Callback to handle local recording only self setting change.
+     *
+     * @returns {void}
+     */
+    _onLocalRecordingSelfChange() {
+        this.setState({
+            localRecordingOnlySelf: !this.state.localRecordingOnlySelf
+        });
+    }
 
     /**
      * Handles selected recording service changes.
@@ -220,9 +126,33 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
      * service.
      * @returns {void}
      */
-    _onSelectedRecordingServiceChanged(selectedRecordingService) {
+    _onSelectedRecordingServiceChanged(selectedRecordingService: string) {
         this.setState({ selectedRecordingService }, () => {
             this.props.dispatch(setSelectedRecordingService(selectedRecordingService));
+        });
+    }
+
+    /**
+     * Handles transcription switch change.
+     *
+     * @param {boolean} value - The new value.
+     * @returns {void}
+     */
+    _onTranscriptionChange(value: boolean) {
+        this.setState({
+            shouldRecordTranscription: value
+        });
+    }
+
+    /**
+     * Handles audio and video switch change.
+     *
+     * @param {boolean} value - The new value.
+     * @returns {void}
+     */
+    _onRecordAudioAndVideoChange(value: boolean) {
+        this.setState({
+            shouldRecordAudioAndVideo: value
         });
     }
 
@@ -243,10 +173,11 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
                 isTokenValid: false,
                 isValidating: false
             });
-        } else {
+        } else { // @ts-ignore
             if (_tokenExpireDate && Date.now() > new Date(_tokenExpireDate)) {
                 getNewAccessToken(_appKey, _rToken)
-                    .then(resp => dispatch(updateDropboxToken(resp.token, resp.rToken, resp.expireDate)));
+                    .then((resp) =>
+                        dispatch(updateDropboxToken(resp.token, resp.rToken, resp.expireDate)));
 
                 return;
             }
@@ -272,8 +203,6 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
         }
     }
 
-    _onSubmit: () => boolean;
-
     /**
      * Starts a file recording session.
      *
@@ -283,71 +212,85 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
     _onSubmit() {
         const {
             _appKey,
-            _autoCaptionOnRecord,
             _conference,
+            _displaySubtitles,
             _isDropboxEnabled,
-            _jwt,
             _rToken,
+            _recorder_user,
+            _subtitlesLanguage,
             _token,
             dispatch
         } = this.props;
         let appData;
         const attributes = {};
 
-        if (_isDropboxEnabled && this.state.selectedRecordingService === RECORDING_TYPES.DROPBOX) {
-            if (_token) {
+        if (this.state.shouldRecordAudioAndVideo) {
+            switch (this.state.selectedRecordingService) {
+            case RECORDING_TYPES.DROPBOX: {
+                if (_isDropboxEnabled && _token) {
+                    appData = JSON.stringify({
+                        'file_recording_metadata': {
+                            'upload_credentials': {
+                                'service_name': RECORDING_TYPES.DROPBOX,
+                                'token': _token,
+                                'r_token': _rToken,
+                                'app_key': _appKey
+                            }
+                        }
+                    });
+                    attributes.type = RECORDING_TYPES.DROPBOX;
+                } else {
+                    dispatch(showErrorNotification({
+                        titleKey: 'dialog.noDropboxToken'
+                    }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+
+                    return;
+                }
+                break;
+            }
+            case RECORDING_TYPES.JITSI_REC_SERVICE: {
                 appData = JSON.stringify({
                     'file_recording_metadata': {
-                        'upload_credentials': {
-                            'service_name': RECORDING_TYPES.DROPBOX,
-                            'token': _token,
-                            'r_token': _rToken,
-                            'app_key': _appKey
+                        'share': this.state.sharingEnabled,
+                        'meetingId': _conference.room.meetingId,
+                        'recorder_identity': {
+                            'email': _recorder_user.email,
+                            'name': _recorder_user.name,
                         }
                     }
                 });
-                attributes.type = RECORDING_TYPES.DROPBOX;
-            } else {
-                dispatch(showErrorNotification({
-                    titleKey: 'dialog.noDropboxToken'
-                }, NOTIFICATION_TIMEOUT_TYPE.LONG));
-
-                return;
+                attributes.type = RECORDING_TYPES.JITSI_REC_SERVICE;
+                break;
             }
-        } else {
-            let recorder_user = _jwt.user;
-            const meetingId = _conference.room.meetingId;
-            appData = JSON.stringify({
-                'file_recording_metadata': {
-                    'share': this.state.sharingEnabled,
-                    'meetingId': meetingId,
-                    'recorder_identity': {
-                        'email': recorder_user.email,
-                        'name': recorder_user.name,
-                    }
-                }
+            case RECORDING_TYPES.LOCAL: {
+                dispatch(startLocalVideoRecording(this.state.localRecordingOnlySelf));
+
+                return true;
+            }
+            }
+
+            sendAnalytics(
+                createRecordingDialogEvent('start', 'confirm.button', attributes)
+            );
+
+            this._toggleScreenshotCapture();
+            _conference?.startRecording({
+                mode: JitsiRecordingConstants.mode.FILE,
+                appData
             });
-            attributes.type = RECORDING_TYPES.JITSI_REC_SERVICE;
         }
 
-        sendAnalytics(
-            createRecordingDialogEvent('start', 'confirm.button', attributes)
-        );
+        if (this.state.selectedRecordingService === RECORDING_TYPES.JITSI_REC_SERVICE
+                && this.state.shouldRecordTranscription) {
+            dispatch(setRequestingSubtitles(true, _displaySubtitles, _subtitlesLanguage));
+        }
 
-        this._toggleScreenshotCapture();
-        _conference.startRecording({
-            mode: JitsiRecordingConstants.mode.FILE,
-            appData
+        _conference?.getMetadataHandler().setMetadata(RECORDING_METADATA_ID, {
+            isTranscribingEnabled: this.state.shouldRecordTranscription
         });
-
-        if (_autoCaptionOnRecord) {
-            dispatch(toggleRequestingSubtitles());
-        }
 
         return true;
     }
-
-    _toggleScreenshotCapture:() => void;
 
     /**
      * Toggles screenshot capture feature.
@@ -364,7 +307,7 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
      * @protected
      * @returns {React$Component}
      */
-    _renderDialogContent: () => React$Component<*>;
+    _renderDialogContent: () => React.Component;
 }
 
 /**
@@ -372,38 +315,38 @@ class AbstractStartRecordingDialog extends Component<Props, State> {
  * {@code StartRecordingDialog} component.
  *
  * @param {Object} state - The Redux state.
+ * @param {any} _ownProps - Component's own props.
  * @private
- * @returns {{
- *     _appKey: string,
- *     _autoCaptionOnRecord: boolean,
- *     _conference: JitsiConference,
- *     _fileRecordingsServiceEnabled: boolean,
- *     _fileRecordingsServiceSharingEnabled: boolean,
- *     _isDropboxEnabled: boolean,
- *     _rToken:string,
- *     _tokenExpireDate: number,
- *     _token: string
- * }}
+ * @returns {IProps}
  */
-export function mapStateToProps(state: Object) {
+export function mapStateToProps(state, _ownProps) {
     const {
-        autoCaptionOnRecord = false,
-        fileRecordingsServiceEnabled = false,
-        fileRecordingsServiceSharingEnabled = false,
-        dropbox = {}
+        recordingService,
+        dropbox = { appKey: undefined },
+        localRecording,
+        recordings = { recordAudioAndVideo: true }
     } = state['features/base/config'];
+    const recorder_user = state['features/base/jwt'].user;
+    const {
+        _displaySubtitles,
+        _language: _subtitlesLanguage
+    } = state['features/subtitles'];
 
     return {
-        _appKey: dropbox.appKey,
-        _autoCaptionOnRecord: autoCaptionOnRecord,
+        _appKey: dropbox.appKey ?? '',
+        _autoTranscribeOnRecord: shouldAutoTranscribeOnRecord(state),
         _conference: state['features/base/conference'].conference,
-        _fileRecordingsServiceEnabled: fileRecordingsServiceEnabled,
-        _fileRecordingsServiceSharingEnabled: fileRecordingsServiceSharingEnabled,
+        _displaySubtitles,
+        _fileRecordingsServiceEnabled: recordingService?.enabled ?? false,
+        _fileRecordingsServiceSharingEnabled: isRecordingSharingEnabled(state),
         _isDropboxEnabled: isDropboxEnabled(state),
-        _jwt: state['features/base/jwt'],
-        _rToken: state['features/dropbox'].rToken,
+        _localRecordingEnabled: !localRecording?.disable,
+        _rToken: state['features/dropbox'].rToken ?? '',
+        _recordAudioAndVideo: recordings?.recordAudioAndVideo ?? true,
+        _recorder_user: recorder_user,
+        _subtitlesLanguage,
         _tokenExpireDate: state['features/dropbox'].expireDate,
-        _token: state['features/dropbox'].token
+        _token: state['features/dropbox'].token ?? ''
     };
 }
 

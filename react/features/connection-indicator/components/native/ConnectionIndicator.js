@@ -1,33 +1,44 @@
-// @flow
-
 import React from 'react';
+import { View } from 'react-native';
+import { connect } from 'react-redux';
 
-import { IconSignalLevel0, IconSignalLevel1, IconSignalLevel2 } from '../../../base/icons';
-import { BaseIndicator } from '../../../base/react';
-import { connect } from '../../../base/redux';
+import { IconConnection } from '../../../base/icons/svg';
+import { MEDIA_TYPE } from '../../../base/media/constants';
+import {
+    getLocalParticipant,
+    getParticipantById,
+    isScreenShareParticipant
+} from '../../../base/participants/functions';
+import BaseIndicator from '../../../base/react/components/native/BaseIndicator';
+import {
+    getTrackByMediaTypeAndParticipant
+} from '../../../base/tracks/functions.native';
+import indicatorStyles from '../../../filmstrip/components/native/styles';
+import {
+    isTrackStreamingStatusInactive,
+    isTrackStreamingStatusInterrupted
+} from '../../functions';
 import AbstractConnectionIndicator, {
-    type Props,
-    type State
+    mapStateToProps as _abstractMapStateToProps
 } from '../AbstractConnectionIndicator';
 
-import { CONNECTOR_INDICATOR_COLORS } from './styles';
-
-const ICONS = [
-    IconSignalLevel0,
-    IconSignalLevel1,
-    IconSignalLevel2
-];
+import {
+    CONNECTOR_INDICATOR_COLORS,
+    CONNECTOR_INDICATOR_LOST,
+    CONNECTOR_INDICATOR_OTHER,
+    iconStyle
+} from './styles';
 
 /**
  * Implements an indicator to show the quality of the connection of a participant.
  */
-class ConnectionIndicator extends AbstractConnectionIndicator<Props, State> {
+class ConnectionIndicator extends AbstractConnectionIndicator {
     /**
      * Initializes a new {@code ConnectionIndicator} instance.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -38,31 +49,112 @@ class ConnectionIndicator extends AbstractConnectionIndicator<Props, State> {
     }
 
     /**
+     * Get the icon configuration from CONNECTOR_INDICATOR_COLORS which has a percentage
+     * that matches or exceeds the passed in percentage. The implementation
+     * assumes CONNECTOR_INDICATOR_COLORS is already sorted by highest to lowest
+     * percentage.
+     *
+     * @param {number} percent - The connection percentage, out of 100, to find
+     * the closest matching configuration for.
+     * @private
+     * @returns {Object}
+     */
+    _getDisplayConfiguration(percent) {
+        return CONNECTOR_INDICATOR_COLORS.find(x => percent >= x.percent) || {};
+    }
+
+    /**
      * Implements React's {@link Component#render()}.
      *
      * @inheritdoc
      * @returns {ReactElement}
      */
     render() {
-        const { showIndicator, stats } = this.state;
+        const {
+            _connectionIndicatorInactiveDisabled,
+            _connectionIndicatorDisabled,
+            _isVirtualScreenshareParticipant,
+            _isConnectionStatusInactive,
+            _isConnectionStatusInterrupted
+        } = this.props;
+        const {
+            showIndicator,
+            stats
+        } = this.state;
         const { percent } = stats;
 
-        if (!showIndicator || typeof percent === 'undefined') {
+        if (!showIndicator || typeof percent === 'undefined'
+                || _connectionIndicatorDisabled || _isVirtualScreenshareParticipant) {
             return null;
         }
 
-        // Signal level on a scale 0..2
-        const signalLevel = Math.floor(percent / 33.4);
+        let indicatorColor;
+
+        if (_isConnectionStatusInactive) {
+            if (_connectionIndicatorInactiveDisabled) {
+                return null;
+            }
+
+            indicatorColor = CONNECTOR_INDICATOR_OTHER;
+        } else if (_isConnectionStatusInterrupted) {
+            indicatorColor = CONNECTOR_INDICATOR_LOST;
+        } else {
+            const displayConfig = this._getDisplayConfiguration(percent);
+
+            if (!displayConfig) {
+                return null;
+            }
+
+            indicatorColor = displayConfig.color;
+        }
 
         return (
-            <BaseIndicator
-                icon = { ICONS[signalLevel] }
-                iconStyle = {{
-                    color: CONNECTOR_INDICATOR_COLORS[signalLevel]
-                }} />
+            <View
+                style = { [
+                    indicatorStyles.indicatorContainer,
+                    { backgroundColor: indicatorColor }
+                ] }>
+                <BaseIndicator
+                    icon = { IconConnection }
+                    iconStyle = { this.props.iconStyle || iconStyle } />
+            </View>
         );
     }
 
 }
 
-export default connect()(ConnectionIndicator);
+/**
+ * Maps part of the Redux state to the props of this component.
+ *
+ * @param {Object} state - The Redux state.
+ * @param {IProps} ownProps - The own props of the component.
+ * @returns {IProps}
+ */
+export function _mapStateToProps(state, ownProps) {
+    const { participantId } = ownProps;
+    const tracks = state['features/base/tracks'];
+    const participant = participantId ? getParticipantById(state, participantId) : getLocalParticipant(state);
+    const _isVirtualScreenshareParticipant = isScreenShareParticipant(participant);
+    let _isConnectionStatusInactive;
+    let _isConnectionStatusInterrupted;
+
+    if (!_isVirtualScreenshareParticipant) {
+        const _videoTrack = getTrackByMediaTypeAndParticipant(tracks, MEDIA_TYPE.VIDEO, participantId);
+
+        _isConnectionStatusInactive = isTrackStreamingStatusInactive(_videoTrack);
+        _isConnectionStatusInterrupted = isTrackStreamingStatusInterrupted(_videoTrack);
+    }
+
+    return {
+        ..._abstractMapStateToProps(state),
+        _connectionIndicatorInactiveDisabled:
+            Boolean(state['features/base/config'].connectionIndicators?.inactiveDisabled),
+        _connectionIndicatorDisabled:
+            Boolean(state['features/base/config'].connectionIndicators?.disabled),
+        _isVirtualScreenshareParticipant,
+        _isConnectionStatusInactive,
+        _isConnectionStatusInterrupted
+    };
+}
+
+export default connect(_mapStateToProps)(ConnectionIndicator);

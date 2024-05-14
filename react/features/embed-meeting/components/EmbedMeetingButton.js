@@ -1,31 +1,21 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { createToolbarEvent, sendAnalytics } from '../../analytics';
-import { openDialog } from '../../base/dialog';
-import { translate } from '../../base/i18n';
-import { IconCodeBlock } from '../../base/icons';
-import { connect } from '../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { createToolbarEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { openDialog } from '../../base/dialog/actions';
+import { translate } from '../../base/i18n/functions';
+import { IconCode } from '../../base/icons/svg';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
 
 import EmbedMeetingDialog from './EmbedMeetingDialog';
 
 /**
- * The type of the React {@code Component} props of {@link EmbedMeetingButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
-
-/**
  * Implementation of a button for opening embed meeting dialog.
  */
-class EmbedMeetingButton extends AbstractButton<Props, *> {
+class EmbedMeetingButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.embedMeeting';
-    icon = IconCodeBlock;
+    icon = IconCode;
     label = 'toolbar.embedMeeting';
     tooltip = 'toolbar.embedMeeting';
 

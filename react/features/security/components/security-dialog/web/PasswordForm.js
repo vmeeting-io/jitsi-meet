@@ -1,65 +1,15 @@
-// @flow
-
 import React, { Component } from 'react';
 
-import { translate } from '../../../../base/i18n';
-import { LOCKED_LOCALLY } from '../../../../room-lock';
-
-/**
- * The type of the React {@code Component} props of {@link PasswordForm}.
- */
-type Props = {
-
-    /**
-     * Whether or not to show the password editing field.
-     */
-    editEnabled: boolean,
-
-    /**
-     * The value for how the conference is locked (or undefined if not locked)
-     * as defined by room-lock constants.
-     */
-    locked: string,
-
-    /**
-     * Callback to invoke when the local participant is submitting a password
-     * set request.
-     */
-    onSubmit: Function,
-
-    /**
-     * The current known password for the JitsiConference.
-     */
-    password: string,
-
-    /**
-     * The number of digits to be used in the password.
-     */
-    passwordNumberOfDigits: boolean,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
-
-/**
- * The type of the React {@code Component} state of {@link PasswordForm}.
- */
-type State = {
-
-    /**
-     * The value of the password being entered by the local participant.
-     */
-    enteredPassword: string
-};
+import { translate } from '../../../../base/i18n/functions';
+import Input from '../../../../base/ui/components/web/Input';
+import { LOCKED_LOCALLY } from '../../../../room-lock/constants';
 
 /**
  * React {@code Component} for displaying and editing the conference password.
  *
  * @augments Component
  */
-class PasswordForm extends Component<Props, State> {
+class PasswordForm extends Component {
     /**
      * Implements React's {@link Component#getDerivedStateFromProps()}.
      *
@@ -78,16 +28,14 @@ class PasswordForm extends Component<Props, State> {
     /**
      * Initializes a new {@code PasswordForm} instance.
      *
-     * @param {Props} props - The React {@code Component} props to initialize
+     * @param {IProps} props - The React {@code Component} props to initialize
      * the new {@code PasswordForm} instance with.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // Bind event handlers so they are only bound once per instance.
-        this._onEnteredPasswordChange
-            = this._onEnteredPasswordChange.bind(this);
-        this._onPasswordSubmit = this._onPasswordSubmit.bind(this);
+        this._onEnteredPasswordChange = this._onEnteredPasswordChange.bind(this);
         this._onKeyPress = this._onKeyPress.bind(this);
     }
 
@@ -98,19 +46,40 @@ class PasswordForm extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { t } = this.props;
-
         return (
             <div className = 'info-password'>
-                <span className = 'info-label'>
-                    { t('info.password') }
-                </span>
-                <span className = 'spacer'>&nbsp;</span>
-                <span className = 'info-password-field info-value'>
-                    { this._renderPasswordField() }
-                </span>
+                {this._renderPassword()}
+                {this._renderPasswordField()}
             </div>
         );
+    }
+
+    /** .........
+     * Renders the password if there is any.
+     *
+     * @returns {ReactElement}
+     */
+    _renderPassword() {
+        const { locked, t } = this.props;
+
+        return locked && <>
+            <span className = 'info-label'>
+                {t('info.password')}
+            </span>
+            <span className = 'spacer'>&nbsp;</span>
+            <span className = 'info-password-field info-value'>
+                {locked === LOCKED_LOCALLY ? (
+                    <div className = 'info-password-local'>
+                        {this.props.visible ? this.props.password : '******' }
+                    </div>
+                ) : (
+                    <div className = 'info-password-remote'>
+                        {this.props.t('passwordSetRemotely')}
+                    </div>
+                ) }
+                {this._renderPasswordField()}
+            </span>
+        </>;
     }
 
     /**
@@ -121,85 +90,49 @@ class PasswordForm extends Component<Props, State> {
      * @returns {ReactElement}
      */
     _renderPasswordField() {
-        if (this.props.editEnabled) {
-            let digitPattern, placeHolderText;
+        const {
+            editEnabled,
+            passwordNumberOfDigits,
+            t
+        } = this.props;
 
-            if (this.props.passwordNumberOfDigits) {
+        if (editEnabled) {
+            let placeHolderText = t('dialog.password');
+
+            if (passwordNumberOfDigits) {
                 placeHolderText = this.props.t('passwordDigitsOnly', {
-                    number: this.props.passwordNumberOfDigits });
-                digitPattern = '\\d*';
+                    number: passwordNumberOfDigits });
             }
 
             return (
-                <form
-                    className = 'info-password-form'
-                    onKeyPress = { this._onKeyPress }
-                    onSubmit = { this._onPasswordSubmit }>
-                    <input
-                        aria-label = { this.props.t('info.addPassword') }
+                <div
+                    className = 'info-password-form'>
+                    <Input
+                        accessibilityLabel = { t('info.addPassword') }
                         autoFocus = { true }
-                        className = 'info-password-input'
-                        maxLength = { this.props.passwordNumberOfDigits }
+                        id = 'info-password-input'
+                        maxLength = { passwordNumberOfDigits }
+                        mode = { passwordNumberOfDigits ? 'numeric' : undefined }
                         onChange = { this._onEnteredPasswordChange }
-                        pattern = { digitPattern }
+                        onKeyPress = { this._onKeyPress }
                         placeholder = { placeHolderText }
-                        spellCheck = { 'false' }
                         type = 'password'
                         value = { this.state.enteredPassword } />
-                </form>
-            );
-        } else if (this.props.locked === LOCKED_LOCALLY) {
-            return (
-                <div className = 'info-password-local'>
-                    { this.props.password }
-                </div>
-            );
-        } else if (this.props.locked) {
-            return (
-                <div className = 'info-password-remote'>
-                    { this.props.t('passwordSetRemotely') }
                 </div>
             );
         }
-
-        return (
-            <div className = 'info-password-none'>
-                { this.props.t('info.noPassword') }
-            </div>
-        );
     }
-
-    _onEnteredPasswordChange: (Object) => void;
 
     /**
      * Updates the internal state of entered password.
      *
-     * @param {Object} event - DOM Event for value change.
+     * @param {string} value - DOM Event for value change.
      * @private
      * @returns {void}
      */
-    _onEnteredPasswordChange(event) {
-        this.setState({ enteredPassword: event.target.value });
+    _onEnteredPasswordChange(value: string) {
+        this.setState({ enteredPassword: value });
     }
-
-    _onPasswordSubmit: (Object) => void;
-
-    /**
-     * Invokes the passed in onSubmit callback to notify the parent that a
-     * password submission has been attempted.
-     *
-     * @param {Object} event - DOM Event for form submission.
-     * @private
-     * @returns {void}
-     */
-    _onPasswordSubmit(event) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        this.props.onSubmit(this.state.enteredPassword);
-    }
-
-    _onKeyPress: (Object) => void;
 
     /**
      * Stops the the EnterKey for propagation in order to prevent the dialog
@@ -209,7 +142,7 @@ class PasswordForm extends Component<Props, State> {
      * @private
      * @returns {void}
      */
-    _onKeyPress(event) {
+    _onKeyPress(event: React.KeyboardEvent) {
         if (event.key === 'Enter') {
             event.preventDefault();
             event.stopPropagation();

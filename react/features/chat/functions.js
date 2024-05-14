@@ -2,14 +2,19 @@
 
 import aliases from 'react-emoji-render/data/aliases';
 import emojiAsciiAliases from 'react-emoji-render/data/asciiAliases';
-import { getAuthUrl } from '../../api/url';
-import { NOTIFICATION_TIMEOUT, showToast } from '../../features/notifications';
-import { i18next } from '../base/i18n';
-import { getConferenceName } from '../base/conference';
 import moment from 'moment';
 import axios from 'axios';
-import { escapeRegexp, getBaseUrl } from '../base/util';
+
+import { getAuthUrl } from '../../api/url';
+import { showToast } from '../../features/notifications/functions.web';
+import { NOTIFICATION_TIMEOUT } from '../../features/notifications/constants';
+import { getConferenceName } from '../base/conference/functions';
+import { getLocalizedDateFormatter } from '../base/i18n/dateUtil';
+import i18next from '../base/i18n/i18next';
+import { escapeRegexp, getBaseUrl } from '../base/util/helpers';
+
 import { sendMessage, setFileUploadedPercentageValue } from './actions.any';
+import { MESSAGE_TYPE_ERROR, MESSAGE_TYPE_LOCAL, TIMESTAMP_FORMAT } from './constants';
 
 /**
  * An ASCII emoticon regexp array to find and replace old-style ASCII
@@ -97,10 +102,11 @@ export function getUnreadCount(state: Object) {
     }
 
     let reactionMessages = 0;
+    let lastReadIndex;
 
     if (navigator.product === 'ReactNative') {
         // React native stores the messages in a reversed order.
-        const lastReadIndex = messages.indexOf(lastReadMessage);
+        lastReadIndex = messages.indexOf(lastReadMessage);
 
         for (let i = 0; i < lastReadIndex; i++) {
             if (messages[i].isReaction) {
@@ -111,7 +117,7 @@ export function getUnreadCount(state: Object) {
         return lastReadIndex - reactionMessages;
     }
 
-    const lastReadIndex = messages.lastIndexOf(lastReadMessage);
+    lastReadIndex = messages.lastIndexOf(lastReadMessage);
 
     for (let i = lastReadIndex + 1; i < messagesCount; i++) {
         if (messages[i].isReaction) {
@@ -228,4 +234,41 @@ export async function uploadFile(file, store, fileUploadInProgress) {
             icon: 'error',
             animation: false });
     }
+}
+
+/**
+ * Returns the timestamp to display for the message.
+ *
+ * @param {IMessage} message - The message from which to get the timestamp.
+ * @returns {string}
+ */
+export function getFormattedTimestamp(message) {
+    return getLocalizedDateFormatter(new Date(message.timestamp))
+        .format(TIMESTAMP_FORMAT);
+}
+
+/**
+ * Generates the message text to be rendered in the component.
+ *
+ * @param {IMessage} message - The message from which to get the text.
+ * @returns {string}
+ */
+export function getMessageText(message) {
+    return message.messageType === MESSAGE_TYPE_ERROR
+        ? i18next.t('chat.error', {
+            error: message.message
+        })
+        : message.message;
+}
+
+/**
+ * Returns the message that is displayed as a notice for private messages.
+ *
+ * @param {IMessage} message - The message to be checked.
+ * @returns {string}
+ */
+export function getPrivateNoticeMessage(message) {
+    return i18next.t('chat.privateNotice', {
+        recipient: message.messageType === MESSAGE_TYPE_LOCAL ? message.recipient : i18next.t('chat.you')
+    });
 }

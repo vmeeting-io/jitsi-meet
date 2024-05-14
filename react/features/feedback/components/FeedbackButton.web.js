@@ -1,33 +1,18 @@
 
 // @flow
+import { connect } from 'react-redux';
 
-import { createToolbarEvent, sendAnalytics } from '../../analytics';
-import { translate } from '../../base/i18n';
-import { IconFeedback } from '../../base/icons';
-import { connect } from '../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { createToolbarEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { translate } from '../../base/i18n/functions';
+import { IconFeedback } from '../../base/icons/svg';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
 import { openFeedbackDialog } from '../actions';
-
-/**
- * The type of the React {@code Component} props of {@link FeedbackButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * The {@code JitsiConference} for the current conference.
-     */
-     _conference: Object,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
 
 /**
  * Implementation of a button for opening feedback dialog.
  */
-class FeedbackButton extends AbstractButton<Props, *> {
+class FeedbackButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.feedback';
     icon = IconFeedback;
     label = 'toolbar.feedback';

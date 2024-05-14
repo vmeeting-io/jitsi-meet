@@ -1,5 +1,4 @@
-// @flow
-
+// @ts-expect-error
 import { jitsiLocalStorage } from '@jitsi/js-utils';
 import _ from 'lodash';
 import React, { Component, Fragment } from 'react';
@@ -7,44 +6,27 @@ import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
 import { compose, createStore } from 'redux';
 import Thunk from 'redux-thunk';
-import reduxLogger from 'redux-logger';
 
-import { i18next } from '../../i18n';
-import {
-    MiddlewareRegistry,
-    PersistenceRegistry,
-    ReducerRegistry,
-    StateListenerRegistry
-} from '../../redux';
-import { SoundCollection } from '../../sounds';
+import i18next from '../../i18n/i18next';
+import MiddlewareRegistry from '../../redux/MiddlewareRegistry';
+import PersistenceRegistry from '../../redux/PersistenceRegistry';
+import ReducerRegistry from '../../redux/ReducerRegistry';
+import StateListenerRegistry from '../../redux/StateListenerRegistry';
+import SoundCollection from '../../sounds/components/SoundCollection';
+import { createDeferred } from '../../util/helpers';
 import { appWillMount, appWillUnmount } from '../actions';
 import logger from '../logger';
-
-declare var APP: Object;
-
-/**
- * The type of the React {@code Component} state of {@link BaseApp}.
- */
-type State = {
-
-    /**
-     * The {@code Route} rendered by the {@code BaseApp}.
-     */
-    route: Object,
-
-    /**
-     * The redux store used by the {@code BaseApp}.
-     */
-    store: Object
-};
 
 /**
  * Base (abstract) class for main App component.
  *
  * @abstract
  */
-export default class BaseApp extends Component<*, State> {
-    _init: Promise<*>;
+export default class BaseApp extends Component {
+    /**
+     * The deferred for the initialisation {{promise, resolve, reject}}.
+     */
+    _init;
 
     /**
      * Initializes a new {@code BaseApp} instance.
@@ -52,7 +34,7 @@ export default class BaseApp extends Component<*, State> {
      * @param {Object} props - The read-only React {@code Component} props with
      * which the new instance is to be initialized.
      */
-    constructor(props: Object) {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -65,8 +47,8 @@ export default class BaseApp extends Component<*, State> {
      * Initializes the app.
      *
      * @inheritdoc
-     */
-    componentDidMount() {
+    */
+    async componentDidMount() {
         /**
          * Make the mobile {@code BaseApp} wait until the {@code AsyncStorage}
          * implementation of {@code Storage} initializes fully.
@@ -75,21 +57,30 @@ export default class BaseApp extends Component<*, State> {
          * @see {@link #_initStorage}
          * @type {Promise}
          */
-        this._init = this._initStorage()
-            .catch(err => {
-                /* BaseApp should always initialize! */
-                logger.error(err);
-            })
-            .then(() => new Promise(resolve => {
+        this._init = createDeferred();
+
+        try {
+            await this._initStorage();
+
+            const setStatePromise = new Promise(resolve => {
                 this.setState({
+                    // @ts-ignore
                     store: this._createStore()
                 }, resolve);
-            }))
-            .then(() => this.state.store.dispatch(appWillMount(this)))
-            .catch(err => {
-                /* BaseApp should always initialize! */
-                logger.error(err);
             });
+
+            await setStatePromise;
+
+            await this._extraInit();
+        } catch (err) {
+            /* BaseApp should always initialize! */
+            logger.error(err);
+        }
+
+        this.state.store?.dispatch(appWillMount(this));
+
+        // @ts-ignore
+        this._init.resolve();
     }
 
     /**
@@ -98,7 +89,7 @@ export default class BaseApp extends Component<*, State> {
      * @inheritdoc
      */
     componentWillUnmount() {
-        this.state.store.dispatch(appWillUnmount(this));
+        this.state.store?.dispatch(appWillUnmount(this));
     }
 
     /**
@@ -109,7 +100,7 @@ export default class BaseApp extends Component<*, State> {
      *
      * @returns {void}
      */
-    componentDidCatch(error: Error, info: Object) {
+    componentDidCatch(error, info) {
         logger.error(error, info);
     }
 
@@ -122,10 +113,19 @@ export default class BaseApp extends Component<*, State> {
      * @private
      * @returns {Promise}
      */
-    _initStorage(): Promise<*> {
+    _initStorage() {
         const _initializing = jitsiLocalStorage.getItem('_initializing');
 
         return _initializing || Promise.resolve();
+    }
+
+    /**
+     * Extra initialisation that subclasses might require.
+     *
+     * @returns {void}
+     */
+    _extraInit() {
+        // To be implemented by subclass.
     }
 
     /**
@@ -140,6 +140,7 @@ export default class BaseApp extends Component<*, State> {
         if (store) {
             return (
                 <I18nextProvider i18n = { i18next }>
+                    {/* @ts-ignore */}
                     <Provider store = { store }>
                         <Fragment>
                             { this._createMainElement(component, props) }
@@ -199,23 +200,11 @@ export default class BaseApp extends Component<*, State> {
         // additional 3rd party middleware:
         // - Thunk - allows us to dispatch async actions easily. For more info
         // @see https://github.com/gaearon/redux-thunk.
-        const middlewares = [Thunk];
-        if (window._env_.ENABLE_REDUX_LOG === '1') {
-            middlewares.push(reduxLogger);
-        }
-        let middleware = MiddlewareRegistry.applyMiddleware(...middlewares);
+        const middleware = MiddlewareRegistry.applyMiddleware(Thunk);
 
-        // Try to enable Redux DevTools Chrome extension in order to make it
-        // available for the purposes of facilitating development.
-        let devToolsExtension;
-
-        if (typeof window === 'object'
-                && (devToolsExtension = window.devToolsExtension)) {
-            middleware = compose(middleware, devToolsExtension());
-        }
-
-        const store = createStore(
-            reducer, PersistenceRegistry.getPersistedState(), middleware);
+        // @ts-ignore
+        const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+        const store = createStore(reducer, PersistenceRegistry.getPersistedState(), composeEnhancers(middleware));
 
         // StateListenerRegistry
         StateListenerRegistry.subscribe(store);
@@ -225,6 +214,7 @@ export default class BaseApp extends Component<*, State> {
         // Don't use in the react code!!!
         // FIXME: remove when the reactification is finished!
         if (typeof APP !== 'undefined') {
+            // @ts-ignore
             APP.store = store;
         }
 
@@ -237,7 +227,7 @@ export default class BaseApp extends Component<*, State> {
      * @param {Route} route - The Route to which to navigate.
      * @returns {Promise}
      */
-    _navigate(route): Promise<*> {
+    _navigate(route) {
         if (_.isEqual(route, this.state.route)) {
             return Promise.resolve();
         }
@@ -254,7 +244,7 @@ export default class BaseApp extends Component<*, State> {
         // performed before setState completes, the app may not navigate to the
         // expected route. In order to mitigate the problem, _navigate was
         // changed to return a Promise.
-        return new Promise(resolve => {
+        return new Promise(resolve => { // @ts-ignore
             this.setState({ route }, resolve);
         });
     }
@@ -264,5 +254,7 @@ export default class BaseApp extends Component<*, State> {
      *
      * @returns {React$Element}
      */
-    _renderDialogContainer: () => React$Element<*>;
+    _renderDialogContainer() {
+        return null;
+    }
 }

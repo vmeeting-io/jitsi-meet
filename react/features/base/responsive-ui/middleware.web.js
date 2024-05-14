@@ -1,7 +1,7 @@
 // @flow
 
-import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../../base/app';
-import { MiddlewareRegistry } from '../../base/redux';
+import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../app/actionTypes';
+import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 
 import { clientResized } from './actions';
 
@@ -63,7 +63,7 @@ function _appWillMount(store) {
  * @returns {void}
  */
 function _appWillUnmount() {
-    window.removeEventListener('resize', handler);
+    handler && window.removeEventListener('resize', handler);
 
     handler = undefined;
 }

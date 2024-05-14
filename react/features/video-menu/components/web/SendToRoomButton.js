@@ -1,42 +1,34 @@
-// @flow
-
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 
-import { createBreakoutRoomsEvent, sendAnalytics } from '../../../analytics';
-import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { IconRingGroup } from '../../../base/icons';
-import { sendParticipantToRoom } from '../../../breakout-rooms';
+import { createBreakoutRoomsEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { IconRingGroup } from '../../../base/icons/svg';
+import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
+import { sendParticipantToRoom } from '../../../breakout-rooms/actions';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 
-type Props = {
-
-    /**
-     * Click handler.
-     */
-    onClick: ?Function,
-
-    /**
-     * The ID for the participant on which the button will act.
-     */
-    participantID: string,
-
-    /**
-     * The room to send the participant to.
-     */
-    room: Object
-}
-
-const SendToRoomButton = ({ onClick, participantID, room }: Props) => {
+const SendToRoomButton = ({
+    notifyClick,
+    notifyMode,
+    onClick,
+    participantID,
+    room
+}) => {
     const dispatch = useDispatch();
     const { t } = useTranslation();
     const _onClick = useCallback(() => {
-        onClick && onClick();
+        notifyClick?.();
+        if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
+            return;
+        }
+        onClick?.();
         sendAnalytics(createBreakoutRoomsEvent('send.participant.to.room'));
         dispatch(sendParticipantToRoom(participantID, room.id));
-    }, [ participantID, room ]);
+    }, [ dispatch, notifyClick, notifyMode, onClick, participantID, room, sendAnalytics ]);
 
-    const roomName = decodeURI(room.name) || t('breakoutRooms.mainRoom');
+    const roomName = room.name || t('breakoutRooms.mainRoom');
 
     return (
         <ContextMenuItem

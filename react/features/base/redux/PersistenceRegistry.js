@@ -1,17 +1,11 @@
 // @flow
-
-import Bourne from '@hapi/bourne';
 import { jitsiLocalStorage } from '@jitsi/js-utils';
+import { safeJsonParse } from '@jitsi/js-utils/json';
 import md5 from 'js-md5';
 
 import logger from './logger';
 
 declare var __DEV__;
-
-/**
- * The name of the {@code localStorage} store where the app persists its values.
- */
-const PERSISTED_STATE_NAME = 'jitsi-state';
 
 /**
  * Mixed type of the element (subtree) config. If it's a {@code boolean} (and is
@@ -30,7 +24,7 @@ declare type PersistencyConfigMap = { [name: string]: ElementConfig };
  * persisted and also handles the persistency calls too.
  */
 class PersistenceRegistry {
-    _checksum: string;
+    _checksum = '';
     _defaultStates: { [name: string ]: ?Object} = {};
     _elements: PersistencyConfigMap = {};
 
@@ -43,15 +37,12 @@ class PersistenceRegistry {
      * @returns {Object}
      */
     getPersistedState() {
-        let filteredPersistedState = {};
+        const filteredPersistedState = {};
 
         // localStorage key per feature
         for (const subtreeName of Object.keys(this._elements)) {
             // Assumes that the persisted value is stored under the same key as
             // the feature's redux state name.
-            // TODO We'll need to introduce functions later that can control the
-            // persist key's name. Similar to control serialization and
-            // deserialization. But that should be a straightforward change.
             const persistedSubtree
                 = this._getPersistedSubtree(
                     subtreeName,
@@ -60,30 +51,6 @@ class PersistenceRegistry {
 
             if (persistedSubtree !== undefined) {
                 filteredPersistedState[subtreeName] = persistedSubtree;
-            }
-        }
-
-        // legacy
-        if (Object.keys(filteredPersistedState).length === 0) {
-            let persistedState = jitsiLocalStorage.getItem(PERSISTED_STATE_NAME);
-
-            if (persistedState) {
-                try {
-                    persistedState = Bourne.parse(persistedState);
-                } catch (error) {
-                    logger.error(
-                        'Error parsing persisted state',
-                        persistedState,
-                        error);
-                    persistedState = {};
-                }
-
-                filteredPersistedState = this._getFilteredState(persistedState);
-
-                // Store into the new format and delete the old format so that
-                // it's not used again.
-                this.persistState(filteredPersistedState);
-                jitsiLocalStorage.removeItem(PERSISTED_STATE_NAME);
             }
         }
 
@@ -134,7 +101,7 @@ class PersistenceRegistry {
      */
     register(
             name: string,
-            config?: ElementConfig = true,
+            config: ElementConfig = true,
             defaultState?: Object) {
         this._elements[name] = config;
         this._defaultStates[name] = defaultState;
@@ -224,7 +191,7 @@ class PersistenceRegistry {
 
         if (persistedSubtree) {
             try {
-                persistedSubtree = Bourne.parse(persistedSubtree);
+                persistedSubtree = safeJsonParse(persistedSubtree);
 
                 const filteredSubtree
                     = this._getFilteredSubtree(persistedSubtree, subtreeConfig);

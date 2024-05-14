@@ -1,11 +1,8 @@
-// @flow
-
-import { ThemeProvider } from '@material-ui/core/styles';
+import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
 import * as React from 'react';
+import { connect } from 'react-redux';
 
-import { connect } from '../../../base/redux';
-
-import BaseTheme from './BaseTheme';
+import BaseTheme from './BaseTheme.web';
 
 type Props = {
 
@@ -27,14 +24,18 @@ type Props = {
  * @returns {React.ReactNode}
  */
 function JitsiThemeProvider(props: Props) {
-    return <ThemeProvider theme = { props._theme }>{ props.children }</ThemeProvider>;
+    return (
+        <StyledEngineProvider injectFirst = { true }>
+            <ThemeProvider theme = { props._theme }>{ props.children }</ThemeProvider>
+        </StyledEngineProvider>
+    );
 }
 
 /**
  * Maps part of the Redux state to the props of this component.
  *
  * @param {Object} state - The Redux state.
- * @returns {Props}
+ * @returns {IProps}
  */
 function _mapStateToProps(state) {
     const { muiBrandedTheme } = state['features/dynamic-branding'];

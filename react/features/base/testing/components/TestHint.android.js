@@ -3,10 +3,9 @@
 import React, { Component } from 'react';
 import { Text } from 'react-native';
 
-import { connect } from '../../redux';
+import { connect } from 'react-redux';
 
-import type { TestHintProps } from './AbstractTestHint';
-import { _mapStateToProps } from './AbstractTestHint';
+import { TestHintProps, _mapStateToProps } from './AbstractTestHint';
 
 /**
  * The Android version of <code>TestHint</code>. It will put the identifier,

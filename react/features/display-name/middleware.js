@@ -1,8 +1,7 @@
-// @flow
-
-import { hideDialog, isDialogOpen } from '../base/dialog';
-import { MiddlewareRegistry } from '../base/redux';
-import { SETTINGS_UPDATED } from '../base/settings';
+import { hideDialog } from '../base/dialog/actions';
+import { isDialogOpen } from '../base/dialog/functions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { SETTINGS_UPDATED } from '../base/settings/actionTypes';
 
 import { DisplayNamePrompt } from './components';
 

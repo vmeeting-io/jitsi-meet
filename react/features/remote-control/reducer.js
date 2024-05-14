@@ -1,4 +1,5 @@
-import { ReducerRegistry, set } from '../base/redux';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
+import { set } from '../base/redux/functions';
 
 import {
     CAPTURE_EVENTS,

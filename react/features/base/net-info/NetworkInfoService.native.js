@@ -1,10 +1,8 @@
 // @flow
 import NetInfo from '@react-native-community/netinfo';
-import type { NetInfoState, NetInfoSubscription } from '@react-native-community/netinfo';
 import EventEmitter from 'events';
 
 import { ONLINE_STATE_CHANGED_EVENT } from './events';
-import type { NetworkInfo } from './types';
 
 /**
  * The network info service implementation for iOS and Android. 'react-native-netinfo' seems to support windows as well,
@@ -14,7 +12,7 @@ export default class NetworkInfoService extends EventEmitter {
     /**
      * Stores the native subscription for future cleanup.
      */
-    _subscription: NetInfoSubscription;
+    _subscription;
 
     /**
      * Converts library's structure to {@link NetworkInfo} used by jitsi-meet.
@@ -23,7 +21,7 @@ export default class NetworkInfoService extends EventEmitter {
      * @private
      * @returns {NetworkInfo}
      */
-    static _convertNetInfoState(netInfoState: NetInfoState): NetworkInfo {
+    static _convertNetInfoState(netInfoState) {
         return {
             isOnline: netInfoState.isInternetReachable,
             details: netInfoState.details,

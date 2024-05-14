@@ -1,34 +1,10 @@
-// @flow
-
 import React, { Component } from 'react';
 
-import { translate } from '../../../../base/i18n';
-import { Icon, IconCopy } from '../../../../base/icons';
-import { copyText } from '../../../../base/util';
+import { translate } from '../../../../base/i18n/functions';
+import Icon from '../../../../base/icons/components/Icon';
+import { IconCopy } from '../../../../base/icons/svg';
+import { copyText } from '../../../../base/util/copyText.web';
 import { _formatConferenceIDPin } from '../../../_utils';
-
-/**
- * The type of the React {@code Component} props of {@link DialInNumber}.
- */
-type Props = {
-
-    /**
-     * The numeric identifier for the current conference, used after dialing a
-     * the number to join the conference.
-     */
-    conferenceID: number,
-
-    /**
-     * The phone number to dial to begin the process of dialing into a
-     * conference.
-     */
-    phoneNumber: string,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
 
 /**
  * React {@code Component} responsible for displaying a telephone number and
@@ -36,7 +12,7 @@ type Props = {
  *
  * @augments Component
  */
-class DialInNumber extends Component<Props> {
+class DialInNumber extends Component {
 
     /**
      * Initializes a new DialInNumber instance.
@@ -49,10 +25,7 @@ class DialInNumber extends Component<Props> {
 
         // Bind event handler so it is only bound once for every instance.
         this._onCopyText = this._onCopyText.bind(this);
-        this._onCopyTextKeyPress = this._onCopyTextKeyPress.bind(this);
     }
-
-    _onCopyText: () => void;
 
     /**
      * Copies the dial-in information to the clipboard.
@@ -69,22 +42,6 @@ class DialInNumber extends Component<Props> {
         copyText(textToCopy);
     }
 
-    _onCopyTextKeyPress: (Object) => void;
-
-    /**
-     * KeyPress handler for accessibility.
-     *
-     * @param {Object} e - The key event to handle.
-     *
-     * @returns {void}
-     */
-    _onCopyTextKeyPress(e) {
-        if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
-            this._onCopyText();
-        }
-    }
-
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -96,7 +53,7 @@ class DialInNumber extends Component<Props> {
 
         return (
             <div className = 'dial-in-number'>
-                <div>
+                <p>
                     <span className = 'phone-number'>
                         <span className = 'info-label'>
                             { t('info.dialInNumber') }
@@ -106,7 +63,7 @@ class DialInNumber extends Component<Props> {
                             { phoneNumber }
                         </span>
                     </span>
-                    <span className = 'spacer'>&nbsp;</span>
+                    <br />
                     <span className = 'conference-id'>
                         <span className = 'info-label'>
                             { t('info.dialInConferenceID') }
@@ -116,16 +73,13 @@ class DialInNumber extends Component<Props> {
                             { `${_formatConferenceIDPin(conferenceID)}#` }
                         </span>
                     </span>
-                </div>
-                <a
+                </p>
+                <button
                     aria-label = { t('info.copyNumber') }
-                    className = 'dial-in-copy'
-                    onClick = { this._onCopyText }
-                    onKeyPress = { this._onCopyTextKeyPress }
-                    role = 'button'
-                    tabIndex = { 0 }>
+                    className = 'dial-in-copy invisible-button'
+                    onClick = { this._onCopyText }>
                     <Icon src = { IconCopy } />
-                </a>
+                </button>
             </div>
         );
     }

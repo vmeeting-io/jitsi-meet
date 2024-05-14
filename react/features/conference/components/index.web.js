@@ -1,3 +1,1 @@
-// @flow
-
-export * from './web';
+export { default as ConferenceTimerDisplay } from './web/ConferenceTimerDisplay';

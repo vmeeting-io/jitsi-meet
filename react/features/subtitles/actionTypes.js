@@ -1,16 +1,3 @@
-
-/**
- * The type of (redux) action which indicates that an endpoint message
- * sent by another participant to the data channel is received.
- *
- * {
- *     type: ENDPOINT_MESSAGE_RECEIVED,
- *     participant: Object,
- *     json: Object
- * }
- */
-export const ENDPOINT_MESSAGE_RECEIVED = 'ENDPOINT_MESSAGE_RECEIVED';
-
 /**
  * The type of (redux) action which indicates that an existing transcript
  * has to be removed from the state.
@@ -45,3 +32,15 @@ export const UPDATE_TRANSCRIPT_MESSAGE = 'UPDATE_TRANSCRIPT_MESSAGE';
  */
 export const TOGGLE_REQUESTING_SUBTITLES
     = 'TOGGLE_REQUESTING_SUBTITLES';
+
+/**
+ * The type of (redux) action which indicates if the user set the state of
+ * the subtitles to enabled or disabled.
+ *
+ * {
+ *      type: SET_REQUESTING_SUBTITLES
+ *      enabled: boolean
+ * }
+ */
+export const SET_REQUESTING_SUBTITLES
+    = 'SET_REQUESTING_SUBTITLES';

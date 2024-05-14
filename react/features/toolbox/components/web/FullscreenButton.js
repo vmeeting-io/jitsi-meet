@@ -1,81 +1,25 @@
-// @flow
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { IconExitFullScreen, IconFullScreen } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-
-type Props = AbstractButtonProps & {
-
-  /**
-   * Whether or not the app is currently in full screen.
-   */
-   _fullScreen: boolean,
-};
+import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { isIosMobileBrowser } from '../../../base/environment/utils';
+import { translate } from '../../../base/i18n/functions';
+import { IconEnterFullscreen, IconExitFullscreen } from '../../../base/icons/svg';
+import AbstractButton, { IProps as AbstractButtonProps } from '../../../base/toolbox/components/AbstractButton';
+import { closeOverflowMenuIfOpen, setFullScreen } from '../../actions.web';
 
 /**
  * Implementation of a button for toggling fullscreen state.
  */
-class FullscreenButton extends AbstractButton<Props, *> {
-    accessibilityLabel = 'toolbar.accessibilityLabel.fullScreen';
+class FullscreenButton extends AbstractButton {
+    accessibilityLabel = 'toolbar.accessibilityLabel.enterFullScreen';
+    toggledAccessibilityLabel = 'toolbar.accessibilityLabel.exitFullScreen';
     label = 'toolbar.enterFullScreen';
     toggledLabel = 'toolbar.exitFullScreen';
-
-    /**
-     * Retrieves icon dynamically.
-     */
-    get icon() {
-        if (this._isToggled()) {
-            return IconExitFullScreen;
-        }
-
-        return IconFullScreen;
-    }
-
-    /**
-     * Required by linter due to AbstractButton overwritten prop being writable.
-     *
-     * @param {string} _value - The value.
-     */
-    set icon(_value) {
-        // Unused.
-    }
-
-    /**
-     * Retrieves icon dynamically.
-     */
-    get tooltip() {
-        if (this._isToggled()) {
-            return 'toolbar.exitFullScreen';
-        }
-
-        return 'toolbar.enterFullScreen';
-    }
-
-    /**
-     * Required by linter due to AbstractButton overwritten prop being writable.
-     *
-     * @param {string} _value - The value.
-     */
-    set tooltip(_value) {
-        // Unused.
-    }
-
-    /**
-     * Handles clicking / pressing the button, and opens the appropriate dialog.
-     *
-     * @protected
-     * @returns {void}
-     */
-    _handleClick() {
-        const { handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
-    }
+    tooltip = 'toolbar.enterFullScreen';
+    toggledTooltip = 'toolbar.exitFullScreen';
+    toggledIcon = IconExitFullscreen;
+    icon = IconEnterFullscreen;
 
     /**
      * Indicates whether this button is in toggled state or not.
@@ -87,6 +31,25 @@ class FullscreenButton extends AbstractButton<Props, *> {
     _isToggled() {
         return this.props._fullScreen;
     }
+
+    /**
+    * Handles clicking the button, and toggles fullscreen.
+    *
+    * @private
+    * @returns {void}
+    */
+    _handleClick() {
+        const { dispatch, _fullScreen } = this.props;
+
+        sendAnalytics(createToolbarEvent(
+            'toggle.fullscreen',
+            {
+                enable: !_fullScreen
+            }));
+        dispatch(closeOverflowMenuIfOpen());
+
+        dispatch(setFullScreen(!_fullScreen));
+    }
 }
 
 /**
@@ -95,9 +58,10 @@ class FullscreenButton extends AbstractButton<Props, *> {
  * @param {Object} state - Redux state.
  * @returns {Object}
  */
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
-        _fullScreen: state['features/toolbox'].fullScreen
+        _fullScreen: state['features/toolbox'].fullScreen,
+        visible: !isIosMobileBrowser()
     };
 };
 

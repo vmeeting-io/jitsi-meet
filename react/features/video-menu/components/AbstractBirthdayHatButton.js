@@ -1,34 +1,17 @@
 // @flow
 
-import { arApprovalDialog, enableARHat } from '../../ar-effect';
-import { IconBirthdayHat } from '../../base/icons';
-import { getLocalParticipant, getParticipantByIdOrUndefined, updateParticipantBirthdayHatFlag } from '../../base/participants';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { arApprovalDialog } from '../../ar-effect/actions';
+import { enableARHat } from '../../ar-effect/functions';
+import { IconBirthdayHat } from '../../base/icons/svg';
+import { updateParticipantBirthdayHatFlag } from '../../base/participants/actions';
+import { getLocalParticipant, getParticipantByIdOrUndefined } from '../../base/participants/functions';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
 import { notifyBirthdayHatOn } from '../../participants-pane/actions.any';
-
-export type Props = AbstractButtonProps & {
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function,
-
-    /**
-     * The ID of the participant object that this button is supposed to
-     * mute/unmute.
-     */
-    participantID: string,
-
-    /**
-     * The function to be used to translate i18n labels.
-     */
-    t: Function
-};
 
 /**
  * An abstract remote video menu button which mutes the remote participant.
  */
-export default class AbstractBirthdayHatButton extends AbstractButton<Props, *> {
+export default class AbstractBirthdayHatButton extends AbstractButton {
     accessibilityLabel = '';
     icon = IconBirthdayHat;
     label = '';

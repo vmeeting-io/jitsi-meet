@@ -1,55 +1,9 @@
-// @flow
+import React, { Component, ReactElement } from 'react';
 
-import React, { Component } from 'react';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
+import { combineStyles } from '../../styles/functions.any';
 
-import { combineStyles } from '../../styles';
-
-import type { Styles } from './AbstractToolboxItem';
 import ToolboxItem from './ToolboxItem';
-
-export type Props = {
-
-    /**
-     * Function to be called after the click handler has been processed.
-     */
-    afterClick: ?Function,
-
-    /**
-     * Extra styles which will be applied in conjunction with `styles` or
-     * `toggledStyles` when the button is disabled;.
-     */
-    disabledStyles: ?Styles,
-
-    /**
-     * External handler for click action.
-     */
-    handleClick?: Function,
-
-    /**
-     * Whether to show the label or not.
-     */
-    showLabel: boolean,
-
-    /**
-     * Collection of styles for the button.
-     */
-    styles: ?Styles,
-
-    /**
-     * Collection of styles for the button, when in toggled state.
-     */
-    toggledStyles: ?Styles,
-
-    /**
-     * From which direction the tooltip should appear, relative to the button.
-     */
-    tooltipPosition: string,
-
-    /**
-     * Whether this button is visible or not.
-     */
-    visible: boolean
-};
 
 /**
  * Default style for disabled buttons.
@@ -68,7 +22,7 @@ export const defaultDisabledButtonStyles = {
 /**
  * An abstract implementation of a button.
  */
-export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
+export default class AbstractButton extends Component {
     static defaultProps = {
         afterClick: undefined,
         disabledStyles: defaultDisabledButtonStyles,
@@ -80,19 +34,39 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
     };
 
     /**
-     * A succinct description of what the button does. Used by accessibility
-     * tools and torture tests.
+     * The button's background color.
      *
      * @abstract
      */
-    accessibilityLabel: string;
+    backgroundColor;
+
+    /**
+     * A succinct description of what the button does. Used by accessibility
+     * tools and torture tests.
+     *
+     * If `toggledAccessibilityLabel` is defined, this is used only when the
+     * button is not toggled on.
+     *
+     * @abstract
+     */
+    accessibilityLabel;
+
+    /**
+     * This is the same as `accessibilityLabel`, replacing it when the button
+     * is toggled on.
+     *
+     * @abstract
+     */
+    toggledAccessibilityLabel;
+
+    labelProps;
 
     /**
      * The icon of this button.
      *
      * @abstract
      */
-    icon: Object;
+    icon;
 
     /**
      * The text associated with this button. When `showLabel` is set to
@@ -100,38 +74,61 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
      *
      * @abstract
      */
-    label: string;
+    label;
 
     /**
      * The label for this button, when toggled.
      */
-    toggledLabel: string;
+    toggledLabel;
 
     /**
      * The icon of this button, when toggled.
      *
      * @abstract
      */
-    toggledIcon: Object;
+    toggledIcon;
 
     /**
      * The text to display in the tooltip. Used only on web.
      *
+     * If `toggleTooltip` is defined, this is used only when the button is not
+     * toggled on.
+     *
      * @abstract
      */
-    tooltip: ?string;
+    tooltip;
+
+    /**
+     * The text to display in the tooltip when the button is toggled on.
+     *
+     * Used only on web.
+     *
+     * @abstract
+     */
+    toggledTooltip;
 
     /**
      * Initializes a new {@code AbstractButton} instance.
      *
-     * @param {Props} props - The React {@code Component} props to initialize
+     * @param {IProps} props - The React {@code Component} props to initialize
      * the new {@code AbstractButton} instance with.
      */
-    constructor(props: P) {
+    constructor(props) {
         super(props);
 
         // Bind event handlers so they are only bound once per instance.
         this._onClick = this._onClick.bind(this);
+    }
+
+    /**
+     * Helper function to be implemented by subclasses, which should be used
+     * to handle a key being down.
+     *
+     * @protected
+     * @returns {void}
+     */
+    _onKeyDown() {
+        // To be implemented by subclass.
     }
 
     /**
@@ -184,6 +181,24 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
     }
 
     /**
+     * Gets the current accessibility label, taking the toggled state into
+     * account. If no toggled label is provided, the regular accessibility label
+     * will also be used in the toggled state.
+     *
+     * The accessibility label is not visible in the UI, it is meant to be
+     * used by assistive technologies, mainly screen readers.
+     *
+     * @private
+     * @returns {string}
+     */
+    _getAccessibilityLabel() {
+        return (this._isToggled()
+            ? this.toggledAccessibilityLabel
+            : this.accessibilityLabel
+        ) || this.accessibilityLabel;
+    }
+
+    /**
      * Gets the current styles, taking the toggled state into account. If no
      * toggled styles are provided, the regular styles will also be used in the
      * toggled state.
@@ -191,7 +206,7 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
      * @private
      * @returns {?Styles}
      */
-    _getStyles(): ?Styles {
+    _getStyles() {
         const { disabledStyles, styles, toggledStyles } = this.props;
         const buttonStyles
             = (this._isToggled() ? toggledStyles : styles) || styles;
@@ -199,11 +214,11 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
         if (this._isDisabled() && buttonStyles && disabledStyles) {
             return {
                 iconStyle: combineStyles(
-                    buttonStyles.iconStyle, disabledStyles.iconStyle),
+                    buttonStyles.iconStyle ?? {}, disabledStyles.iconStyle ?? {}),
                 labelStyle: combineStyles(
-                    buttonStyles.labelStyle, disabledStyles.labelStyle),
+                    buttonStyles.labelStyle ?? {}, disabledStyles.labelStyle ?? {}),
                 style: combineStyles(
-                    buttonStyles.style, disabledStyles.style),
+                    buttonStyles.style ?? {}, disabledStyles.style ?? {}),
                 underlayColor:
                     disabledStyles.underlayColor || buttonStyles.underlayColor
             };
@@ -219,7 +234,9 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
      * @returns {string}
      */
     _getTooltip() {
-        return this.tooltip || '';
+        return (this._isToggled() ? this.toggledTooltip : this.tooltip)
+            || this.tooltip
+            || '';
     }
 
     /**
@@ -245,23 +262,34 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
         return undefined;
     }
 
-    _onClick: (*) => void;
-
     /**
-     * Handles clicking / pressing the button, and toggles the audio mute state
-     * accordingly.
+     * Handles clicking / pressing the button.
      *
      * @param {Object} e - Event.
      * @private
      * @returns {void}
      */
     _onClick(e) {
-        const { afterClick } = this.props;
+        const { afterClick, buttonKey, handleClick, notifyMode } = this.props;
 
-        this._handleClick();
-        afterClick && afterClick(e);
+        if (typeof APP !== 'undefined' && notifyMode) {
+            APP.API.notifyToolbarButtonClicked(
+                buttonKey, notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY
+            );
+        }
+
+        if (notifyMode !== NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
+            if (handleClick) {
+                handleClick();
+            }
+
+            this._handleClick(e);
+        }
+
+        afterClick?.(e);
 
         // blur after click to release focus from button to allow PTT.
+        // @ts-ignore
         e?.currentTarget?.blur && e.currentTarget.blur();
     }
 
@@ -271,14 +299,14 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
      * @inheritdoc
      * @returns {React$Node}
      */
-    render(): React$Node {
+    render() {
         const props = {
             ...this.props,
-            accessibilityLabel: this.accessibilityLabel,
-            disabled: this._isDisabled(),
+            accessibilityLabel: this._getAccessibilityLabel(),
             elementAfter: this._getElementAfter(),
             icon: this._getIcon(),
             label: this._getLabel(),
+            labelProps: this.labelProps,
             styles: this._getStyles(),
             toggled: this._isToggled(),
             tooltip: this._getTooltip()
@@ -288,6 +316,7 @@ export default class AbstractButton<P: Props, S: *> extends Component<P, S> {
             <ToolboxItem
                 disabled = { this._isDisabled() }
                 onClick = { this._onClick }
+                onKeyDown = { this._onKeyDown }
                 { ...props } />
         );
     }

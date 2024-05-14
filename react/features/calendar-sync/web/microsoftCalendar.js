@@ -1,14 +1,15 @@
-// @flow
-
 import { Client } from '@microsoft/microsoft-graph-client';
+// eslint-disable-next-line lines-around-comment
 import base64js from 'base64-js';
-import type { Dispatch } from 'redux';
+import { v4 as uuidV4 } from 'uuid';
 import { findWindows } from 'windows-iana';
 
+// @ts-expect-error
 import { createDeferred } from '../../../../modules/util/helpers';
-import { parseStandardURIString, parseURLParams } from '../../base/util';
-import { getShareInfoText } from '../../invite';
-import { setCalendarAPIAuthState } from '../actions';
+import { parseURLParams } from '../../base/util/parseURLParams';
+import { parseStandardURIString } from '../../base/util/uri';
+import { getShareInfoText } from '../../invite/functions';
+import { setCalendarAPIAuthState } from '../actions.web';
 
 
 /**
@@ -79,10 +80,10 @@ export const microsoftCalendarApi = {
      * @param {number} fetchEndDays - The number of days to fetch.
      * @returns {function(Dispatch<any>, Function): Promise<CalendarEntries>}
      */
-    getCalendarEntries(fetchStartDays: ?number, fetchEndDays: ?number) {
-        return (dispatch: Dispatch<any>, getState: Function): Promise<*> => {
+    getCalendarEntries(fetchStartDays, fetchEndDays) {
+        return (dispatch, getState) => {
             const state = getState()['features/calendar-sync'] || {};
-            const token = state.msAuthState && state.msAuthState.accessToken;
+            const token = state.msAuthState?.accessToken;
 
             if (!token) {
                 return Promise.reject('Not authorized, please sign in!');
@@ -96,8 +97,8 @@ export const microsoftCalendarApi = {
                 .api(MS_API_CONFIGURATION.CALENDAR_ENDPOINT)
                 .get()
                 .then(response => {
-                    const calendarIds = response.value.map(en => en.id);
-                    const getEventsPromises = calendarIds.map(id =>
+                    const calendarIds = response.value.map((en: any) => en.id);
+                    const getEventsPromises = calendarIds.map((id: string) =>
                         requestCalendarEvents(
                             client, id, fetchStartDays, fetchEndDays));
 
@@ -117,8 +118,8 @@ export const microsoftCalendarApi = {
      *
      * @returns {function(Dispatch<*, Function>): Promise<string>}
      */
-    getCurrentEmail(): Function {
-        return (dispatch: Dispatch<any>, getState: Function) => {
+    getCurrentEmail() {
+        return (dispatch, getState) => {
             const { msAuthState = {} }
                 = getState()['features/calendar-sync'] || {};
             const email = msAuthState.userSigninName || '';
@@ -132,7 +133,7 @@ export const microsoftCalendarApi = {
      *
      * @returns {function(): Promise<void>}
      */
-    load(): Function {
+    load() {
         return () => Promise.resolve();
     },
 
@@ -141,8 +142,8 @@ export const microsoftCalendarApi = {
      *
      * @returns {function(Dispatch<any>, Function): Promise<void>}
      */
-    signIn(): Function {
-        return (dispatch: Dispatch<any>, getState: Function) => {
+    signIn() {
+        return (dispatch, getState) => {
             // Ensure only one popup window at a time.
             if (popupAuthWindow) {
                 popupAuthWindow.focus();
@@ -153,8 +154,8 @@ export const microsoftCalendarApi = {
             const signInDeferred = createDeferred();
 
             const guids = {
-                authState: generateGuid(),
-                authNonce: generateGuid()
+                authState: uuidV4(),
+                authNonce: uuidV4()
             };
 
             dispatch(setCalendarAPIAuthState(guids));
@@ -162,7 +163,7 @@ export const microsoftCalendarApi = {
             const { microsoftApiApplicationClientID }
                 = getState()['features/base/config'];
             const authUrl = getAuthUrl(
-                microsoftApiApplicationClientID,
+                microsoftApiApplicationClientID ?? '',
                 guids.authState,
                 guids.authNonce);
             const h = 600;
@@ -176,7 +177,7 @@ export const microsoftCalendarApi = {
                     (screen.width / 2) - (w / 2)}`);
 
             const windowCloseCheck = setInterval(() => {
-                if (popupAuthWindow && popupAuthWindow.closed) {
+                if (popupAuthWindow?.closed) {
                     signInDeferred.reject(
                         'Popup closed before completing auth.');
                     popupAuthWindow = null;
@@ -197,19 +198,19 @@ export const microsoftCalendarApi = {
              * @private
              * @returns {void}
              */
-            function handleAuth({ data }) {
+            function handleAuth({ data }: any) {
                 if (!data || data.type !== 'ms-login') {
                     return;
                 }
 
                 window.removeEventListener('message', handleAuth);
 
-                popupAuthWindow && popupAuthWindow.close();
+                popupAuthWindow?.close();
                 popupAuthWindow = null;
 
                 const params = getParamsFromHash(data.url);
                 const tokenParts = getValidatedTokenParts(
-                    params, guids, microsoftApiApplicationClientID);
+                    params, guids, microsoftApiApplicationClientID ?? '');
 
                 if (!tokenParts) {
                     signInDeferred.reject('Invalid token received');
@@ -240,8 +241,8 @@ export const microsoftCalendarApi = {
      *
      * @returns {function(Dispatch<any>, Function): Promise<boolean>}
      */
-    _isSignedIn(): Function {
-        return (dispatch: Dispatch<any>, getState: Function) => {
+    _isSignedIn() {
+        return (dispatch, getState) => {
             const now = new Date().getTime();
             const state
                 = getState()['features/calendar-sync'].msAuthState || {};
@@ -269,9 +270,9 @@ export const microsoftCalendarApi = {
      * @returns {function(Dispatch<any>): Promise<string|never>}
      */
     updateCalendarEvent(id: string, calendarId: string, location: string) {
-        return (dispatch: Dispatch<any>, getState: Function): Promise<*> => {
+        return (dispatch, getState) => {
             const state = getState()['features/calendar-sync'] || {};
-            const token = state.msAuthState && state.msAuthState.accessToken;
+            const token = state.msAuthState?.accessToken;
 
             if (!token) {
                 return Promise.reject('Not authorized, please sign in!');
@@ -327,7 +328,7 @@ export const microsoftCalendarApi = {
  *     title: string
  * }}
  */
-function formatCalendarEntry(entry) {
+function formatCalendarEntry(entry: any) {
     return {
         calendarId: entry.calendarId,
         description: entry.body.content,
@@ -337,21 +338,6 @@ function formatCalendarEntry(entry) {
         startDate: entry.start.dateTime,
         title: entry.subject
     };
-}
-
-/**
- * Generate a guid to be used for verifying token validity.
- *
- * @private
- * @returns {string} The generated string.
- */
-function generateGuid() {
-    const buf = new Uint16Array(8);
-
-    window.crypto.getRandomValues(buf);
-
-    return `${s4(buf[0])}${s4(buf[1])}-${s4(buf[2])}-${s4(buf[3])}-${
-        s4(buf[4])}-${s4(buf[5])}${s4(buf[6])}${s4(buf[7])}`;
 }
 
 /**
@@ -365,7 +351,7 @@ function generateGuid() {
  * @private
  * @returns {string} - The auth URL.
  */
-function getAuthRefreshUrl(appId, userDomainType, userSigninName) {
+function getAuthRefreshUrl(appId: string, userDomainType: string, userSigninName: string) {
     return [
         getAuthUrl(appId, 'undefined', 'undefined'),
         'prompt=none',
@@ -383,7 +369,7 @@ function getAuthRefreshUrl(appId, userDomainType, userSigninName) {
  * @private
  * @returns {string} - The auth URL.
  */
-function getAuthUrl(appId, authState, authNonce) {
+function getAuthUrl(appId: string, authState: string, authNonce: string) {
     const authParams = [
         'response_type=id_token+token',
         `client_id=${appId}`,
@@ -405,7 +391,8 @@ function getAuthUrl(appId, authState, authNonce) {
  * @private
  * @returns {Object}
  */
-function getParamsFromHash(url) {
+function getParamsFromHash(url: string) {
+    // @ts-ignore
     const params = parseURLParams(parseStandardURIString(url), true, 'hash');
 
     // Get the number of seconds the token is valid for, subtract 5 minutes
@@ -431,7 +418,7 @@ function getParamsFromHash(url) {
  * @private
  * @returns {Object|null}
  */
-function getValidatedTokenParts(tokenInfo, guids, appId) {
+function getValidatedTokenParts(tokenInfo: any, guids: any, appId: string) {
     // Make sure the token matches the request source by matching the GUID.
     if (tokenInfo.state !== guids.authState) {
         return null;
@@ -492,15 +479,15 @@ function getValidatedTokenParts(tokenInfo, guids, appId) {
  * @private
  * @returns {function(Dispatch<any>, Function): Promise<void>}
  */
-function refreshAuthToken(): Function {
-    return (dispatch: Dispatch<any>, getState: Function) => {
+function refreshAuthToken() {
+    return (dispatch, getState) => {
         const { microsoftApiApplicationClientID }
             = getState()['features/base/config'];
         const { msAuthState = {} }
             = getState()['features/calendar-sync'] || {};
 
         const refreshAuthUrl = getAuthRefreshUrl(
-            microsoftApiApplicationClientID,
+            microsoftApiApplicationClientID ?? '',
             msAuthState.userDomainType,
             msAuthState.userSigninName);
 
@@ -513,7 +500,7 @@ function refreshAuthToken(): Function {
 
         const signInPromise = new Promise(resolve => {
             iframe.onload = () => {
-                resolve(iframe.contentWindow.location.hash);
+                resolve(iframe.contentWindow?.location.hash);
             };
         });
 
@@ -553,12 +540,12 @@ function requestCalendarEvents( // eslint-disable-line max-params
         client,
         calendarId,
         fetchStartDays,
-        fetchEndDays): Promise<*> {
+        fetchEndDays) {
     const startDate = new Date();
     const endDate = new Date();
 
-    startDate.setDate(startDate.getDate() + fetchStartDays);
-    endDate.setDate(endDate.getDate() + fetchEndDays);
+    startDate.setDate(startDate.getDate() + Number(fetchStartDays));
+    endDate.setDate(endDate.getDate() + Number(fetchEndDays));
 
     const filter = `Start/DateTime ge '${
         startDate.toISOString()}' and End/DateTime lt '${
@@ -574,30 +561,12 @@ function requestCalendarEvents( // eslint-disable-line max-params
         .select('id,subject,start,end,location,body')
         .orderby('createdDateTime DESC')
         .get()
-        .then(result => result.value.map(item => {
+        .then((result: any) => result.value.map((item: Object) => {
             return {
                 ...item,
                 calendarId
             };
         }));
-}
-
-/**
- * Converts the passed in number to a string and ensure it is at least 4
- * characters in length, prepending 0's as needed.
- *
- * @param {number} num - The number to pad and convert to a string.
- * @private
- * @returns {string} - The number converted to a string.
- */
-function s4(num) {
-    let ret = num.toString(16);
-
-    while (ret.length < 4) {
-        ret = `0${ret}`;
-    }
-
-    return ret;
 }
 
 /**
@@ -607,7 +576,7 @@ function s4(num) {
  * @private
  * @returns {string} - The converted string.
  */
-function b64utoutf8(str) {
+function b64utoutf8(str: string) {
     let s = str;
 
     // Convert from Base64URL to Base64.
@@ -626,7 +595,7 @@ function b64utoutf8(str) {
 
     // Convert bytes to hex.
 
-    s = bytes.reduce((str_, byte) => str_ + byte.toString(16).padStart(2, '0'), '');
+    s = bytes.reduce((str_: any, byte: any) => str_ + byte.toString(16).padStart(2, '0'), '');
 
     // Convert a hexadecimal string to a URLComponent string
 

@@ -1,16 +1,25 @@
 // @flow
+import { batch } from 'react-redux';
 
+import { without } from 'lodash';
 import Timer from '../../../modules/util/timer';
-import { MiddlewareRegistry } from '../base/redux';
+import { OVERWRITE_CONFIG, SET_CONFIG, UPDATE_CONFIG } from '../base/config/actionTypes';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { I_AM_VISITOR_MODE } from '../visitors/actionTypes';
+import { iAmVisitor } from '../visitors/functions';
 
 import {
     CLEAR_TOOLBOX_TIMEOUT,
-    SET_TOOLBOX_TIMEOUT,
-    SET_FULL_SCREEN
+    SET_BUTTONS_WITH_NOTIFY_CLICK,
+    SET_FULL_SCREEN,
+    SET_PARTICIPANT_MENU_BUTTONS_WITH_NOTIFY_CLICK,
+    SET_TOOLBAR_BUTTONS,
+    SET_TOOLBOX_TIMEOUT
 } from './actionTypes';
+import { TOOLBAR_BUTTONS, VISITORS_MODE_BUTTONS } from './constants';
+import { NOTIFY_CLICK_MODE } from './types';
 
-
-declare var APP: Object;
+import './subscriber.web';
 
 /**
  * Middleware which intercepts Toolbox actions to handle changes to the
@@ -20,12 +29,49 @@ declare var APP: Object;
  * @returns {Function}
  */
 MiddlewareRegistry.register(store => next => action => {
-
     switch (action.type) {
     case CLEAR_TOOLBOX_TIMEOUT: {
         const { timer } = store.getState()['features/toolbox'];
         timer?.cancel();
         break;
+    }
+    case UPDATE_CONFIG:
+    case OVERWRITE_CONFIG:
+    case I_AM_VISITOR_MODE:
+    case SET_CONFIG: {
+        const result = next(action);
+        const { dispatch, getState } = store;
+        const state = getState();
+
+        if (action.type !== I_AM_VISITOR_MODE) {
+            const {
+                customToolbarButtons,
+                buttonsWithNotifyClick,
+                participantMenuButtonsWithNotifyClick,
+                customParticipantMenuButtons
+            } = state['features/base/config'];
+
+            batch(() => {
+                dispatch({
+                    type: SET_BUTTONS_WITH_NOTIFY_CLICK,
+                    buttonsWithNotifyClick: _buildButtonsArray(buttonsWithNotifyClick, customToolbarButtons)
+                });
+                dispatch({
+                    type: SET_PARTICIPANT_MENU_BUTTONS_WITH_NOTIFY_CLICK,
+                    participantMenuButtonsWithNotifyClick:
+                        _buildButtonsArray(participantMenuButtonsWithNotifyClick, customParticipantMenuButtons)
+                });
+            });
+        }
+
+        const toolbarButtons = _getToolbarButtons(state);
+
+        dispatch({
+            type: SET_TOOLBAR_BUTTONS,
+            toolbarButtons
+        });
+
+        return result;
     }
 
     case SET_FULL_SCREEN:
@@ -63,39 +109,85 @@ type DocumentElement = {
 function _setFullScreen(next, action) {
     const result = next(action);
 
-    if (typeof APP === 'object') {
-        const { fullScreen } = action;
+    const { fullScreen } = action;
 
-        if (fullScreen) {
-            const documentElement: DocumentElement
-                = document.documentElement || {};
+    if (fullScreen) {
+        const documentElement: DocumentElement
+            = document.documentElement || {};
 
-            if (typeof documentElement.requestFullscreen === 'function') {
-                documentElement.requestFullscreen();
-            } else if (
-                typeof documentElement.mozRequestFullScreen === 'function') {
-                documentElement.mozRequestFullScreen();
-            } else if (
-                typeof documentElement.webkitRequestFullscreen === 'function') {
-                documentElement.webkitRequestFullscreen();
-            }
-
-            return result;
+        if (typeof documentElement.requestFullscreen === 'function') {
+            documentElement.requestFullscreen();
+        } else if (
+            typeof documentElement.webkitRequestFullscreen === 'function') {
+            documentElement.webkitRequestFullscreen();
         }
 
-        // $FlowFixMe
-        if (typeof document.exitFullscreen === 'function') {
-            document.exitFullscreen();
+        return result;
+    }
 
-        // $FlowFixMe
-        } else if (typeof document.mozCancelFullScreen === 'function') {
-            document.mozCancelFullScreen();
-
-        // $FlowFixMe
-        } else if (typeof document.webkitExitFullscreen === 'function') {
-            document.webkitExitFullscreen();
-        }
+    if (typeof document.exitFullscreen === 'function') {
+        document.exitFullscreen();
+    } else if (typeof document.webkitExitFullscreen === 'function') {
+        document.webkitExitFullscreen();
     }
 
     return result;
+}
+
+/**
+ * Common logic to gather buttons that have to notify the api when clicked.
+ *
+ * @param {Array} buttonsWithNotifyClick - The array of systme buttons that need to notify the api.
+ * @param {Array} customButtons - The custom buttons.
+ * @returns {Array}
+ */
+function _buildButtonsArray(
+    buttonsWithNotifyClick,
+    customButtons
+) {
+    const customButtonsWithNotifyClick = customButtons?.map(
+        ({ id }) => ([ id, NOTIFY_CLICK_MODE.ONLY_NOTIFY ])) ?? [];
+    const buttons = (Array.isArray(buttonsWithNotifyClick) ? buttonsWithNotifyClick : [])
+        .filter(button => typeof button === 'string' || (typeof button === 'object' && typeof button.key === 'string'))
+        .map(button => {
+            if (typeof button === 'string') {
+                return [ button, NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY ];
+            }
+
+            return [
+                button.key,
+                button.preventExecution ? NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY : NOTIFY_CLICK_MODE.ONLY_NOTIFY
+            ];
+        });
+
+    return new Map([ ...customButtonsWithNotifyClick, ...buttons ]);
+}
+
+/**
+ * Returns the list of enabled toolbar buttons.
+ *
+ * @param {Object} state - The redux state.
+ * @returns {Array<string>} - The list of enabled toolbar buttons.
+ */
+function _getToolbarButtons(state) {
+    const { toolbarButtons, customToolbarButtons } = state['features/base/config'];
+    const customButtons = customToolbarButtons?.map(({ id }) => id);
+    const { whiteboard } = state['features/base/conference'].roomInfo || {};
+    const { use_recording, use_stt } = state['features/base/conference'].site || {};
+
+    let buttons = Array.isArray(toolbarButtons) ? toolbarButtons : TOOLBAR_BUTTONS;
+
+    if (iAmVisitor(state)) {
+        buttons = VISITORS_MODE_BUTTONS.filter(button => buttons.indexOf(button) > -1);
+    }
+
+    if (customButtons) {
+        buttons = [ ...buttons, ...customButtons ];
+    }
+
+    buttons = whiteboard?.use_yn ? without(buttons, 'desktop') : without(buttons, 'share');
+    buttons = !use_recording ? without(buttons, 'recording', 'livestreaming') : buttons;
+    buttons = !use_stt ? without(buttons, 'stt') : buttons;
+
+    return buttons;
 }

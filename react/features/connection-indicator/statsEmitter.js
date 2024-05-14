@@ -1,20 +1,20 @@
-// @flow
-
 import _ from 'lodash';
 
 import {
-    JitsiConnectionQualityEvents,
-    JitsiE2ePingEvents
+    JitsiConnectionQualityEvents
 } from '../base/lib-jitsi-meet';
 
 /**
  * Contains all the callbacks to be notified when stats are updated.
  *
+ * ```
  * {
  *     userId: Function[]
- * }.
+ * }
+ * ```
  */
 const subscribers = {};
+
 
 /**
  * A singleton that acts as a pub/sub service for connection stat updates.
@@ -28,23 +28,12 @@ const statsEmitter = {
      * {@code statsEmitter} should subscribe for stat updates.
      * @returns {void}
      */
-    startListeningForStats(conference: Object) {
+    startListeningForStats(conference) {
         conference.on(JitsiConnectionQualityEvents.LOCAL_STATS_UPDATED,
-            stats => this._onStatsUpdated(conference.myUserId(), stats));
+            (stats) => this._onStatsUpdated(conference.myUserId(), stats));
 
         conference.on(JitsiConnectionQualityEvents.REMOTE_STATS_UPDATED,
             (id, stats) => this._emitStatsUpdate(id, stats));
-
-        conference.on(
-            JitsiE2ePingEvents.E2E_RTT_CHANGED,
-            (participant, e2eRtt) => {
-                const stats = {
-                    e2eRtt,
-                    region: participant.getProperty('region')
-                };
-
-                this._emitStatsUpdate(participant.getId(), stats);
-            });
     },
 
     /**
@@ -56,7 +45,7 @@ const statsEmitter = {
      * user have been updated.
      * @returns {void}
      */
-    subscribeToClientStats(id: ?string, callback: Function) {
+    subscribeToClientStats(id, callback) {
         if (!id) {
             return;
         }
@@ -78,13 +67,13 @@ const statsEmitter = {
      * stat updates for the specified user id.
      * @returns {void}
      */
-    unsubscribeToClientStats(id: string, callback: Function) {
+    unsubscribeToClientStats(id, callback) {
         if (!subscribers[id]) {
             return;
         }
 
         const filteredSubscribers = subscribers[id].filter(
-            subscriber => subscriber !== callback);
+            (subscriber) => subscriber !== callback);
 
         if (filteredSubscribers.length) {
             subscribers[id] = filteredSubscribers;
@@ -101,10 +90,10 @@ const statsEmitter = {
      * @param {Object} stats - New connection stats for the user.
      * @returns {void}
      */
-    _emitStatsUpdate(id: string, stats: Object = {}) {
+    _emitStatsUpdate(id, stats = {}) {
         const callbacks = subscribers[id] || [];
 
-        callbacks.forEach(callback => {
+        callbacks.forEach((callback) => {
             callback(stats);
         });
     },
@@ -119,7 +108,7 @@ const statsEmitter = {
      * by the library.
      * @returns {void}
      */
-    _onStatsUpdated(localUserId: string, stats: Object) {
+    _onStatsUpdated(localUserId, stats) {
         const allUserFramerates = stats.framerate || {};
         const allUserResolutions = stats.resolution || {};
         const allUserCodecs = stats.codec || {};

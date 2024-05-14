@@ -1,76 +1,93 @@
-// @flow
+import countries from 'i18n-iso-countries';
+import en from 'i18n-iso-countries/langs/en.json';
+import React, { useCallback, useMemo } from 'react';
 
-import React, { Component } from 'react';
+import { translate } from '../../../../base/i18n/functions';
+import Icon from '../../../../base/icons/components/Icon';
+import { IconSip } from '../../../../base/icons/svg';
 
-import { translate } from '../../../../base/i18n';
-import { Icon, IconSip } from '../../../../base/icons';
+countries.registerLocale(en);
 
-type Props = {
+const NumbersList = ({ t, conferenceID, clickableNumbers, numbers: numbersMapping }) => {
+    const renderFlag = useCallback((countryCode) => {
+        if (countryCode) {
+            return (
+                <td className = 'flag-cell'>
+                    {countryCode === 'SIP' || countryCode === 'SIP_AUDIO_ONLY'
+                        ? <Icon src = { IconSip } />
+                        : <i className = { `flag iti-flag ${countryCode}` } />
+                    }
+                </td>);
+        }
 
-    /**
-     * Whether or not numbers should include links with the telephone protocol.
-     */
-    clickableNumbers: boolean,
+        return null;
+    }, []);
 
-    /**
-     * The conference ID for dialing in.
-     */
-    conferenceID: number,
+    const renderNumberLink = useCallback((number) => {
+        if (clickableNumbers) {
+            // Url encode # to %23, Android phone was cutting the # after
+            // clicking it.
+            // Seems that using ',' and '%23' works on iOS and Android.
+            return (
+                <a
+                    href = { `tel:${number},${conferenceID}%23` }
+                    key = { number } >
+                    {number}
+                </a>
+            );
+        }
 
-    /**
-     * The phone numbers to display. Can be an array of number Objects or an
-     * object with countries as keys and an array of numbers as values.
-     */
-    numbers: { [string]: Array<string> } | Array<Object>,
+        return number;
+    }, [ conferenceID, clickableNumbers ]);
 
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-}
+    const renderNumbersList = useCallback((numbers) => {
+        const numbersListItems = numbers.map(number =>
+            (<li
+                className = 'dial-in-number'
+                key = { number.formattedNumber }>
+                {renderNumberLink(number.formattedNumber)}
+            </li>));
 
-/**
- * Displays a table with phone numbers to dial in to a conference.
- *
- * @augments Component
- */
-class NumbersList extends Component<Props> {
-    /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
-    render() {
-        const { numbers } = this.props;
+        return (
+            <ul className = 'numbers-list'>
+                {numbersListItems}
+            </ul>
+        );
+    }, []);
 
-        return this._renderWithCountries(numbers);
-    }
+    const renderNumbersTollFreeList = useCallback((numbers) => {
+        const tollNumbersListItems = numbers.map(number =>
+            (<li
+                className = 'toll-free'
+                key = { number.formattedNumber }>
+                {number.tollFree ? t('info.dialInTollFree') : ''}
+            </li>));
 
-    /**
-     * Renders rows of countries and associated phone numbers.
-     *
-     * @param {Object|Array<Object>} numbersMapping - An object with country
-     * names as keys and values as arrays of phone numbers.
-     * @private
-     * @returns {ReactElement[]}
-     */
-    _renderWithCountries(
-            numbersMapping: { numbers: Array<string> } | Array<Object>) {
-        const { t } = this.props;
-        let hasFlags = false, numbers;
+        return (
+            <ul className = 'toll-free-list'>
+                {tollNumbersListItems}
+            </ul>
+        );
+    }, []);
+
+    const renderNumbers = useMemo(() => {
+        let numbers;
+
+        if (!numbersMapping) {
+            return;
+        }
 
         if (Array.isArray(numbersMapping)) {
-            hasFlags = true;
             numbers = numbersMapping.reduce(
                 (resultNumbers, number) => {
                     // The i18n-iso-countries package insists on upper case.
                     const countryCode = number.countryCode.toUpperCase();
-
                     let countryName;
 
                     if (countryCode === 'SIP') {
                         countryName = t('info.sip');
+                    } else if (countryCode === 'SIP_AUDIO_ONLY') {
+                        countryName = t('info.sipAudioOnly');
                     } else {
                         countryName = t(`countries:countries.${countryCode}`);
 
@@ -109,136 +126,42 @@ class NumbersList extends Component<Props> {
 
         const rows = [];
 
-        Object.keys(numbers).forEach((countryName: string) => {
+        Object.keys(numbers).forEach((countryName) => {
             const numbersArray = numbers[countryName];
+            const countryCode = numbersArray[0].countryCode
+                || countries.getAlpha2Code(countryName, 'en')?.toUpperCase()
+                || countryName;
 
             rows.push(
-                <tr
-                    className = 'number-group'
-                    key = { countryName }>
-                    { this._renderFlag(numbersArray[0].countryCode) }
-                    <td className = 'country' >{ countryName }</td>
-                    <td className = 'numbers-list-column'>
-                        { this._renderNumbersList(numbersArray) }
-                    </td>
-                    <td className = 'toll-free-list-column' >
-                        { this._renderNumbersTollFreeList(numbersArray) }
-                    </td>
-                </tr>
+                <>
+                    <tr
+                        key = { countryName }>
+                        {renderFlag(countryCode)}
+                        <td className = 'country' >{countryName}</td>
+                    </tr>
+                    <tr>
+                        <td />
+                        <td className = 'numbers-list-column'>
+                            {renderNumbersList(numbersArray)}
+                        </td>
+                        <td className = 'toll-free-list-column' >
+                            {renderNumbersTollFreeList(numbersArray)}
+                        </td>
+                    </tr>
+                </>
             );
         });
 
-        return (
-            <table className = 'dial-in-numbers-list'>
-                <thead>
-                    <tr>
-                        { hasFlags ? <th /> : null}
-                        <th>{ t('info.country') }</th>
-                        <th>{ t('info.numbers') }</th>
-                        <th />
-                    </tr>
-                </thead>
-                <tbody className = 'dial-in-numbers-body'>
-                    { rows }
-                </tbody>
-            </table>
-        );
-    }
+        return rows;
+    }, [ numbersMapping ]);
 
-    /**
-     * Renders a div container for a flag for the country of the phone number.
-     *
-     * @param {string} countryCode - The country code flag to display.
-     * @private
-     * @returns {ReactElement}
-     */
-    _renderFlag(countryCode) {
-        if (countryCode) {
-            return (
-                <td className = 'flag-cell'>
-                    {countryCode === 'SIP'
-                        ? <Icon src = { IconSip } />
-                        : <i className = { `flag iti-flag ${countryCode}` } />
-                    }
-                </td>);
-        }
-
-        return null;
-    }
-
-    /**
-     * Renders a div container for a phone number.
-     *
-     * @param {Array} numbers - The phone number to display.
-     * @private
-     * @returns {ReactElement[]}
-     */
-    _renderNumbersList(numbers) {
-        const numbersListItems = numbers.map(number =>
-            (<li
-                className = 'dial-in-number'
-                key = { number.formattedNumber }>
-                { this._renderNumberLink(number.formattedNumber) }
-            </li>));
-
-        return (
-            <ul className = 'numbers-list'>
-                { numbersListItems }
-            </ul>
-        );
-    }
-
-    /**
-     * Renders list with a toll free text on the position where there is a
-     * number marked as toll free.
-     *
-     * @param {Array} numbers - The phone number that are displayed.
-     * @private
-     * @returns {ReactElement[]}
-     */
-    _renderNumbersTollFreeList(numbers) {
-        const { t } = this.props;
-
-        const tollNumbersListItems = numbers.map(number =>
-            (<li
-                className = 'toll-free'
-                key = { number.formattedNumber }>
-                { number.tollFree ? t('info.dialInTollFree') : '' }
-            </li>));
-
-        return (
-            <ul className = 'toll-free-list'>
-                { tollNumbersListItems }
-            </ul>
-        );
-    }
-
-    /**
-     * Renders a ReactElement for displaying a telephone number. If the
-     * component prop {@code clickableNumbers} is true, then the number will
-     * have a link with the telephone protocol.
-     *
-     * @param {string} number - The phone number to display.
-     * @private
-     * @returns {ReactElement}
-     */
-    _renderNumberLink(number) {
-        if (this.props.clickableNumbers) {
-            // Url encode # to %23, Android phone was cutting the # after
-            // clicking it.
-            // Seems that using ',' and '%23' works on iOS and Android.
-            return (
-                <a
-                    href = { `tel:${number},${this.props.conferenceID}%23` }
-                    key = { number } >
-                    { number }
-                </a>
-            );
-        }
-
-        return number;
-    }
-
-}
+    return (
+        <table className = 'dial-in-numbers-list'>
+            <tbody className = 'dial-in-numbers-body'>
+                {renderNumbers}
+            </tbody>
+        </table>
+    );
+};
 
 export default translate(NumbersList);

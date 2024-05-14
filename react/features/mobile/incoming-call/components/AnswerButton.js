@@ -1,26 +1,15 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { IconHangup } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import { translate } from '../../../base/i18n/functions';
+import { IconHangup } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 import { incomingCallAnswered } from '../actions';
-
-/**
- * The type of the React {@code Component} props of {@link AnswerButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
 
 /**
  * An implementation of a button which accepts/answers an incoming call.
  */
-class AnswerButton extends AbstractButton<Props, *> {
+class AnswerButton extends AbstractButton {
     accessibilityLabel = 'incomingCall.answer';
     icon = IconHangup;
     label = 'incomingCall.answer';

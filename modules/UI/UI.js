@@ -6,16 +6,20 @@ const UI = {};
 import Logger from '@jitsi/logger';
 import EventEmitter from 'events';
 
+import {
+    conferenceWillInit
+} from '../../react/features/base/conference/actions';
 import { isMobileBrowser } from '../../react/features/base/environment/utils';
-import { setColorAlpha } from '../../react/features/base/util';
-import { setWhiteboardUrl } from '../../react/features/whiteboard';
-import { setFilmstripVisible } from '../../react/features/filmstrip';
-import { joinLeaveNotificationsDisabled } from '../../react/features/notifications/functions.any';
+import { setColorAlpha } from '../../react/features/base/util/helpers';
+import { sanitizeUrl } from '../../react/features/base/util/uri';
+import { setWhiteboardUrl } from '../../react/features/whiteboard/actions';
+import { setFilmstripVisible } from '../../react/features/filmstrip/actions.any';
 import {
     setNotificationsEnabled,
-    showNotification,
-    NOTIFICATION_TIMEOUT_TYPE
-} from '../../react/features/notifications';
+    showNotification
+} from '../../react/features/notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../../react/features/notifications/constants';
+import { joinLeaveNotificationsDisabled } from '../../react/features/notifications/functions';
 import {
     dockToolbox,
     setToolboxEnabled,
@@ -24,14 +28,11 @@ import {
 import UIEvents from '../../service/UI/UIEvents';
 
 import WhiteboardManager from './whiteboard/Whiteboard';
-import messageHandler from './util/MessageHandler';
 import UIUtil from './util/UIUtil';
 import VideoLayout from './videolayout/VideoLayout';
 import { isAttentionAnalysisEnabled } from '../../react/features/face-detect/functions';
 
 const logger = Logger.getLogger(__filename);
-
-UI.messageHandler = messageHandler;
 
 const eventEmitter = new EventEmitter();
 
@@ -64,30 +65,6 @@ const UIListeners = new Map([
  */
 UI.isFullScreen = function() {
     return UIUtil.isFullScreen();
-};
-
-/**
- * Notify user that server has shut down.
- */
-UI.notifyGracefulShutdown = function() {
-    messageHandler.showError({
-        descriptionKey: 'dialog.gracefulShutdown',
-        titleKey: 'dialog.serviceUnavailable'
-    });
-};
-
-/**
- * Notify user that reservation error happened.
- */
-UI.notifyReservationError = function(code, msg) {
-    messageHandler.showError({
-        descriptionArguments: {
-            code,
-            msg
-        },
-        descriptionKey: 'dialog.reservationErrorMsg',
-        titleKey: 'dialog.reservationError'
-    });
 };
 
 /**
@@ -249,16 +226,6 @@ UI.toggleFilmstrip = function() {
 };
 
 /**
- * Sets muted audio state for participant
- */
-UI.setAudioMuted = function(id) {
-    // FIXME: Maybe this can be removed!
-    if (APP.conference.isLocalId(id)) {
-        APP.conference.updateAudioIconEnabled();
-    }
-};
-
-/**
  * Sets muted video state for participant
  */
 UI.setVideoMuted = function(id) {
@@ -304,51 +271,6 @@ UI.showToolbar = timeout => APP.store.dispatch(showToolbox(timeout));
 // Used by torture.
 UI.dockToolbar = dock => APP.store.dispatch(dockToolbox(dock));
 
-/**
- * Updates the displayed avatar for participant.
- *
- * @param {string} id - User id whose avatar should be updated.
- * @param {string} avatarURL - The URL to avatar image to display.
- * @returns {void}
- */
-UI.refreshAvatarDisplay = function(id) {
-    VideoLayout.changeUserAvatar(id);
-};
-
-/**
- * Notify user that connection failed.
- * @param {string} stropheErrorMsg raw Strophe error message
- */
-UI.notifyConnectionFailed = function(stropheErrorMsg) {
-    let descriptionKey;
-    let descriptionArguments;
-
-    if (stropheErrorMsg) {
-        descriptionKey = 'dialog.connectErrorWithMsg';
-        descriptionArguments = { msg: stropheErrorMsg };
-    } else {
-        descriptionKey = 'dialog.connectError';
-    }
-
-    messageHandler.showError({
-        descriptionArguments,
-        descriptionKey,
-        titleKey: 'connection.CONNFAIL'
-    });
-};
-
-
-/**
- * Notify user that maximum users limit has been reached.
- */
-UI.notifyMaxUsersLimitReached = function() {
-    messageHandler.showError({
-        hideErrorSupportLink: true,
-        descriptionKey: 'dialog.maxUsersLimitReached',
-        titleKey: 'dialog.maxUsersLimitReachedTitle'
-    });
-};
-
 UI.handleLastNEndpoints = function(leavingIds, enteringIds) {
     VideoLayout.onLastNEndpointsChanged(leavingIds, enteringIds);
 };
@@ -359,13 +281,6 @@ UI.handleLastNEndpoints = function(leavingIds, enteringIds) {
  * @param {number} lvl audio level
  */
 UI.setAudioLevel = (id, lvl) => VideoLayout.setAudioLevel(id, lvl);
-
-UI.notifyTokenAuthFailed = function() {
-    messageHandler.showError({
-        descriptionKey: 'dialog.tokenAuthFailed',
-        titleKey: 'dialog.tokenAuthFailedTitle'
-    });
-};
 
 /**
  * Update list of available physical devices.

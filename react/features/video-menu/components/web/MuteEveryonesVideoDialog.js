@@ -1,12 +1,10 @@
-// @flow
-
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { Dialog } from '../../../base/dialog';
-import { translate } from '../../../base/i18n';
-import { Switch } from '../../../base/react';
-import { connect } from '../../../base/redux';
-import AbstractMuteEveryonesVideoDialog, { abstractMapStateToProps, type Props }
+import { translate } from '../../../base/i18n/functions';
+import Dialog from '../../../base/ui/components/web/Dialog';
+import Switch from '../../../base/ui/components/web/Switch';
+import AbstractMuteEveryonesVideoDialog, { abstractMapStateToProps }
     from '../AbstractMuteEveryonesVideoDialog';
 
 /**
@@ -15,23 +13,7 @@ import AbstractMuteEveryonesVideoDialog, { abstractMapStateToProps, type Props }
  *
  * @augments AbstractMuteEveryonesVideoDialog
  */
-class MuteEveryonesVideoDialog extends AbstractMuteEveryonesVideoDialog<Props> {
-
-    /**
-     * Toggles advanced moderation switch.
-     *
-     * @returns {void}
-     */
-    _onToggleModeration() {
-        this.setState(state => {
-            return {
-                moderationEnabled: !state.moderationEnabled,
-                content: this.props.t(state.moderationEnabled
-                    ? 'dialog.muteEveryonesVideoDialog' : 'dialog.muteEveryonesVideoDialogModerationOn'
-                )
-            };
-        });
-    }
+class MuteEveryonesVideoDialog extends AbstractMuteEveryonesVideoDialog {
 
     /**
      * Implements React's {@link Component#render()}.
@@ -42,10 +24,9 @@ class MuteEveryonesVideoDialog extends AbstractMuteEveryonesVideoDialog<Props> {
     render() {
         return (
             <Dialog
-                okKey = 'dialog.muteParticipantsVideoButton'
+                ok = {{ translationKey: 'dialog.muteParticipantsVideoButton' }}
                 onSubmit = { this._onSubmit }
-                titleString = { this.props.title }
-                width = 'small'>
+                title = { this.props.title }>
                 <div className = 'mute-dialog'>
                     {this.state.content}
                     { this.props.isModerationSupported && this.props.exclude.length === 0 && (
@@ -56,9 +37,9 @@ class MuteEveryonesVideoDialog extends AbstractMuteEveryonesVideoDialog<Props> {
                                     {this.props.t('dialog.moderationVideoLabel')}
                                 </label>
                                 <Switch
+                                    checked = { !this.state.moderationEnabled }
                                     id = 'moderation-switch'
-                                    onValueChange = { this._onToggleModeration }
-                                    value = { !this.state.moderationEnabled } />
+                                    onChange = { this._onToggleModeration } />
                             </div>
                         </>
                     )}
@@ -66,8 +47,6 @@ class MuteEveryonesVideoDialog extends AbstractMuteEveryonesVideoDialog<Props> {
             </Dialog>
         );
     }
-
-    _onSubmit: () => boolean;
 }
 
 export default translate(connect(abstractMapStateToProps)(MuteEveryonesVideoDialog));

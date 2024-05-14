@@ -1,71 +1,87 @@
 // @flow
 
+import { each } from 'lodash';
 import type { Dispatch } from 'redux';
 
-import {
-    createStartMutedConfigurationEvent,
-    sendAnalytics
-} from '../../analytics';
-import { endpointMessageReceived } from '../../subtitles';
+import { conferences } from '../../../api/conferences';
+
+import { createStartMutedConfigurationEvent, createToolbarEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { removeBreakoutRoom } from '../../breakout-rooms/actions';
+import { getBreakoutRooms } from '../../breakout-rooms/functions';
+import { setIAmVisitor } from '../../visitors/actions';
+import { iAmVisitor } from '../../visitors/functions';
+import { overwriteConfig } from '../config/actions';
 import { getReplaceParticipant } from '../config/functions';
-import { JITSI_CONNECTION_CONFERENCE_KEY } from '../connection';
-import { JitsiConferenceEvents } from '../lib-jitsi-meet';
+import { connect, disconnect, hangup } from '../connection/actions';
+import { JITSI_CONNECTION_CONFERENCE_KEY } from '../connection/constants';
+import { JitsiConferenceEvents, JitsiE2ePingEvents } from '../lib-jitsi-meet';
 import {
-    MEDIA_TYPE,
+    gumPending,
     setAudioMuted,
     setAudioUnmutePermissions,
     setVideoMuted,
     setVideoUnmutePermissions
-} from '../media';
+} from '../media/actions';
+import { MEDIA_TYPE } from '../media/constants';
+import { IGUMPendingState } from '../media/types';
 import {
     dominantSpeakerChanged,
-    getNormalizedDisplayName,
-    participantConnectionStatusChanged,
     participantKicked,
     participantMutedUs,
     participantPresenceChanged,
     participantRoleChanged,
+    participantSourcesUpdated,
     participantUpdated
-} from '../participants';
+} from '../participants/actions';
+import { getNormalizedDisplayName } from '../participants/functions';
 import {
     destroyLocalTracks,
-    getLocalTracks,
     replaceLocalTrack,
     trackAdded,
     trackRemoved
-} from '../tracks';
-import { getBackendSafeRoomName } from '../util';
+} from '../tracks/actions.any';
+import { getLocalTracks } from '../tracks/functions';
+import { getBackendSafeRoomName } from '../util/uri';
 
 import {
     AUTH_STATUS_CHANGED,
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
+    CONFERENCE_JOIN_IN_PROGRESS,
     CONFERENCE_LEFT,
     CONFERENCE_LOCAL_SUBJECT_CHANGED,
     CONFERENCE_SUBJECT_CHANGED,
     CONFERENCE_TIME_REMAINED,
     CONFERENCE_TIMESTAMP_CHANGED,
     CONFERENCE_UNIQUE_ID_SET,
+    CONFERENCE_WILL_INIT,
     CONFERENCE_WILL_JOIN,
     CONFERENCE_WILL_LEAVE,
+    DATA_CHANNEL_CLOSED,
     DATA_CHANNEL_OPENED,
+    E2E_RTT_CHANGED,
+    ENDPOINT_MESSAGE_RECEIVED,
     KICKED_OUT,
     LOCK_STATE_CHANGED,
     NON_PARTICIPANT_MESSAGE_RECEIVED,
     P2P_STATUS_CHANGED,
     SEND_TONES,
+    SET_ASSUMED_BANDWIDTH_BPS,
     SET_FOLLOW_ME,
     SET_NOTICE_MESSAGE,
+    SET_OBFUSCATED_ROOM,
     SET_PASSWORD,
     SET_PASSWORD_FAILED,
+    SET_PENDING_SUBJECT_CHANGE,
     SET_ROOM,
     SET_ROOM_INFO,
     SET_SITE,
-    SET_PENDING_SUBJECT_CHANGE,
     SET_START_MUTED_POLICY,
+    SET_START_REACTIONS_MUTED,
     START_RANDOM_SELECTION_COUNTDOWN,
     START_TIMER,
-    SET_START_REACTIONS_MUTED
+    UPDATE_CONFERENCE_METADATA
 } from './actionTypes';
 import {
     AVATAR_URL_COMMAND,
@@ -80,7 +96,9 @@ import {
     commonUserJoinedHandling,
     commonUserLeftHandling,
     getConferenceOptions,
+    getConferenceState,
     getCurrentConference,
+    getVisitorOptions,
     sendLocalParticipant
 } from './functions';
 import logger from './logger';
@@ -95,8 +113,6 @@ import logger from './logger';
  * @returns {void}
  */
 function _addConferenceListeners(conference, dispatch, state) {
-    const config = state['features/base/config'];
-
     // A simple logger for conference errors received through
     // the listener. These errors are not handled now, but logged.
     conference.on(JitsiConferenceEvents.CONFERENCE_ERROR,
@@ -104,39 +120,53 @@ function _addConferenceListeners(conference, dispatch, state) {
 
     // Dispatches into features/base/conference follow:
 
+    // we want to ignore this event in case of tokenAuthUrl config
+    // we are deprecating this and at some point will get rid of it
+    if (!state['features/base/config'].tokenAuthUrl) {
+        conference.on(
+            JitsiConferenceEvents.AUTH_STATUS_CHANGED,
+            (authEnabled: boolean, authLogin: string) => dispatch(authStatusChanged(authEnabled, authLogin)));
+    }
+
     conference.on(
         JitsiConferenceEvents.CONFERENCE_FAILED,
-        (...args) => dispatch(conferenceFailed(conference, ...args)));
+        (err: string, ...args: any[]) => dispatch(conferenceFailed(conference, err, ...args)));
     conference.on(
         JitsiConferenceEvents.CONFERENCE_JOINED,
-        (...args) => dispatch(conferenceJoined(conference, ...args)));
-    conference.on(
-        JitsiConferenceEvents.CONFERENCE_LEFT,
-        (...args) => {
-            dispatch(conferenceTimestampChanged(0));
-            dispatch(conferenceLeft(conference, ...args));
-        });
-    conference.on(JitsiConferenceEvents.SUBJECT_CHANGED,
-        (...args) => dispatch(conferenceSubjectChanged(...args)));
-
-    conference.on(JitsiConferenceEvents.CONFERENCE_CREATED_TIMESTAMP,
-        (...args) => dispatch(conferenceTimestampChanged(...args)));
-
+        (..._args: any[]) => dispatch(conferenceJoined(conference)));
     conference.on(
         JitsiConferenceEvents.CONFERENCE_UNIQUE_ID_SET,
-        (...args) => dispatch(conferenceUniqueIdSet(conference, ...args)));
+        (id: string) => dispatch(conferenceUniqueIdSet(conference, id)));
+    conference.on(
+        JitsiConferenceEvents.CONFERENCE_JOIN_IN_PROGRESS,
+        (..._args: any[]) => dispatch(conferenceJoinInProgress(conference)));
+    conference.on(
+        JitsiConferenceEvents.CONFERENCE_LEFT,
+        (..._args: any[]) => {
+            dispatch(conferenceTimestampChanged(0));
+            dispatch(conferenceLeft(conference));
+        });
+    conference.on(JitsiConferenceEvents.SUBJECT_CHANGED,
+        (subject: string) => dispatch(conferenceSubjectChanged(subject)));
+
+    conference.on(JitsiConferenceEvents.CONFERENCE_CREATED_TIMESTAMP,
+        (timestamp: number) => dispatch(conferenceTimestampChanged(timestamp)));
 
     conference.on(
         JitsiConferenceEvents.KICKED,
-        (...args) => dispatch(kickedOut(conference, ...args)));
+        (participant: any) => dispatch(kickedOut(conference, participant)));
 
     conference.on(
         JitsiConferenceEvents.PARTICIPANT_KICKED,
-        (kicker, kicked) => dispatch(participantKicked(kicker, kicked)));
+        (kicker: any, kicked: any) => dispatch(participantKicked(kicker, kicked)));
+
+    conference.on(
+        JitsiConferenceEvents.PARTICIPANT_SOURCE_UPDATED,
+        (jitsiParticipant: any) => dispatch(participantSourcesUpdated(jitsiParticipant)));
 
     conference.on(
         JitsiConferenceEvents.LOCK_STATE_CHANGED,
-        (...args) => dispatch(lockStateChanged(conference, ...args)));
+        (locked: boolean) => dispatch(lockStateChanged(conference, locked)));
 
     // Dispatches into features/base/media follow:
 
@@ -175,12 +205,12 @@ function _addConferenceListeners(conference, dispatch, state) {
 
     conference.on(
         JitsiConferenceEvents.AUDIO_UNMUTE_PERMISSIONS_CHANGED,
-        disableAudioMuteChange => {
+        (disableAudioMuteChange: boolean) => {
             dispatch(setAudioUnmutePermissions(disableAudioMuteChange));
         });
     conference.on(
         JitsiConferenceEvents.VIDEO_UNMUTE_PERMISSIONS_CHANGED,
-        disableVideoMuteChange => {
+        (disableVideoMuteChange: boolean) => {
             dispatch(setVideoUnmutePermissions(disableVideoMuteChange));
         });
 
@@ -188,25 +218,25 @@ function _addConferenceListeners(conference, dispatch, state) {
 
     conference.on(
         JitsiConferenceEvents.TRACK_ADDED,
-        t => t && !t.isLocal() && dispatch(trackAdded(t)));
+        (t: any) => t && !t.isLocal() && dispatch(trackAdded(t)));
     conference.on(
         JitsiConferenceEvents.TRACK_REMOVED,
-        t => t && !t.isLocal() && dispatch(trackRemoved(t)));
+        (t: any) => t && !t.isLocal() && dispatch(trackRemoved(t)));
 
     conference.on(
         JitsiConferenceEvents.TRACK_MUTE_CHANGED,
-        (track, participantThatMutedUs) => {
+        (track: any, participantThatMutedUs: any) => {
             if (participantThatMutedUs) {
                 dispatch(participantMutedUs(participantThatMutedUs, track));
             }
         });
 
-    conference.on(JitsiConferenceEvents.TRACK_UNMUTE_REJECTED, track => dispatch(destroyLocalTracks(track)));
+    conference.on(JitsiConferenceEvents.TRACK_UNMUTE_REJECTED, (track: any) => dispatch(destroyLocalTracks(track)));
 
     // Dispatches into features/base/participants follow:
     conference.on(
         JitsiConferenceEvents.DISPLAY_NAME_CHANGED,
-        (id, displayName) => dispatch(participantUpdated({
+        (id: string, displayName: string) => dispatch(participantUpdated({
             conference,
             id,
             name: getNormalizedDisplayName(displayName)
@@ -214,36 +244,38 @@ function _addConferenceListeners(conference, dispatch, state) {
 
     conference.on(
         JitsiConferenceEvents.DOMINANT_SPEAKER_CHANGED,
-        (dominant, previous) => dispatch(dominantSpeakerChanged(dominant, previous, conference)));
+        (dominant: string, previous: string[], silence: boolean | string) => {
+            dispatch(dominantSpeakerChanged(dominant, previous, Boolean(silence), conference));
+        });
 
     conference.on(
         JitsiConferenceEvents.ENDPOINT_MESSAGE_RECEIVED,
-        (...args) => dispatch(endpointMessageReceived(...args)));
+        (participant: Object, json: Object) => dispatch(endpointMessageReceived(participant, json)));
 
     conference.on(
         JitsiConferenceEvents.NON_PARTICIPANT_MESSAGE_RECEIVED,
-        (...args) => dispatch(nonParticipantMessageReceived(...args)));
-
-    conference.on(
-        JitsiConferenceEvents.PARTICIPANT_CONN_STATUS_CHANGED,
-        (...args) => dispatch(participantConnectionStatusChanged(...args)));
+        (id: string, json: Object) => dispatch(nonParticipantMessageReceived(id, json)));
 
     conference.on(
         JitsiConferenceEvents.USER_JOINED,
-        (id, user) => commonUserJoinedHandling({ dispatch }, conference, user));
+        (_id: string, user: any) => commonUserJoinedHandling({ dispatch }, conference, user));
     conference.on(
         JitsiConferenceEvents.USER_LEFT,
-        (id, user) => commonUserLeftHandling({ dispatch }, conference, user));
+        (_id: string, user: any) => commonUserLeftHandling({ dispatch }, conference, user));
     conference.on(
         JitsiConferenceEvents.USER_ROLE_CHANGED,
-        (...args) => dispatch(participantRoleChanged(...args)));
+        (id: string, role: string) => dispatch(participantRoleChanged(id, role)));
     conference.on(
         JitsiConferenceEvents.USER_STATUS_CHANGED,
-        (...args) => dispatch(participantPresenceChanged(...args)));
+        (id: string, presence: string) => dispatch(participantPresenceChanged(id, presence)));
+
+    conference.on(
+        JitsiE2ePingEvents.E2E_RTT_CHANGED,
+        (participant: Object, rtt: number) => dispatch(e2eRttChanged(participant, rtt)));
 
     conference.on(
         JitsiConferenceEvents.BOT_TYPE_CHANGED,
-        (id, botType) => dispatch(participantUpdated({
+        (id: string, botType: string) => dispatch(participantUpdated({
             conference,
             id,
             botType
@@ -285,6 +317,45 @@ function _addConferenceListeners(conference, dispatch, state) {
             id,
             hatOn: data.value
         })));
+}
+
+/**
+ * Action for updating the conference metadata.
+ *
+ * @param {IConferenceMetadata} metadata - The metadata object.
+ * @returns {{
+ *    type: UPDATE_CONFERENCE_METADATA,
+ *    metadata: IConferenceMetadata
+ * }}
+ */
+export function updateConferenceMetadata(metadata: Object | null) {
+    return {
+        type: UPDATE_CONFERENCE_METADATA,
+        metadata
+    };
+}
+
+/**
+ * Create an action for when the end-to-end RTT against a specific remote participant has changed.
+ *
+ * @param {Object} participant - The participant against which the rtt is measured.
+ * @param {number} rtt - The rtt.
+ * @returns {{
+ *     type: E2E_RTT_CHANGED,
+ *     e2eRtt: {
+ *         participant: Object,
+ *         rtt: number
+ *     }
+ * }}
+ */
+export function e2eRttChanged(participant: Object, rtt: number) {
+    return {
+        type: E2E_RTT_CHANGED,
+        e2eRtt: {
+            rtt,
+            participant
+        }
+    };
 }
 
 /**
@@ -354,6 +425,23 @@ export function conferenceJoined(conference: Object) {
 }
 
 /**
+ * Signals that a specific conference join is in progress.
+ *
+ * @param {JitsiConference} conference - The JitsiConference instance for which join by the local participant
+ * is in progress.
+ * @returns {{
+ *     type: CONFERENCE_JOIN_IN_PROGRESS,
+ *     conference: JitsiConference
+ * }}
+ */
+export function conferenceJoinInProgress(conference: Object) {
+    return {
+        type: CONFERENCE_JOIN_IN_PROGRESS,
+        conference
+    };
+}
+
+/**
  * Signals that a specific conference has been left.
  *
  * @param {JitsiConference} conference - The JitsiConference instance which was
@@ -418,7 +506,7 @@ export function conferenceTimestampChanged(conferenceTimestamp: number) {
 *   conference: JitsiConference,
 * }}
 */
-export function conferenceUniqueIdSet(conference: Object, meetingId) {
+export function conferenceUniqueIdSet(conference, meetingId) {
     // console.error('conferenceUniqueIdSet:', meetingId);
     return {
         type: CONFERENCE_UNIQUE_ID_SET,
@@ -438,15 +526,29 @@ export function conferenceUniqueIdSet(conference: Object, meetingId) {
  */
 export function _conferenceWillJoin(conference: Object) {
     return (dispatch: Dispatch<any>, getState: Function) => {
+        const state = getState();
         const localTracks
-            = getLocalTracks(getState()['features/base/tracks'])
+            = getLocalTracks(state['features/base/tracks'])
                 .map(t => t.jitsiTrack);
 
-        if (localTracks.length) {
+        if (localTracks.length && !iAmVisitor(state)) {
             _addLocalTracksToConference(conference, localTracks);
         }
 
         dispatch(conferenceWillJoin(conference));
+    };
+}
+
+/**
+ * Signals the intention of the application to have a conference initialized.
+ *
+ * @returns {{
+ *     type: CONFERENCE_WILL_INIT
+ * }}
+ */
+export function conferenceWillInit() {
+    return {
+        type: CONFERENCE_WILL_INIT
     };
 }
 
@@ -476,15 +578,18 @@ export function conferenceWillJoin(conference: Object) {
  *
  * @param {JitsiConference} conference - The JitsiConference instance which will
  * be left by the local participant.
+* @param {boolean} isRedirect - Indicates if the action has been dispatched as part of visitor promotion.
  * @returns {{
  *     type: CONFERENCE_LEFT,
- *     conference: JitsiConference
+ *     conference: JitsiConference,
+ *     isRedirect: boolean
  * }}
  */
-export function conferenceWillLeave(conference: Object) {
+export function conferenceWillLeave(conference: Object, isRedirect?: boolean) {
     return {
         type: CONFERENCE_WILL_LEAVE,
-        conference
+        conference,
+        isRedirect
     };
 }
 
@@ -518,8 +623,6 @@ export function createConference(overrideRoom?: string) {
         if (tmp.domain) {
             // eslint-disable-next-line no-new-wrappers
             _room = new String(tmp);
-
-            // $FlowExpectedError
             _room.domain = tmp.domain;
         }
 
@@ -560,7 +663,7 @@ export function checkIfCanJoin() {
         if (!password) {
             password = getState()['features/base/config'].password;
         }
-        authRequired && authRequired.join(password, replaceParticipant);
+        authRequired?.join(password, replaceParticipant);
     };
 }
 
@@ -574,6 +677,76 @@ export function checkIfCanJoin() {
 export function dataChannelOpened() {
     return {
         type: DATA_CHANNEL_OPENED
+    };
+}
+
+/**
+ * Signals the data channel with the bridge was abruptly closed.
+ *
+ * @param {number} code - Close code.
+ * @param {string} reason - Close reason.
+ *
+ * @returns {{
+ *     type: DATA_CHANNEL_CLOSED,
+ *     code: number,
+ *     reason: string
+ * }}
+ */
+export function dataChannelClosed(code: number, reason: string) {
+    return {
+        type: DATA_CHANNEL_CLOSED,
+        code,
+        reason
+    };
+}
+
+/**
+ * Signals that a participant sent an endpoint message on the data channel.
+ *
+ * @param {Object} participant - The participant details sending the message.
+ * @param {Object} data - The data carried by the endpoint message.
+ * @returns {{
+*      type: ENDPOINT_MESSAGE_RECEIVED,
+*      participant: Object,
+*      data: Object
+* }}
+*/
+export function endpointMessageReceived(participant: Object, data: Object) {
+    return {
+        type: ENDPOINT_MESSAGE_RECEIVED,
+        participant,
+        data
+    };
+}
+
+/**
+ * Action to end a conference for all participants.
+ *
+ * @returns {Function}
+ */
+export function endConference() {
+    return async (dispatch, getState) => {
+        sendAnalytics(createToolbarEvent('hangup'));
+
+        const state = getState();
+
+        // destroy breakout rooms
+        const rooms = getBreakoutRooms(state);
+        await each(rooms, async room => {
+            if (!room.isMainRoom) {
+                await dispatch(removeBreakoutRoom(room.jid));
+            }
+        });
+
+        // delete conference
+        const { roomInfo } = getConferenceState(state);
+        if (roomInfo?._id) {
+            await conferences().id(roomInfo._id).delete();
+        } else {
+            console.error('endConference: roomInfo not exist');
+        }
+
+        dispatch(disconnect());
     };
 }
 
@@ -596,6 +769,16 @@ export function kickedOut(conference: Object, participant: Object) {
         conference,
         participant
     };
+}
+
+
+/**
+ * Action to leave a conference.
+ *
+ * @returns {Function}
+ */
+export function leaveConference() {
+    return async (dispatch) => dispatch(hangup(true));
 }
 
 /**
@@ -630,7 +813,7 @@ export function lockStateChanged(conference: Object, locked: boolean) {
  *      json: Object
  * }}
  */
-export function nonParticipantMessageReceived(id: String, json: Object) {
+export function nonParticipantMessageReceived(id: string, json: Object) {
     return {
         type: NON_PARTICIPANT_MESSAGE_RECEIVED,
         id,
@@ -724,7 +907,7 @@ export function setFollowMe(enabled: boolean) {
  *     muted: boolean
  * }}
  */
-export function setStartReactionsMuted(muted: boolean, updateBackend: boolean = false) {
+export function setStartReactionsMuted(muted: boolean, updateBackend = false) {
     return {
         type: SET_START_REACTIONS_MUTED,
         muted,
@@ -748,6 +931,9 @@ export function setPassword(
         method: Function,
         password: string) {
     return (dispatch: Dispatch<any>, getState: Function): ?Promise<void> => {
+        if (!conference) {
+            return;
+        }
         switch (method) {
         case conference.join: {
             let state = getState()['features/base/conference'];
@@ -799,12 +985,28 @@ export function setPassword(
 }
 
 /**
+ * Sets the obfuscated room name of the conference to be joined.
+ *
+ * @param {(string)} obfuscatedRoom - Obfuscated room name.
+ * @param {(string)} obfuscatedRoomSource - The room name that was obfuscated.
+ * @returns {{
+ *     type: SET_OBFUSCATED_ROOM,
+ *     room: string
+ * }}
+ */
+export function setObfuscatedRoom(obfuscatedRoom: string, obfuscatedRoomSource: string) {
+    return {
+        type: SET_OBFUSCATED_ROOM,
+        obfuscatedRoom,
+        obfuscatedRoomSource
+    };
+}
+
+/**
  * Sets (the name of) the room of the conference to be joined.
  *
- * @param {(string|undefined)} room - The name of the room of the conference to
- * be joined.
- * @param {(string|undefined)} roomInfo - The info of the room of the conference to
- * be joined.
+ * @param {(string|undefined)} room - The name of the room of the conference to be joined
+ * @param {(string|undefined)} roomInfo - The info of the room of the conference to be joined
  * @returns {{
  *     type: SET_ROOM,
  *     room: string
@@ -864,7 +1066,7 @@ export function setStartMutedPolicy(
     return (dispatch: Dispatch<any>, getState: Function) => {
         const conference = getCurrentConference(getState());
 
-        conference && conference.setStartMutedPolicy({
+        conference?.setStartMutedPolicy({
             audio: startAudioMuted,
             video: startVideoMuted
         });
@@ -883,7 +1085,7 @@ export function setStartMutedPolicy(
  * @returns
  * 
  **/
- export function Timer(endTime: Number, timerStarted: boolean) {
+export function Timer(endTime: Number, timerStarted: boolean) {
     return {
         type: START_TIMER,
         endTime,
@@ -907,7 +1109,7 @@ export function startRandomSelectionCountdown(countdownRemained: Number, startCo
 }
 
 /**
- * Changing conference subject.
+ * Sets the conference subject.
  *
  * @param {string} subject - The new subject.
  * @returns {void}
@@ -940,6 +1142,63 @@ export function setLocalSubject(localSubject: string) {
     return {
         type: CONFERENCE_LOCAL_SUBJECT_CHANGED,
         localSubject
+    };
+}
+
+
+/**
+ * Sets the assumed bandwidth bps.
+ *
+ * @param {number} assumedBandwidthBps - The new assumed bandwidth.
+ * @returns {{
+*     type: SET_ASSUMED_BANDWIDTH_BPS,
+*     assumedBandwidthBps: number
+* }}
+*/
+export function setAssumedBandwidthBps(assumedBandwidthBps: number) {
+    return {
+        type: SET_ASSUMED_BANDWIDTH_BPS,
+        assumedBandwidthBps
+    };
+}
+
+/**
+ * Redirects to a new visitor node.
+ *
+ * @param {string | undefined} vnode - The vnode to use or undefined if moving back to the main room.
+ * @param {string} focusJid - The focus jid to use.
+ * @param {string} username - The username to use.
+ * @returns {void}
+ */
+export function redirect(vnode: string, focusJid: string, username: string) {
+    return (dispatch, getState) => {
+        const newConfig = getVisitorOptions(getState, vnode, focusJid, username);
+
+        if (!newConfig) {
+            logger.warn('Not redirected missing params');
+
+            return;
+        }
+
+        dispatch(overwriteConfig(newConfig)) // @ts-ignore
+            .then(() => dispatch(disconnect(true)))
+            .then(() => dispatch(setIAmVisitor(Boolean(vnode))))
+
+            // we do not clear local tracks on error, so we need to manually clear them
+            .then(() => dispatch(destroyLocalTracks()))
+            .then(() => dispatch(conferenceWillInit()))
+            .then(() => dispatch(connect()))
+            .then(() => {
+
+                // Clear the gum pending state in case we have set it to pending since we are starting the
+                // conference without tracks.
+                dispatch(gumPending([ MEDIA_TYPE.AUDIO, MEDIA_TYPE.VIDEO ], IGUMPendingState.NONE));
+
+                // FIXME: Workaround for the web version. To be removed once we get rid of conference.js
+                if (typeof APP !== 'undefined') {
+                    APP.conference.startConference([]);
+                }
+            });
     };
 }
 

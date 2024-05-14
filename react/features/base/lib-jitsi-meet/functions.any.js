@@ -1,8 +1,9 @@
 // @flow
 
-import { toState } from '../redux';
+import { toState } from '../redux/functions';
 
 import JitsiMeetJS from './_';
+
 
 const JitsiConferenceErrors = JitsiMeetJS.errors.conference;
 const JitsiConnectionErrors = JitsiMeetJS.errors.connection;
@@ -26,17 +27,12 @@ export function createLocalTrack(type: string, deviceId: string, timeout: ?numbe
 
             // eslint-disable-next-line camelcase
             firefox_fake_device:
-                window.config && window.config.firefox_fake_device,
+                window.config?.firefox_fake_device,
             micDeviceId: deviceId,
             timeout,
             ...additionalOptions
         })
-            .then((jitsiLocalTrack) => {
-                if (type === 'desktop' && jitsiLocalTrack[0].type === 'audio')
-                    return jitsiLocalTrack;
-                else
-                    return jitsiLocalTrack[0];
-            }));
+            .then(([ jitsiLocalTrack ]) => jitsiLocalTrack));
 }
 
 /**

@@ -3,12 +3,12 @@
 import React from 'react';
 import { View } from 'react-native';
 import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
 import { getDefaultURL } from '../../app/functions';
 import { openDialog } from '../../base/dialog/actions';
 import { translate } from '../../base/i18n';
 import { NavigateSectionList, type Section } from '../../base/react';
-import { connect } from '../../base/redux';
 import styles from '../../welcome/components/styles';
 import { isRecentListEnabled, toDisplayableList } from '../functions';
 

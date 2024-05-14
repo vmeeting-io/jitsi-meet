@@ -1,40 +1,18 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { createBreakoutRoomsEvent, sendAnalytics } from '../../../analytics';
-import { translate } from '../../../base/i18n';
-import { IconRingGroup } from '../../../base/icons';
-import { isLocalParticipantModerator } from '../../../base/participants';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { sendParticipantToRoom } from '../../../breakout-rooms';
-
-export type Props = AbstractButtonProps & {
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function,
-
-    /**
-     * ID of the participant to send to breakout room.
-     */
-    participantID: string,
-
-    /**
-     * Room to send participant to.
-     */
-    room: Object,
-
-    /**
-     * Translation function.
-     */
-    t: Function
-};
+import { createBreakoutRoomsEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconRingGroup } from '../../../base/icons/svg';
+import { isLocalParticipantModerator } from '../../../base/participants/functions';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import { sendParticipantToRoom } from '../../../breakout-rooms/actions';
 
 /**
  * An abstract remote video menu button which sends the remote participant to a breakout room.
  */
-class SendToBreakoutRoom extends AbstractButton<Props, *> {
+class SendToBreakoutRoom extends AbstractButton {
     accessibilityLabel = 'breakoutRooms.actions.sendToBreakoutRoom';
     icon = IconRingGroup;
 

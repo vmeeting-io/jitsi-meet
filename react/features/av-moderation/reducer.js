@@ -4,8 +4,8 @@ import { MEDIA_TYPE } from '../base/media/constants';
 import {
     PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED
-} from '../base/participants';
-import { ReducerRegistry } from '../base/redux';
+} from '../base/participants/actionTypes';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     _RESET_MODERATIONS,
@@ -16,7 +16,7 @@ import {
     LOCAL_PARTICIPANT_REJECTED,
     PARTICIPANT_APPROVED,
     PARTICIPANT_PENDING_AUDIO,
-    PARTICIPANT_REJECTED,
+    PARTICIPANT_REJECTED
 } from './actionTypes';
 
 const initialState = {
@@ -261,33 +261,6 @@ ReducerRegistry.register('features/av-moderation', (state = initialState, action
             }
         };
     }
-
-    case PARTICIPANT_REJECTED: {
-        const { mediaType, id } = action;
-
-        if (mediaType === MEDIA_TYPE.AUDIO) {
-            return {
-                ...state,
-                audioWhitelist: {
-                    ...state.audioWhitelist,
-                    [id]: false
-                }
-            };
-        }
-
-        if (mediaType === MEDIA_TYPE.VIDEO) {
-            return {
-                ...state,
-                videoWhitelist: {
-                    ...state.videoWhitelist,
-                    [id]: false
-                }
-            };
-        }
-
-        return state;
-    }
-
     case _RESET_MODERATIONS:
         return initialState;
 

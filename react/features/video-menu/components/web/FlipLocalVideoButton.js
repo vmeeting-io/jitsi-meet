@@ -1,56 +1,24 @@
-/* @flow */
-
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 
-import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { translate } from '../../../base/i18n';
-import { connect } from '../../../base/redux';
-import { updateSettings } from '../../../base/settings';
-
-/**
- * The type of the React {@code Component} props of {@link FlipLocalVideoButton}.
- */
-type Props = {
-
-    /**
-     * The current local flip x status.
-     */
-    _localFlipX: boolean,
-
-    /**
-     * Button text class name.
-     */
-    className: string,
-
-    /**
-     * The redux dispatch function.
-     */
-    dispatch: Function,
-
-    /**
-     * Click handler executed aside from the main action.
-     */
-    onClick?: Function,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
+import { translate } from '../../../base/i18n/functions';
+import { updateSettings } from '../../../base/settings/actions';
+import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 
 /**
  * Implements a React {@link Component} which displays a button for flipping the local viedo.
  *
  * @augments Component
  */
-class FlipLocalVideoButton extends PureComponent<Props> {
+class FlipLocalVideoButton extends PureComponent {
     /**
      * Initializes a new {@code FlipLocalVideoButton} instance.
      *
      * @param {Object} props - The read-only React Component props with which
      * the new instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // Bind event handlers so they are only bound once for every instance.
@@ -80,8 +48,6 @@ class FlipLocalVideoButton extends PureComponent<Props> {
         );
     }
 
-    _onClick: () => void;
-
     /**
      * Flips the local video.
      *
@@ -89,9 +55,13 @@ class FlipLocalVideoButton extends PureComponent<Props> {
      * @returns {void}
      */
     _onClick() {
-        const { _localFlipX, dispatch, onClick } = this.props;
+        const { _localFlipX, dispatch, notifyClick, notifyMode, onClick } = this.props;
 
-        onClick && onClick();
+        notifyClick?.();
+        if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
+            return;
+        }
+        onClick?.();
         dispatch(updateSettings({
             localFlipX: !_localFlipX
         }));
@@ -103,7 +73,7 @@ class FlipLocalVideoButton extends PureComponent<Props> {
  *
  * @param {Object} state - The Redux state.
  * @private
- * @returns {Props}
+ * @returns {IProps}
  */
 function _mapStateToProps(state) {
     const { localFlipX } = state['features/base/settings'];

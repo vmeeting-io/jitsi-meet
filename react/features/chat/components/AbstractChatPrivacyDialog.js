@@ -2,25 +2,10 @@
 
 import { PureComponent } from 'react';
 
-import { getParticipantById } from '../../base/participants';
+import { getParticipantById } from '../../base/participants/functions';
 import { sendMessage, setPrivateMessageRecipient } from '../actions';
 
 type Props = {
-
-    /**
-     * The message that is about to be sent.
-     */
-    message: Object,
-
-    /**
-     * The ID of the participant that we think the message may be intended to.
-     */
-    participantID: string,
-
-    /**
-     * Function to be used to translate i18n keys.
-     */
-    t: Function,
 
     /**
      * Prop to be invoked on sending the message.
@@ -35,7 +20,17 @@ type Props = {
     /**
      * The participant retrieved from Redux by the participanrID prop.
      */
-    _participant: Object
+    _participant: Object,
+
+    /**
+     * The message that is about to be sent.
+     */
+    message: Object,
+
+    /**
+     * The ID of the participant that we think the message may be intended to.
+     */
+    participantID: string,
 };
 
 /**
@@ -54,8 +49,6 @@ export class AbstractChatPrivacyDialog extends PureComponent<Props> {
         this._onSendPrivateMessage = this._onSendPrivateMessage.bind(this);
     }
 
-    _onSendGroupMessage: () => boolean;
-
     /**
      * Callback to be invoked for cancel action (user wants to send a group message).
      *
@@ -66,8 +59,6 @@ export class AbstractChatPrivacyDialog extends PureComponent<Props> {
 
         return true;
     }
-
-    _onSendPrivateMessage: () => boolean;
 
     /**
      * Callback to be invoked for submit action (user wants to send a private message).

@@ -2,15 +2,14 @@
 
 import React, { Component } from 'react';
 import { Text, View } from 'react-native';
+import { connect } from 'react-redux';
 
 import { translate } from '../../../base/i18n';
 import {
     getLocalParticipant,
     getParticipantById,
     getParticipantDisplayName,
-    shouldRenderParticipantVideo
 } from '../../../base/participants';
-import { connect } from '../../../base/redux';
 import { appendSuffix } from '../../functions';
 
 import styles from './styles';
@@ -70,15 +69,14 @@ function _mapStateToProps(state: Object, ownProps: Props) {
     const { participantId } = ownProps;
     // const localParticipant = getLocalParticipant(state);
     const participant = getParticipantById(state, participantId);
-    const isFakeParticipant = participant && participant.isFakeParticipant;
+    const fakeParticipant = participant && participant.fakeParticipant;
 
     // Currently we only render the display name if it's not the local
     // participant and there is no video rendered for
     // them.
     const _render = Boolean(participantId)
         // && localParticipant?.id !== participantId
-        // && !shouldRenderParticipantVideo(state, participantId)
-        && !isFakeParticipant;
+        && !fakeParticipant;
 
     return {
         displayNameSuffix: participant?.local ? 'me' : '',

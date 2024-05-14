@@ -1,9 +1,9 @@
-// @flow
-
 /**
- * Modal ID for the DialInSummary modal.
+ * The pathName for the dialInInfo page.
+ *
+ * @type {string}
  */
-export const DIAL_IN_SUMMARY_VIEW_ID = 'DIAL_IN_SUMMARY_VIEW_ID';
+export const DIAL_IN_INFO_PAGE_PATH_NAME = 'static/dialInInfo.html';
 
 /**
  * The identifier of the sound to be played when the status of an outgoing call
@@ -54,3 +54,6 @@ export const INVITE_TYPES = {
     USER: 'user',
     VIDEO_ROOM: 'videosipgw'
 };
+
+export const UPGRADE_OPTIONS_TEXT = 'jaas.8x8.vc';
+export const UPGRADE_OPTIONS_LINK = 'https://jaas.8x8.vc/#/plan/upgrade';

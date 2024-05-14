@@ -1,14 +1,11 @@
-// @flow
+// @ts-expect-error
 import { generateRoomWithoutSeparator } from '@jitsi/js-utils/random';
-import type { Dispatch } from 'redux';
 
 import { getDefaultURL } from '../app/functions';
-import { openDialog } from '../base/dialog';
+import { openDialog } from '../base/dialog/actions';
 
 import { refreshCalendar } from './actions';
-import {
-    UpdateCalendarEventDialog
-} from './components';
+import UpdateCalendarEventDialog from './components/UpdateCalendarEventDialog.native';
 import { addLinkToCalendarEntry } from './functions.native';
 
 export * from './actions.any';
@@ -35,7 +32,7 @@ export function openUpdateCalendarEventDialog(eventId: string) {
  * @returns {Function}
  */
 export function updateCalendarEvent(eventId: string) {
-    return (dispatch: Dispatch<any>, getState: Function) => {
+    return (dispatch, getState) => {
         const defaultUrl = getDefaultURL(getState);
         const roomName = generateRoomWithoutSeparator();
 

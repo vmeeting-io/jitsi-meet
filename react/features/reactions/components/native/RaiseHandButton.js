@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import { Text, TouchableHighlight, View } from 'react-native';
 import { type Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
 import {
     createToolbarEvent,
@@ -15,51 +16,11 @@ import {
     hasRaisedHand,
     raiseHand
 } from '../../../base/participants';
-import { connect } from '../../../base/redux';
-import { type AbstractButtonProps } from '../../../base/toolbox/components';
-
-import { type ReactionStyles } from './ReactionButton';
-
-/**
- * The type of the React {@code Component} props of {@link RaiseHandButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * The local participant.
-     */
-    _localParticipant: Object,
-
-    /**
-     * Whether the participant raused their hand or not.
-     */
-    _raisedHand: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Dispatch<any>,
-
-    /**
-     * Used for translation.
-     */
-    t: Function,
-
-    /**
-     * Used to close the overflow menu after raise hand is clicked.
-     */
-    onCancel: Function,
-
-    /**
-     * Styles for the button.
-     */
-    _styles: ReactionStyles
-};
 
 /**
  * An implementation of a button to raise or lower hand.
  */
-class RaiseHandButton extends Component<Props, *> {
+class RaiseHandButton extends Component {
     accessibilityLabel = 'toolbar.accessibilityLabel.raiseHand';
     label = 'toolbar.raiseYourHand';
     toggledLabel = 'toolbar.lowerYourHand';
@@ -70,7 +31,7 @@ class RaiseHandButton extends Component<Props, *> {
      * @param {Props} props - The React {@code Component} props to initialize
      * the new {@code RaiseHandButton} instance with.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // Bind event handlers so they are only bound once per instance.

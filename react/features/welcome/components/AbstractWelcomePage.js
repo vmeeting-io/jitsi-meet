@@ -5,10 +5,12 @@ import { generateRoomWithoutSeparator } from '@jitsi/js-utils/random';
 import { Component } from 'react';
 import type { Dispatch } from 'redux';
 
-import { createWelcomePageEvent, sendAnalytics } from '../../analytics';
+import { createWelcomePageEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
 import { appNavigate } from '../../app/actions';
 import isInsecureRoomName from '../../base/util/isInsecureRoomName';
-import { isCalendarEnabled } from '../../calendar-sync';
+import { isCalendarEnabled } from '../../calendar-sync/functions';
+import { isUnsafeRoomWarningEnabled } from '../../prejoin/functions';
 import { isRecentListEnabled } from '../../recent-list/functions';
 
 /**
@@ -20,6 +22,11 @@ export type Props = {
      * Whether the calendar functionality is enabled or not.
      */
     _calendarEnabled: boolean,
+
+    /**
+     * The deeplinking config.
+     */
+    _deeplinkingCfg: IDeeplinkingConfig;
 
     /**
      * Whether the insecure room name functionality is enabled or not.
@@ -82,7 +89,7 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
      * @type {Object}
      * @property {number|null} animateTimeoutId - Identifier of the letter
      * animation timeout.
-     * @property {string} generatedRoomname - Automatically generated room name.
+     * @property {string} generatedRoomName - Automatically generated room name.
      * @property {string} room - Room name.
      * @property {string} roomPlaceholder - Room placeholder that's used as a
      * placeholder for input.
@@ -91,12 +98,17 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
      */
     state = {
         animateTimeoutId: undefined,
-        generatedRoomname: '',
+        generatedRoomName: '',
+        generateRoomNames: undefined,
         insecureRoomName: false,
         joining: false,
         room: '',
         roomPlaceholder: '',
-        updateTimeoutId: undefined
+        updateTimeoutId: undefined,
+        _fieldFocused: false,
+        isSettingsScreenFocused: false,
+        roomNameInputAnimation: 0,
+        hintBoxAnimation: 0
     };
 
     /**
@@ -109,12 +121,12 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
         super(props);
 
         // Bind event handlers so they are only bound once per instance.
-        this._animateRoomnameChanging
-            = this._animateRoomnameChanging.bind(this);
+        this._animateRoomNameChanging
+            = this._animateRoomNameChanging.bind(this);
         this._onJoin = this._onJoin.bind(this);
         this._onRoomChange = this._onRoomChange.bind(this);
         this._renderInsecureRoomNameWarning = this._renderInsecureRoomNameWarning.bind(this);
-        this._updateRoomname = this._updateRoomname.bind(this);
+        this._updateRoomName = this._updateRoomName.bind(this);
         this.state.savedNotification = jitsiLocalStorage.getItem('saved_notification');
     }
 
@@ -140,8 +152,6 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
         this._mounted = false;
     }
 
-    _animateRoomnameChanging: (string) => void;
-
     /**
      * Animates the changing of the room name.
      *
@@ -150,15 +160,15 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
      * @private
      * @returns {void}
      */
-    _animateRoomnameChanging(word: string) {
+    _animateRoomNameChanging(word: string) {
         let animateTimeoutId;
         const roomPlaceholder = this.state.roomPlaceholder + word.substr(0, 1);
 
         if (word.length > 1) {
             animateTimeoutId
-                = setTimeout(
+                = window.setTimeout(
                     () => {
-                        this._animateRoomnameChanging(
+                        this._animateRoomNameChanging(
                             word.substring(1, word.length));
                     },
                     70);
@@ -176,8 +186,8 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
      * @returns {void}
      */
     _clearTimeouts() {
-        clearTimeout(this.state.animateTimeoutId);
-        clearTimeout(this.state.updateTimeoutId);
+        this.state.animateTimeoutId && clearTimeout(this.state.animateTimeoutId);
+        this.state.updateTimeoutId && clearTimeout(this.state.updateTimeoutId);
     }
 
     /**
@@ -185,9 +195,9 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
      *
      * @returns {ReactElement}
      */
-    _doRenderInsecureRoomNameWarning: () => React$Component<any>;
-
-    _onJoin: () => void;
+    _doRenderInsecureRoomNameWarning() {
+        return null;
+    }
 
     /**
      * Handles joining. Either by clicking on 'Join' button
@@ -197,7 +207,7 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
      * @returns {void}
      */
     _onJoin() {
-        const room = this.state.room || this.state.generatedRoomname;
+        const room = this.state.room || this.state.generatedRoomName;
 
         sendAnalytics(
             createWelcomePageEvent('clicked', 'joinButton', {
@@ -218,8 +228,6 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
         }
     }
 
-    _onRoomChange: (string) => void;
-
     /**
      * Handles 'change' event for the room name text input field.
      *
@@ -231,11 +239,9 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
     _onRoomChange(value: string) {
         this.setState({
             room: value,
-            insecureRoomName: this.props._enableInsecureRoomNameWarning && value && isInsecureRoomName(value)
+            insecureRoomName: Boolean(this.props._enableInsecureRoomNameWarning && value && isInsecureRoomName(value))
         });
     }
-
-    _renderInsecureRoomNameWarning: () => React$Component<any>;
 
     /**
      * Renders the insecure room name warning if needed.
@@ -250,8 +256,6 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
         return null;
     }
 
-    _updateRoomname: () => void;
-
     /**
      * Triggers the generation of a new room name and initiates an animation of
      * its changing.
@@ -259,19 +263,19 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
      * @protected
      * @returns {void}
      */
-    _updateRoomname() {
-        const generatedRoomname = generateRoomWithoutSeparator();
+    _updateRoomName() {
+        const generatedRoomName = generateRoomWithoutSeparator();
         const roomPlaceholder = '';
-        const updateTimeoutId = setTimeout(this._updateRoomname, 10000);
+        const updateTimeoutId = window.setTimeout(this._updateRoomName, 10000);
 
         this._clearTimeouts();
         this.setState(
             {
-                generatedRoomname,
+                generatedRoomName,
                 roomPlaceholder,
                 updateTimeoutId
             },
-            () => this._animateRoomnameChanging(generatedRoomname));
+            () => this._animateRoomNameChanging(generatedRoomName));
     }
 }
 
@@ -284,27 +288,19 @@ export class AbstractWelcomePage<P: Props> extends Component<P, *> {
  * @returns {Props}
  */
 export function _mapStateToProps(state: Object) {
-    const {
-        disableIntroVideo,
-        enableInsecureRoomNameWarning,
-        features,
-        logoUrl,
-        moderatedRoomServiceUrl,
-        toolbarButtons = []
-    } = state['features/base/config'];
-
     return {
         _calendarEnabled: isCalendarEnabled(state),
-        _defaultLogoUrl: logoUrl,
-        _disableIntroVideo: disableIntroVideo,
-        _enableInsecureRoomNameWarning: enableInsecureRoomNameWarning || false,
-        _features: features,
-        _moderatedRoomServiceUrl: moderatedRoomServiceUrl,
+        _deeplinkingCfg: state['features/base/config'].deeplinking || {},
+        _defaultLogoUrl: state['features/base/config'].logoUrl || '',
+        _disableIntroVideo: state['features/base/config'].disableIntroVideo,
+        _enableInsecureRoomNameWarning: isUnsafeRoomWarningEnabled(state),
+        _features: state['features/base/config'].features,
+        _isNarrowLayout: state['features/base/responsive-ui'].isNarrowLayout,
+        _moderatedRoomServiceUrl: state['features/base/config'].moderatedRoomServiceUrl,
         _recentListEnabled: isRecentListEnabled(),
-        _room: state['features/base/conference'].room,
+        _room: state['features/base/conference'].room ?? '',
         _settings: state['features/base/settings'],
         _user: state['features/base/jwt'].user,
-        _jwt: state['features/base/jwt'],
-        _virtualAvatarSupport: toolbarButtons.includes('select-virtual-avatar')
+        _jwt: state['features/base/jwt']
     };
 }

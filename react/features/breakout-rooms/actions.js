@@ -5,43 +5,39 @@ import i18next from 'i18next';
 import _ from 'lodash';
 import { batch } from 'react-redux';
 import type { Dispatch } from 'redux';
-import { conferences } from '../../api/conferences';
 
-import { createBreakoutRoomsEvent, sendAnalytics } from '../analytics';
+import { conferences } from '../../api/conferences';
+import { createBreakoutRoomsEvent } from '../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../analytics/functions';
 import { _RESET_MODERATIONS } from '../av-moderation/actionTypes';
 import {
     conferenceLeft,
     conferenceWillLeave,
     createConference,
-    getCurrentConference,
     setFollowMe,
     setRoomInfo
-} from '../base/conference';
-import {
-    MEDIA_TYPE,
-    setAudioMuted,
-    setVideoMuted
-} from '../base/media';
-import { getRemoteParticipants } from '../base/participants';
+} from '../base/conference/actions';
+import { CONFERENCE_LEAVE_REASONS } from '../base/conference/constants';
+import { getCurrentConference } from '../base/conference/functions';
+import { setAudioMuted, setVideoMuted } from '../base/media/actions';
+import { MEDIA_TYPE } from '../base/media/constants';
+import { getRemoteParticipants } from '../base/participants/functions';
+import { createDesiredLocalTracks } from '../base/tracks/actions';
 import {
     getLocalTracks,
-    isLocalCameraTrackMuted,
     isLocalTrackMuted
-} from '../base/tracks';
-import { createDesiredLocalTracks } from '../base/tracks/actions';
-import { isLocalFollowMeModerator } from '../follow-me';
-import {
-    NOTIFICATION_TIMEOUT_TYPE,
-    clearNotifications,
-    showNotification
-} from '../notifications';
-import { toggleWhiteboard } from '../whiteboard';
+} from '../base/tracks/functions';
+import { isLocalFollowMeModerator } from '../follow-me/functions';
+import { clearNotifications, showNotification } from '../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
+import { toggleWhiteboard } from '../whiteboard/actions';
 
 import { _RESET_BREAKOUT_ROOMS, _UPDATE_ROOM_COUNTER } from './actionTypes';
 import { FEATURE_KEY } from './constants';
 import {
     getBreakoutRooms,
-    getMainRoom
+    getMainRoom,
+    getRoomByJid
 } from './functions';
 import logger from './logger';
 
@@ -97,6 +93,25 @@ export function closeBreakoutRoom(roomId: string) {
 }
 
 /**
+ * Action to rename a breakout room.
+ *
+ * @param {string} breakoutRoomJid - The jid of the breakout room to rename.
+ * @param {string} name - New name / subject for the breakout room.
+ * @returns {Function}
+ */
+export function renameBreakoutRoom(breakoutRoomJid: string, name = '') {
+    return (dispatch: Dispatch<any>, getState: Function) => {
+        const trimmedName = name.trim();
+
+        if (trimmedName.length !== 0) {
+            sendAnalytics(createBreakoutRoomsEvent('rename'));
+            getCurrentConference(getState)?.getBreakoutRooms()
+                ?.renameBreakoutRoom(breakoutRoomJid, trimmedName);
+        }
+    };
+}
+
+/**
  * Action to remove a breakout room.
  *
  * @param {string} breakoutRoomJid - The jid of the breakout room to remove.
@@ -105,8 +120,17 @@ export function closeBreakoutRoom(roomId: string) {
 export function removeBreakoutRoom(breakoutRoomJid: string) {
     return (dispatch: Dispatch<any>, getState: Function) => {
         sendAnalytics(createBreakoutRoomsEvent('remove'));
+        const room = getRoomByJid(getState, breakoutRoomJid);
 
-        // $FlowExpectedError
+        if (!room) {
+            logger.error('The room to remove was not found.');
+
+            return;
+        }
+
+        if (Object.keys(room.participants).length > 0) {
+            dispatch(closeBreakoutRoom(room.id));
+        }
         getCurrentConference(getState)?.getBreakoutRooms()
             ?.removeBreakoutRoom(breakoutRoomJid);
     };
@@ -229,7 +253,7 @@ export function moveToRoom(roomId?: string) {
         const roomIdStr = _roomId?.toString();
         const goToMainRoom = roomIdStr === mainRoomId;
         const rooms = getBreakoutRooms(getState);
-        const targetRoom = rooms[roomIdStr];
+        const targetRoom = rooms[roomIdStr ?? ''];
 
         if (!targetRoom) {
             logger.warn(`Unknown room: ${targetRoom}`);
@@ -254,7 +278,7 @@ export function moveToRoom(roomId?: string) {
             dispatch(conferenceWillLeave(conference));
 
             try {
-                await conference.leave();
+                await conference?.leave(CONFERENCE_LEAVE_REASONS.SWITCH_ROOM);
             } catch (error) {
                 logger.warn('JitsiConference.leave() rejected with:', error);
 
@@ -266,20 +290,18 @@ export function moveToRoom(roomId?: string) {
             }
 
             dispatch(clearNotifications());
-
-            // dispatch(setRoom(_roomId));
             dispatch(createConference(_roomId));
             dispatch(setAudioMuted(audio.muted));
-            dispatch(setVideoMuted(video.muted));
+            dispatch(setVideoMuted(Boolean(video.muted)));
             dispatch(createDesiredLocalTracks());
         } else {
             const localTracks = getLocalTracks(getState()['features/base/tracks']);
             const isAudioMuted = isLocalTrackMuted(localTracks, MEDIA_TYPE.AUDIO);
-            const isVideoMuted = isLocalCameraTrackMuted(localTracks);
+            const isVideoMuted = isLocalTrackMuted(localTracks, MEDIA_TYPE.VIDEO);
 
             try {
                 // all places we fire notifyConferenceLeft we pass the room name from APP.conference
-                await APP.conference.leaveRoom(false /* doDisconnect */).then(
+                await APP.conference.leaveRoom(false /* doDisconnect */, CONFERENCE_LEAVE_REASONS.SWITCH_ROOM).then(
                     () => APP.API.notifyConferenceLeft(APP.conference.roomName));
             } catch (error) {
                 logger.warn('APP.conference.leaveRoom() rejected with:', error);

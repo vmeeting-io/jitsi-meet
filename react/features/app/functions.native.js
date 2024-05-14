@@ -2,8 +2,10 @@
 
 import { NativeModules } from 'react-native';
 
-import { toState } from '../base/redux';
-import { getServerURL } from '../base/settings';
+import { toState } from '../base/redux/functions';
+import { getServerURL } from '../base/settings/functions.native';
+
+export * from './functions.any';
 
 /**
  * Retrieves the default URL for the app. This can either come from a prop to

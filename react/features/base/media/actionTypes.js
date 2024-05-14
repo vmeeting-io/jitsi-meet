@@ -1,5 +1,16 @@
 
 /**
+ * The type of (redux) action to store the gum pending state for unmute and initial track creation.
+ *
+ * {
+ *     type: GUM_PENDING,
+ *     mediaTypes: Array<MediaType>,
+ *     status: IGUMPendingState
+ * }
+ */
+export const GUM_PENDING = 'GUM_PENDING';
+
+/**
  * The type of (redux) action to adjust the availability of the local audio.
  *
  * {
@@ -39,6 +50,16 @@ export const SET_AUDIO_UNMUTE_PERMISSIONS = 'SET_AUDIO_UNMUTE_PERMISSIONS';
  * }
  */
 export const SET_CAMERA_FACING_MODE = 'SET_CAMERA_FACING_MODE';
+
+/**
+ * The type of (redux) action to set the muted state of the local screenshare.
+ *
+ * {
+ *     type: SET_SCREENSHARE_MUTED,
+ *     muted: boolean
+ * }
+ */
+export const SET_SCREENSHARE_MUTED = 'SET_SCREENSHARE_MUTED';
 
 /**
  * The type of (redux) action to adjust the availability of the local video.

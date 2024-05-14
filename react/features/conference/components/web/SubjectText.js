@@ -1,94 +1,55 @@
-/* @flow */
-
-import React, { useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
-
-import { setSubject } from '../../../base/conference';
+import clsx from 'clsx';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
 import { getConferenceName } from '../../../base/conference/functions';
-import { Icon, IconEdit } from '../../../base/icons';
-import { getLocalParticipant, PARTICIPANT_ROLE } from '../../../base/participants';
-import { connect } from '../../../base/redux';
-import { Tooltip } from '../../../base/tooltip';
-import { showConfirmDialog } from '../../../notifications/functions.web';
+import { withPixelLineHeight } from '../../../base/styles/functions.web';
+import Tooltip from '../../../base/tooltip/components/Tooltip';
 
-type Props = {
+const useStyles = makeStyles()(theme => {
+    return {
+        container: {
+            ...withPixelLineHeight(theme.typography.bodyLongRegular),
+            color: theme.palette.text01,
+            padding: '2px 16px',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            maxWidth: '324px',
+            boxSizing: 'border-box',
+            height: '28px',
+            borderRadius: `${theme.shape.borderRadius}px 0 0 ${theme.shape.borderRadius}px`,
+            marginLeft: '2px',
 
-    /**
-     * Indicates whether the local participant is moderator or not.
-     */
-    _isModerator: Boolean,
-
-    /**
-     * The conference display name.
-     */
-    _subject: string
-}
+            '@media (max-width: 300px)': {
+                display: 'none'
+            }
+        },
+        content: {
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+        }
+    };
+});
 
 /**
  * Label for the conference name.
  *
- * @param {Props} props - The props of the component.
  * @returns {ReactElement}
  */
-const SubjectText = ({ _isModerator, _subject }: Props) => {
-    const dispatch = useDispatch();
-    const { t } = useTranslation();
-
-    const _onEditSubject = useCallback(() => {
-        showConfirmDialog({
-            text: t('dialog.changeSubject'),
-            input: 'text',
-            inputValue: _subject,
-            showCancelButton: true,
-            confirmButtonText: t('dialog.Change'),
-            cancelButtonText: t('dialog.Cancel'),
-            didOpen: () => {
-                $('.swal2-input').select();
-            }
-        }).then(result => {
-            if (result.isConfirmed) {
-                dispatch(setSubject(result.value));
-            }
-        });
-    });
+const SubjectText = () => {
+    const subject = useSelector(getConferenceName);
+    const { classes } = useStyles();
 
     return (
-        <div
-            className = {`subject-text${_isModerator ? ' editable' : ''}`}
-            onClick = { _isModerator ? _onEditSubject : undefined }>
-            <Tooltip
-                content = { _isModerator ? t('dialog.edit') : _subject }
-                position = 'bottom'>
-                <div className = 'subject-text--content'>{ _subject }</div>
-            </Tooltip>
-            { _isModerator && <div className = 'button'>
-                <Icon size = { 16 } src = { IconEdit } />
-            </div> }
-        </div>
+        <Tooltip
+            content = { subject }
+            position = 'bottom'>
+            <div className = { classes.container }>
+                <div className = { clsx('subject-text--content', classes.content) }>{subject}</div>
+            </div>
+        </Tooltip>
     );
-}
+};
 
-
-/**
- * Maps (parts of) the Redux state to the associated
- * {@code Subject}'s props.
- *
- * @param {Object} state - The Redux state.
- * @private
- * @returns {{
- *     _subject: string,
- * }}
- */
-function _mapStateToProps(state) {
-    const localParticipant = getLocalParticipant(state);
-    const _isModerator = localParticipant?.role === PARTICIPANT_ROLE.MODERATOR;
-
-    return {
-        _isModerator,
-        _subject: getConferenceName(state)
-    };
-}
-
-export default connect(_mapStateToProps)(SubjectText);
+export default SubjectText;

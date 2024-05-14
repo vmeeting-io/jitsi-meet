@@ -1,13 +1,10 @@
 // @flow
 
-import { getCurrentConference } from '../base/conference';
+import { getCurrentConference } from '../base/conference/functions';
 import { JitsiConferenceEvents } from '../base/lib-jitsi-meet';
-import { StateListenerRegistry } from '../base/redux';
-import {
-    NOTIFICATION_TIMEOUT_TYPE,
-    NOTIFICATION_TYPE,
-    showNotification
-} from '../notifications';
+import StateListenerRegistry from '../base/redux/StateListenerRegistry';
+import { showNotification } from '../notifications/actions';
+import { NOTIFICATION_TIMEOUT_TYPE, NOTIFICATION_TYPE } from '../notifications/constants';
 
 import { clearPolls, receiveAnswer, receivePoll } from './actions';
 import { COMMAND_NEW_POLL, COMMAND_ANSWER_POLL, COMMAND_OLD_POLLS } from './constants';

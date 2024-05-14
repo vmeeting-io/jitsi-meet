@@ -3,10 +3,10 @@
 import React from 'react';
 import { Alert, NativeModules, ScrollView, Text } from 'react-native';
 import { Divider, Switch, TextInput, withTheme } from 'react-native-paper';
+import { connect } from 'react-redux';
 
 import { translate } from '../../../base/i18n';
 import { JitsiModal } from '../../../base/modal';
-import { connect } from '../../../base/redux';
 import { SETTINGS_VIEW_ID } from '../../constants';
 import { normalizeUserInputURL, isServerURLChangeEnabled } from '../../functions';
 import {

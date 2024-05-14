@@ -48,7 +48,8 @@
         /**
          * The local video identifier.
          */
-        &#filmstripLocalVideo {
+        &#filmstripLocalVideo,
+        &#filmstripLocalScreenShare {
             align-self: flex-end;
             display: block;
             margin-bottom: 8px;
@@ -73,8 +74,7 @@
     }
 
     &.hide-videos {
-        .remote-videos,
-        .hide {
+        .remote-videos  {
             & > div {
                 opacity: 0;
                 pointer-events: none;

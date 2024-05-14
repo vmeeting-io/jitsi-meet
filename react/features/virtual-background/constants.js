@@ -7,16 +7,15 @@
  */
 export const VIRTUAL_BACKGROUND_TYPE = {
     IMAGE: 'image',
-    DESKTOP_SHARE: 'desktop-share',
     BLUR: 'blur',
     NONE: 'none'
 };
 
 
 export type Image = {
-    tooltip?: string,
     id: string,
-    src: string
+    src: string,
+    tooltip?: string,
 }
 
 // The limit of virtual background uploads is 24. When the number

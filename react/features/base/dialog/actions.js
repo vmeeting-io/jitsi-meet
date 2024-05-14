@@ -1,8 +1,9 @@
-// @flow
-
-import type { Dispatch } from 'redux';
-
-import { HIDE_DIALOG, OPEN_DIALOG } from './actionTypes';
+import {
+    HIDE_DIALOG,
+    HIDE_SHEET,
+    OPEN_DIALOG,
+    OPEN_SHEET
+} from './actionTypes';
 import { isDialogOpen } from './functions';
 
 /**
@@ -17,10 +18,23 @@ import { isDialogOpen } from './functions';
  *     component: (React.Component | undefined)
  * }}
  */
-export function hideDialog(component: ?Object) {
+export function hideDialog(component) {
     return {
         type: HIDE_DIALOG,
         component
+    };
+}
+
+/**
+ * Closes the active sheet.
+ *
+ * @returns {{
+ *     type: HIDE_SHEET,
+ * }}
+ */
+export function hideSheet() {
+    return {
+        type: HIDE_SHEET
     };
 }
 
@@ -30,18 +44,35 @@ export function hideDialog(component: ?Object) {
  * @param {Object} component - The component to display as dialog.
  * @param {Object} [componentProps] - The React {@code Component} props of the
  * specified {@code component}.
- * @param {boolean} rawDialog - True if the dialog is a raw dialog.
- * (Doesn't inherit behavior from other common frameworks).
  * @returns {{
  *     type: OPEN_DIALOG,
  *     component: React.Component,
  *     componentProps: (Object | undefined)
  * }}
  */
-export function openDialog(component: Object, componentProps: ?Object, rawDialog?: boolean) {
+export function openDialog(component, componentProps) {
     return {
-        rawDialog,
         type: OPEN_DIALOG,
+        component,
+        componentProps
+    };
+}
+
+/**
+ * Opens the requested sheet.
+ *
+ * @param {Object} component - The component to display as a sheet.
+ * @param {Object} [componentProps] - The React {@code Component} props of the
+ * specified {@code component}.
+ * @returns {{
+ *     type: OPEN_SHEET,
+ *     component: React.Component,
+ *     componentProps: (Object | undefined)
+ * }}
+ */
+export function openSheet(component, componentProps) {
+    return {
+        type: OPEN_SHEET,
         component,
         componentProps
     };
@@ -57,8 +88,8 @@ export function openDialog(component: Object, componentProps: ?Object, rawDialog
  * specified {@code component}.
  * @returns {Function}
  */
-export function toggleDialog(component: Object, componentProps: ?Object) {
-    return (dispatch: Dispatch<any>, getState: Function) => {
+export function toggleDialog(component, componentProps) {
+    return (dispatch, getState) => {
         if (isDialogOpen(getState, component)) {
             dispatch(hideDialog(component));
         } else {

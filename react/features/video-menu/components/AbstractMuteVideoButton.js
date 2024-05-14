@@ -1,46 +1,19 @@
 // @flow
 
-import {
-    createRemoteVideoMenuButtonEvent,
-    sendAnalytics
-} from '../../analytics';
-import { openDialog } from '../../base/dialog';
-import { IconVideoOff } from '../../base/icons';
-import { MEDIA_TYPE } from '../../base/media';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
-import { isRemoteTrackMuted } from '../../base/tracks';
+import { createRemoteVideoMenuButtonEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { openDialog } from '../../base/dialog/actions';
+import { IconVideoOff } from '../../base/icons/svg';
+import { MEDIA_TYPE } from '../../base/media/constants';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
+import { isRemoteTrackMuted } from '../../base/tracks/functions';
 
-import { MuteRemoteParticipantsVideoDialog } from '.';
-
-export type Props = AbstractButtonProps & {
-
-    /**
-     * Boolean to indicate if the video track of the participant is muted or
-     * not.
-     */
-    _videoTrackMuted: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function,
-
-    /**
-     * The ID of the participant object that this button is supposed to
-     * mute/unmute.
-     */
-    participantID: string,
-
-    /**
-     * The function to be used to translate i18n labels.
-     */
-    t: Function
-};
+import { MuteRemoteParticipantsVideoDialog } from './';
 
 /**
  * An abstract remote video menu button which mutes the remote participant.
  */
-export default class AbstractMuteVideoButton extends AbstractButton<Props, *> {
+export default class AbstractMuteVideoButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.remoteVideoMute';
     icon = IconVideoOff;
     label = 'videothumbnail.domuteVideo';

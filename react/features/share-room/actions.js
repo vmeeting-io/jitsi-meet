@@ -2,7 +2,11 @@
 
 import { getInviteURL } from '../base/connection';
 
-import { BEGIN_SHARE_ROOM, END_SHARE_ROOM } from './actionTypes';
+import {
+    BEGIN_SHARE_ROOM,
+    END_SHARE_ROOM,
+    TOGGLE_SHARE_DIALOG
+} from './actionTypes';
 
 /**
  * Begins the UI procedure to share the URL for the current conference/room.
@@ -17,7 +21,8 @@ export function beginShareRoom(roomURL: ?string): Function {
             // eslint-disable-next-line no-param-reassign
             roomURL = getInviteURL(getState);
         }
-        roomURL && dispatch({
+        
+        dispatch({
             type: BEGIN_SHARE_ROOM,
             roomURL
         });
@@ -42,5 +47,24 @@ export function endShareRoom(roomURL: string, shared: boolean): Object {
         type: END_SHARE_ROOM,
         roomURL,
         shared
+    };
+}
+
+
+/**
+ * UI procedure for sharing conference room URL inside a dialog.
+ *
+ * @param {boolean} visible - True if share dialog is visible; false,
+ * otherwise.
+ * @public
+ * @returns {{
+ *     type: TOGGLE_SHARE_DIALOG,
+ *     visible: boolean
+ * }}
+ */
+export function toggleShareDialog(visible: boolean) {
+    return {
+        type: TOGGLE_SHARE_DIALOG,
+        visible
     };
 }

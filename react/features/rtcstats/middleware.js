@@ -1,16 +1,17 @@
 // @flow
 
-import { jitsiLocalStorage } from '@jitsi/js-utils';
-
-import { getAmplitudeIdentity } from '../analytics';
-import { CONFERENCE_UNIQUE_ID_SET, getConferenceOptions, getRoomName } from '../base/conference';
-import { LIB_WILL_INIT } from '../base/lib-jitsi-meet';
-import { DOMINANT_SPEAKER_CHANGED, getLocalParticipant } from '../base/participants';
-import { MiddlewareRegistry } from '../base/redux';
-import { ADD_FACIAL_EXPRESSION } from '../facial-recognition/actionTypes';
+import {
+    CONFERENCE_JOINED,
+    CONFERENCE_TIMESTAMP_CHANGED,
+    E2E_RTT_CHANGED
+} from '../base/conference/actionTypes';
+import { DOMINANT_SPEAKER_CHANGED } from '../base/participants/actionTypes';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { TRACK_ADDED, TRACK_UPDATED } from '../base/tracks/actionTypes';
+import { sendGetCustomerIdRequest } from '../jaas/functions';
 
 import RTCStats from './RTCStats';
-import { canSendRtcstatsData, isRtcstatsEnabled } from './functions';
+import { isRTCStatsEnabled } from './functions';
 import logger from './logger';
 
 /**
@@ -21,98 +22,94 @@ import logger from './logger';
  * @returns {Function}
  */
 MiddlewareRegistry.register(store => next => action => {
-    const state = store.getState();
-    const config = state['features/base/config'];
-    const { analytics } = config;
-
+    const { getState } = store;
+    const state = getState();
 
     switch (action.type) {
-    case LIB_WILL_INIT: {
-        if (isRtcstatsEnabled(state)) {
-            // RTCStats "proxies" WebRTC functions such as GUM and RTCPeerConnection by rewriting the global
-            // window functions. Because lib-jitsi-meet uses references to those functions that are taken on
-            // init, we need to add these proxies before it initializes, otherwise lib-jitsi-meet will use the
-            // original non proxy versions of these functions.
-            try {
-                // Default poll interval is 1000ms and standard stats will be used, if not provided in the config.
-                const pollInterval = analytics.rtcstatsPollInterval || 1000;
-                const useLegacy = analytics.rtcstatsUseLegacy || false;
+    case CONFERENCE_JOINED: {
+        if (isRTCStatsEnabled(state)) {
+            RTCStats.init();
 
+            sendGetCustomerIdRequest(action?.conference, state)
+                .then(customerData => {
+                    const { customerId } = customerData ?? {};
 
-                // Initialize but don't connect to the rtcstats server wss, as it will start sending data for all
-                // media calls made even before the conference started.
-                RTCStats.init({
-                    endpoint: analytics.rtcstatsEndpoint,
-                    useLegacy,
-                    pollInterval
+                    customerId && RTCStats.sendIdentityData({ customerId });
+                })
+                .catch(error => {
+                    logger.error('Error while getting customer id:', error);
                 });
-            } catch (error) {
-                logger.error('Failed to initialize RTCStats: ', error);
+        }
+        break;
+    }
+    case TRACK_ADDED: {
+        if (isRTCStatsEnabled(state)) {
+            const jitsiTrack = action?.track?.jitsiTrack;
+            const { ssrc, videoType } = jitsiTrack || { };
+
+            // Remote tracks store their ssrc in the jitsiTrack object. Local tracks don't. See getSsrcByTrack.
+            if (videoType && ssrc && !jitsiTrack.isLocal() && !jitsiTrack.isAudioTrack()) {
+                RTCStats.sendVideoTypeData({
+                    ssrc,
+                    videoType
+                });
             }
         }
         break;
     }
-    case CONFERENCE_UNIQUE_ID_SET: {
-        if (canSendRtcstatsData(state)) {
+    case TRACK_UPDATED: {
+        if (isRTCStatsEnabled(state)) {
+            const { videoType, jitsiTrack, muted } = action?.track || { };
+            const { ssrc, isLocal, videoType: trackVideoType, conference } = jitsiTrack || { };
 
-            // Once the conference started connect to the rtcstats server and send data.
-            try {
-                RTCStats.connect();
+            // if (trackVideoType === 'camera' && conference && isLocal()) {
+            //     RTCStats.sendFaceLandmarksData({
+            //         duration: 0,
+            //         faceLandmarks: muted ? 'camera-off' : 'camera-on',
+            //         timestamp: Date.now()
+            //     });
+            // }
 
-                const localParticipant = getLocalParticipant(state);
-                const options = getConferenceOptions(state);
+            // if the videoType of the remote track has changed we expect to find it in track.videoType. grep for
+            // trackVideoTypeChanged.
+            if (videoType && ssrc && !jitsiTrack.isLocal() && !jitsiTrack.isAudioTrack()) {
 
-
-                // Unique identifier for a conference session, not to be confused with meeting name
-                // i.e. If all participants leave a meeting it will have a different value on the next join.
-                const { conference } = action;
-                const meetingUniqueId = conference && conference.getMeetingUniqueId();
-
-                // The current implementation of rtcstats-server is configured to send data to amplitude, thus
-                // we add identity specific information so we can correlate on the amplitude side. If amplitude is
-                // not configured an empty object will be sent.
-                // The current configuration of the conference is also sent as metadata to rtcstats server.
-                // This is done in order to facilitate queries based on different conference configurations.
-                // e.g. Find all RTCPeerConnections that connect to a specific shard or were created in a
-                // conference with a specific version.
-                // XXX(george): we also want to be able to correlate between rtcstats and callstats, so we're
-                // appending the callstats user name (if it exists) to the display name.
-                const displayName = options.statisticsId
-                    || options.statisticsDisplayName
-                    || jitsiLocalStorage.getItem('callStatsUserName');
-
-                RTCStats.sendIdentityData({
-                    ...getAmplitudeIdentity(),
-                    ...options,
-                    endpointId: localParticipant?.id,
-                    confName: getRoomName(state),
-                    displayName,
-                    meetingUniqueId
+                RTCStats.sendVideoTypeData({
+                    ssrc,
+                    videoType
                 });
-            } catch (error) {
-                // If the connection failed do not impact jitsi-meet just silently fail.
-                logger.error('RTCStats connect failed with: ', error);
             }
         }
         break;
     }
     case DOMINANT_SPEAKER_CHANGED: {
-        if (canSendRtcstatsData(state)) {
-            const { id, previousSpeakers } = action.participant;
+        if (isRTCStatsEnabled(state)) {
+            const { id, previousSpeakers, silence } = action.participant;
 
-            RTCStats.sendDominantSpeakerData({ dominantSpeakerEndpoint: id,
-                previousSpeakers });
+            RTCStats.sendDominantSpeakerData({
+                dominantSpeakerEndpoint: silence ? null : id,
+                previousSpeakers
+            });
         }
         break;
     }
-    case ADD_FACIAL_EXPRESSION: {
-        if (canSendRtcstatsData(state)) {
-            const { duration, facialExpression } = action;
+    case E2E_RTT_CHANGED: {
+        if (isRTCStatsEnabled(state)) {
+            const { participant, rtt } = action.e2eRtt;
 
-            RTCStats.sendFacialExpressionData({
-                duration,
-                facialExpression
+            RTCStats.sendE2ERTTData({
+                remoteEndpointId: participant.getId(),
+                rtt,
+                remoteRegion: participant.getProperty('region')
             });
+        }
+        break;
+    }
+    case CONFERENCE_TIMESTAMP_CHANGED: {
+        if (isRTCStatsEnabled(state)) {
+            const { conferenceTimestamp } = action;
+
+            RTCStats.sendConferenceTimestamp(conferenceTimestamp);
         }
         break;
     }

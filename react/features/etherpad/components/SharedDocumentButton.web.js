@@ -1,32 +1,20 @@
 // @flow
 
 import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
-import { createToolbarEvent, sendAnalytics } from '../../analytics';
-import { translate } from '../../base/i18n';
-import { IconEdit } from '../../base/icons';
-import { connect } from '../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { createToolbarEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { translate } from '../../base/i18n/functions';
+import { IconEdit } from '../../base/icons/svg';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
 import { toggleDocument } from '../../etherpad/actions';
 
-
-type Props = AbstractButtonProps & {
-
-    /**
-     * Whether the shared document is being edited or not.
-     */
-    _editing: boolean,
-
-    /**
-     * Redux dispatch function.
-     */
-    dispatch: Dispatch<any>,
-};
 
 /**
  * Implements an {@link AbstractButton} to open the chat screen on mobile.
  */
-class SharedDocumentButton extends AbstractButton<Props, *> {
+class SharedDocumentButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.toggleWhiteboard';
     icon = IconEdit;
     label = 'toolbar.whiteboardOpen';

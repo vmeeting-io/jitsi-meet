@@ -1,48 +1,28 @@
-// @flow
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { IconParticipants } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import { translate } from '../../../base/i18n/functions';
+import { IconUsers } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import {
+    close as closeParticipantsPane,
+    open as openParticipantsPane
+} from '../../../participants-pane/actions.web';
+import { isParticipantsPaneEnabled } from '../../functions';
 
 import ParticipantsCounter from './ParticipantsCounter';
 
-/**
- * The type of the React {@code Component} props of {@link ParticipantsPaneButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * Whether or not the participants pane is open.
-     */
-    _isOpen: boolean,
-};
 
 /**
  * Implementation of a button for accessing participants pane.
  */
-class ParticipantsPaneButton extends AbstractButton<Props, *> {
+class ParticipantsPaneButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.participants';
-    icon = IconParticipants;
+    toggledAccessibilityLabel = 'toolbar.accessibilityLabel.closeParticipantsPane';
+    icon = IconUsers;
     label = 'toolbar.participants';
     tooltip = 'toolbar.participants';
-
-    /**
-     * Handles clicking / pressing the button, and opens the appropriate dialog.
-     *
-     * @protected
-     * @returns {void}
-     */
-    _handleClick() {
-        const { handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
-    }
+    toggledTooltip = 'toolbar.closeParticipantsPane';
 
     /**
      * Indicates whether this button is in toggled state or not.
@@ -56,6 +36,22 @@ class ParticipantsPaneButton extends AbstractButton<Props, *> {
     }
 
     /**
+    * Handles clicking the button, and toggles the participants pane.
+    *
+    * @private
+    * @returns {void}
+    */
+    _handleClick() {
+        const { dispatch, _isOpen } = this.props;
+
+        if (_isOpen) {
+            dispatch(closeParticipantsPane());
+        } else {
+            dispatch(openParticipantsPane());
+        }
+    }
+
+    /**
      * Overrides AbstractButton's {@link Component#render()}.
      *
      * @override
@@ -63,10 +59,16 @@ class ParticipantsPaneButton extends AbstractButton<Props, *> {
      * @returns {React$Node}
      */
     render() {
+        const { _isParticipantsPaneEnabled } = this.props;
+
+        if (!_isParticipantsPaneEnabled) {
+            return null;
+        }
+
         return (
             <div
                 className = 'toolbar-button-with-badge'>
-                {super.render()}
+                { super.render() }
                 <ParticipantsCounter />
             </div>
         );
@@ -77,13 +79,14 @@ class ParticipantsPaneButton extends AbstractButton<Props, *> {
  * Maps part of the Redux state to the props of this component.
  *
  * @param {Object} state - The Redux state.
- * @returns {Props}
+ * @returns {IProps}
  */
 function mapStateToProps(state) {
     const { isOpen } = state['features/participants-pane'];
 
     return {
-        _isOpen: isOpen
+        _isOpen: isOpen,
+        _isParticipantsPaneEnabled: isParticipantsPaneEnabled(state)
     };
 }
 

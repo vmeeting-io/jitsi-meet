@@ -1,15 +1,6 @@
 // @flow
 
-import {
-    PARTICIPANTS_PANE_CLOSE,
-    PARTICIPANTS_PANE_OPEN
-} from './actionTypes';
-
-
-import {
-    getLocalParticipant,
-    getRemoteParticipants
-} from '../base/participants';
+import { PARTICIPANTS_PANE_CLOSE } from './actionTypes';
 
 import {
     COMMAND_CLEAR_RAISED_HANDS,
@@ -24,17 +15,6 @@ import {
 export const close = () => {
     return {
         type: PARTICIPANTS_PANE_CLOSE
-    };
-};
-
-/**
- * Action to open the participants pane.
- *
- * @returns {Object}
- */
-export const open = () => {
-    return {
-        type: PARTICIPANTS_PANE_OPEN
     };
 };
 

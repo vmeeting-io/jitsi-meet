@@ -1,10 +1,10 @@
 // @flow
 
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { Dialog } from '../../../base/dialog';
-import { translate } from '../../../base/i18n';
-import { connect } from '../../../base/redux';
+import { translate } from '../../../base/i18n/functions';
+import Dialog from '../../../base/ui/components/web/Dialog';
 import AbstractEnableChatForAllParticipantsDialog
     from '../AbstractEnableChatForAllParticipantsDialog';
 

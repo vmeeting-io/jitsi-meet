@@ -1,25 +1,11 @@
-// @flow
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import React from 'react';
+import { translate } from '../../base/i18n/functions';
+import Label from '../../base/label/components/native/Label';
+import { combineStyles } from '../../base/styles/functions.native';
 
-import { translate } from '../../base/i18n';
-import { Label } from '../../base/label';
-import { connect } from '../../base/redux';
-import { combineStyles, type StyleType } from '../../base/styles';
-
-import AbstractVideoQualityLabel, {
-    _abstractMapStateToProps,
-    type Props as AbstractProps
-} from './AbstractVideoQualityLabel';
 import styles from './styles';
-
-type Props = AbstractProps & {
-
-    /**
-     * Style of the component passed as props.
-     */
-    style: ?StyleType
-};
 
 /**
  * React {@code Component} responsible for displaying a label that indicates
@@ -30,7 +16,7 @@ type Props = AbstractProps & {
  * is kept consistent with web and in the future we may introduce the required
  * api and extend this component with actual quality indication.
  */
-class VideoQualityLabel extends AbstractVideoQualityLabel<Props> {
+class VideoQualityLabel extends Component {
 
     /**
      * Implements React {@link Component}'s render.
@@ -46,11 +32,29 @@ class VideoQualityLabel extends AbstractVideoQualityLabel<Props> {
         }
 
         return (
-            <Label
+            <Label // @ts-ignore
                 style = { combineStyles(styles.indicatorAudioOnly, style) }
                 text = { t('videoStatus.audioOnly') } />
         );
     }
 }
 
-export default translate(connect(_abstractMapStateToProps)(VideoQualityLabel));
+/**
+ * Maps (parts of) the Redux state to the associated
+ * {@code AbstractVideoQualityLabel}'s props.
+ *
+ * @param {Object} state - The Redux state.
+ * @private
+ * @returns {{
+ *     _audioOnly: boolean
+ * }}
+ */
+function _mapStateToProps(state) {
+    const { enabled: audioOnly } = state['features/base/audio-only'];
+
+    return {
+        _audioOnly: audioOnly
+    };
+}
+
+export default translate(connect(_mapStateToProps)(VideoQualityLabel));

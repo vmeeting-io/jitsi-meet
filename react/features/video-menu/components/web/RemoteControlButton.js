@@ -1,14 +1,11 @@
-/* @flow */
-
 import React, { Component } from 'react';
 
-import {
-    createRemoteVideoMenuButtonEvent,
-    sendAnalytics
-} from '../../../analytics';
-import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { translate } from '../../../base/i18n';
-import { IconRemoteControlStart, IconRemoteControlStop } from '../../../base/icons';
+import { createRemoteVideoMenuButtonEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconRemoteControlStart, IconRemoteControlStop } from '../../../base/icons/svg';
+import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 
 // TODO: Move these enums into the store after further reactification of the
 // non-react RemoteVideo component.
@@ -20,47 +17,20 @@ export const REMOTE_CONTROL_MENU_STATES = {
 };
 
 /**
- * The type of the React {@code Component} props of {@link RemoteControlButton}.
- */
-type Props = {
-
-    /**
-     * The callback to invoke when the component is clicked.
-     */
-    onClick: Function,
-
-    /**
-     * The ID of the participant linked to the onClick callback.
-     */
-    participantID: string,
-
-    /**
-     * The current status of remote control. Should be a number listed in the
-     * enum REMOTE_CONTROL_MENU_STATES.
-     */
-    remoteControlState: number,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
-
-/**
  * Implements a React {@link Component} which displays a button showing the
  * current state of remote control for a participant and can start or stop a
  * remote control session.
  *
  * @augments Component
  */
-class RemoteControlButton extends Component<Props> {
+class RemoteControlButton extends Component {
     /**
      * Initializes a new {@code RemoteControlButton} instance.
      *
      * @param {Object} props - The read-only React Component props with which
      * the new instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         // Bind event handlers so they are only bound once for every instance.
@@ -74,10 +44,7 @@ class RemoteControlButton extends Component<Props> {
      * @returns {null|ReactElement}
      */
     render() {
-        const {
-            remoteControlState,
-            t
-        } = this.props;
+        const { remoteControlState, t } = this.props;
 
         let disabled = false, icon;
 
@@ -110,8 +77,6 @@ class RemoteControlButton extends Component<Props> {
         );
     }
 
-    _onClick: () => void;
-
     /**
      * Sends analytics event for pressing the button and executes the passed
      * onClick handler.
@@ -120,7 +85,12 @@ class RemoteControlButton extends Component<Props> {
      * @returns {void}
      */
     _onClick() {
-        const { onClick, participantID, remoteControlState } = this.props;
+        const { notifyClick, notifyMode, onClick, participantID, remoteControlState } = this.props;
+
+        notifyClick?.();
+        if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
+            return;
+        }
 
         // TODO: What do we do in case the state is e.g. "requesting"?
         if (remoteControlState === REMOTE_CONTROL_MENU_STATES.STARTED
@@ -136,10 +106,8 @@ class RemoteControlButton extends Component<Props> {
                     'participant_id': participantID
                 }));
         }
+        onClick?.();
 
-        if (onClick) {
-            onClick();
-        }
     }
 }
 

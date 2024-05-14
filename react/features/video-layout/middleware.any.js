@@ -1,24 +1,20 @@
 // @flow
 
-import { getCurrentConference } from '../base/conference';
-import {
-    PARTICIPANT_LEFT,
-    PIN_PARTICIPANT,
-    pinParticipant,
-    getParticipantById,
-    getPinnedParticipant
-} from '../base/participants';
-import { MiddlewareRegistry, StateListenerRegistry } from '../base/redux';
-import { SET_WHITEBOARD_STATUS } from '../whiteboard';
-import { isFollowMeActive } from '../follow-me';
+import { getCurrentConference } from '../base/conference/functions';
+import { PARTICIPANT_LEFT, PIN_PARTICIPANT } from '../base/participants/actionTypes';
+import { pinParticipant } from '../base/participants/actions';
+import { getParticipantById, getPinnedParticipant } from '../base/participants/functions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import StateListenerRegistry from '../base/redux/StateListenerRegistry';
+import { SET_WHITEBOARD_STATUS } from '../whiteboard/actionTypes';
+import { isStageFilmstripEnabled } from '../filmstrip/functions';
+import { isFollowMeActive } from '../follow-me/functions';
 
 import { SET_TILE_VIEW } from './actionTypes';
 import { setTileView } from './actions';
 import { getAutoPinSetting, updateAutoPinnedParticipant } from './functions';
 
 import './subscriber';
-import { isVideoPlaying } from '../shared-video/functions';
-
 
 let previousTileViewEnabled;
 
@@ -38,7 +34,7 @@ MiddlewareRegistry.register(store => next => action => {
         if (!getAutoPinSetting() || isFollowMeActive(store)) {
             break;
         }
-        shouldUpdateAutoPin = getParticipantById(store.getState(), action.participant.id)?.isFakeParticipant;
+        shouldUpdateAutoPin = Boolean(getParticipantById(store.getState(), action.participant.id)?.fakeParticipant);
         break;
     }
     }
@@ -50,7 +46,7 @@ MiddlewareRegistry.register(store => next => action => {
     // Actions that temporarily clear the user preferred state of tile view,
     // then re-set it when needed.
     case PIN_PARTICIPANT: {
-        const pinnedParticipant = getPinnedParticipant(store.getState());
+        const pinnedParticipant = action.participant?.id;
 
         if (pinnedParticipant) {
             _storeTileViewStateAndClear(store);
@@ -68,10 +64,15 @@ MiddlewareRegistry.register(store => next => action => {
         break;
 
     // Things to update when tile view state changes
-    case SET_TILE_VIEW:
-        if (action.enabled && getPinnedParticipant(store) && !isVideoPlaying(store)) {
+    case SET_TILE_VIEW: {
+        const state = store.getState();
+        const stageFilmstrip = isStageFilmstripEnabled(state);
+
+        if (action.enabled && !stageFilmstrip && getPinnedParticipant(state)) {
             store.dispatch(pinParticipant(null));
         }
+        break;
+    }
     }
 
     if (shouldUpdateAutoPin) {

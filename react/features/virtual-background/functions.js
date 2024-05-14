@@ -2,7 +2,7 @@
 
 import { getAuthUrl } from '../../api/url';
 import { JitsiTrackEvents } from '../base/lib-jitsi-meet';
-import { updateSettings } from '../base/settings';
+import { updateSettings } from '../base/settings/actions';
 
 import { toggleBackgroundEffect } from './actions';
 let filterSupport;
@@ -19,7 +19,7 @@ export function checkBlurSupport() {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
-        filterSupport = typeof ctx.filter !== 'undefined';
+        filterSupport = typeof ctx?.filter !== 'undefined';
 
         canvas.remove();
     }
@@ -28,16 +28,26 @@ export function checkBlurSupport() {
 }
 
 /**
+ * Checks if virtual background is enabled.
+ *
+ * @param {IReduxState} state - The state of the app.
+ * @returns {boolean} True if virtual background is enabled and false if virtual background is disabled.
+ */
+export function checkVirtualBackgroundEnabled(state) {
+    return state['features/base/config'].disableVirtualBackground !== true;
+}
+
+/**
  * Convert blob to base64.
  *
  * @param {Blob} blob - The link to add info with.
  * @returns {Promise<string>}
  */
-export const blobToData = (blob: Blob): Promise<string> =>
+export const blobToData = (blob: Blob) =>
     new Promise(resolve => {
         const reader = new FileReader();
 
-        reader.onloadend = () => resolve(reader.result.toString());
+        reader.onloadend = () => resolve(reader.result?.toString());
         reader.readAsDataURL(blob);
     });
 
@@ -62,9 +72,8 @@ export const toDataURL = async (url: string) => {
  * @param {number} width - Value for resizing the image width.
  * @param {number} height - Value for resizing the image height.
  * @returns {Promise<string>}
- *
  */
-export function resizeImage(base64image: any, width: number = 1920, height: number = 1080, contentType: string = 'image/jpeg'): Promise<string> {
+export function resizeImage(base64image: any, width = 1920, height = 1080): Promise<string> {
 
     // In order to work on Firefox browser we need to handle the asynchronous nature of image loading;  We need to use
     // a promise mechanism. The reason why it 'works' without this mechanism in Chrome is actually 'by accident' because

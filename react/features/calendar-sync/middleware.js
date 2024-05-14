@@ -1,8 +1,7 @@
-// @flow
-
-import { SET_CONFIG } from '../base/config';
-import { ADD_KNOWN_DOMAINS } from '../base/known-domains';
-import { equals, MiddlewareRegistry } from '../base/redux';
+import { SET_CONFIG } from '../base/config/actionTypes';
+import { ADD_KNOWN_DOMAINS } from '../base/known-domains/actionTypes';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { equals } from '../base/redux/functions';
 import { APP_STATE_CHANGED } from '../mobile/background/actionTypes';
 
 import { REFRESH_CALENDAR } from './actionTypes';

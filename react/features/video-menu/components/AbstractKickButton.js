@@ -1,33 +1,15 @@
 // @flow
 
-import { openDialog } from '../../base/dialog';
-import { IconCloseCircle } from '../../base/icons';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { openDialog } from '../../base/dialog/actions';
+import { IconCloseCircle } from '../../base/icons/svg';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
 
-import { KickRemoteParticipantDialog } from '../components';
-
-export type Props = AbstractButtonProps & {
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function,
-
-    /**
-     * The ID of the participant that this button is supposed to kick.
-     */
-    participantID: string,
-
-    /**
-     * The function to be used to translate i18n labels.
-     */
-    t: Function
-};
+import { KickRemoteParticipantDialog } from './';
 
 /**
  * An abstract remote video menu button which kicks the remote participant.
  */
-export default class AbstractKickButton extends AbstractButton<Props, *> {
+export default class AbstractKickButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.kick';
     icon = IconCloseCircle;
     label = 'videothumbnail.kick';

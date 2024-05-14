@@ -1,15 +1,22 @@
-/* @flow */
-import React, { Component } from 'react';
+import React, { Component, ReactNode } from 'react';
+import { FocusOn } from 'react-focus-on';
+import { connect } from 'react-redux';
 
-import { Drawer, JitsiPortal, DialogPortal } from '../../../toolbox/components/web';
-import { isMobileBrowser } from '../../environment/utils';
-import { connect } from '../../redux';
+import DialogPortal from '../../../toolbox/components/web/DialogPortal';
+import Drawer from '../../../toolbox/components/web/Drawer';
+import JitsiPortal from '../../../toolbox/components/web/JitsiPortal';
+import { isElementInTheViewport } from '../../ui/functions.web';
 import { getContextMenuStyle } from '../functions.web';
 
 /**
  * The type of the React {@code Component} props of {@link Popover}.
  */
 type Props = {
+
+    /**
+     * Whether the child element can be clicked on.
+     */
+    allowClick?: boolean,
 
     /**
      * A child React Element to use as the trigger for showing the dialog.
@@ -30,7 +37,29 @@ type Props = {
     /**
      * Whether displaying of the popover should be prevented.
      */
-    disablePopover: boolean,
+    disablePopover?: boolean,
+
+    /**
+     * Whether we can reach the popover element via keyboard or not when trigger is 'hover' (true by default).
+     *
+     * Only works when trigger is set to 'hover'.
+     *
+     * There are some rare cases where we want to set this to false,
+     * when the popover content is not necessary for screen reader users, because accessible elsewhere.
+     */
+    focusable?: boolean,
+
+    /**
+     * The id of the dom element acting as the Popover label (matches aria-labelledby).
+     */
+    headingId?: string,
+
+    /**
+     * String acting as the Popover label (matches aria-label).
+     *
+     * If headingId is set, this will not be used.
+     */
+    headingLabel?: string,
 
     /**
      * An id attribute to apply to the root of the {@code Popover}
@@ -54,15 +83,19 @@ type Props = {
     overflowDrawer: boolean,
 
     /**
-     * From which side of the dialog trigger the dialog should display. The
-     * value will be passed to {@code InlineDialog}.
+     * Where should the popover content be placed.
      */
     position: string,
 
     /**
+     * Whether the trigger for open/ close should be click or hover.
+     */
+    trigger?: 'hover' | 'click',
+
+    /**
      * Whether the popover is visible or not.
      */
-    visible: boolean
+    visible: boolean,
 };
 
 /**
@@ -73,7 +106,15 @@ type State = {
     /**
      * The style to apply to the context menu in order to position it correctly.
      */
-    contextMenuStyle: Object
+    contextMenuStyle: Object,
+
+    /**
+     * Whether the popover should be focus locked or not.
+     *
+     * This is enabled if we notice the popover is interactive
+     * (trigger is click or focusable is true).
+     */
+    enableFocusLock: boolean,
 };
 
 /**
@@ -90,7 +131,9 @@ class Popover extends Component<Props, State> {
      */
     static defaultProps = {
         className: '',
-        id: ''
+        focusable: true,
+        id: '',
+        trigger: 'hover'
     };
 
     /**
@@ -110,20 +153,23 @@ class Popover extends Component<Props, State> {
         super(props);
 
         this.state = {
-            contextMenuStyle: null
+            contextMenuStyle: null,
+            enableFocusLock: false
         };
 
         // Bind event handlers so they are only bound once for every instance.
+        this._enableFocusLock = this._enableFocusLock.bind(this);
         this._onHideDialog = this._onHideDialog.bind(this);
         this._onShowDialog = this._onShowDialog.bind(this);
         this._onKeyPress = this._onKeyPress.bind(this);
         this._containerRef = React.createRef();
         this._onEscKey = this._onEscKey.bind(this);
-        this._onThumbClick = this._onThumbClick.bind(this);
+        this._onClick = this._onClick.bind(this);
         this._onTouchStart = this._onTouchStart.bind(this);
         this._setContextMenuRef = this._setContextMenuRef.bind(this);
         this._setContextMenuStyle = this._setContextMenuStyle.bind(this);
         this._getCustomDialogStyle = this._getCustomDialogStyle.bind(this);
+        this._onOutsideClick = this._onOutsideClick.bind(this);
     }
 
     /**
@@ -134,6 +180,10 @@ class Popover extends Component<Props, State> {
      */
     componentDidMount() {
         window.addEventListener('touchstart', this._onTouchStart);
+        if (this.props.trigger === 'click') {
+            // @ts-ignore
+            window.addEventListener('click', this._onOutsideClick);
+        }
     }
 
     /**
@@ -144,6 +194,22 @@ class Popover extends Component<Props, State> {
      */
     componentWillUnmount() {
         window.removeEventListener('touchstart', this._onTouchStart);
+        if (this.props.trigger === 'click') {
+            // @ts-ignore
+            window.removeEventListener('click', this._onOutsideClick);
+        }
+    }
+
+    /**
+     * Handles click outside the popover.
+     *
+     * @param {MouseEvent} e - The click event.
+     * @returns {void}
+     */
+    _onOutsideClick(e: React.MouseEvent) {
+        if (!this._containerRef?.current?.contains(e.target) && this.props.visible) {
+            this._onHideDialog();
+        }
     }
 
     /**
@@ -153,7 +219,16 @@ class Popover extends Component<Props, State> {
      * @returns {ReactElement}
      */
     render() {
-        const { children, className, content, id, overflowDrawer, visible } = this.props;
+        const { children,
+            className,
+            content,
+            focusable,
+            headingId,
+            id,
+            overflowDrawer,
+            visible,
+            trigger
+        } = this.props;
 
         if (overflowDrawer) {
             return (
@@ -164,6 +239,7 @@ class Popover extends Component<Props, State> {
                     { children }
                     <JitsiPortal>
                         <Drawer
+                            headingId = { headingId }
                             isOpen = { visible }
                             onClose = { this._onHideDialog }>
                             { content }
@@ -177,25 +253,50 @@ class Popover extends Component<Props, State> {
             <div
                 className = { className }
                 id = { id }
-                onClick = { this._onThumbClick }
+                onClick = { this._onClick }
                 onKeyPress = { this._onKeyPress }
-                onMouseEnter = { this._onShowDialog }
-                onMouseLeave = { this._onHideDialog }
+                { ...(trigger === 'hover' ? {
+                    onMouseEnter: this._onShowDialog,
+                    onMouseLeave: this._onHideDialog
+                } : {}) }
+                { ...(trigger === 'hover' && focusable && {
+                    role: 'button',
+                    tabIndex: 0
+                }) }
                 ref = { this._containerRef }>
                 { visible && (
                     <DialogPortal
                         getRef = { this._setContextMenuRef }
+                        onVisible = { this._isInteractive() ? this._enableFocusLock : undefined }
                         setSize = { this._setContextMenuStyle }
-                        style = { this.state.contextMenuStyle }>
-                        {this._renderContent()}
+                        style = { this.state.contextMenuStyle }
+                        targetSelector = '.popover-content'>
+                        <FocusOn
+
+                            // Use the `enabled` prop instead of conditionally rendering ReactFocusOn
+                            // to prevent UI stutter on dialog appearance. It seems the focus guards generated annoy
+                            // our DialogPortal positioning calculations.
+                            enabled = { Boolean(this._contextMenuRef) && this.state.enableFocusLock }
+                            returnFocus = {
+
+                                // If we return the focus to an element outside the viewport the page will scroll to
+                                // this element which in our case is undesirable and the element is outside of the
+                                // viewport on purpose (to be hidden). For example if we return the focus to the
+                                // toolbox when it is hidden the whole page will move up in order to show the
+                                // toolbox. This is usually followed up with displaying the toolbox (because now it
+                                // is on focus) but because of the animation the whole scenario looks like jumping
+                                // large video.
+                                isElementInTheViewport
+                            }
+                            shards = { this._contextMenuRef && [ this._contextMenuRef ] }>
+                            {this._renderContent()}
+                        </FocusOn>
                     </DialogPortal>
                 )}
                 { children }
             </div>
         );
     }
-
-    _setContextMenuStyle: (size: Object) => void;
 
     /**
      * Sets the context menu dialog style for positioning it on screen.
@@ -210,8 +311,6 @@ class Popover extends Component<Props, State> {
         this.setState({ contextMenuStyle: style });
     }
 
-    _setContextMenuRef: (elem: HTMLElement) => void;
-
     /**
      * Sets the context menu's ref.
      *
@@ -219,11 +318,11 @@ class Popover extends Component<Props, State> {
      *
      * @returns {void}
      */
-    _setContextMenuRef(elem) {
-        this._contextMenuRef = elem;
+    _setContextMenuRef(elem: HTMLElement) {
+        if (!elem || document.body.contains(elem)) {
+            this._contextMenuRef = elem;
+        }
     }
-
-    _onTouchStart: (event: TouchEvent) => void;
 
     /**
      * Hide dialog on touch outside of the context menu.
@@ -237,15 +336,14 @@ class Popover extends Component<Props, State> {
             && !this.props.overflowDrawer
             && this._contextMenuRef
             && this._contextMenuRef.contains
-            && !this._contextMenuRef.contains(event.target)) {
+            && !this._contextMenuRef.contains(event.target)
+            && !this._containerRef?.current?.contains(event.target)) {
             this._onHideDialog();
         }
     }
 
-    _onHideDialog: () => void;
-
     /**
-     * Stops displaying the {@code InlineDialog}.
+     * Stops displaying the {@code Popover}.
      *
      * @private
      * @returns {void}
@@ -260,10 +358,8 @@ class Popover extends Component<Props, State> {
         }
     }
 
-    _onShowDialog: (Object) => void;
-
     /**
-     * Displays the {@code InlineDialog} and calls any registered onPopoverOpen
+     * Displays the {@code Popover} and calls any registered onPopoverOpen
      * callbacks.
      *
      * @param {Object} event - The mouse event or the keypress event to intercept.
@@ -271,14 +367,12 @@ class Popover extends Component<Props, State> {
      * @returns {void}
      */
     _onShowDialog(event) {
-        event && event.stopPropagation();
+        event?.stopPropagation();
 
         if (!this.props.disablePopover) {
-            this.props.onPopoverOpen();
+            this.props.onPopoverOpen?.();
         }
     }
-
-    _onThumbClick: (Object) => void;
 
     /**
      * Prevents switching from tile view to stage view on accidentally clicking
@@ -288,11 +382,20 @@ class Popover extends Component<Props, State> {
      * @private
      * @returns {void}
      */
-    _onThumbClick(event) {
-        event.stopPropagation();
-    }
+    _onClick(event: React.MouseEvent) {
+        const { allowClick, trigger, focusable, visible } = this.props;
 
-    _onKeyPress: (Object) => void;
+        if (!allowClick) {
+            event.stopPropagation();
+        }
+        if (trigger === 'click' || focusable) {
+            if (visible) {
+                this._onHideDialog();
+            } else {
+                this._onShowDialog();
+            }
+        }
+    }
 
     /**
      * KeyPress handler for accessibility.
@@ -301,8 +404,10 @@ class Popover extends Component<Props, State> {
      *
      * @returns {void}
      */
-    _onKeyPress(e) {
-        if (e.key === ' ' || e.key === 'Enter') {
+    _onKeyPress(e: React.KeyboardEvent) {
+        // first check that the element we pressed is the actual popover toggle or any of its descendant,
+        // otherwise pressing space or enter in any child element of the popover _dialog_ will trigger this.
+        if (e.currentTarget.contains(e.target) && (e.key === ' ' || e.key === 'Enter')) {
             e.preventDefault();
             if (this.props.visible) {
                 this._onHideDialog();
@@ -311,8 +416,6 @@ class Popover extends Component<Props, State> {
             }
         }
     }
-
-    _onEscKey: (Object) => void;
 
     /**
      * KeyPress handler for accessibility.
@@ -331,8 +434,6 @@ class Popover extends Component<Props, State> {
         }
     }
 
-    _getCustomDialogStyle: (DOMRectReadOnly) => void;
-
     /**
      * Gets style for positioning the context menu on screen in regards to the trigger's
      * position.
@@ -342,7 +443,7 @@ class Popover extends Component<Props, State> {
      * @returns {Object} - The new style of the context menu.
      */
     _getCustomDialogStyle(size) {
-        if (this._containerRef && this._containerRef.current) {
+        if (this._containerRef?.current) {
             const bounds = this._containerRef.current.getBoundingClientRect();
 
             return getContextMenuStyle(bounds, size, this.props.position);
@@ -350,7 +451,7 @@ class Popover extends Component<Props, State> {
     }
 
     /**
-     * Renders the React Element to be displayed in the {@code InlineDialog}.
+     * Renders the React Element to be displayed in the {@code Popover}.
      * Also adds padding to support moving the mouse from the trigger to the
      * dialog to prevent mouseleave events.
      *
@@ -358,22 +459,48 @@ class Popover extends Component<Props, State> {
      * @returns {ReactElement}
      */
     _renderContent() {
-        const { content } = this.props;
+        const { content, position, trigger, headingId, headingLabel } = this.props;
 
         return (
-            <div
-                className = 'popover'
-                onKeyDown = { this._onEscKey }>
-                { content }
-                {!isMobileBrowser() && (
-                    <>
-                        <div className = 'popover-mousemove-padding-top' />
-                        <div className = 'popover-mousemove-padding-right' />
-                        <div className = 'popover-mousemove-padding-left' />
-                        <div className = 'popover-mousemove-padding-bottom' />
-                    </>)}
+            <div className = { `popover ${trigger}` }>
+                <div
+                    className = { `popover-content ${position.split('-')[0]}` }
+                    data-autofocus = { this.state.enableFocusLock }
+                    onKeyDown = { this._onEscKey }
+                    { ...(this.state.enableFocusLock && {
+                        'aria-modal': true,
+                        'aria-label': !headingId && headingLabel ? headingLabel : undefined,
+                        'aria-labelledby': headingId,
+                        role: 'dialog',
+                        tabIndex: -1
+                    }) }>
+                    { content }
+                </div>
             </div>
         );
+    }
+
+    /**
+     * Returns whether the popover is considered interactive or not.
+     *
+     * Interactive means the popover content is certainly composed of buttons, links…
+     * Non-interactive popovers are mostly tooltips.
+     *
+     * @private
+     * @returns {boolean}
+     */
+    _isInteractive() {
+        return this.props.trigger === 'click' || Boolean(this.props.focusable);
+    }
+
+    /**
+     * Enables the focus lock in the popover dialog.
+     *
+     * @private
+     * @returns {void}
+     */
+    _enableFocusLock() {
+        this.setState({ enableFocusLock: true });
     }
 }
 

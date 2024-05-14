@@ -1,32 +1,28 @@
 /* global APP, interfaceConfig, process */
-
-import Badge from '@atlaskit/badge';
-import Banner from '@atlaskit/banner';
-import Button, { ButtonGroup } from '@atlaskit/button';
-import DropdownMenu, { DropdownItem, DropdownItemGroup } from '@atlaskit/dropdown-menu';
-import { jitsiLocalStorage } from '@jitsi/js-utils';
-import axios from 'axios';
 import React from 'react';
 
+import { DownOutlined } from '@ant-design/icons';
+import { jitsiLocalStorage } from '@jitsi/js-utils';
+import { Alert, Badge, Button, Dropdown, Menu, Space } from 'antd';
+import axios from 'axios';
+import { connect } from 'react-redux';
+
 import tokenLocalStorage from '../../../api/tokenLocalStorage';
-import { getAvatarColor, getInitials } from '../../base/avatar';
-import { translate, translateToHTML } from '../../base/i18n';
-import { Icon, IconWarning } from '../../base/icons';
-import { setJWT } from '../../base/jwt';
-import { Watermarks } from '../../base/react';
-import { connect } from '../../base/redux';
-import { openDialog } from '../../base/dialog';
-import { CalendarList } from '../../calendar-sync';
-import { NOTIFICATION_TYPE, showSweetAlert } from '../../notifications';
-import { NotificationsContainer } from '../../notifications/components';
-import { RecentList } from '../../recent-list';
-import { SETTINGS_TABS } from '../../settings';
+import { getAvatarColor, getInitials } from '../../base/avatar/functions';
+import { translate, translateToHTML } from '../../base/i18n/functions';
+import Icon from '../../base/icons/components/Icon';
+import { IconWarning } from '../../base/icons/svg';
+import { setJWT } from '../../base/jwt/actions';
+import Watermarks from '../../base/react/components/web/Watermarks';
+import CalendarList from '../../calendar-sync/components/CalendarList.web';
+import { showSweetAlert } from '../../notifications/functions.web';
+import { NOTIFICATION_TYPE } from '../../notifications/constants';
+import NotificationsContainer from '../../notifications/components/web/NotificationsContainer';
+import RecentList from '../../recent-list/components/RecentList.web';
+import { SETTINGS_TABS } from '../../settings/constants';
 import { openSettingsDialog } from '../../settings/actions';
-import { checkBlurSupport, VirtualBackgroundDialog } from '../../virtual-background';
-import { VirtualAvatarDialog } from '../../virtual-avatar';
 
 import { AbstractWelcomePage, _mapStateToProps } from './AbstractWelcomePage';
-import NoticeDialog from './NoticeDialog';
 import Tabs from './Tabs';
 //import alarmImg from '../../../../resources/img/appstore-badge.png';
 
@@ -43,7 +39,17 @@ const AUTH_PAGE_BASE = window._env_.VMEETING_FRONT_BASE;
 const AUTH_API_BASE = window._env_.VMEETING_API_BASE;
 const DEFAULT_TENANT = window._env_.DEFAULT_SITE_ID;
 
-
+const urls = {
+    account: `${AUTH_PAGE_BASE}/account`,
+    admin: `${AUTH_PAGE_BASE}/admin/rooms`,
+    features: `${AUTH_PAGE_BASE}/features`,
+    login: `${AUTH_PAGE_BASE}/login`,
+    logout: `${AUTH_PAGE_BASE}/logout`,
+    meetingmanage: `${AUTH_PAGE_BASE}/meetingmanage`,
+    sitemanage: `${AUTH_PAGE_BASE}/sitemanage`,
+    register: `${AUTH_PAGE_BASE}/register`,
+};
+  
 /**
  * The Web container rendering the welcome page.
  *
@@ -76,6 +82,7 @@ class WelcomePage extends AbstractWelcomePage {
             selectedTab: 0,
             submitting: false,
             currentTenant: props._jwt.tenant || DEFAULT_TENANT,
+            userMenuVisible: false
         };
 
         /**
@@ -143,10 +150,7 @@ class WelcomePage extends AbstractWelcomePage {
         this._setAdditionalToolbarContentRef
             = this._setAdditionalToolbarContentRef.bind(this);
         this._onTabSelected = this._onTabSelected.bind(this);
-        this._onVirtualBackground = this._onVirtualBackground.bind(this);
-        this._onVirtualAvatar = this._onVirtualAvatar.bind(this);
         this._onLogout = this._onLogout.bind(this);
-        this._onOpenChange = this._onOpenChange.bind(this);
         this._onOpenSettings = this._onOpenSettings.bind(this);
         this._handleKeyPress = this._handleKeyPress.bind(this);
         this._getManualDownloadLink = this._getManualDownloadLink.bind(this);
@@ -166,7 +170,7 @@ class WelcomePage extends AbstractWelcomePage {
         document.title = interfaceConfig.APP_NAME;
 
         if (this.state.generateRoomnames) {
-            this._updateRoomname();
+            this._updateRoomName();
         }
 
         if (this._shouldShowAdditionalContent()) {
@@ -276,22 +280,6 @@ class WelcomePage extends AbstractWelcomePage {
         window.location="/";
     }
 
-    _onVirtualBackground(){
-        const { dispatch } = this.props;
-
-        dispatch(openDialog(VirtualBackgroundDialog));
-    }
-
-    _onVirtualAvatar() {
-        const { dispatch } = this.props;
-
-        dispatch(openDialog(VirtualAvatarDialog));
-    }
-
-    _onOpenChange() {
-        document.activeElement.blur();
-    }
-
     /**
      * Settings handler.
      *
@@ -302,9 +290,16 @@ class WelcomePage extends AbstractWelcomePage {
         const { dispatch } = this.props;
         const defaultTab = SETTINGS_TABS.DEVICES;
 
-        dispatch(openSettingsDialog(defaultTab));
+        dispatch(openSettingsDialog(defaultTab, true));
     }
 
+    _handleMenu({ key }) {
+        if (urls[key]) {
+          // console.log('handleMenu:', key);
+          location.href = urls[key];
+        }
+    };
+    
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -316,6 +311,7 @@ class WelcomePage extends AbstractWelcomePage {
             _defaultLogoUrl,
             _disableIntroVideo,
             _features,
+            _isNarowLayout,
             _moderatedRoomServiceUrl,
             _jwt,
             _user,
@@ -331,137 +327,141 @@ class WelcomePage extends AbstractWelcomePage {
         const avatarColor = getAvatarColor(getInitials(_user?.name), 0.9);
         const siteName = _jwt.siteName || DEFAULT_TENANT;
 
+        const features = (
+            <Menu>
+                { _features?.learnMore && (
+                    <Menu.Item
+                        className = 'menu-item'
+                        key = "learnMore"
+                        onClick = {this._getSiteLink}>
+                        <Space>
+                            {t('toolbar.features.learnMore')}
+                        </Space>
+                    </Menu.Item>
+                )}
+                { _features?.download && (
+                    <Menu.Item
+                        className = 'menu-item'
+                        key = "downloadManual"
+                        onClick = {this._getManualDownloadLink}>
+                        <Space>
+                            {t('toolbar.features.downloadManual')}
+                        </Space>
+                    </Menu.Item>
+                )}
+                <Menu.Item
+                    className = 'menu-item'
+                    key = "support"
+                    onClick = {() => {location.href = "mailto:vmeeting-info@kedutech.kr"}}>
+                    {t('toolbar.features.support')}
+                </Menu.Item>
+           </Menu>
+        );
+
+        const menu = (
+            <Menu onClick = {this._handleMenu}>
+                { _features?.learnMore && _isNarowLayout && (
+                    <Menu.Item
+                        className = 'menu-item'
+                        key = "learnMore"
+                        onClick = {this._getSiteLink}>
+                        <Space>
+                            {t('toolbar.features.learnMore')}
+                        </Space>
+                    </Menu.Item>
+                )}
+                { _features?.download && _isNarowLayout && (
+                    <Menu.Item
+                        className = 'menu-item'
+                        key = "downloadManual"
+                        onClick = {this._getManualDownloadLink}>
+                        <Space>
+                            {t('toolbar.features.downloadManual')}
+                        </Space>
+                    </Menu.Item>
+                )}
+                { _isNarowLayout && (
+                    <Menu.Item
+                        className = 'menu-item'
+                        key = "support"
+                        onClick = {() => {location.href = "mailto:vmeeting-info@kedutech.kr"}}>
+                        {t('toolbar.features.support')}
+                    </Menu.Item>
+                )}
+                {_user?.isAdmin && _isNarowLayout && 
+                    <Menu.Item className='menu-item mobile' key="admin">
+                        {t('welcomepage.adminConsole')}
+                    </Menu.Item>}
+                {_user?.isSiteStaff &&
+                    <Menu.Item className='menu-item' key="sitemanage">
+                        {t('welcomepage.siteManage')}
+                    </Menu.Item>}
+                <Menu.Item className='menu-item' key="meetingmanage">
+                    {t('welcomepage.meetingManage')}
+                </Menu.Item>
+                <Menu.Item className='menu-item' key="account">
+                <Space>
+                    {t('welcomepage.account')}
+                    {_user && currentTenant === DEFAULT_TENANT &&
+                    <Badge size='small' count={_user.email_verified ? 0 : 1} />}
+                </Space>
+                </Menu.Item>
+                <Menu.Item className='menu-item' key="logout">
+                    {t('toolbar.logout')}
+                </Menu.Item>
+                { _isNarowLayout && <hr className = 'divider mobile' /> }
+                { _isNarowLayout && (
+                    <Menu.Item className = 'menu-item mobile' onClick = { this._onOpenSettings }>
+                        { t('toolbar.Settings') }
+                    </Menu.Item>
+                )}
+            </Menu>
+        );
+
         if (_user) {
             if (_user.isAdmin) {
                 buttons.push(
                     <Button
                         key = 'adminConsole'
-                        appearance = 'subtle'
                         className = 'button desktop'
-                        href = { `${AUTH_PAGE_BASE}/admin/rooms` }>
+                        onClick = {() => this._handleMenu({ key: 'admin' }) }
+                        type="text">
                         { t('welcomepage.adminConsole') }
                     </Button>
                 );
             }
             buttons.push(
                 <div key = 'user-menu-mobile' className = 'button mobile'>
-                    <DropdownMenu
-                        onOpenChange = { this._onOpenChange }
-                        position = "bottom right"
-                        isLoading = { submitting }
-                        trigger = {
-                            <div className = 'user-container'>
+                    <Dropdown
+                        className = 'user-container'
+                        overlay = {menu}>
+                        <Button type="text">
+                            <Space>
                                 { _user.avatarURL ? (
-                                    <img
-                                        alt = 'avatar'
-                                        className = 'avatar'
-                                        src = { _user.avatarURL } />
+                                    <img alt = 'avatar' className = 'avatar' src = { _user.avatarURL } />
                                 ) : (
                                     <div className='avatar' style={{backgroundColor: avatarColor}}>
                                         {_user.name?.[0] || _user.username[0]}
                                     </div>
                                 )}
                                 { _user.name }
-                                { (!_user.email_verified && currentTenant === DEFAULT_TENANT) && (
-                                    <div className = 'badge'>
-                                        <Badge appearance="important">{1}</Badge>
-                                    </div>
+                                {currentTenant === DEFAULT_TENANT && (
+                                    <Badge size='small' count={_user.email_verified ? 0 : 1} />
                                 )}
-                            </div>
-                        }
-                        triggerType = 'button'>
-                        <DropdownItemGroup className = 'menu-container'>
-                            { _features?.learnMore && (
-                                <DropdownItem
-                                    className = 'menu-item mobile'
-                                    onClick = { this._getSiteLink }>
-                                    { t('toolbar.features.learnMore') }
-                                </DropdownItem>
-                            )}
-
-                            { _features?.download && (
-                                <DropdownItem
-                                    className = 'menu-item mobile'
-                                    onClick = { this._getManualDownloadLink }>
-                                    { t('toolbar.features.downloadManual') }
-                                </DropdownItem>
-                            )}
-
-                            <DropdownItem
-                                className = 'menu-item mobile'
-                                href = { "mailto:vmeeting-info@kedutech.kr"} >
-                                {t('toolbar.features.support')}
-                            </DropdownItem>
-                            <hr className = 'divider mobile' />
-                        </DropdownItemGroup>
-                        { _user.isAdmin &&
-                            <DropdownItemGroup className = 'menu-container'>
-                                <DropdownItem
-                                    className = 'menu-item mobile'
-                                    href = { `${AUTH_PAGE_BASE}/admin/rooms` }>
-                                    {t('welcomepage.adminConsole')}
-                                </DropdownItem>
-                                <hr className = 'divider mobile' />
-                            </DropdownItemGroup> }
-                        <DropdownItemGroup className = 'menu-container'>
-                            {_user.isSiteStaff && (
-                                <DropdownItem
-                                    className = 'menu-item'
-                                    href = { `${AUTH_PAGE_BASE}/sitemanage` }>
-                                    { t('welcomepage.siteManage') }
-                                </DropdownItem>
-                            )}
-                            <DropdownItem
-                                className = 'menu-item'
-                                href = { `${AUTH_PAGE_BASE}/meetingmanage` }>
-                                { t('welcomepage.meetingManage') }
-                            </DropdownItem>
-                            <DropdownItem
-                                className = 'menu-item'
-                                href = { `${AUTH_PAGE_BASE}/account` }>
-                                { t('welcomepage.account') }
-                                {(!_user.email_verified && currentTenant === DEFAULT_TENANT) && (
-                                    <div className = 'badge'>
-                                        <Badge appearance="important">{1}</Badge>
-                                    </div>
-                                )}
-                            </DropdownItem>
-                            { _virtualAvatarSupport ? (
-                                <DropdownItem
-                                    className='menu-item'
-                                    onClick={this._onVirtualAvatar}>
-                                    {t('toolbar.selectVirtualAvatar')}
-                                </DropdownItem>
-                            ) : (checkBlurSupport() && (
-                                <DropdownItem
-                                    className = 'menu-item'
-                                    onClick = { this._onVirtualBackground }>
-                                    { t('toolbar.selectBackground') }
-                                </DropdownItem>
-                            ))}
-                            <DropdownItem
-                                className = 'menu-item'
-                                onClick = { this._onLogout }>
-                                { t('toolbar.logout') }
-                            </DropdownItem>
-                            <hr className = 'divider mobile' />
-                            <DropdownItem
-                                className = 'menu-item mobile'
-                                onClick = { this._onOpenSettings }>
-                                { t('toolbar.Settings') }
-                            </DropdownItem>
-                        </DropdownItemGroup>
-                    </DropdownMenu>
+                                <DownOutlined />
+                            </Space>
+                        </Button>
+                    </Dropdown>
                 </div>
             );
         } else {
             if (config.useRegistration) {
                 buttons.push(
                     <Button
-                        appearance = 'subtle'
                         className = 'button'
-                        href = { `${AUTH_PAGE_BASE}/register` }
-                        key = 'register'>
+                        onClick = {() => this._handleMenu({ key: 'register' }) }
+                        key = 'register'
+                        type="text">
                         { t('toolbar.Register') }
                     </Button>
                 );
@@ -469,10 +469,10 @@ class WelcomePage extends AbstractWelcomePage {
             if (config.useLogin) {
                 buttons.push(
                     <Button
-                        appearance = 'subtle'
                         className = 'button'
-                        href = { `${AUTH_PAGE_BASE}/login` }
-                        key = 'login'>
+                        onClick = {() => this._handleMenu({ key: 'login' }) }
+                        key = 'login'
+                        type="text">
                         {t('toolbar.login')}
                     </Button>
                 );
@@ -491,72 +491,48 @@ class WelcomePage extends AbstractWelcomePage {
                             className = 'watermark'
                             defaultJitsiLogoURL = { _defaultLogoUrl || DEFAULT_WELCOME_PAGE_LOGO_URL } />
                         <div className = 'toolbars'>
-                            <div className = 'button desktop'>
-                                <DropdownMenu
-                                    onOpenChange = { this._onOpenChange }
-                                    position = "bottom left"
-                                    key = 'user-menu-desktop'
-                                    trigger = {
-                                        <div id="featureDropdown" className = 'feature'>
+                            { !_isNarowLayout && (
+                                <div className = 'button desktop'>
+                                    <Dropdown
+                                        key = 'user-menu-desktop'
+                                        overlay = {features}
+                                        triggerType = 'button'>
+                                        <Button type="text">
                                             {t('toolbar.features.title')}
-                                        </div>
-                                    }
-                                    triggerType = 'button'>
-                                    <DropdownItemGroup className = 'menu-container'>
-                                        { _features?.learnMore && (
-                                            <DropdownItem
-                                                className = 'menu-item'
-                                                onClick = { this._getSiteLink }>
-                                                { t('toolbar.features.learnMore') }
-                                            </DropdownItem>
-                                        )}
-                                        { _features?.download && (
-                                            <DropdownItem
-                                                className = 'menu-item'
-                                                onClick = { this._getManualDownloadLink }>
-                                                { t('toolbar.features.downloadManual') }
-                                            </DropdownItem>
-                                        )}
+                                            <DownOutlined />
+                                        </Button>
+                                    </Dropdown>
+                                </div>
+                            )}
 
-                                        <DropdownItem
-                                            className = 'menu-item'
-                                            href = { "mailto:vmeeting-info@kedutech.kr"} >
-                                            {t('toolbar.features.support')}
-                                        </DropdownItem>
-                                    </DropdownItemGroup>
-                                </DropdownMenu>
-                            </div>
-
-                            <ButtonGroup>
-                                {/* <Button
-                                    appearance = 'subtle'
-                                    className = {_user ? 'button desktop' : 'button'}
-                                    href = { `${AUTH_PAGE_BASE}/features` }>
-                                    {t('toolbar.features')}
-                                </Button> */}
+                            <div className = 'buttons-container'>
                                 { buttons }
-                                <Button
-                                    appearance = 'subtle'
-                                    className = {_user ? 'button desktop' : 'button'}
-                                    onClick = { this._onOpenSettings }>
-                                    { t('toolbar.Settings') }
-                                </Button>
+                                { !_isNarowLayout && (
+                                    <Button
+                                        className = {_user ? 'button desktop' : 'button'}
+                                        onClick = { this._onOpenSettings }
+                                        type="text">
+                                        { t('toolbar.Settings') }
+                                    </Button>
+                                )}
                                 { showAdditionalToolbarContent
                                     ? <div
                                         className = 'settings-toolbar-content'
                                         ref = { this._setAdditionalToolbarContentRef } />
                                     : null
                                 }
-                            </ButtonGroup>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div className = 'welcome-content'>
                     { config.noticeMessage && (
                         <div className = 'banner'>
-                            <Banner appearance="announcement" isOpen>
-                                {decodeURIComponent(config.noticeMessage)}
-                            </Banner>
+                            <Alert
+                                banner
+                                closable
+                                message={decodeURIComponent(config.noticeMessage)}
+                                type="success" />
                         </div>
                     )}
                     <div className = 'bg-wrapper'>
@@ -668,7 +644,6 @@ class WelcomePage extends AbstractWelcomePage {
                         </div>
                     </div>
                 </div>
-                <NoticeDialog />
             </div>
         );
     }
@@ -683,7 +658,7 @@ class WelcomePage extends AbstractWelcomePage {
             <div className = 'insecure-room-name-warning'>
                 <Icon src = { IconWarning } />
                 <span>
-                    { this.props.t('security.insecureRoomNameWarning') }
+                    { this.props.t('security.insecureRoomNameWarningWeb') }
                 </span>
             </div>
         );

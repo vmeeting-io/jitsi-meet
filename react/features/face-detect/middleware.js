@@ -3,24 +3,25 @@
 import { isEmpty } from 'lodash';
 import { batch } from 'react-redux';
 
-import { CONFERENCE_JOINED, STATUS_COMMAND } from '../base/conference';
-import { CONNECTION_DISCONNECTED } from '../base/connection';
+import { CONFERENCE_JOINED } from '../base/conference/actionTypes';
+import { STATUS_COMMAND } from '../base/conference/constants';
+import { CONNECTION_DISCONNECTED } from '../base/connection/actionTypes';
+import { participantPresenceChanged } from '../base/participants/actions';
+import { PARTICIPANT_JOINED, PARTICIPANT_LEFT, PARTICIPANT_UPDATED } from '../base/participants/actionTypes';
 import {
     getLocalParticipant,
     getParticipantById,
     getParticipantPresenceStatus,
     isLocalParticipantModerator,
-    participantPresenceChanged,
-    PARTICIPANT_JOINED,
-    PARTICIPANT_LEFT,
-    PARTICIPANT_UPDATED
-} from '../base/participants';
-import { MiddlewareRegistry } from '../base/redux';
-import { MEDIA_TYPE, VIDEO_TYPE } from '../base/media';
-import { isParticipantVideoMuted, TRACK_UPDATED } from '../base/tracks';
-import { isDIDPermitted } from '../did-consent';
-import { getBreakoutRooms, UPDATE_BREAKOUT_ROOMS } from '../breakout-rooms';
-import { isPrejoinPageVisible } from '../prejoin';
+} from '../base/participants/functions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { MEDIA_TYPE, VIDEO_TYPE } from '../base/media/constants';
+import { TRACK_UPDATED } from '../base/tracks/actionTypes';
+import { isParticipantVideoMuted } from '../base/tracks/functions';
+import { isDIDPermitted } from '../did-consent/functions';
+import { UPDATE_BREAKOUT_ROOMS } from '../breakout-rooms/actionTypes';
+import { getBreakoutRooms } from '../breakout-rooms/functions';
+import { isPrejoinPageVisible } from '../prejoin/functions';
 
 import {
     closeAttentionAnalysis,

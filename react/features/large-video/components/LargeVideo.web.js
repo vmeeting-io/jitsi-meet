@@ -1,14 +1,31 @@
 // @flow
 
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { Watermarks } from '../../base/react';
-import { connect } from '../../base/redux';
-import { setColorAlpha } from '../../base/util';
-import { SharedVideo } from '../../shared-video/components/web';
-import { Captions } from '../../subtitles/';
-import { STTCaptions } from '../../speech-to-text/';
-import { setTileView } from '../../video-layout/actions';
+import VideoLayout from '../../../../modules/UI/videolayout/VideoLayout';
+import { VIDEO_TYPE } from '../../base/media/constants';
+import { getLocalParticipant } from '../../base/participants/functions';
+import Watermarks from '../../base/react/components/web/Watermarks';
+import { getHideSelfView } from '../../base/settings/functions.any';
+import { getVideoTrackByParticipant } from '../../base/tracks/functions.web';
+import { setColorAlpha } from '../../base/util/helpers';
+import StageParticipantNameLabel from '../../display-name/components/web/StageParticipantNameLabel';
+import { FILMSTRIP_BREAKPOINT } from '../../filmstrip/constants';
+import { getVerticalViewMaxWidth, isFilmstripResizable } from '../../filmstrip/functions.web';
+import SharedVideo from '../../shared-video/components/web/SharedVideo';
+import STTCaptions from '../../speech-to-text/components/STTCaptions.web';
+import Captions from '../../subtitles/components/web/Captions';
+import { setTileView } from '../../video-layout/actions.web';
+// import Whiteboard from '../../whiteboard/components/web/Whiteboard';
+import { isWhiteboardEnabled } from '../../whiteboard/functions';
+import { setSeeWhatIsBeingShared } from '../actions.web';
+import { getLargeVideoParticipant } from '../functions';
+
+import ScreenSharePlaceholder from './ScreenSharePlaceholder.web';
+
+// Hack to detect Spot.
+const SPOT_DISPLAY_NAME = 'Meeting Room';
 
 declare var interfaceConfig: Object;
 
@@ -53,7 +70,11 @@ type Props = {
  * @augments Component
  */
 class LargeVideo extends Component<Props> {
-    _tappedTimeout: ?TimeoutID;
+    _tappedTimeout;
+
+    _containerRef;
+
+    _wrapperRef;
 
     /**
      * Constructor of the component.
@@ -63,8 +84,44 @@ class LargeVideo extends Component<Props> {
     constructor(props) {
         super(props);
 
+        this._containerRef = React.createRef();
+        this._wrapperRef = React.createRef();
+
         this._clearTapTimeout = this._clearTapTimeout.bind(this);
         this._onDoubleTap = this._onDoubleTap.bind(this);
+        this._updateLayout = this._updateLayout.bind(this);
+    }
+
+    /**
+     * Implements {@code Component#componentDidUpdate}.
+     *
+     * @inheritdoc
+     */
+    componentDidUpdate(prevProps) {
+        const {
+            _visibleFilmstrip,
+            _isScreenSharing,
+            _seeWhatIsBeingShared,
+            _largeVideoParticipantId,
+            _hideSelfView,
+            _localParticipantId } = this.props;
+
+        if (prevProps._visibleFilmstrip !== _visibleFilmstrip) {
+            this._updateLayout();
+        }
+
+        if (prevProps._isScreenSharing !== _isScreenSharing && !_isScreenSharing) {
+            this.props.dispatch(setSeeWhatIsBeingShared(false));
+        }
+
+        if (_isScreenSharing && _seeWhatIsBeingShared) {
+            VideoLayout.updateLargeVideo(_largeVideoParticipantId, true, true);
+        }
+
+        if (_largeVideoParticipantId === _localParticipantId
+            && prevProps._hideSelfView !== _hideSelfView) {
+            VideoLayout.updateLargeVideo(_largeVideoParticipantId, true, false);
+        }
     }
 
     /**
@@ -75,8 +132,11 @@ class LargeVideo extends Component<Props> {
      */
     render() {
         const {
+            _displayScreenSharingPlaceholder,
             _isChatOpen,
-            _noAutoPlayVideo
+            _noAutoPlayVideo,
+            _showDominantSpeakerBadge,
+            _whiteboardEnabled
         } = this.props;
         const style = this._getCustomSyles();
         const className = `videocontainer${_isChatOpen ? ' shift-right' : ''}`;
@@ -85,6 +145,7 @@ class LargeVideo extends Component<Props> {
             <div
                 className = { className }
                 id = 'largeVideoContainer'
+                ref = { this._containerRef }
                 style = { style }>
                 <SharedVideo />
                 <div id = 'whiteboard' />
@@ -101,7 +162,6 @@ class LargeVideo extends Component<Props> {
                 <span id = 'remoteConnectionMessage' />
                 <div id = 'largeVideoElementsContainer'>
                     <div id = 'largeVideoBackgroundContainer' />
-
                     {/*
                       * FIXME: the architecture of elements related to the large
                       * video and the naming. The background is not part of
@@ -110,6 +170,7 @@ class LargeVideo extends Component<Props> {
                       * another container for the background and the
                       * largeVideoWrapper in order to hide/show them.
                       */}
+                    { _displayScreenSharingPlaceholder ? <ScreenSharePlaceholder /> : <></>}
                     <div
                         id = 'largeVideoWrapper'
                         onTouchEnd = { this._onDoubleTap }
@@ -125,11 +186,34 @@ class LargeVideo extends Component<Props> {
                     || <Captions /> }
                 { interfaceConfig.DISABLE_TRANSCRIPTION_SUBTITLES
                     || <STTCaptions /> }
+                {_showDominantSpeakerBadge && <StageParticipantNameLabel />}
             </div>
         );
     }
 
-    _clearTapTimeout: () => void;
+    /**
+     * Refreshes the video layout to determine the dimensions of the stage view.
+     * If the filmstrip is toggled it adds CSS transition classes and removes them
+     * when the transition is done.
+     *
+     * @returns {void}
+     */
+    _updateLayout() {
+        const { _verticalFilmstripWidth, _resizableFilmstrip } = this.props;
+
+        if (_resizableFilmstrip && Number(_verticalFilmstripWidth) >= FILMSTRIP_BREAKPOINT) {
+            this._containerRef.current?.classList.add('transition');
+            this._wrapperRef.current?.classList.add('transition');
+            VideoLayout.refreshLayout();
+
+            setTimeout(() => {
+                this._containerRef?.current && this._containerRef.current.classList.remove('transition');
+                this._wrapperRef?.current && this._wrapperRef.current.classList.remove('transition');
+            }, 1000);
+        } else {
+            VideoLayout.refreshLayout();
+        }
+    }
 
     /**
      * Clears the '_tappedTimout'.
@@ -150,7 +234,13 @@ class LargeVideo extends Component<Props> {
      */
     _getCustomSyles() {
         const styles = {};
-        const { _customBackgroundColor, _customBackgroundImageUrl } = this.props;
+        const {
+            _customBackgroundColor,
+            _customBackgroundImageUrl,
+            _verticalFilmstripWidth,
+            _verticalViewMaxWidth,
+            _visibleFilmstrip
+        } = this.props;
 
         styles.backgroundColor = _customBackgroundColor || interfaceConfig.DEFAULT_BACKGROUND;
 
@@ -165,10 +255,12 @@ class LargeVideo extends Component<Props> {
             styles.backgroundSize = 'cover';
         }
 
+        if (_visibleFilmstrip && Number(_verticalFilmstripWidth) >= FILMSTRIP_BREAKPOINT) {
+            styles.width = `calc(100% - ${_verticalViewMaxWidth || 0}px)`;
+        }
+
         return styles;
     }
-
-    _onDoubleTap: () => void;
 
     /**
      * Sets view to tile view on double tap.
@@ -202,13 +294,34 @@ function _mapStateToProps(state) {
     const testingConfig = state['features/base/config'].testing;
     const { backgroundColor, backgroundImageUrl } = state['features/dynamic-branding'];
     const { isOpen: isChatOpen } = state['features/chat'];
+    const { width: verticalFilmstripWidth, visible } = state['features/filmstrip'];
+    const { defaultLocalDisplayName, hideDominantSpeakerBadge } = state['features/base/config'];
+    const { seeWhatIsBeingShared } = state['features/large-video'];
+    const localParticipantId = getLocalParticipant(state)?.id;
+    const largeVideoParticipant = getLargeVideoParticipant(state);
+    const videoTrack = getVideoTrackByParticipant(state, largeVideoParticipant);
+    const isLocalScreenshareOnLargeVideo = largeVideoParticipant?.id?.includes(localParticipantId ?? '')
+        && videoTrack?.videoType === VIDEO_TYPE.DESKTOP;
+    const isOnSpot = defaultLocalDisplayName === SPOT_DISPLAY_NAME;
 
     return {
         _backgroundAlpha: state['features/base/config'].backgroundAlpha,
         _customBackgroundColor: backgroundColor,
         _customBackgroundImageUrl: backgroundImageUrl,
+        _displayScreenSharingPlaceholder: Boolean(isLocalScreenshareOnLargeVideo && !seeWhatIsBeingShared && !isOnSpot),
+        _hideSelfView: getHideSelfView(state),
         _isChatOpen: isChatOpen,
-        _noAutoPlayVideo: testingConfig?.noAutoPlayVideo
+        _isScreenSharing: Boolean(isLocalScreenshareOnLargeVideo),
+        _largeVideoParticipantId: largeVideoParticipant?.id ?? '',
+        _localParticipantId: localParticipantId ?? '',
+        _noAutoPlayVideo: Boolean(testingConfig?.noAutoPlayVideo),
+        _resizableFilmstrip: isFilmstripResizable(state),
+        _seeWhatIsBeingShared: Boolean(seeWhatIsBeingShared),
+        _showDominantSpeakerBadge: !hideDominantSpeakerBadge,
+        _verticalFilmstripWidth: verticalFilmstripWidth.current,
+        _verticalViewMaxWidth: getVerticalViewMaxWidth(state),
+        _visibleFilmstrip: visible,
+        _whiteboardEnabled: isWhiteboardEnabled(state)
     };
 }
 

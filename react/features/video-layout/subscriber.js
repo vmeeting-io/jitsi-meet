@@ -1,43 +1,17 @@
 // @flow
 
-import { debounce, map } from 'lodash';
+import StateListenerRegistry from '../base/redux/StateListenerRegistry';
+import { equals } from '../base/redux/functions';
+import { isFollowMeActive } from '../follow-me/functions';
 
-import { getCurrentConference } from '../base/conference';
-
-import { pinParticipant, getPinnedParticipant, refreshParticipants } from '../base/participants';
-import { StateListenerRegistry, equals } from '../base/redux';
-import { isFollowMeActive } from '../follow-me';
-
-import { setRemoteParticipantsWithScreenShare } from './actions';
+import { virtualScreenshareParticipantsUpdated } from './actions';
 import { getAutoPinSetting, updateAutoPinnedParticipant } from './functions';
 
-declare var APP: Object;
-declare var interfaceConfig: Object;
-
-/**
- * For auto-pin mode, listen for changes to the known media tracks and look
- * for updates to screen shares. The listener is debounced to avoid state
- * thrashing that might occur, especially when switching in or out of p2p.
- */
 StateListenerRegistry.register(
-    /* selector */ state => state['features/base/tracks'],
-    /* listener */ debounce((tracks, store) => {
-        if (!getAutoPinSetting() || isFollowMeActive(store)) {
-            return;
-        }
-
+    /* selector */ state => state['features/base/participants'].sortedRemoteVirtualScreenshareParticipants,
+    /* listener */ (sortedRemoteVirtualScreenshareParticipants, store) => {
         const oldScreenSharesOrder = store.getState()['features/video-layout'].remoteScreenShares || [];
-        const knownSharingParticipantIds = tracks.reduce((acc, track) => {
-            if (track.mediaType === 'video' && track.videoType === 'desktop') {
-                const skipTrack = getAutoPinSetting() === 'remote-only' && track.local;
-
-                if (!skipTrack) {
-                    acc.push(track.participantId);
-                }
-            }
-
-            return acc;
-        }, []);
+        const knownSharingParticipantIds = [ ...sortedRemoteVirtualScreenshareParticipants.keys() ];
 
         // Filter out any participants which are no longer screen sharing
         // by looping through the known sharing participants and removing any
@@ -54,9 +28,10 @@ StateListenerRegistry.register(
         });
 
         if (!equals(oldScreenSharesOrder, newScreenSharesOrder)) {
-            store.dispatch(
-                setRemoteParticipantsWithScreenShare(newScreenSharesOrder));
+            store.dispatch(virtualScreenshareParticipantsUpdated(newScreenSharesOrder));
 
-            updateAutoPinnedParticipant(oldScreenSharesOrder, store);
+            if (getAutoPinSetting() && !isFollowMeActive(store)) {
+                updateAutoPinnedParticipant(oldScreenSharesOrder, store);
+            }
         }
-    }, 100));
+    });

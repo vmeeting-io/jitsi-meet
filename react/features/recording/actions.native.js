@@ -1,9 +1,25 @@
 // @flow
 
+import { openSheet } from '../base/dialog/actions';
 import JitsiMeetJS from '../base/lib-jitsi-meet';
+import { navigate } from '../mobile/navigation/components/conference/ConferenceNavigationContainerRef';
+import { screen } from '../mobile/navigation/routes';
 import { NOTIFICATION_TIMEOUT_TYPE, showNotification } from '../notifications';
+import { showStartRecordingNotificationWithCallback } from './actions.any';
+import HighlightDialog from './components/Recording/native/HighlightDialog';
 
 export * from './actions.any';
+
+/**
+ * Opens the highlight dialog.
+ *
+ * @returns {Function}
+ */
+export function openHighlightDialog() {
+    return (dispatch) => {
+        dispatch(openSheet(HighlightDialog));
+    };
+}
 
 /**
  * Signals that a started recording notification should be shown on the
@@ -38,5 +54,18 @@ export function showRecordingLimitNotification(streamType: string) {
             titleKey,
             maxLines: 2
         }, NOTIFICATION_TIMEOUT_TYPE.LONG));
+    };
+}
+
+/**
+ * Displays the notification suggesting to start the recording.
+ *
+ * @returns {void}
+ */
+export function showStartRecordingNotification() {
+    return (dispatch) => {
+        const openDialogCallback = () => navigate(screen.conference.recording);
+
+        dispatch(showStartRecordingNotificationWithCallback(openDialogCallback));
     };
 }

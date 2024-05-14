@@ -1,28 +1,12 @@
 // @flow
 
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
 import { openSTTDialog } from '../actions';
-import { isLocalParticipantModerator } from '../../base/participants';
-import { getToolbarButtons } from '../../base/config/functions.web';
-
-export type AbstractProps = AbstractButtonProps & {
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function,
-
-    /**
-     * Invoked to Dispatch an Action to the redux store.
-     */
-    dispatch: Function,
-};
 
 /**
  * The button component which starts/stops the transcription.
  */
-export class AbstractSTTDialogButton
-    extends AbstractButton<AbstractProps, *> {
+export class AbstractSTTDialogButton extends AbstractButton {
     /**
      * Handles clicking / pressing the button.
      *
@@ -78,7 +62,7 @@ export class AbstractSTTDialogButton
  */
 export function _abstractMapStateToProps(state: Object, ownProps: Object) {
     //const { sttEnabled } = state['features/base/config'];
-    const toolbarButtons = getToolbarButtons(state);
+    const { toolbarButtons } = state['features/toolbox'];
 
     // if the participant is moderator, it can enable transcriptions and if
     // transcriptions are already started for the meeting, guests can just show them

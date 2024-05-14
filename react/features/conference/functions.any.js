@@ -1,6 +1,6 @@
 import { toState } from '../base/redux';
-import { areThereNotifications } from '../notifications/functions.any';
-import { getOverlayToRender } from '../overlay';
+import { iAmVisitor } from '../visitors/functions';
+
 
 /**
  * Tells whether or not the notifications should be displayed within
@@ -11,10 +11,23 @@ import { getOverlayToRender } from '../overlay';
  */
 export function shouldDisplayNotifications(stateful) {
     const state = toState(stateful);
-    const isAnyOverlayVisible = Boolean(getOverlayToRender(state));
-    const { calleeInfoVisible } = state['features/invite'];
+        const { calleeInfoVisible } = state['features/invite'];
 
-    return areThereNotifications(state)
-      && !isAnyOverlayVisible
-      && !calleeInfoVisible;
+    return !calleeInfoVisible;
+}
+
+
+/**
+ *
+ * Returns true if polls feature is disabled.
+ *
+ * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
+ * {@code getState} function to be used to retrieve the state
+ * features/base/config.
+ * @returns {boolean}
+ */
+export function arePollsDisabled(stateful: Object) {
+    const state = toState(stateful);
+
+    return state['features/base/config']?.disablePolls || iAmVisitor(state);
 }

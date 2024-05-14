@@ -1,7 +1,7 @@
 // @flow
 
-import { getAppProp } from '../app';
-import { toState } from '../redux';
+import { getAppProp } from '../app/functions';
+import { toState } from '../redux/functions';
 
 /**
  * Gets the value of a specific feature flag.

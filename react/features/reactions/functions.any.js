@@ -2,9 +2,11 @@
 
 import { v4 as uuidv4 } from 'uuid';
 
-import { getFeatureFlag, REACTIONS_ENABLED } from '../base/flags';
-import { getLocalParticipant } from '../base/participants';
-import { extractFqnFromPath } from '../dynamic-branding';
+import { REACTIONS_ENABLED } from '../base/flags/constants';
+import { getFeatureFlag } from '../base/flags/functions';
+import { getLocalParticipant } from '../base/participants/functions';
+import { extractFqnFromPath } from '../dynamic-branding/functions.any';
+import { iAmVisitor } from '../visitors/functions';
 
 import { REACTIONS, SOUNDS_THRESHOLDS } from './constants';
 import logger from './logger';
@@ -13,7 +15,7 @@ import logger from './logger';
  * Returns the queue of reactions.
  *
  * @param {Object} state - The state of the application.
- * @returns {boolean}
+ * @returns {Array}
  */
 export function getReactionsQueue(state: Object) {
     return state['features/reactions'].queue;
@@ -56,7 +58,7 @@ export async function sendReactionsWebhook(state: Object, reactions: Array<?stri
     const { conference } = state['features/base/conference'];
     const { jwt } = state['features/base/jwt'];
     const { connection } = state['features/base/connection'];
-    const jid = connection.getJid();
+    const jid = connection?.getJid();
     const localParticipant = getLocalParticipant(state);
 
     const headers = {
@@ -67,11 +69,11 @@ export async function sendReactionsWebhook(state: Object, reactions: Array<?stri
 
     const reqBody = {
         meetingFqn: extractFqnFromPath(),
-        sessionId: conference.sessionId,
+        sessionId: conference?.sessionId,
         submitted: Date.now(),
         reactions,
-        participantId: localParticipant.jwtId,
-        participantName: localParticipant.name,
+        participantId: localParticipant?.jwtId,
+        participantName: localParticipant?.name,
         participantJid: jid
     };
 
@@ -160,4 +162,14 @@ export function isReactionsEnabled(state: Object) {
     }
 
     return !disableReactions;
+}
+
+/**
+ * Returns true if the reactions buttons should be displayed anywhere on the page and false otherwise.
+ *
+ * @param {IReduxState} state - The redux state.
+ * @returns {boolean}
+ */
+export function shouldDisplayReactionsButtons(state: Object) {
+    return isReactionsEnabled(state) && !iAmVisitor(state);
 }

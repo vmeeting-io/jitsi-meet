@@ -1,4 +1,7 @@
 // @flow
+import { getCurrentConference } from '../base/conference/functions';
+import { getLocalParticipant } from '../base/participants/functions';
+import { LOBBY_CHAT_INITIALIZED } from '../lobby/constants';
 
 import {
     ADD_MESSAGE,
@@ -6,10 +9,12 @@ import {
     CLOSE_CHAT,
     FILE_UPLOADED_PERCENTAGE_STATUS,
     EDIT_MESSAGE,
+    REMOVE_LOBBY_CHAT_PARTICIPANT,
     SEND_MESSAGE,
-    SET_PRIVATE_MESSAGE_RECIPIENT,
-    SET_IS_POLL_TAB_FOCUSED,
-    SET_IS_STT_TAB_FOCUSED
+    SET_CHAT_TAB_FOCUSED,
+    SET_LOBBY_CHAT_ACTIVE_STATE,
+    SET_LOBBY_CHAT_RECIPIENT,
+    SET_PRIVATE_MESSAGE_RECIPIENT
 } from './actionTypes';
 
 /**
@@ -135,25 +140,133 @@ export function setPrivateMessageRecipient(participant: Object) {
 /**
  * Set the value of _isPollsTabFocused.
  *
- * @param {boolean} isPollsTabFocused - The new value for _isPollsTabFocused.
+ * @param {string} tabFocused - The new value for _tabFocused.
  * @returns {Function}
  */
-export function setIsPollsTabFocused(isPollsTabFocused: boolean) {
+export function setChatTabFocused(tabFocused: string) {
     return {
-        isPollsTabFocused,
-        type: SET_IS_POLL_TAB_FOCUSED
+        tabFocused,
+        type: SET_CHAT_TAB_FOCUSED
     };
 }
 
 /**
- * Set the value of _isPollsTabFocused.
+ * Initiates the sending of messages between a moderator and a lobby attendee.
  *
- * @param {boolean} isPollsTabFocused - The new value for _isPollsTabFocused.
+ * @param {Object} lobbyChatInitializedInfo - The information about the attendee and the moderator
+ * that is going to chat.
+ *
  * @returns {Function}
  */
-export function setIsSTTTabFocused(isSTTTabFocused: boolean) {
-    return {
-        isSTTTabFocused,
-        type: SET_IS_STT_TAB_FOCUSED
+export function onLobbyChatInitialized(lobbyChatInitializedInfo) {
+    return async (dispatch, getState) => {
+        const state = getState();
+        const conference = getCurrentConference(state);
+
+        const lobbyLocalId = conference?.myLobbyUserId();
+
+        if (!lobbyLocalId) {
+            return;
+        }
+
+        if (lobbyChatInitializedInfo.moderator.id === lobbyLocalId) {
+            dispatch({
+                type: SET_LOBBY_CHAT_RECIPIENT,
+                participant: lobbyChatInitializedInfo.attendee,
+                open: true
+            });
+        }
+
+        if (lobbyChatInitializedInfo.attendee.id === lobbyLocalId) {
+            return dispatch({
+                type: SET_LOBBY_CHAT_RECIPIENT,
+                participant: lobbyChatInitializedInfo.moderator,
+                open: false
+            });
+        }
     };
-  }
+}
+
+/**
+ * Sets the lobby room's chat active state.
+ *
+ * @param {boolean} value - The active state.
+ *
+ * @returns {Object}
+ */
+export function setLobbyChatActiveState(value: boolean) {
+    return {
+        type: SET_LOBBY_CHAT_ACTIVE_STATE,
+        payload: value
+    };
+}
+
+/**
+ * Removes lobby type messages.
+ *
+ *  @param {boolean} removeLobbyChatMessages - Should remove messages from chat  (works only for accepted users).
+ * If not specified, it will delete all lobby messages.
+ *
+ * @returns {Object}
+ */
+export function removeLobbyChatParticipant(removeLobbyChatMessages?: boolean) {
+    return {
+        type: REMOVE_LOBBY_CHAT_PARTICIPANT,
+        removeLobbyChatMessages
+    };
+}
+
+/**
+ * Handles initial setup of lobby message between
+ * Moderator and participant.
+ *
+ * @param {string} participantId - The participant id.
+ *
+ * @returns {Object}
+ */
+export function handleLobbyChatInitialized(participantId: string) {
+    return async (dispatch, getState) => {
+        if (!participantId) {
+            return;
+        }
+        const state = getState();
+        const conference = state['features/base/conference'].conference;
+        const { knockingParticipants } = state['features/lobby'];
+        const { lobbyMessageRecipient } = state['features/chat'];
+        const me = getLocalParticipant(state);
+        const lobbyLocalId = conference?.myLobbyUserId();
+
+
+        if (lobbyMessageRecipient && lobbyMessageRecipient.id === participantId) {
+            return dispatch(setLobbyChatActiveState(true));
+        }
+
+        const attendee = knockingParticipants.find(p => p.id === participantId);
+
+        if (attendee && attendee.chattingWithModerator === lobbyLocalId) {
+            return dispatch({
+                type: SET_LOBBY_CHAT_RECIPIENT,
+                participant: attendee,
+                open: true
+            });
+        }
+
+        if (!attendee) {
+            return;
+        }
+
+        const payload = { type: LOBBY_CHAT_INITIALIZED,
+            moderator: {
+                ...me,
+                name: 'Moderator',
+                id: lobbyLocalId
+            },
+            attendee };
+
+        // notify attendee privately.
+        conference?.sendLobbyMessage(payload, attendee.id);
+
+        // notify other moderators.
+        return conference?.sendLobbyMessage(payload);
+    };
+}

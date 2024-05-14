@@ -1,14 +1,12 @@
 // @flow
 
-import { APP_WILL_MOUNT } from '../base/app';
-import {
-    CONFERENCE_WILL_LEAVE,
-    SET_ROOM,
-    JITSI_CONFERENCE_URL_KEY
-} from '../base/conference';
-import { addKnownDomains } from '../base/known-domains';
-import { MiddlewareRegistry } from '../base/redux';
-import { parseURIString } from '../base/util';
+import { APP_WILL_MOUNT } from '../base/app/actionTypes';
+import { CONFERENCE_WILL_LEAVE, SET_ROOM } from '../base/conference/actionTypes';
+import { JITSI_CONFERENCE_URL_KEY } from '../base/conference/constants';
+import { addKnownDomains } from '../base/known-domains/actions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { inIframe } from '../base/util/iframeUtils';
+import { parseURIString } from '../base/util/uri';
 
 import { _storeCurrentConference, _updateConferenceDuration } from './actions';
 import { isRecentListEnabled } from './functions';
@@ -86,9 +84,10 @@ function _appWillMount({ dispatch, getState }, next, action) {
  * @returns {*} The result returned by {@code next(action)}.
  */
 function _conferenceWillLeave({ dispatch, getState }, next, action) {
-    const { doNotStoreRoom } = getState()['features/base/config'];
+    const state = getState();
+    const { doNotStoreRoom } = state['features/base/config'];
 
-    if (!doNotStoreRoom) {
+    if (!doNotStoreRoom && !inIframe()) {
         let locationURL;
 
         /**
@@ -103,13 +102,15 @@ function _conferenceWillLeave({ dispatch, getState }, next, action) {
          * JITSI_CONFERENCE_URL_KEY so we cannot call it and must use the other way.
          */
         if (typeof APP === 'undefined') {
-            locationURL = action.conference[JITSI_CONFERENCE_URL_KEY];
+            const { conference } = action;
+            locationURL = conference && conference[JITSI_CONFERENCE_URL_KEY];
         } else {
-            locationURL = getState()['features/base/connection'].locationURL;
+            locationURL = state['features/base/connection'].locationURL;
         }
         dispatch(
             _updateConferenceDuration(
-                locationURL));
+                locationURL
+            ));
     }
 
     return next(action);
@@ -128,7 +129,7 @@ function _conferenceWillLeave({ dispatch, getState }, next, action) {
 function _setRoom({ dispatch, getState }, next, action) {
     const { doNotStoreRoom } = getState()['features/base/config'];
 
-    if (!doNotStoreRoom && action.room) {
+    if (!doNotStoreRoom && !inIframe() && action.room) {
         const { locationURL } = getState()['features/base/connection'];
         const pattern = /(?<tenant>\/[^\/]+)?(?<room>\/.+)$/;
         const { groups } = locationURL.pathname.match(pattern);

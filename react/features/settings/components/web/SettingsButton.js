@@ -1,35 +1,19 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { createToolbarEvent, sendAnalytics } from '../../../analytics';
-import { translate } from '../../../base/i18n';
-import { IconSettings } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconGear } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 import { openSettingsDialog } from '../../actions';
-import { SETTINGS_TABS } from '../../constants';
-
-/**
- * The type of the React {@code Component} props of {@link SettingsButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * The default tab at which the settings dialog will be opened.
-     */
-    defaultTab: string,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
 
 /**
  * An abstract implementation of a button for accessing settings.
  */
-class SettingsButton extends AbstractButton<Props, *> {
+class SettingsButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.Settings';
-    icon = IconSettings;
+    icon = IconGear;
     label = 'toolbar.Settings';
     tooltip = 'toolbar.Settings';
 
@@ -40,20 +24,10 @@ class SettingsButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const {
-            defaultTab = SETTINGS_TABS.DEVICES,
-            dispatch,
-            handleClick
-        } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
+        const { dispatch, isDisplayedOnWelcomePage = false } = this.props;
 
         sendAnalytics(createToolbarEvent('settings'));
-        dispatch(openSettingsDialog(defaultTab));
+        dispatch(openSettingsDialog(undefined, isDisplayedOnWelcomePage));
     }
 }
 

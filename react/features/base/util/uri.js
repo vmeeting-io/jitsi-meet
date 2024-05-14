@@ -1,7 +1,16 @@
 // @flow
 
+import { sanitizeUrl as _sanitizeUrl } from '@braintree/sanitize-url';
+
 import { parseURLParams } from './parseURLParams';
 import { normalizeNFKC } from './strings';
+
+/**
+ * Http status codes.
+ */
+export const StatusCode = {
+    PaymentRequired: 402
+};
 
 /**
  * The app linking scheme.
@@ -139,17 +148,17 @@ export function getBackendSafeRoomName(room: ?string): ?string {
     } catch (e) {
         // This can happen though if we get an unencoded string and it contains
         // some characters that look like an encoded entity, but it's not.
-        // But in this case we're fine goin on...
+        // But in this case we're fine going on...
     }
 
     // Normalize the character set.
     room = normalizeNFKC(room);
 
     // Only decoded and normalized strings can be lowercased properly.
-    room = room.toLowerCase();
+    room = room?.toLowerCase();
 
     // But we still need to (re)encode it.
-    room = encodeURIComponent(room);
+    room = encodeURIComponent(room ?? '');
     /* eslint-enable no-param-reassign */
 
     // Unfortunately we still need to lowercase it, because encoding a string will
@@ -523,26 +532,36 @@ export function urlObjectToString(o: Object): ?string {
 
     // query/search
 
-    // Web's ExternalAPI jwt
-    const { jwt } = o;
+    // Web's ExternalAPI jwt and lang
+    const { jwt, lang, release } = o;
+
+    const search = new URLSearchParams(url.search);
 
     if (jwt) {
-        let { search } = url;
+        search.set('jwt', jwt);
+    }
 
-        if (search.indexOf('?jwt=') === -1 && search.indexOf('&jwt=') === -1) {
-            search.startsWith('?') || (search = `?${search}`);
-            search.length === 1 || (search += '&');
-            search += `jwt=${jwt}`;
+    const { defaultLanguage } = o.configOverwrite || {};
 
-            url.search = search;
-        }
+    if (lang || defaultLanguage) {
+        search.set('lang', lang || defaultLanguage);
+    }
+
+    if (release) {
+        search.set('release', release);
+    }
+
+    const searchString = search.toString();
+
+    if (searchString) {
+        url.search = `?${searchString}`;
     }
 
     // fragment/hash
 
     let { hash } = url;
 
-    for (const urlPrefix of [ 'config', 'interfaceConfig', 'devices', 'userInfo', 'appData' ]) {
+    for (const urlPrefix of [ 'config', 'iceServers', 'interfaceConfig', 'devices', 'userInfo', 'appData' ]) {
         const urlParamsArray
             = _objectToURLParamsArray(
                 o[`${urlPrefix}Overwrite`]
@@ -596,4 +615,69 @@ export function addHashParamsToURL(url: URL, hashParamsToAdd: Object = {}) {
  */
 export function getDecodedURI(uri: string) {
     return decodeURI(uri.replace(/^https?:\/\//i, ''));
+}
+
+/**
+ * Adds new param to a url string. Checks whether to use '?' or '&' as a separator (checks for already existing params).
+ *
+ * @param {string} url - The url to modify.
+ * @param {string} name - The param name to add.
+ * @param {string} value - The value for the param.
+ *
+ * @returns {string} - The modified url.
+ */
+export function appendURLParam(url: string, name: string, value: string) {
+    const newUrl = new URL(url);
+
+    newUrl.searchParams.append(name, value);
+
+    return newUrl.toString();
+}
+
+/**
+ * Adds new hash param to a url string.
+ * Checks whether to use '?' or '&' as a separator (checks for already existing params).
+ *
+ * @param {string} url - The url to modify.
+ * @param {string} name - The param name to add.
+ * @param {string} value - The value for the param.
+ *
+ * @returns {string} - The modified url.
+ */
+export function appendURLHashParam(url: string, name: string, value: string) {
+    const newUrl = new URL(url);
+    const dummyUrl = new URL('https://example.com');
+
+    // Copy current hash-parameters without the '#' as search-parameters.
+    dummyUrl.search = newUrl.hash.substring(1);
+
+    // Set or update value with the searchParams-API.
+    dummyUrl.searchParams.append(name, value);
+
+    // Write back as hash parameters.
+    newUrl.hash = dummyUrl.searchParams.toString();
+
+    return newUrl.toString();
+}
+
+/**
+ * Sanitizes the given URL so that it's safe to use. If it's unsafe, null is returned.
+ *
+ * @param {string|URL} url - The URL that needs to be sanitized.
+ *
+ * @returns {URL?} - The sanitized URL, or null otherwise.
+ */
+export function sanitizeUrl(url?: string | URL): URL | null {
+    if (!url) {
+        return null;
+    }
+
+    const urlStr = url.toString();
+    const result = _sanitizeUrl(urlStr);
+
+    if (result === 'about:blank') {
+        return null;
+    }
+
+    return new URL(result);
 }

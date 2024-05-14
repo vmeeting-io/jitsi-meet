@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 
-import { translate } from '../../base/i18n';
+import { translate } from '../../base/i18n/functions';
 /**
  * Abstract class to encapsulate the platform common code of the {@code BirthdayApprove}.
  */

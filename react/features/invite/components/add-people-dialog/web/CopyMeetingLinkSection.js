@@ -1,44 +1,42 @@
-// @flow
-
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { makeStyles } from 'tss-react/mui';
 
-import CopyButton from '../../../../base/buttons/CopyButton';
-import { translate } from '../../../../base/i18n';
-import { getDecodedURI } from '../../../../base/util';
+import CopyButton from '../../../../base/buttons/CopyButton.web';
+import { getDecodedURI } from '../../../../base/util/uri';
 
 
-type Props = {
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function,
-
-    /**
-     * The URL of the conference.
-     */
-    url: string
-};
+const useStyles = makeStyles()(theme => {
+    return {
+        label: {
+            display: 'block',
+            marginBottom: theme.spacing(2)
+        }
+    };
+});
 
 /**
  * Component meant to enable users to copy the conference URL.
  *
  * @returns {React$Element<any>}
  */
-function CopyMeetingLinkSection({ t, url }: Props) {
+function CopyMeetingLinkSection({ url }) {
+    const { classes } = useStyles();
+    const { t } = useTranslation();
+
     return (
         <>
-            <label htmlFor = { 'copy-button-id' }>{t('addPeople.shareLink')}</label>
+            <p className = { classes.label }>{t('addPeople.shareLink')}</p>
             <CopyButton
-                aria-label = { t('addPeople.copyLink') }
+                accessibilityText = { t('addPeople.accessibilityLabel.meetingLink', { url: getDecodedURI(url) }) }
                 className = 'invite-more-dialog-conference-url'
                 displayedText = { getDecodedURI(url) }
-                id = 'copy-button-id'
+                id = 'add-people-copy-link-button'
                 textOnCopySuccess = { t('addPeople.linkCopied') }
                 textOnHover = { t('addPeople.copyLink') }
-                textToCopy = { decodeURI(url) } />
+                textToCopy = { url } />
         </>
     );
 }
 
-export default translate(CopyMeetingLinkSection);
+export default CopyMeetingLinkSection;

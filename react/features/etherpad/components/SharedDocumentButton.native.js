@@ -1,20 +1,19 @@
 // @flow
+import { connect } from 'react-redux';
 
-import { createToolbarEvent, sendAnalytics } from '../../analytics';
-import { translate } from '../../base/i18n';
-import { IconShareDoc } from '../../base/icons';
-import { connect } from '../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { createToolbarEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
+import { translate } from '../../base/i18n/functions';
+import { IconShareDoc } from '../../base/icons/svg';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
 import { navigate } from '../../conference/components/native/ConferenceNavigationContainerRef';
 import { screen } from '../../conference/components/native/routes';
 
 
-type Props = AbstractButtonProps;
-
 /**
  * Implements an {@link AbstractButton} to open the chat screen on mobile.
  */
-class SharedDocumentButton extends AbstractButton<Props, *> {
+class SharedDocumentButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.document';
     icon = IconShareDoc;
     label = 'toolbar.documentOpen';

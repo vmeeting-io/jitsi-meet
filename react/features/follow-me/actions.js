@@ -1,7 +1,8 @@
 // @flow
 
-import { getCurrentConference, setFollowMe } from '../base/conference';
-import { getLocalParticipant } from '../base/participants';
+import { setFollowMe } from '../base/conference/actions';
+import { getCurrentConference } from '../base/conference/functions';
+import { getLocalParticipant } from '../base/participants/functions';
 
 import {
     SET_FOLLOW_ME_MODERATOR,

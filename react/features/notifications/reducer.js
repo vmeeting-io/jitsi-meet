@@ -5,8 +5,7 @@ import { ReducerRegistry } from '../base/redux';
 import {
     CLEAR_NOTIFICATIONS,
     HIDE_NOTIFICATION,
-    HIDE_RAISE_HAND_NOTIFICATIONS,
-    SET_NOTIFICATIONS_ENABLED,
+        SET_NOTIFICATIONS_ENABLED,
     SHOW_NOTIFICATION
 } from './actionTypes';
 import { NOTIFICATION_TYPE_PRIORITIES } from './constants';
@@ -44,14 +43,6 @@ ReducerRegistry.register('features/notifications',
                     notification => notification.uid !== action.uid)
             };
 
-        case HIDE_RAISE_HAND_NOTIFICATIONS:
-            return {
-                ...state,
-                notifications: state.notifications.filter(
-                    notification => !notification.props.raiseHandNotification
-                )
-            };
-
         case SET_NOTIFICATIONS_ENABLED:
             return {
                 ...state,
@@ -85,11 +76,24 @@ ReducerRegistry.register('features/notifications',
  * queue.
  */
 function _insertNotificationByPriority(notifications, notification) {
-    const newNotificationPriority
-        = NOTIFICATION_TYPE_PRIORITIES[notification.props.appearance] || 0;
 
-    // Default to putting the new notification at the end of the queue.
-    let insertAtLocation = notifications.length;
+    // Create a copy to avoid mutation.
+    const copyOfNotifications = notifications.slice();
+
+    // Get the index of any queued notification that has the same id as the new notification
+    let insertAtLocation = copyOfNotifications.findIndex(
+            (queuedNotification) =>
+                queuedNotification?.uid === notification?.uid
+    );
+
+    if (insertAtLocation !== -1) {
+        copyOfNotifications.splice(insertAtLocation, 1, notification);
+
+        return copyOfNotifications;
+    }
+
+    const newNotificationPriority
+        = NOTIFICATION_TYPE_PRIORITIES[notification.props.appearance ?? ''] || 0;
 
     // Find where to insert the new notification based on priority. Do not
     // insert at the front of the queue so that the user can finish acting on
@@ -97,7 +101,7 @@ function _insertNotificationByPriority(notifications, notification) {
     for (let i = 1; i < notifications.length; i++) {
         const queuedNotification = notifications[i];
         const queuedNotificationPriority
-            = NOTIFICATION_TYPE_PRIORITIES[queuedNotification.props.appearance]
+            = NOTIFICATION_TYPE_PRIORITIES[queuedNotification.props.appearance ?? '']
                 || 0;
 
         if (queuedNotificationPriority < newNotificationPriority) {
@@ -105,9 +109,6 @@ function _insertNotificationByPriority(notifications, notification) {
             break;
         }
     }
-
-    // Create a copy to avoid mutation and insert the notification.
-    const copyOfNotifications = notifications.slice();
 
     copyOfNotifications.splice(insertAtLocation, 0, notification);
 

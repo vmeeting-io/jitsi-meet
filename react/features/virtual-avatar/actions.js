@@ -1,6 +1,6 @@
 // @flow
 
-import { createVirtualAvatarEffect } from '../stream-effects/virtual-avatar';
+import { createVirtualAvatarEffect } from '../stream-effects/virtual-avatar/actions';
 
 import { VIRTUAL_AVATAR_ENABLED, SET_VIRTUAL_AVATAR, VIRTUAL_AVATAR_TRACK_CHANGED } from './actionTypes';
 import logger from './logger';

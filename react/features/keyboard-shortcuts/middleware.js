@@ -1,10 +1,10 @@
 // @flow
 
-import { MiddlewareRegistry } from '../base/redux';
+import { SET_CONFIG } from '../base/config/actionTypes';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { CAPTURE_EVENTS } from '../remote-control/actionTypes';
 
-import { OPEN_KEYBOARD_SHORTCUTS_DIALOG } from './actionTypes';
-
-declare var APP: Object;
+import { disableKeyboardShortcuts, enableKeyboardShortcuts } from './actions.any';
 
 /**
  * Implements the middleware of the feature keyboard-shortcuts.
@@ -14,12 +14,33 @@ declare var APP: Object;
  */
 // eslint-disable-next-line no-unused-vars
 MiddlewareRegistry.register(store => next => action => {
+    const { dispatch } = store;
+
     switch (action.type) {
-    case OPEN_KEYBOARD_SHORTCUTS_DIALOG:
-        if (typeof APP === 'object') {
-            APP.keyboardshortcut.openDialog();
+    case CAPTURE_EVENTS:
+        if (action.isCapturingEvents) {
+            dispatch(disableKeyboardShortcuts());
+        } else {
+            dispatch(enableKeyboardShortcuts());
         }
-        break;
+
+        return next(action);
+    case SET_CONFIG: {
+        const result = next(action);
+
+        const state = store.getState();
+        const { disableShortcuts } = state['features/base/config'];
+
+        if (disableShortcuts !== undefined) {
+            if (disableShortcuts) {
+                dispatch(disableKeyboardShortcuts());
+            } else {
+                dispatch(enableKeyboardShortcuts());
+            }
+        }
+
+        return result;
+    }
     }
 
     return next(action);

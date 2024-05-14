@@ -1,20 +1,20 @@
 // @flow
 
-import Spinner from '@atlaskit/spinner';
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 
-import { hideDialog } from '../../base/dialog';
-import { translate } from '../../base/i18n';
-import { VIDEO_TYPE } from '../../base/media';
+import { hideDialog } from '../../base/dialog/actions';
+import { translate } from '../../base/i18n/functions';
 import Video from '../../base/media/components/Video';
-import { connect, equals } from '../../base/redux';
-import { getCurrentCameraDeviceId } from '../../base/settings';
+import { equals } from '../../base/redux/functions';
+import { getCurrentCameraDeviceId } from '../../base/settings/functions.web';
 import { createLocalTracksF } from '../../base/tracks/functions';
-import { toggleAvatarAndBackgroundEffects } from '../functions';
-import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications';
+import Spinner from '../../base/ui/components/web/Spinner';
+import { NOTIFICATION_TIMEOUT_TYPE } from '../../notifications/constants';
 import { showWarningNotification } from '../../notifications/actions';
-import { toggleVirtualAvatarEffect } from '../actions';
-import { toggleBackgroundEffect } from '../../virtual-background/actions';
+
+import { toggleAvatarAndBackgroundEffects } from '../functions';
+
 import logger from '../logger';
 
 const videoClassName = 'video-preview-video';

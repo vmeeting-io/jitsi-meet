@@ -1,49 +1,29 @@
 // @flow
 
 import {
-    isParticipantApproved,
     isEnabledFromState,
     isLocalParticipantApprovedFromState,
+    isParticipantApproved,
     isSupported
 } from '../av-moderation/functions';
-import { getFeatureFlag, INVITE_ENABLED } from '../base/flags';
+import { getCurrentConference } from '../base/conference/functions';
+import { INVITE_ENABLED, PARTICIPANTS_ENABLED } from '../base/flags/constants';
+import { getFeatureFlag } from '../base/flags/functions';
 import { MEDIA_TYPE, type MediaType } from '../base/media/constants';
 import {
     getDominantSpeakerParticipant,
-    isLocalParticipantModerator,
-    isParticipantModerator,
     getLocalParticipant,
+    getRaiseHandsQueue,
     getRemoteParticipantsSorted,
-    getRaiseHandsQueue
+    isLocalParticipantModerator,
+    isParticipantModerator
 } from '../base/participants/functions';
-import { toState } from '../base/redux';
+import { toState } from '../base/redux/functions';
 import { normalizeAccents } from '../base/util/strings';
+import { BREAKOUT_ROOMS_RENAME_FEATURE } from '../breakout-rooms/constants';
 import { isInBreakoutRoom } from '../breakout-rooms/functions';
 
-import { QUICK_ACTION_BUTTON, REDUCER_KEY, MEDIA_STATE } from './constants';
-
-/**
- * Generates a class attribute value.
- *
- * @param {Iterable<string>} args - String iterable.
- * @returns {string} Class attribute value.
- */
-export const classList = (...args: Array<string | boolean>) => args.filter(Boolean).join(' ');
-
-/**
- * Find the first styled ancestor component of an element.
- *
- * @param {Element} target - Element to look up.
- * @param {string} cssClass - Styled component reference.
- * @returns {Element|null} Ancestor.
- */
-export const findAncestorByClass = (target: Object, cssClass: string) => {
-    if (!target || target.classList.contains(cssClass)) {
-        return target;
-    }
-
-    return findAncestorByClass(target.parentElement, cssClass);
-};
+import { MEDIA_STATE, QUICK_ACTION_BUTTON, REDUCER_KEY } from './constants';
 
 /**
  * Checks if a participant is force muted.
@@ -55,7 +35,7 @@ export const findAncestorByClass = (target: Object, cssClass: string) => {
  */
 export function isForceMuted(participant: Object, mediaType: MediaType, state: Object) {
     if (isEnabledFromState(mediaType, state)) {
-        if (participant.local) {
+        if (participant?.local) {
             return !isLocalParticipantApprovedFromState(mediaType, state);
         }
 
@@ -64,7 +44,7 @@ export function isForceMuted(participant: Object, mediaType: MediaType, state: O
             return false;
         }
 
-        return !isParticipantApproved(participant.id, mediaType)(state);
+        return !isParticipantApproved(participant?.id ?? '', mediaType)(state);
     }
 
     return false;
@@ -117,52 +97,26 @@ export function getParticipantVideoMediaState(participant: Object, muted: Boolea
 }
 
 /**
- * Determines the presenter media state for a participant.
- *
- * @param {Object} participant - The participant.
- * @param {boolean} muted - The mute state of the participant.
- * @param {Object} state - The redux state.
- * @returns {MediaState}
- */
-export function getParticipantPresenterMediaState(participant: Object, state: Object) {
-    if (isForceMuted(participant, MEDIA_TYPE.PRESENTER, state)) {
-        return MEDIA_STATE.FORCE_MUTED;
-    }
-
-    return MEDIA_STATE.UNMUTED;
-}
-
-/**
- * Get a style property from a style declaration as a float.
- *
- * @param {CSSStyleDeclaration} styles - Style declaration.
- * @param {string} name - Property name.
- * @returns {number} Float value.
- */
-export const getFloatStyleProperty = (styles: Object, name: string) =>
-    parseFloat(styles.getPropertyValue(name));
-
-/**
- * Gets the outer height of an element, including margins.
- *
- * @param {Element} element - Target element.
- * @returns {number} Computed height.
- */
-export const getComputedOuterHeight = (element: HTMLElement) => {
-    const computedStyle = getComputedStyle(element);
-
-    return element.offsetHeight
-    + getFloatStyleProperty(computedStyle, 'margin-top')
-    + getFloatStyleProperty(computedStyle, 'margin-bottom');
-};
-
-/**
  * Returns this feature's root state.
  *
- * @param {Object} state - Global state.
+ * @param {IReduxState} state - Global state.
  * @returns {Object} Feature state.
  */
 const getState = (state: Object) => state[REDUCER_KEY];
+
+/**
+ * Returns the participants pane config.
+ *
+ * @param {IStateful} stateful - The redux store, the redux
+ * {@code getState} function, or the redux state itself.
+ * @returns {Object}
+ */
+export const getParticipantsPaneConfig = (stateful: IStateful) => {
+    const state = toState(stateful);
+    const { participantsPane = {} } = state['features/base/config'];
+
+    return participantsPane;
+};
 
 /**
  * Is the participants pane open.
@@ -178,14 +132,27 @@ export const getParticipantsPaneOpen = (state: Object) => Boolean(getState(state
  *
  * @param {Object} participant - The participant.
  * @param {boolean} isAudioMuted - If audio is muted for the participant.
- * @param {Object} state - The redux state.
+ * @param {boolean} isVideoMuted - If audio is muted for the participant.
+ * @param {IReduxState} state - The redux state.
  * @returns {string} - The type of the quick action button.
  */
-export function getQuickActionButtonType(participant: Object, isAudioMuted: Boolean, state: Object) {
+export function getQuickActionButtonType(
+    participant: Object,
+    isAudioMuted: Boolean,
+    isVideoMuted: Boolean,
+    state: Object) {
     // handled only by moderators
+    const isVideoForceMuted = isForceMuted(participant, MEDIA_TYPE.VIDEO, state);
+
     if (isLocalParticipantModerator(state)) {
         if (!isAudioMuted) {
             return QUICK_ACTION_BUTTON.MUTE;
+        }
+        if (!isVideoMuted) {
+            return QUICK_ACTION_BUTTON.STOP_VIDEO;
+        }
+        if (isVideoForceMuted) {
+            return QUICK_ACTION_BUTTON.ALLOW_VIDEO;
         }
         if (isSupported()(state)) {
             return QUICK_ACTION_BUTTON.ASK_TO_UNMUTE;
@@ -212,23 +179,25 @@ export const shouldRenderInviteButton = (state: Object) => {
 /**
  * Selector for retrieving ids of participants in the order that they are displayed in the filmstrip (with the
  * exception of participants with raised hand). The participants are reordered as follows.
- * 1. Local participant.
- * 2. Participants with raised hand.
- * 3. Participants with screenshare sorted alphabetically by their display name.
- * 4. Shared video participants.
- * 5. Recent speakers sorted alphabetically by their display name.
- * 6. Rest of the participants sorted alphabetically by their display name.
+ * 1. Dominant speaker.
+ * 2. Local participant.
+ * 3. Participants with raised hand.
+ * 4. Participants with screenshare sorted alphabetically by their display name.
+ * 5. Shared video participants.
+ * 6. Recent speakers sorted alphabetically by their display name.
+ * 7. Rest of the participants sorted alphabetically by their display name.
  *
  * @param {(Function|Object)} stateful - The (whole) redux state, or redux's
  * {@code getState} function to be used to retrieve the state features/base/participants.
  * @returns {Array<string>}
  */
 export function getSortedParticipantIds(stateful: Object | Function): Array<string> {
-    const { id } = getLocalParticipant(stateful);
+    const id = getLocalParticipant(stateful)?.id;
     const remoteParticipants = getRemoteParticipantsSorted(stateful);
     const reorderedParticipants = new Set(remoteParticipants);
-    const raisedHandParticipants = getRaiseHandsQueue(stateful).map(({ id: particId }) => particId);;
+    const raisedHandParticipants = getRaiseHandsQueue(stateful).map(({ id: particId }) => particId);
     const remoteRaisedHandParticipants = new Set(raisedHandParticipants || []);
+    const dominantSpeaker = getDominantSpeakerParticipant(stateful);
 
     for (const participant of remoteRaisedHandParticipants.keys()) {
         // Avoid duplicates.
@@ -237,10 +206,20 @@ export function getSortedParticipantIds(stateful: Object | Function): Array<stri
         }
     }
 
-    const local = remoteRaisedHandParticipants.has(id) ? [] : [ id ];
+    const dominant = [];
+    const dominantId = dominantSpeaker?.id;
+    const local = remoteRaisedHandParticipants.has(id ?? '') ? [] : [ id ];
+
+    // In case dominat speaker has raised hand, keep the order in the raised hand queue.
+    // In case they don't have raised hand, goes first in the participants list.
+    if (dominantId && dominantId !== id && !remoteRaisedHandParticipants.has(dominantId)) {
+        reorderedParticipants.delete(dominantId);
+        dominant.push(dominantId);
+    }
 
     // Move self and participants with raised hand to the top of the list.
     return [
+        ...dominant,
         ...local,
         ...Array.from(remoteRaisedHandParticipants.keys()),
         ...Array.from(reorderedParticipants.keys())
@@ -258,20 +237,79 @@ export function participantMatchesSearch(participant: Object, searchString: stri
     if (searchString === '') {
         return true;
     }
+    const participantName = normalizeAccents(participant?.name || participant?.displayName || '')
+        .toLowerCase();
+    const lowerCaseSearchString = searchString.trim().toLowerCase();
 
-    const names = normalizeAccents(participant?.name || participant?.displayName || '')
-        .toLowerCase()
-        .split(' ');
-    const lowerCaseSearchString = searchString.toLowerCase();
-
-    for (const name of names) {
-        if (name.startsWith(lowerCaseSearchString)) {
-            return true;
-        }
-    }
-
-    return false;
+    return participantName.includes(lowerCaseSearchString);
 }
+
+/**
+ * Returns whether the more actions button is visible.
+ *
+ * @param {IReduxState} state - Global state.
+ * @returns {boolean}
+ */
+export const isMoreActionsVisible = (state) => {
+    const isLocalModerator = isLocalParticipantModerator(state);
+    const inBreakoutRoom = isInBreakoutRoom(state);
+    const { hideMoreActionsButton } = getParticipantsPaneConfig(state);
+
+    return inBreakoutRoom ? false : !hideMoreActionsButton && isLocalModerator;
+};
+
+/**
+ * Returns whether the mute all button is visible.
+ *
+ * @param {IReduxState} state - Global state.
+ * @returns {boolean}
+ */
+export const isMuteAllVisible = (state) => {
+    const isLocalModerator = isLocalParticipantModerator(state);
+    const inBreakoutRoom = isInBreakoutRoom(state);
+    const { hideMuteAllButton } = getParticipantsPaneConfig(state);
+
+    return inBreakoutRoom ? false : !hideMuteAllButton && isLocalModerator;
+};
+
+/**
+ * Returns true if renaming the currently joined breakout room is allowed and false otherwise.
+ *
+ * @param {IReduxState} state - The redux state.
+ * @returns {boolean} - True if reanming the currently joined breakout room is allowed and false otherwise.
+ */
+export function isCurrentRoomRenamable(state) {
+    return isInBreakoutRoom(state) && isBreakoutRoomRenameAllowed(state);
+}
+
+/**
+ * Returns true if renaming a breakout room is allowed and false otherwise.
+ *
+ * @param {IReduxState} state - The redux state.
+ * @returns {boolean} - True if renaming a breakout room is allowed and false otherwise.
+ */
+export function isBreakoutRoomRenameAllowed(state) {
+    const isLocalModerator = isLocalParticipantModerator(state);
+    const conference = getCurrentConference(state);
+    const isRenameBreakoutRoomsSupported
+            = conference?.getBreakoutRooms()?.isFeatureSupported(BREAKOUT_ROOMS_RENAME_FEATURE) ?? false;
+
+    return isLocalModerator && isRenameBreakoutRoomsSupported;
+}
+
+/**
+ * Returns true if participants is enabled and false otherwise.
+ *
+ * @param {IStateful} stateful - The redux store, the redux
+ * {@code getState} function, or the redux state itself.
+ * @returns {boolean}
+ */
+export const isParticipantsPaneEnabled = (stateful) => {
+    const state = toState(stateful);
+    const { enabled = true } = getParticipantsPaneConfig(state);
+
+    return Boolean(getFeatureFlag(state, PARTICIPANTS_ENABLED, true) && enabled);
+};
 
 /** 
  * Helper function that retrieves today's date and returns a string in the format YYYY-MM-DD 

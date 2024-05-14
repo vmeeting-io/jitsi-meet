@@ -19,6 +19,26 @@ export const CLEAR_TOOLBOX_TIMEOUT = 'CLEAR_TOOLBOX_TIMEOUT';
 export const FULL_SCREEN_CHANGED = 'FULL_SCREEN_CHANGED';
 
 /**
+ * The type of (redux) action which sets the buttonsWithNotifyClick redux property.
+ *
+ * {
+ *     type: SET_BUTTONS_WITH_NOTIFY_CLICK,
+ *     buttonsWithNotifyClick: Map<string, NOTIFY_CLICK_MODE>
+ * }
+ */
+export const SET_BUTTONS_WITH_NOTIFY_CLICK = 'SET_BUTTONS_WITH_NOTIFY_CLICK';
+
+/**
+ * The type of (redux) action which sets the participantMenuButtonsWithNotifyClick redux property.
+ *
+ * {
+ *     type: SET_BUTTONS_WITH_NOTIFY_CLICK,
+ *     participantMenuButtonsWithNotifyClick: Map<string, NOTIFY_CLICK_MODE>
+ * }
+ */
+export const SET_PARTICIPANT_MENU_BUTTONS_WITH_NOTIFY_CLICK = 'SET_PARTICIPANT_MENU_BUTTONS_WITH_NOTIFY_CLICK';
+
+/**
  * The type of (redux) action which requests full screen mode be entered or
  * exited.
  *
@@ -28,6 +48,16 @@ export const FULL_SCREEN_CHANGED = 'FULL_SCREEN_CHANGED';
  * }
  */
 export const SET_FULL_SCREEN = 'SET_FULL_SCREEN';
+
+/**
+ * The type of the (redux) action which shows/hides the hangup menu.
+ *
+ * {
+ *     type: SET_HANGUP_MENU_VISIBLE,
+ *     visible: boolean
+ * }
+ */
+export const SET_HANGUP_MENU_VISIBLE = 'SET_HANGUP_MENU_VISIBLE';
 
 /**
  * The type of the redux action that toggles whether the overflow menu(s) should be shown as drawers.
@@ -44,6 +74,7 @@ export const SET_OVERFLOW_DRAWER = 'SET_OVERFLOW_DRAWER';
  */
 export const SET_OVERFLOW_MENU_VISIBLE = 'SET_OVERFLOW_MENU_VISIBLE';
 
+
 /**
  * The type of the (redux) action which shows/hides the ShareMenu.
  * 
@@ -55,7 +86,17 @@ export const SET_OVERFLOW_MENU_VISIBLE = 'SET_OVERFLOW_MENU_VISIBLE';
 export const SET_SHARE_MENU_VISIBLE = 'SET_SHARE_MENU_VISIBLE';
 
 /**
- * The type of the action which sets the indicator which determiens whether a
+ * The type of the action which sets enabled toolbar buttons.
+ *
+ * {
+ *     type: SET_TOOLBAR_BUTTONS,
+ *     toolbarButtons: Array<string>
+ * }
+ */
+export const SET_TOOLBAR_BUTTONS = 'SET_TOOLBAR_BUTTONS';
+
+/**
+ * The type of the action which sets the indicator which determines whether a
  * fToolbar in the Toolbox is hovered.
  *
  * {
@@ -105,3 +146,12 @@ export const SET_TOOLBOX_VISIBLE = 'SET_TOOLBOX_VISIBLE';
  * }
  */
 export const TOGGLE_TOOLBOX_VISIBLE = 'TOGGLE_TOOLBOX_VISIBLE';
+
+/**
+ * The type of the redux action which sets whether the toolbox should be shifted up or not.
+ *
+ * {
+ *     type: SET_TOOLBOX_SHIFT_UP
+ * }
+ */
+export const SET_TOOLBOX_SHIFT_UP = 'SET_TOOLBOX_SHIFT_UP';

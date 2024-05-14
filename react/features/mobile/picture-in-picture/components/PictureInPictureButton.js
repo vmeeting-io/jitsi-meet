@@ -1,32 +1,20 @@
 // @flow
 
 import { NativeModules, Platform } from 'react-native';
+import { connect } from 'react-redux';
 
-import { PIP_ENABLED, getFeatureFlag } from '../../../base/flags';
-import { translate } from '../../../base/i18n';
-import { IconMenuDown } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { isLocalVideoTrackDesktop } from '../../../base/tracks/functions';
+import { PIP_ENABLED } from '../../../../base/flags/constants';
+import { getFeatureFlag } from '../../../../base/flags/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconMenuDown } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import { isLocalVideoTrackDesktop } from '../../../base/tracks/functions.any';
 import { enterPictureInPicture } from '../actions';
-
-type Props = AbstractButtonProps & {
-
-    /**
-     * Whether Picture-in-Picture is enabled or not.
-     */
-    _enabled: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
 
 /**
  * An implementation of a button for entering Picture-in-Picture mode.
  */
-class PictureInPictureButton extends AbstractButton<Props, *> {
+class PictureInPictureButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.pip';
     icon = IconMenuDown;
     label = 'toolbar.pip';

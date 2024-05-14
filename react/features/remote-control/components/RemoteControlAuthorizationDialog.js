@@ -1,59 +1,23 @@
-// @flow
-
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { Dialog, hideDialog } from '../../base/dialog';
-import { translate } from '../../base/i18n';
-import { getParticipantById } from '../../base/participants';
-import { connect } from '../../base/redux';
-import { getLocalVideoTrack } from '../../base/tracks';
-import { grant, deny } from '../actions';
-
-declare var APP: Object;
-
-/**
- * The type of the React {@code Component} props of
- * {@link RemoteControlAuthorizationDialog}.
- */
-type Props = {
-
-    /**
-     * The display name of the participant who is requesting authorization for
-     * remote desktop control session.
-     */
-    _displayName: string,
-
-    _isScreenSharing: boolean,
-    _sourceType: string,
-
-    /**
-     * Used to show/hide the dialog on cancel.
-     */
-    dispatch: Function,
-
-    /**
-     * The ID of the participant who is requesting authorization for remote
-     * desktop control session.
-     */
-    participantId: string,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
+import { translate } from '../../base/i18n/functions';
+import { getParticipantById } from '../../base/participants/functions';
+import { getLocalVideoTrack } from '../../base/tracks/functions.any';
+import Dialog from '../../base/ui/components/web/Dialog';
+import { deny, grant } from '../actions';
 
 /**
  * Implements a dialog for remote control authorization.
  */
-class RemoteControlAuthorizationDialog extends Component<Props> {
+class RemoteControlAuthorizationDialog extends Component {
     /**
      * Initializes a new RemoteControlAuthorizationDialog instance.
      *
      * @param {Object} props - The read-only properties with which the new
      * instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this._onCancel = this._onCancel.bind(this);
@@ -68,11 +32,10 @@ class RemoteControlAuthorizationDialog extends Component<Props> {
     render() {
         return (
             <Dialog
-                okKey = { 'dialog.allow' }
+                ok = {{ translationKey: 'dialog.allow' }}
                 onCancel = { this._onCancel }
                 onSubmit = { this._onSubmit }
-                titleKey = 'dialog.remoteControlTitle'
-                width = 'small'>
+                titleKey = 'dialog.remoteControlTitle'>
                 {
                     this.props.t(
                         'dialog.remoteControlRequestMessage',
@@ -106,8 +69,6 @@ class RemoteControlAuthorizationDialog extends Component<Props> {
         );
     }
 
-    _onCancel: () => boolean;
-
     /**
      * Notifies the remote control module about the denial of the remote control
      * request.
@@ -123,8 +84,6 @@ class RemoteControlAuthorizationDialog extends Component<Props> {
         return true;
     }
 
-    _onSubmit: () => boolean;
-
     /**
      * Notifies the remote control module that the remote control request is
      * accepted.
@@ -138,7 +97,6 @@ class RemoteControlAuthorizationDialog extends Component<Props> {
     _onSubmit() {
         const { dispatch, participantId } = this.props;
 
-        dispatch(hideDialog());
         dispatch(grant(participantId));
 
         return false;

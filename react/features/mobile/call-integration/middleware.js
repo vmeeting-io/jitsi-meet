@@ -1,34 +1,33 @@
-// @flow
-
 import { Alert, NativeModules, Platform } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
 
-import { createTrackMutedEvent, sendAnalytics } from '../../analytics';
+import { createTrackMutedEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
 import { appNavigate } from '../../app/actions';
-import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../../base/app';
-import { SET_AUDIO_ONLY } from '../../base/audio-only';
+import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../../base/app/actionTypes';
+import { SET_AUDIO_ONLY } from '../../base/audio-only/actionTypes';
 import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
     CONFERENCE_LEFT,
     CONFERENCE_WILL_JOIN,
-    CONFERENCE_WILL_LEAVE,
+    CONFERENCE_WILL_LEAVE
+} from '../../base/conference/actionTypes';
+import {
     getConferenceName,
     getCurrentConference
-} from '../../base/conference';
-import { getInviteURL } from '../../base/connection';
-import {
-    MEDIA_TYPE,
-    isVideoMutedByAudioOnly,
-    setAudioMuted
-} from '../../base/media';
-import { MiddlewareRegistry } from '../../base/redux';
+} from '../../base/conference/functions';
+import { getInviteURL } from '../../base/connection/functions';
+import { setAudioMuted } from '../../base/media/actions';
+import { MEDIA_TYPE } from '../../base/media/constants';
+import { isVideoMutedByAudioOnly } from '../../base/media/functions';
+import MiddlewareRegistry from '../../base/redux/MiddlewareRegistry';
 import {
     TRACK_ADDED,
     TRACK_REMOVED,
-    TRACK_UPDATED,
-    isLocalTrackMuted
-} from '../../base/tracks';
+    TRACK_UPDATED
+} from '../../base/tracks/actionTypes';
+import { isLocalTrackMuted } from '../../base/tracks/functions.any';
 
 import CallKit from './CallKit';
 import ConnectionService from './ConnectionService';
@@ -271,7 +270,7 @@ function _conferenceWillJoin({ dispatch, getState }, next, action) {
     }
 
     // When assigning the call UUID, do so in upper case, since iOS will return
-    // it upper cased.
+    // it upper-cased.
     conference.callUUID = (callUUID || uuidv4()).toUpperCase();
 
     CallIntegration.startCall(conference.callUUID, handle, hasVideo)
@@ -291,7 +290,7 @@ function _conferenceWillJoin({ dispatch, getState }, next, action) {
                 _updateCallIntegrationMuted(conference, state);
             }
         })
-        .catch(error => {
+        .catch((error: any) => {
             // Currently this error codes are emitted only by Android.
             //
             if (error.code === 'CREATE_OUTGOING_CALL_FAILED') {
@@ -326,7 +325,7 @@ function _conferenceWillJoin({ dispatch, getState }, next, action) {
  * @param {Object} state - Redux store.
  * @returns {void}
  */
-function _handleConnectionServiceFailure(state: Object) {
+function _handleConnectionServiceFailure(state) {
     const conference = getCurrentConference(state);
 
     if (conference) {
@@ -355,8 +354,9 @@ function _handleConnectionServiceFailure(state: Object) {
  * {@code performEndCallAction}.
  * @returns {void}
  */
-function _onPerformEndCallAction({ callUUID }) {
-    const { dispatch, getState } = this; // eslint-disable-line no-invalid-this
+function _onPerformEndCallAction({ callUUID }: { callUUID: string; }) {
+    // @ts-ignore
+    const { dispatch, getState } = this; // eslint-disable-line @typescript-eslint/no-invalid-this
     const conference = getCurrentConference(getState);
 
     if (conference && conference.callUUID === callUUID) {
@@ -375,8 +375,9 @@ function _onPerformEndCallAction({ callUUID }) {
  * {@code performSetMutedCallAction}.
  * @returns {void}
  */
-function _onPerformSetMutedCallAction({ callUUID, muted }) {
-    const { dispatch, getState } = this; // eslint-disable-line no-invalid-this
+function _onPerformSetMutedCallAction({ callUUID, muted }: { callUUID: string; muted: boolean; }) {
+    // @ts-ignore
+    const { dispatch, getState } = this; // eslint-disable-line @typescript-eslint/no-invalid-this
     const conference = getCurrentConference(getState);
 
     if (conference && conference.callUUID === callUUID) {
@@ -417,7 +418,7 @@ function _setAudioOnly({ getState }, next, action) {
 
     const conference = getCurrentConference(state);
 
-    if (conference && conference.callUUID) {
+    if (conference?.callUUID) {
         CallIntegration.updateCall(
             conference.callUUID,
             { hasVideo: !action.audioOnly });

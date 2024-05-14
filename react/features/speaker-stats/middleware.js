@@ -2,27 +2,96 @@
 /* global config */
 
 import { find } from 'lodash';
+import { batch } from 'react-redux';
 
-import { MiddlewareRegistry } from '../base/redux';
 import {
     PARTICIPANT_JOINED,
-    PARTICIPANT_LEFT,
     PARTICIPANT_KICKED,
+    PARTICIPANT_LEFT,
     PARTICIPANT_UPDATED
 } from '../base/participants/actionTypes';
-import { speakerStatsAdded, speakerStatsUpdated } from './actions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+
+import {
+    ADD_TO_OFFSET,
+    INIT_SEARCH,
+    INIT_UPDATE_STATS,
+    RESET_SEARCH_CRITERIA
+} from './actionTypes';
+import {
+    clearTimelineBoundary,
+    initReorderStats,
+    setTimelineBoundary,
+    speakerStatsAdded,
+    speakerStatsUpdated,
+    updateSortedSpeakerStatsIds,
+    updateStats
+} from './actions.any';
+import { CLEAR_TIME_BOUNDARY_THRESHOLD } from './constants';
+import {
+    filterBySearchCriteria,
+    getCurrentDuration,
+    getPendingReorder,
+    getSortedSpeakerStatsIds,
+    getTimelineBoundaries,
+    resetHiddenStats
+} from './functions';
 
 MiddlewareRegistry.register(store => next => action => {
-    const result = next(action);
+    const { dispatch, getState } = store;
 
     switch (action.type) {
-    case PARTICIPANT_JOINED: {
-        _participantJoined(store, action);
+    case INIT_SEARCH: {
+        const state = getState();
+        const stats = filterBySearchCriteria(state);
+
+        dispatch(updateStats(stats));
         break;
     }
 
+    case INIT_UPDATE_STATS:
+        if (action.getSpeakerStats) {
+            const state = getState();
+            const speakerStats = { ...action.getSpeakerStats() };
+            const stats = filterBySearchCriteria(state, speakerStats);
+            const pendingReorder = getPendingReorder(state);
+
+            batch(() => {
+                if (pendingReorder) {
+                    dispatch(updateSortedSpeakerStatsIds(getSortedSpeakerStatsIds(state, stats) ?? []));
+                }
+
+                dispatch(updateStats(stats));
+            });
+
+        }
+
+        break;
+
+    case RESET_SEARCH_CRITERIA: {
+        const state = getState();
+        const stats = resetHiddenStats(state);
+
+        dispatch(updateStats(stats));
+        break;
+    }
+    case PARTICIPANT_JOINED:
+    case PARTICIPANT_LEFT:
+    case PARTICIPANT_KICKED:
     case PARTICIPANT_UPDATED: {
-        _participantUpdated(store, action);
+        const { pendingReorder } = getState()['features/speaker-stats'];
+
+        if (!pendingReorder) {
+            dispatch(initReorderStats());
+        }
+
+        if (action.type === PARTICIPANT_JOINED) {
+            _participantJoined(store, action);
+        }
+
+        if (action.type === PARTICIPANT_UPDATED) {
+            _participantUpdated(store, action);
+        }
         break;
     }
 
@@ -31,9 +100,24 @@ MiddlewareRegistry.register(store => next => action => {
         _participantLeft(store, action);
         break;
     }
+
+    case ADD_TO_OFFSET: {
+        const state = getState();
+        const { timelineBoundary } = state['features/speaker-stats'];
+        const { right } = getTimelineBoundaries(state);
+        const currentDuration = getCurrentDuration(state) ?? 0;
+
+        if (Math.abs((right + action.value) - currentDuration) < CLEAR_TIME_BOUNDARY_THRESHOLD) {
+            dispatch(clearTimelineBoundary());
+        } else if (!timelineBoundary) {
+            dispatch(setTimelineBoundary(currentDuration ?? 0));
+        }
+
+        break;
+    }
     }
 
-    return result;
+    return next(action);
 });
 
 function _participantJoined(store, action) {

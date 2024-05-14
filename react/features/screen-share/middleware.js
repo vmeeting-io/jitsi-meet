@@ -1,9 +1,10 @@
 // @flow
 
-import { CONFERENCE_JOINED } from '../base/conference';
-import { MiddlewareRegistry } from '../base/redux';
+import { CONFERENCE_JOINED } from '../base/conference/actionTypes';
+import { MEDIA_TYPE } from '../base/media/constants';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
 
-import { SET_SCREENSHARE_CAPTURE_FRAME_RATE } from './actionTypes';
+import { SET_SCREENSHARE_CAPTURE_FRAME_RATE, SET_SCREEN_AUDIO_SHARE_STATE } from './actionTypes';
 import logger from './logger';
 
 /**
@@ -14,6 +15,8 @@ import logger from './logger';
  */
 MiddlewareRegistry.register(store => next => action => {
     const result = next(action);
+    const { getState } = store;
+    const state = getState();
 
     switch (action.type) {
     case CONFERENCE_JOINED: {
@@ -25,6 +28,19 @@ MiddlewareRegistry.register(store => next => action => {
 
         _setScreenshareCaptureFps(store, captureFrameRate);
         break;
+    }
+
+    case SET_SCREEN_AUDIO_SHARE_STATE: {
+        const { isSharingAudio } = action;
+        const { participantId } = state['features/large-video'];
+
+        if (isSharingAudio) {
+            logger.debug(`User with id: ${participantId} playing audio sharing.`);
+            APP.API.notifyAudioOrVideoSharingToggled(MEDIA_TYPE.AUDIO, 'playing', participantId);
+        } else {
+            logger.debug(`User with id: ${participantId} stop audio sharing.`);
+            APP.API.notifyAudioOrVideoSharingToggled(MEDIA_TYPE.AUDIO, 'stop', participantId);
+        }
     }
     }
 

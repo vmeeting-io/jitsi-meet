@@ -1,26 +1,13 @@
-// @flow
-
 import React, { Component } from 'react';
 
-import { translate } from '../../base/i18n';
-
-/**
- * The type of the React {@code Component} props of {@link OldElectronAPPNotificationDescription}.
- */
-type Props = {
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
+import { translate } from '../../base/i18n/functions';
 
 /**
  * A component that renders the description of the notification for old Jitsi Meet Electron clients.
  *
  * @augments AbstractApp
  */
-export class OldElectronAPPNotificationDescription extends Component<Props> {
+export class OldElectronAPPNotificationDescription extends Component {
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -40,7 +27,8 @@ export class OldElectronAPPNotificationDescription extends Component<Props> {
                     { t('notify.oldElectronClientDescription2') }
                 </a>
                 { t('notify.oldElectronClientDescription3') }
-            </div>);
+            </div>
+        );
     }
 
 }

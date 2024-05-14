@@ -1,6 +1,6 @@
 /* global ga */
 
-import { getJitsiMeetGlobalNS } from '../../base/util';
+import { getJitsiMeetGlobalNS } from '../../base/util/helpers';
 
 import AbstractHandler from './AbstractHandler';
 
@@ -8,11 +8,13 @@ import AbstractHandler from './AbstractHandler';
  * Analytics handler for Google Analytics.
  */
 class GoogleAnalyticsHandler extends AbstractHandler {
+    _userProperties: Object;
+    _userPropertiesString: string;
 
     /**
      * Creates new instance of the GA analytics handler.
      *
-     * @param {Object} options -
+     * @param {Object} options - The Google Analytics options.
      * @param {string} options.googleAnalyticsTrackingId - The GA track id
      * required by the GA API.
      */
@@ -32,7 +34,7 @@ class GoogleAnalyticsHandler extends AbstractHandler {
     /**
      * Initializes the ga object.
      *
-     * @param {Object} options -
+     * @param {Object} options - The Google Analytics options.
      * @param {string} options.googleAnalyticsTrackingId - The GA track id
      * required by the GA API.
      * @returns {void}
@@ -64,7 +66,7 @@ class GoogleAnalyticsHandler extends AbstractHandler {
         let value = event && event.attributes && event.attributes.value;
 
         // Try to extract an integer from the "value" attribute.
-        value = Math.round(parseFloat(value));
+        value = Math.round(parseFloat(value ?? ''));
 
         return value;
     }

@@ -1,80 +1,52 @@
-// @flow
-
 import React, { PureComponent } from 'react';
 import { View } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { connect } from 'react-redux';
 
-import { ColorSchemeRegistry } from '../../../base/color-scheme';
-import { translate } from '../../../base/i18n';
-import { IconArrowBack } from '../../../base/icons';
+import { getCurrentConference } from '../../../base/conference/functions';
+import { openDialog } from '../../../base/dialog/actions';
+import { translate } from '../../../base/i18n/functions';
 import JitsiScreen from '../../../base/modal/components/JitsiScreen';
-import { LoadingIndicator } from '../../../base/react';
-import { connect } from '../../../base/redux';
-import { goBack } from '../../../conference/components/native/ConferenceNavigationContainerRef';
-import HeaderNavigationButton
-    from '../../../conference/components/native/HeaderNavigationButton';
-import { getWhiteboardUrl } from '../../functions';
+import LoadingIndicator from '../../../base/react/components/native/LoadingIndicator';
+import { safeDecodeURIComponent } from '../../../base/util/uri';
+import { setupWhiteboard } from '../../actions.any';
+import { WHITEBOARD_ID } from '../../constants';
+import { getCollabServerUrl, getWhiteboardInfoForURIString } from '../../functions';
 
+import WhiteboardErrorDialog from './WhiteboardErrorDialog';
 import styles, { INDICATOR_COLOR } from './styles';
 
 /**
- * The type of the React {@code Component} props of {@code Whiteboard}.
+ * Implements a React native component that displays the whiteboard page for a specific room.
  */
-type Props = {
+class Whiteboard extends PureComponent {
 
     /**
-     * URL for the whiteboard.
-     */
-    _url: string,
-
-    /**
-     * Color schemed style of the header component.
-     */
-    _headerStyles: Object,
-
-    /**
-     * Default prop for navigation between screen components(React Navigation).
-     */
-    navigation: Object,
-
-    /**
-     * Function to be used to translate i18n labels.
-     */
-    t: Function
-};
-
-/**
- * Implements a React native component that renders the whiteboard window.
- */
-class Whiteboard extends PureComponent<Props> {
-    /**
-     * Instantiates a new instance.
+     * Initializes a new instance.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
+        this._onError = this._onError.bind(this);
+        this._onNavigate = this._onNavigate.bind(this);
+        this._onMessage = this._onMessage.bind(this);
         this._renderLoading = this._renderLoading.bind(this);
     }
 
     /**
      * Implements React's {@link Component#componentDidMount()}. Invoked
-     * immediately after this component is mounted.
+     * immediately after mounting occurs.
      *
      * @inheritdoc
      * @returns {void}
      */
     componentDidMount() {
-        const { navigation } = this.props;
+        const { navigation, t } = this.props;
 
         navigation.setOptions({
-            headerLeft: () => (
-                <HeaderNavigationButton
-                    onPress = { goBack }
-                    src = { IconArrowBack }
-                    style = { styles.headerArrowBack } />
-            )
+            headerTitle: t('whiteboard.screenTitle')
         });
     }
 
@@ -84,21 +56,90 @@ class Whiteboard extends PureComponent<Props> {
      * @inheritdoc
      */
     render() {
-        const { _url } = this.props;
+        const { locationHref, route } = this.props;
+        const collabServerUrl = safeDecodeURIComponent(route.params?.collabServerUrl);
+        const localParticipantName = safeDecodeURIComponent(route.params?.localParticipantName);
+        const collabDetails = route.params?.collabDetails;
+        const uri = getWhiteboardInfoForURIString(
+            locationHref,
+            collabServerUrl,
+            collabDetails,
+            localParticipantName
+        ) ?? '';
 
         return (
             <JitsiScreen
-                addHeaderHeightValue = { true }
-                style = { styles.whiteboardContainer }>
+                safeAreaInsets = { [ 'bottom', 'left', 'right' ] }
+                style = { styles.backDrop }>
                 <WebView
+                    incognito = { true }
+                    javaScriptEnabled = { true }
+                    nestedScrollEnabled = { true }
+                    onError = { this._onError }
+                    onMessage = { this._onMessage }
+                    onShouldStartLoadWithRequest = { this._onNavigate }
                     renderLoading = { this._renderLoading }
-                    source = {{ uri: _url }}
-                    startInLoadingState = { true } />
+                    scrollEnabled = { true }
+                    setSupportMultipleWindows = { false }
+                    source = {{ uri }}
+                    startInLoadingState = { true }
+                    style = { styles.webView } />
             </JitsiScreen>
         );
     }
 
-    _renderLoading: () => React$Component<any>;
+    /**
+     * Callback to handle the error if the page fails to load.
+     *
+     * @returns {void}
+     */
+    _onError() {
+        this.props.dispatch(openDialog(WhiteboardErrorDialog));
+    }
+
+    /**
+     * Callback to intercept navigation inside the webview and make the native app handle the whiteboard requests.
+     *
+     * NOTE: We don't navigate to anywhere else from that view.
+     *
+     * @param {any} request - The request object.
+     * @returns {boolean}
+     */
+    _onNavigate(request) {
+        const { url } = request;
+        const { locationHref, route } = this.props;
+        const collabServerUrl = route.params?.collabServerUrl;
+        const collabDetails = route.params?.collabDetails;
+        const localParticipantName = route.params?.localParticipantName;
+
+        return url === getWhiteboardInfoForURIString(
+            locationHref,
+            collabServerUrl,
+            collabDetails,
+            localParticipantName
+        );
+    }
+
+    /**
+     * Callback to handle the message events.
+     *
+     * @param {any} event - The event.
+     * @returns {void}
+     */
+    _onMessage(event) {
+        const { collabServerUrl, conference } = this.props;
+        const collabDetails = JSON.parse(event.nativeEvent.data);
+
+        if (collabDetails?.roomId && collabDetails?.roomKey) {
+            this.props.dispatch(setupWhiteboard({ collabDetails }));
+
+            // Broadcast the collab details.
+            conference?.getMetadataHandler().setMetadata(WHITEBOARD_ID, {
+                collabServerUrl,
+                collabDetails
+            });
+        }
+    }
 
     /**
      * Renders the loading indicator.
@@ -117,19 +158,22 @@ class Whiteboard extends PureComponent<Props> {
 }
 
 /**
- * Maps (parts of) the redux state to {@link Whiteboard} React {@code Component} props.
+ * Maps (parts of) the redux state to the associated
+ * {@code WaitForOwnerDialog}'s props.
  *
- * @param {Object} state - The redux store/state.
+ * @param {Object} state - The redux state.
  * @private
- * @returns {Object}
+ * @returns {IProps}
  */
-export function _mapStateToProps(state: Object) {
-    const url = getWhiteboardUrl(state);
+function mapStateToProps(state) {
+    const { locationURL } = state['features/base/connection'];
+    const { href = '' } = locationURL ?? {};
 
     return {
-        _url: url,
-        _headerStyles: ColorSchemeRegistry.get(state, 'Header')
+        conference: getCurrentConference(state),
+        collabServerUrl: getCollabServerUrl(state),
+        locationHref: href
     };
 }
 
-export default translate(connect(_mapStateToProps)(Whiteboard));
+export default translate(connect(mapStateToProps)(Whiteboard));

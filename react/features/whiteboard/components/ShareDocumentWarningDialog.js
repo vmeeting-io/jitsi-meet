@@ -2,13 +2,13 @@
 
 import React, { Component } from 'react';
 import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
 
 import { conferences } from '../../../api/conferences';
-import { setRoomInfo } from '../../base/conference';
-import { Dialog } from '../../base/dialog';
-import { translate } from '../../base/i18n';
-import { getLocalParticipant } from '../../base/participants';
-import { connect } from '../../base/redux';
+import { setRoomInfo } from '../../base/conference/actions';
+import { translate } from '../../base/i18n/functions';
+import { getLocalParticipant } from '../../base/participants/functions';
+import Dialog from '../../base/ui/components/web/Dialog';
 import { isForceMuted } from '../../participants-pane/functions';
 import { toggleWhiteboard } from '../actions';
 

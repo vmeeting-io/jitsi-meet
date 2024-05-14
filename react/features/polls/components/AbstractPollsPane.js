@@ -1,22 +1,8 @@
-// @flow
-
 import React, { useState } from 'react';
-import type { AbstractComponent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { isEnabled } from '../../av-moderation/functions';
-import { isLocalParticipantModerator } from '../../base/participants';
-
-/*
- * Props that will be passed by the AbstractPollsPane to its
- * concrete implementations (web/native).
- **/
-export type AbstractProps = {
-    createMode: boolean,
-    onCreate: void => void,
-    setCreateMode: boolean => void,
-    t: Function,
-};
+import { isLocalParticipantModerator } from '../../base/participants/functions';
 
 /**
  * Higher Order Component taking in a concrete PollsPane component and
@@ -25,7 +11,7 @@ export type AbstractProps = {
  * @param {React.AbstractComponent} Component - The concrete component.
  * @returns {React.AbstractComponent}
  */
-const AbstractPollsPane = (Component: AbstractComponent<AbstractProps>) => () => {
+const AbstractPollsPane = (Component) => () => {
 
     const [ createMode, setCreateMode ] = useState(false);
     const pollModerationEnabled = useSelector(isEnabled('poll'));
@@ -39,8 +25,8 @@ const AbstractPollsPane = (Component: AbstractComponent<AbstractProps>) => () =>
 
     return (<Component
         createMode = { createMode }
-        isModerationEnabled = { pollModerationEnabled && !isModerator }
         /* eslint-disable react/jsx-no-bind */
+        isModerationEnabled = { pollModerationEnabled && !isModerator }
         onCreate = { onCreate }
         setCreateMode = { setCreateMode }
         t = { t } />);

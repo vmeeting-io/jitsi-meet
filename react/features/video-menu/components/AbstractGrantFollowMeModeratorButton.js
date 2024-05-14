@@ -1,15 +1,13 @@
 // @flow
 
-import { openDialog } from '../../base/dialog';
-import { IconUserFollow } from '../../base/icons';
-import {
-    getLocalParticipant,
-    PARTICIPANT_ROLE
-} from '../../base/participants';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
-import { getFollowMeModerator } from '../../follow-me';
+import { openDialog } from '../../base/dialog/actions';
+import { IconUserFollow } from '../../base/icons/svg';
+import { PARTICIPANT_ROLE } from '../../base/participants/constants';
+import { getLocalParticipant } from '../../base/participants/functions';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
+import { getFollowMeModerator } from '../../follow-me/functions';
 
-import { GrantFollowMeModeratorDialog } from '../components';
+import { GrantFollowMeModeratorDialog } from './';
 
 export type Props = AbstractButtonProps & {
 

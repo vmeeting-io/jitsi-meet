@@ -10,7 +10,7 @@ import logger from './logger';
  * @param {string} path - The meeting url path.
  * @returns {string}
  */
-function extractVpaasTenantFromPath(path: string) {
+function extractVpaasTenantFromPath(path) {
     const [ , tenant ] = path.split('/');
 
     if (tenant.startsWith(VPAAS_TENANT_PREFIX)) {
@@ -23,20 +23,20 @@ function extractVpaasTenantFromPath(path: string) {
 /**
  * Returns the vpaas tenant.
  *
- * @param {Object} state - The global state.
+ * @param {IReduxState} state - The global state.
  * @returns {string}
  */
-export function getVpaasTenant(state: Object) {
-    return extractVpaasTenantFromPath(state['features/base/connection'].locationURL.pathname);
+export function getVpaasTenant(state) {
+    return extractVpaasTenantFromPath(state['features/base/connection'].locationURL?.pathname ?? '');
 }
 
 /**
  * Returns true if the current meeting is a vpaas one.
  *
- * @param {Object} state - The state of the app.
+ * @param {IReduxState} state - The state of the app.
  * @returns {boolean}
  */
-export function isVpaasMeeting(state: Object) {
+export function isVpaasMeeting(state) {
     const connection = state['features/base/connection'];
 
     if (connection?.locationURL?.pathname) {
@@ -49,6 +49,31 @@ export function isVpaasMeeting(state: Object) {
 }
 
 /**
+ * Sends a request for retrieving the conference creator's customer id.
+ *
+ * @param {IJitsiConference} conference - The conference state.
+ * @param {IReduxState} state - The state of the app.
+ * @returns {Object} - Object containing customerId field.
+ */
+export async function sendGetCustomerIdRequest(conference, state) {
+    const { jaasConferenceCreatorUrl } = state['features/base/config'];
+
+    const roomJid = conference?.room?.roomjid;
+
+    if (jaasConferenceCreatorUrl && roomJid) {
+        const fullUrl = `${jaasConferenceCreatorUrl}?conference=${encodeURIComponent(roomJid)}`;
+        const response = await fetch(fullUrl);
+        const responseBody = await response.json();
+
+        if (response.ok) {
+            return responseBody;
+        }
+
+        logger.error(`Failed to fetch ${fullUrl}. with: ${JSON.stringify(responseBody)}`);
+    }
+}
+
+/**
  * Sends a request for retrieving jaas customer details.
  *
  * @param {Object} reqData - The request info.
@@ -56,10 +81,7 @@ export function isVpaasMeeting(state: Object) {
  * @param {string} reqData.baseUrl - The base url for the request.
  * @returns {void}
  */
-export async function sendGetDetailsRequest({ appId, baseUrl }: {
-    appId: string,
-    baseUrl: string,
-}) {
+export async function sendGetDetailsRequest({ appId, baseUrl }) {
     const fullUrl = `${baseUrl}/v1/public/tenants/${encodeURIComponent(appId)}`;
 
     try {
@@ -79,11 +101,11 @@ export async function sendGetDetailsRequest({ appId, baseUrl }: {
 /**
  * Returns the billing id for vpaas meetings.
  *
- * @param {Object} state - The state of the app.
+ * @param {IReduxState} state - The state of the app.
  * @param {string} feature - Feature to be looked up for disable state.
  * @returns {boolean}
  */
-export function isFeatureDisabled(state: Object, feature: string) {
+export function isFeatureDisabled(state, feature) {
     return state['features/jaas'].disabledFeatures.includes(feature);
 }
 
@@ -95,10 +117,7 @@ export function isFeatureDisabled(state: Object, feature: string) {
  * @param {string} reqData.baseUrl - The base url for the request.
  * @returns {void}
  */
-export async function sendGetJWTRequest({ appId, baseUrl }: {
-    appId: string,
-    baseUrl: string
-}) {
+export async function sendGetJWTRequest({ appId, baseUrl }) {
     const fullUrl = `${baseUrl}/v1/public/token/${encodeURIComponent(appId)}`;
 
     try {
@@ -120,10 +139,10 @@ export async function sendGetJWTRequest({ appId, baseUrl }: {
 /**
  * Gets a jaas JWT.
  *
- * @param {Object} state - Redux state.
+ * @param {IReduxState} state - Redux state.
  * @returns {string} The JWT.
  */
-export async function getJaasJWT(state: Object) {
+export async function getJaasJWT(state) {
     const baseUrl = state['features/base/config'].jaasTokenUrl;
     const appId = getVpaasTenant(state);
 
@@ -133,7 +152,7 @@ export async function getJaasJWT(state: Object) {
         try {
             const jwt = await sendGetJWTRequest({
                 appId,
-                baseUrl
+                baseUrl: baseUrl ?? ''
             });
 
             return jwt.token;

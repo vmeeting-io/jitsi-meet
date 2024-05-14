@@ -1,21 +1,12 @@
-// @flow
-
-import punycode from 'punycode';
-import React, { Component } from 'react';
+import React, { Component, ReactNode } from 'react';
 import ReactLinkify from 'react-linkify';
 
-type Props = {
-
-    /**
-     * The children of the component.
-     */
-    children: React$Node
-};
+import { formatURLText } from '../../functions';
 
 /**
  * Implements a react wrapper for the react-linkify component.
  */
-export default class Linkify extends Component<Props> {
+export default class Linkify extends Component {
     /**
      * Implements {@Component#render}.
      *
@@ -45,7 +36,7 @@ export default class Linkify extends Component<Props> {
                 key = { key }
                 rel = 'noopener noreferrer'
                 target = '_blank'>
-                { punycode.toASCII(decoratedText) }
+                { formatURLText(decoratedText) }
             </a>
         );
     }

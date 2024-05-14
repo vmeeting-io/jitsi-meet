@@ -1,6 +1,6 @@
 // @flow
 
-import { ReducerRegistry } from '../redux';
+import ReducerRegistry from '../redux/ReducerRegistry';
 
 import {
     LIB_DID_DISPOSE,

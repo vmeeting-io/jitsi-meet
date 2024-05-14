@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { Icon } from '../../base/icons';
+import Icon from '../../base/icons/components/Icon';
 import BaseTheme from '../../base/ui/components/BaseTheme';
 import { INACTIVE_TAB_COLOR } from '../constants';
 

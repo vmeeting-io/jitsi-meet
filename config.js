@@ -143,6 +143,17 @@ var config = {
     // Disables self-view settings in UI
     disableSelfViewSettings: true,
 
+    // screenshotCapture : {
+    //      Enables the screensharing capture feature.
+    //      enabled: false,
+    //
+    //      The mode for the screenshot capture feature.
+    //      Can be either 'recording' - screensharing screenshots are taken
+    //      only when the recording is also on,
+    //      or 'always' - screensharing screenshots are always taken.
+    //      mode: 'recording',
+    // }
+
     // Disables ICE/UDP by filtering out local and remote UDP candidates in
     // signalling.
     // webrtcIceUdpDisable: false,
@@ -218,15 +229,23 @@ var config = {
     // Specifies whether the raised hand will hide when someone becomes a dominant speaker or not
     // disableRemoveRaisedHandOnFocus: false,
 
-    // Specifies whether there will be a search field in speaker stats or not
-    // disableSpeakerStatsSearch: false,
+    // speakerStats: {
+    //     // Specifies whether the speaker stats is enable or not.
+    //     disabled: false,
 
-    // Specifies whether participants in speaker stats should be ordered or not, and with what priority
-    // speakerStatsOrder: [
-    //  'role', <- Moderators on top
-    //  'name', <- Alphabetically by name
-    //  'hasLeft', <- The ones that have left in the bottom
-    // ] <- the order of the array elements determines priority
+    //     // Specifies whether there will be a search field in speaker stats or not.
+    //     disableSearch: false,
+
+    //     // Specifies whether participants in speaker stats should be ordered or not, and with what priority.
+    //     // 'role', <- Moderators on top.
+    //     // 'name', <- Alphabetically by name.
+    //     // 'hasLeft', <- The ones that have left in the bottom.
+    //     order: [
+    //         'role',
+    //         'name',
+    //         'hasLeft',
+    //     ],
+    // },
 
     // How many participants while in the tile view mode, before the receiving video quality is reduced from HD to SD.
     // Use -1 to disable.
@@ -284,56 +303,139 @@ var config = {
         max: 5
     },
 
-    // Optional sharing framerate when camera is on. default to 5
-    // frameRateVideoSharingWithCamera: 5,
-
-    // Try to start calls with screen-sharing instead of camera video.
-    // startScreenSharing: false,
+    // Optional screenshare settings that give more control over screen capture in the browser.
+    // screenShareSettings: {
+    //      // Show users the current tab is the preferred capture source, default: false.
+    //      desktopPreferCurrentTab: false,
+    //      // Allow users to select system audio, default: include.
+    //      desktopSystemAudio: 'include',
+    //      // Allow users to seamlessly switch which tab they are sharing without having to select the tab again.
+    //      desktopSurfaceSwitching: 'include',
+    //      // Allow a user to be shown a preference for what screen is to be captured, default: unset.
+    //      desktopDisplaySurface: undefined,
+    //      // Allow users to select the current tab as a capture source, default: exclude.
+    //      desktopSelfBrowserSurface: 'exclude'
+    // },
 
     // Recording
 
-    // Whether to enable file recording or not.
-    fileRecordingsEnabled: true,
+    // DEPRECATED. Use recordingService.enabled instead.
+    // fileRecordingsEnabled: false,
+
     // Enable the dropbox integration.
     // dropbox: {
-    //     appKey: '<APP_KEY>' // Specify your app key here.
+    //     appKey: '<APP_KEY>', // Specify your app key here.
     //     // A URL to redirect the user to, after authenticating
     //     // by default uses:
     //     // 'https://jitsi-meet.example.com/static/oauth.html'
     //     redirectURI:
-    //          'https://jitsi-meet.example.com/subfolder/static/oauth.html'
+    //          'https://jitsi-meet.example.com/subfolder/static/oauth.html',
     // },
-    // When integrations like dropbox are enabled only that will be shown,
-    // by enabling fileRecordingsServiceEnabled, we show both the integrations
-    // and the generic recording service (its configuration and storage type
-    // depends on jibri configuration)
+
+    // configuration for all things recording related. Existing settings will be migrated here in the future.
+    // recordings: {
+    //    // IF true (default) recording audio and video is selected by default in the recording dialog.
+    //    // recordAudioAndVideo: true,
+    //    // If true, shows a notification at the start of the meeting with a call to action button
+    //    // to start recording (for users who can do so).
+    //    // suggestRecording: true,
+    //    // If true, shows a warning label in the prejoin screen to point out the possibility that
+    //    // the call you're joining might be recorded.
+    //    // showPrejoinWarning: true,
+    // },
+
+    recordingService: {
+        // When integrations like dropbox are enabled only that will be shown,
+        // by enabling fileRecordingsServiceEnabled, we show both the integrations
+        // and the generic recording service (its configuration and storage type
+        // depends on jibri configuration)
+        enabled: true,
+
+        // Whether to show the possibility to share file recording with other people
+        // (e.g. meeting participants), based on the actual implementation
+        // on the backend.
+        sharingEnabled: false,
+
+        // Hide the warning that says we only store the recording for 24 hours.
+        hideStorageWarning: false,
+    },
+
+    // DEPRECATED. Use recordingService.enabled instead.
     // fileRecordingsServiceEnabled: false,
-    // Whether to show the possibility to share file recording with other people
-    // (e.g. meeting participants), based on the actual implementation
-    // on the backend.
+
+    // DEPRECATED. Use recordingService.sharingEnabled instead.
     // fileRecordingsServiceSharingEnabled: false,
 
-    // Whether to enable live streaming or not.
-    liveStreamingEnabled: true,
+    // Local recording configuration.
+    localRecording: {
+        // Whether to disable local recording or not.
+        disable: true,
 
-    // Transcription (in interface_config,
-    // subtitles and buttons can be configured)
+        // Whether to notify all participants when a participant is recording locally.
+        notifyAllParticipants: false,
+
+        // Whether to disable the self recording feature (only local participant streams).
+        disableSelfRecording: false,
+    },
+
+    // Customize the Live Streaming dialog. Can be modified for a non-YouTube provider.
+    // liveStreaming: {
+    //    // Whether to enable live streaming or not.
+    //    enabled: false,
+    //    // Terms link
+    //    termsLink: 'https://www.youtube.com/t/terms',
+    //    // Data privacy link
+    //    dataPrivacyLink: 'https://policies.google.com/privacy',
+    //    // RegExp string that validates the stream key input field
+    //    validatorRegExpString: '^(?:[a-zA-Z0-9]{4}(?:-(?!$)|$)){4}',
+    //    // Documentation reference for the live streaming feature.
+    //    helpLink: 'https://jitsi.org/live'
+    // },
+
+    // DEPRECATED. Use liveStreaming.enabled instead.
+    // liveStreamingEnabled: false,
+
+    // DEPRECATED. Use transcription.enabled instead.
     // transcribingEnabled: false,
 
-    // If true transcriber will use the application language.
-    // The application language is either explicitly set by participants in their settings or automatically
-    // detected based on the environment, e.g. if the app is opened in a chrome instance which is using french as its
-    // default language then transcriptions for that participant will be in french.
-    // Defaults to true.
+    // DEPRECATED. Use transcription.useAppLanguage instead.
     // transcribeWithAppLanguage: true,
 
-    // Transcriber language. This settings will only work if "transcribeWithAppLanguage" is explicitly set to false.
-    // Available languages can be found in
-    // ./src/react/features/transcribing/transcriber-langs.json.
+    // DEPRECATED. Use transcription.preferredLanguage instead.
     // preferredTranscribeLanguage: 'en-US',
 
-    // Enables automatic turning on captions when recording is started
+    // DEPRECATED. Use transcription.autoTranscribeOnRecord instead.
     // autoCaptionOnRecord: false,
+
+    // Transcription options.
+    // transcription: {
+    //     // Whether the feature should be enabled or not.
+    //     enabled: false,
+
+    //     // Translation languages.
+    //     // Available languages can be found in
+    //     // ./src/react/features/transcribing/translation-languages.json.
+    //     translationLanguages: ['en', 'es', 'fr', 'ro'],
+
+    //     // Important languages to show on the top of the language list.
+    //     translationLanguagesHead: ['en'],
+
+    //     // If true transcriber will use the application language.
+    //     // The application language is either explicitly set by participants in their settings or automatically
+    //     // detected based on the environment, e.g. if the app is opened in a chrome instance which
+    //     // is using french as its default language then transcriptions for that participant will be in french.
+    //     // Defaults to true.
+    //     useAppLanguage: true,
+
+    //     // Transcriber language. This settings will only work if "useAppLanguage"
+    //     // is explicitly set to false.
+    //     // Available languages can be found in
+    //     // ./src/react/features/transcribing/transcriber-langs.json.
+    //     preferredLanguage: 'en-US',
+
+    //     // Enables automatic turning on transcribing when recording is started
+    //     autoTranscribeOnRecord: false,
+    // },
 
     // Misc
 
@@ -756,9 +858,6 @@ var config = {
     // Enables sending participants' emails (if available) to callstats and other analytics
     // enableEmailInStats: false,
 
-    // Enables detecting faces of participants and get their expression and send it to other participants
-    // enableFacialRecognition: true,
-
     // Controls the percentage of automatic feedback shown to participants when callstats is enabled.
     // The default value is 100%. If set to 0, no automatic feedback will be requested
     // feedbackPercentage: 100,
@@ -921,22 +1020,6 @@ var config = {
     //     ]
     // },
 
-    // Local Recording
-    //
-
-    // localRecording: {
-    // Enables local recording.
-    // Additionally, 'localrecording' (all lowercase) needs to be added to
-    // the `toolbarButtons`-array for the Local Recording button to show up
-    // on the toolbar.
-    //
-    //     enabled: true,
-    //
-
-    // The recording format, can be one of 'ogg', 'flac' or 'wav'.
-    //     format: 'flac'
-    //
-
     // },
     // e2ee: {
     //   labels,
@@ -1091,7 +1174,7 @@ var config = {
     // If a label's id is not in any of the 2 arrays, it will not be visible at all on the header.
     // conferenceInfo: {
     //     // those labels will not be hidden in tandem with the toolbox.
-    //     alwaysVisible: ['recording', 'local-recording', 'raised-hands-count'],
+    //     alwaysVisible: ['recording', 'raised-hands-count'],
     //     // those labels will be auto-hidden in tandem with the toolbox buttons.
     //     autoHide: [
     //         'subject',
@@ -1341,6 +1424,125 @@ var config = {
     // Specifies whether the chat emoticons are disabled or not
     // disableChatSmileys: false,
 
+
+    // filmstrip: {
+    //     // Disable the vertical/horizonal filmstrip.
+    //     disabled: false,
+    //     // Disables user resizable filmstrip. Also, allows configuration of the filmstrip
+    //     // (width, tiles aspect ratios) through the interfaceConfig options.
+    //     disableResizable: false,
+
+    //     // Disables the stage filmstrip
+    //     // (displaying multiple participants on stage besides the vertical filmstrip)
+    //     disableStageFilmstrip: false,
+
+    //     // Default number of participants that can be displayed on stage.
+    //     // The user can change this in settings. Number must be between 1 and 6.
+    //     stageFilmstripParticipants: 1,
+
+    //     // Disables the top panel (only shown when a user is sharing their screen).
+    //     disableTopPanel: false,
+
+    //     // The minimum number of participants that must be in the call for
+    //     // the top panel layout to be used.
+    //     minParticipantCountForTopPanel: 50,
+    // },
+
+    // Tile view related config options.
+    // tileView: {
+    //     // Whether tileview should be disabled.
+    //     disabled: false,
+    //     // The optimal number of tiles that are going to be shown in tile view. Depending on the screen size it may
+    //     // not be possible to show the exact number of participants specified here.
+    //     numberOfVisibleTiles: 25,
+    // },
+
+    // Specifies whether the chat emoticons are disabled or not
+    // disableChatSmileys: false,
+
+    // Settings for the GIPHY integration.
+    // giphy: {
+    //     // Whether the feature is enabled or not.
+    //     enabled: false,
+    //     // SDK API Key from Giphy.
+    //     sdkKey: '',
+    //     // Display mode can be one of:
+    //     // - tile: show the GIF on the tile of the participant that sent it.
+    //     // - chat: show the GIF as a message in chat
+    //     // - all: all of the above. This is the default option
+    //     displayMode: 'all',
+    //     // How long the GIF should be displayed on the tile (in milliseconds).
+    //     tileTime: 5000,
+    //     // Limit results by rating: g, pg, pg-13, r. Default value: g.
+    //     rating: 'pg',
+    //     // The proxy server url for giphy requests in the web app.
+    //     proxyUrl: 'https://giphy-proxy.example.com',
+    // },
+
+    // Logging
+    // logging: {
+    //      // Default log level for the app and lib-jitsi-meet.
+    //      defaultLogLevel: 'trace',
+    //      // Option to disable LogCollector.
+    //      //disableLogCollector: true,
+    //      // Individual loggers are customizable.
+    //      loggers: {
+    //      // The following are too verbose in their logging with the default level.
+    //      'modules/RTC/TraceablePeerConnection.js': 'info',
+    //      'modules/xmpp/strophe.util.js': 'log',
+    // },
+
+    // Application logo url
+    // defaultLogoUrl: 'images/watermark.svg',
+
+    // Settings for the Excalidraw whiteboard integration.
+    // whiteboard: {
+    //     // Whether the feature is enabled or not.
+    //     enabled: true,
+    //     // The server used to support whiteboard collaboration.
+    //     // https://github.com/jitsi/excalidraw-backend
+    //     collabServerBaseUrl: 'https://excalidraw-backend.example.com',
+    //     // The user access limit to the whiteboard, introduced as a means
+    //     // to control the performance.
+    //     userLimit: 25,
+    //     // The url for more info about the whiteboard and its usage limitations.
+    //     limitUrl: 'https://example.com/blog/whiteboard-limits,
+    // },
+
+    // The watchRTC initialize config params as described :
+    // https://testrtc.com/docs/installing-the-watchrtc-javascript-sdk/#h-set-up-the-sdk
+    // https://www.npmjs.com/package/@testrtc/watchrtc-sdk
+    // watchRTCConfigParams: {
+    //         /** Watchrtc api key */
+    //         rtcApiKey: string;
+    //         /** Identifier for the session */
+    //         rtcRoomId?: string;
+    //         /** Identifier for the current peer */
+    //         rtcPeerId?: string;
+    //         /**
+    //          * ["tag1", "tag2", "tag3"]
+    //          * @deprecated use 'keys' instead
+    //          */
+    //         rtcTags?: string[];
+    //         /** { "key1": "value1", "key2": "value2"} */
+    //         keys?: any;
+    //         /** Enables additional logging */
+    //         debug?: boolean;
+    //         rtcToken?: string;
+    //         /**
+    //          * @deprecated No longer needed. Use "proxyUrl" instead.
+    //          */
+    //         wsUrl?: string;
+    //         proxyUrl?: string;
+    //         console?: {
+    //             level: string;
+    //             override: boolean;
+    //         };
+    //         allowBrowserLogCollection?: boolean;
+    //         collectionInterval?: number;
+    //         logGetStats?: boolean;
+    // },
+    
     isOnpromise: false,
 
     stt: {
@@ -1356,6 +1558,12 @@ var config = {
 };
 
 /* eslint-enable no-unused-vars, no-var */
+
+// Temporary backwards compatibility with old mobile clients.
+config.flags = config.flags || {};
+config.flags.sourceNameSignaling = true;
+config.flags.sendMultipleVideoStreams = true;
+config.flags.receiveMultipleVideoStreams = true;
 
 // with selective on viewport forwarding, participant will stop sending video if its out of the viewport in all
 // other viewports. This delay and possibly cause unstable video transmission when the participant appear in one
@@ -1379,3 +1587,4 @@ config.disableJoinLeaveSounds = true;
 config.disableShortcuts = true;
 config.useRegistration = true;
 config.useLogin = true;
+config.flags.sourceNameSignaling = true;

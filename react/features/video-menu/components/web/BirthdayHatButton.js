@@ -1,11 +1,11 @@
 /* @flow */
 
 import React from 'react';
+import { connect } from 'react-redux';
 
-import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { translate } from '../../../base/i18n';
-import { IconBirthdayHat } from '../../../base/icons';
-import { connect } from '../../../base/redux';
+import { translate } from '../../../base/i18n/functions';
+import { IconBirthdayHat } from '../../../base/icons/svg';
+import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
 import AbstractBirthdayHatButton, {
     _mapStateToProps,
     type Props

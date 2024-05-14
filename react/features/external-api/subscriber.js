@@ -1,9 +1,9 @@
 // @flow
 
-import { getLocalParticipant } from '../base/participants';
-import { StateListenerRegistry } from '../base/redux';
-import { appendSuffix } from '../display-name';
-import { shouldDisplayTileView } from '../video-layout';
+import { getLocalParticipant } from '../base/participants/functions';
+import StateListenerRegistry from '../base/redux/StateListenerRegistry';
+import { appendSuffix } from '../display-name/functions';
+import { shouldDisplayTileView } from '../video-layout/functions';
 
 declare var APP: Object;
 

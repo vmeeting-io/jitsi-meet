@@ -1,66 +1,36 @@
-// @flow
-
 import React, { PureComponent } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, View, ViewStyle } from 'react-native';
+import { connect } from 'react-redux';
 
-import { ColorSchemeRegistry } from '../../../base/color-scheme';
-import { getFeatureFlag, INVITE_ENABLED } from '../../../base/flags';
-import { translate } from '../../../base/i18n';
-import { Icon, IconAddPeople } from '../../../base/icons';
-import { getParticipantCountWithFake } from '../../../base/participants';
-import { connect } from '../../../base/redux';
-import { StyleType } from '../../../base/styles';
-import { isInBreakoutRoom } from '../../../breakout-rooms';
+import { INVITE_ENABLED } from '../../../base/flags/constants';
+import { getFeatureFlag } from '../../../base/flags/functions';
+import { translate } from '../../../base/i18n/functions';
+import Icon from '../../../base/icons/components/Icon';
+import { IconAddUser } from '../../../base/icons/svg';
+import {
+    addPeopleFeatureControl,
+    getParticipantCountWithFake,
+    setShareDialogVisiblity
+} from '../../../base/participants/functions';
+import Button from '../../../base/ui/components/native/Button';
+import { BUTTON_TYPES } from '../../../base/ui/constants.native';
+import { isInBreakoutRoom } from '../../../breakout-rooms/functions';
 import { doInvitePeople } from '../../../invite/actions.native';
+import { getInviteOthersControl } from '../../../share-room/functions';
 
 import styles from './styles';
 
-/**
- * Props type of the component.
- */
-type Props = {
-
-    /**
-     * True if currently in a breakout room.
-     */
-     _isInBreakoutRoom: boolean,
-
-    /**
-     * True if the invite functions (dial out, invite, share...etc) are disabled.
-     */
-    _isInviteFunctionsDiabled: boolean,
-
-    /**
-     * True if it's a lonely meeting (participant count excluding fakes is 1).
-     */
-    _isLonelyMeeting: boolean,
-
-    /**
-     * Color schemed styles of the component.
-     */
-    _styles: StyleType,
-
-    /**
-     * The Redux Dispatch function.
-     */
-    dispatch: Function,
-
-    /**
-     * Function to be used to translate i18n labels.
-     */
-    t: Function
-};
 
 /**
  * Implements the UI elements to be displayed in the lonely meeting experience.
  */
-class LonelyMeetingExperience extends PureComponent<Props> {
+class LonelyMeetingExperience extends PureComponent {
     /**
      * Instantiates a new component.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this._onPress = this._onPress.bind(this);
@@ -73,51 +43,41 @@ class LonelyMeetingExperience extends PureComponent<Props> {
      */
     render() {
         const {
+            _inviteOthersControl,
             _isInBreakoutRoom,
-            _isInviteFunctionsDiabled,
+            _isInviteFunctionsDisabled,
             _isLonelyMeeting,
-            _styles,
             t
         } = this.props;
+        const { color, shareDialogVisible } = _inviteOthersControl;
 
         if (!_isLonelyMeeting) {
             return null;
         }
 
         return (
-            <View style = { styles.lonelyMeetingContainer }>
-                <Text
-                    style = { [
-                        styles.lonelyMessage,
-                        _styles.lonelyMessage
-                    ] }>
+            <View style = { styles.lonelyMeetingContainer as ViewStyle }>
+                <Text style = { styles.lonelyMessage }>
                     { t('lonelyMeetingExperience.youAreAlone') }
                 </Text>
-                { !_isInviteFunctionsDiabled && !_isInBreakoutRoom && (
-                    <TouchableOpacity
-                        onPress = { this._onPress }
-                        style = { [
-                            styles.lonelyButton,
-                            _styles.lonelyButton
-                        ] }>
-                        <Icon
-                            size = { 24 }
-                            src = { IconAddPeople }
-                            style = { styles.lonelyButtonComponents } />
-                        <Text
-                            style = { [
-                                styles.lonelyButtonComponents,
-                                _styles.lonelyMessage
-                            ] }>
-                            { t('lonelyMeetingExperience.button') }
-                        </Text>
-                    </TouchableOpacity>
+                { !_isInviteFunctionsDisabled && !_isInBreakoutRoom && (
+                    <Button
+                        accessibilityLabel = 'lonelyMeetingExperience.button'
+                        disabled = { shareDialogVisible }
+                        // eslint-disable-next-line react/jsx-no-bind
+                        icon = { () => (
+                            <Icon
+                                color = { color }
+                                size = { 20 }
+                                src = { IconAddUser } />
+                        ) }
+                        labelKey = 'lonelyMeetingExperience.button'
+                        onClick = { this._onPress }
+                        type = { BUTTON_TYPES.PRIMARY } />
                 ) }
             </View>
         );
     }
-
-    _onPress: () => void;
 
     /**
      * Callback for the onPress function of the button.
@@ -125,7 +85,11 @@ class LonelyMeetingExperience extends PureComponent<Props> {
      * @returns {void}
      */
     _onPress() {
-        this.props.dispatch(doInvitePeople());
+        const { _isAddPeopleFeatureEnabled, dispatch } = this.props;
+
+        setShareDialogVisiblity(_isAddPeopleFeatureEnabled, dispatch);
+
+        dispatch(doInvitePeople());
     }
 }
 
@@ -134,19 +98,22 @@ class LonelyMeetingExperience extends PureComponent<Props> {
  *
  * @param {Object} state - The redux state.
  * @private
- * @returns {Props}
+ * @returns {IProps}
  */
-function _mapStateToProps(state): $Shape<Props> {
+function _mapStateToProps(state) {
     const { disableInviteFunctions } = state['features/base/config'];
     const { conference } = state['features/base/conference'];
+    const _inviteOthersControl = getInviteOthersControl(state);
     const flag = getFeatureFlag(state, INVITE_ENABLED, true);
+    const _isAddPeopleFeatureEnabled = addPeopleFeatureControl(state);
     const _isInBreakoutRoom = isInBreakoutRoom(state);
 
     return {
+        _isAddPeopleFeatureEnabled,
+        _inviteOthersControl,
         _isInBreakoutRoom,
-        _isInviteFunctionsDiabled: !flag || disableInviteFunctions,
-        _isLonelyMeeting: conference && getParticipantCountWithFake(state) === 1,
-        _styles: ColorSchemeRegistry.get(state, 'Conference')
+        _isInviteFunctionsDisabled: Boolean(!flag || disableInviteFunctions),
+        _isLonelyMeeting: Boolean(conference && getParticipantCountWithFake(state) === 1)
     };
 }
 

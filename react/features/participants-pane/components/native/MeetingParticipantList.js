@@ -3,11 +3,11 @@
 import React, { PureComponent } from 'react';
 import { FlatList, Text, View } from 'react-native';
 import { Button, withTheme } from 'react-native-paper';
+import { connect } from 'react-redux';
 
 import { translate } from '../../../base/i18n';
-import { Icon, IconInviteMore } from '../../../base/icons';
+import { Icon, IconAddUser } from '../../../base/icons';
 import { getLocalParticipant, getParticipantCountWithFake, getRemoteParticipants } from '../../../base/participants';
-import { connect } from '../../../base/redux';
 import { getBreakoutRooms, getCurrentRoomId } from '../../../breakout-rooms';
 import { doInvitePeople } from '../../../invite/actions.native';
 import { participantMatchesSearch, shouldRenderInviteButton } from '../../functions';
@@ -126,7 +126,7 @@ class MeetingParticipantList extends PureComponent<Props> {
         return (
             <Icon
                 size = { 20 }
-                src = { IconInviteMore } />
+                src = { IconAddUser } />
         );
     }
 

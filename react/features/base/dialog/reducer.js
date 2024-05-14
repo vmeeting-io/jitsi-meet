@@ -1,13 +1,17 @@
-/* @flow */
+import ReducerRegistry from '../redux/ReducerRegistry';
+import { assign } from '../redux/functions';
 
-import { assign, ReducerRegistry } from '../redux';
-
-import { HIDE_DIALOG, OPEN_DIALOG } from './actionTypes';
+import {
+    HIDE_DIALOG,
+    HIDE_SHEET,
+    OPEN_DIALOG,
+    OPEN_SHEET
+} from './actionTypes';
 
 /**
  * Reduces redux actions which show or hide dialogs.
  *
- * @param {State} state - The current redux state.
+ * @param {IDialogState} state - The current redux state.
  * @param {Action} action - The redux action to reduce.
  * @param {string} action.type - The type of the redux action to reduce..
  * @returns {State} The next redux state that is the result of reducing the
@@ -21,8 +25,7 @@ ReducerRegistry.register('features/base/dialog', (state = {}, action) => {
         if (typeof component === 'undefined' || state.component === component) {
             return assign(state, {
                 component: undefined,
-                componentProps: undefined,
-                rawDialog: false
+                componentProps: undefined
             });
         }
         break;
@@ -31,8 +34,19 @@ ReducerRegistry.register('features/base/dialog', (state = {}, action) => {
     case OPEN_DIALOG:
         return assign(state, {
             component: action.component,
-            componentProps: action.componentProps,
-            rawDialog: action.rawDialog
+            componentProps: action.componentProps
+        });
+
+    case HIDE_SHEET:
+        return assign(state, {
+            sheet: undefined,
+            sheetProps: undefined
+        });
+
+    case OPEN_SHEET:
+        return assign(state, {
+            sheet: action.component,
+            sheetProps: action.componentProps
         });
     }
 

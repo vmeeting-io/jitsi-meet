@@ -1,20 +1,26 @@
 // @flow
 
+import { sha512_256 as sha512 } from 'js-sha512';
 import _ from 'lodash';
 
 import { getName } from '../../app/functions';
 import { determineTranscriptionLanguage } from '../../transcribing/functions';
 import { JitsiTrackErrors } from '../lib-jitsi-meet';
 import {
-    getLocalParticipant,
     hiddenParticipantJoined,
     hiddenParticipantLeft,
     participantJoined,
     participantLeft
-} from '../participants';
-import { toState } from '../redux';
-import { getBackendSafePath, getJitsiMeetGlobalNS, safeDecodeURIComponent } from '../util';
+} from '../participants/actions';
+import { getLocalParticipant } from '../participants/functions';
+import { toState } from '../redux/functions';
+import {
+    appendURLParam,
+    getBackendSafePath,
+    safeDecodeURIComponent
+} from '../util/uri';
 
+import { setObfuscatedRoom } from './actions';
 import {
     AVATAR_URL_COMMAND,
     EMAIL_COMMAND,
@@ -91,11 +97,10 @@ export function commonUserJoinedHandling(
     if (user.isHidden()) {
         dispatch(hiddenParticipantJoined(id, displayName));
     } else {
-        const isReplacing = user.isReplacing && user.isReplacing();
+        const isReplacing = user?.isReplacing();
 
         dispatch(participantJoined({
             botType: user.getBotType(),
-            connectionStatus: user.getConnectionStatus(),
             conference,
             id,
             name: displayName,
@@ -103,7 +108,8 @@ export function commonUserJoinedHandling(
             role: user.getRole(),
             birthDate: user.getbDate(),
             hatOn: user.getHatOn(), // default flag value 'false' that denotes the participant has not put on the birthday hat
-            isReplacing
+            isReplacing,
+            sources: user.getSources()
         }));
     }
 }
@@ -128,9 +134,9 @@ export function commonUserLeftHandling(
     if (user.isHidden()) {
         dispatch(hiddenParticipantLeft(id));
     } else {
-        const isReplaced = user.isReplaced && user.isReplaced();
+        const isReplaced = user.isReplaced?.();
 
-        dispatch(participantLeft(id, conference, isReplaced));
+        dispatch(participantLeft(id, conference, { isReplaced }));
     }
 }
 
@@ -156,7 +162,6 @@ export function forEachConference(
         // Does the value of the base/conference's property look like a
         // JitsiConference?
         if (v && typeof v === 'object') {
-            // $FlowFixMe
             const url: URL = v[JITSI_CONFERENCE_URL_KEY];
 
             // XXX The Web version of Jitsi Meet does not utilize
@@ -183,16 +188,21 @@ export function forEachConference(
 export function getConferenceName(stateful: Function | Object): string {
     const state = toState(stateful);
     const { callee } = state['features/base/jwt'];
-    const { callDisplayName } = state['features/base/config'];
-    const { localSubject, room, subject } = getConferenceState(state);
+    const {
+        callDisplayName,
+        localSubject: configLocalSubject,
+        subject: configSubject
+    } = state['features/base/config'];
+    const { localSubject, pendingSubjectChange, room, subject } = getConferenceState(state);
 
-    const name = localSubject
+    return (pendingSubjectChange
+        || configSubject
         || subject
+        || configLocalSubject
+        || localSubject
         || callDisplayName
-        || (callee && callee.name)
-        || room;
-
-    return safeStartCase(safeDecodeURIComponent(name));
+        || callee?.name
+        || (room && safeStartCase(safeDecodeURIComponent(room)))) ?? '';
 }
 
 /**
@@ -203,7 +213,7 @@ export function getConferenceName(stateful: Function | Object): string {
  * @returns {string} - The name of the conference formatted for the title.
  */
 export function getConferenceNameForTitle(stateful: Function | Object) {
-    return safeStartCase(safeDecodeURIComponent(getConferenceState(toState(stateful)).room));
+    return safeStartCase(safeDecodeURIComponent(getConferenceState(toState(stateful)).room ?? ''));
 }
 
 /**
@@ -219,7 +229,7 @@ export function getConferenceOptions(stateful: Function | Object) {
     const { locationURL } = state['features/base/connection'];
     const { tenant } = state['features/base/jwt'];
     const { roomInfo } = state['features/base/conference'];
-    const { email, name: nick, presence } = getLocalParticipant(state);
+    const { email, name: nick, presence } = getLocalParticipant(state) ?? {};
     const options = { ...config };
 
     if (tenant) {
@@ -250,10 +260,6 @@ export function getConferenceOptions(stateful: Function | Object) {
         delete config.analytics?.scriptURLs;
         delete config.analytics?.amplitudeAPPKey;
         delete config.analytics?.googleAnalyticsTrackingId;
-        delete options.callStatsID;
-        delete options.callStatsSecret;
-    } else {
-        options.getWiFiStatsMethod = getWiFiStatsMethod;
     }
 
     if (roomInfo?.isHost && roomInfo?.password) {
@@ -261,6 +267,104 @@ export function getConferenceOptions(stateful: Function | Object) {
     }
 
     return options;
+}
+
+/**
+ * Returns the restored conference options if anything is available to be restored or undefined.
+ *
+ * @param {IStateful} stateful - The redux store state.
+ * @returns {Object?}
+ */
+export function restoreConferenceOptions(stateful: Object) {
+    const config = toState(stateful)['features/base/config'];
+
+    if (config.oldConfig) {
+        return {
+            hosts: {
+                domain: config.oldConfig.hosts.domain,
+                muc: config.oldConfig.hosts.muc
+            },
+            focusUserJid: config.oldConfig.focusUserJid,
+            disableFocus: false,
+            bosh: config.oldConfig.bosh,
+            websocket: config.oldConfig.websocket,
+            oldConfig: undefined
+        };
+    }
+
+    // nothing to return
+    return;
+}
+
+/**
+ * Override the global config (that is, window.config) with XMPP configuration required to join as a visitor.
+ *
+ * @param {IStateful} stateful - The redux store state.
+ * @param {string|undefined} vnode - The received parameters.
+ * @param {string} focusJid - The received parameters.
+ * @param {string|undefined} username - The received parameters.
+ * @returns {Object}
+ */
+export function getVisitorOptions(stateful: Object, vnode: string, focusJid: string, username: string) {
+    const config = toState(stateful)['features/base/config'];
+
+    if (!config?.hosts) {
+        logger.warn('Wrong configuration, missing hosts.');
+
+        return;
+    }
+
+    if (!vnode) {
+        // this is redirecting back to main, lets restore config
+        // not updating disableFocus, as if the room capacity is full the promotion to the main room will fail
+        // and the visitor will be redirected back to a vnode from jicofo
+        if (config.oldConfig && username) {
+            return {
+                hosts: config.oldConfig.hosts,
+                focusUserJid: focusJid,
+                disableLocalStats: false,
+                bosh: config.oldConfig.bosh && appendURLParam(config.oldConfig.bosh, 'customusername', username),
+                p2p: config.oldConfig.p2p,
+                websocket: config.oldConfig.websocket
+                    && appendURLParam(config.oldConfig.websocket, 'customusername', username),
+                oldConfig: undefined // clears it up
+            };
+        }
+
+        return;
+    }
+
+    const oldConfig = {
+        hosts: {
+            domain: ''
+        },
+        focusUserJid: config.focusUserJid,
+        bosh: config.bosh,
+        p2p: config.p2p,
+        websocket: config.websocket
+    };
+
+    // copy original hosts, to make sure we do not use a modified one later
+    Object.assign(oldConfig.hosts, config.hosts);
+
+    const domain = `${vnode}.meet.jitsi`;
+
+    return {
+        oldConfig,
+        hosts: {
+            domain,
+            muc: config.hosts.muc.replace(oldConfig.hosts.domain, domain)
+        },
+        focusUserJid: focusJid,
+        disableFocus: true, // This flag disables sending the initial conference request
+        disableLocalStats: true,
+        bosh: config.bosh && appendURLParam(config.bosh, 'vnode', vnode),
+        p2p: {
+            ...config.p2p,
+            enabled: false
+        },
+        websocket: config.websocket && appendURLParam(config.websocket, 'vnode', vnode)
+    };
 }
 
 /**
@@ -307,6 +411,24 @@ export function getCurrentConference(stateful: Function | Object) {
 }
 
 /**
+ * Returns whether the current conference is a P2P connection.
+ * Will return `false` if it's a JVB one, and `null` if there is no conference.
+ *
+ * @param {IStateful} stateful - The redux store, state, or
+ * {@code getState} function.
+ * @returns {boolean|null}
+ */
+export function isP2pActive(stateful: Object): boolean | null {
+    const conference = getCurrentConference(toState(stateful));
+
+    if (!conference) {
+        return null;
+    }
+
+    return conference.isP2PActive();
+}
+
+/**
  * Returns the stored room name.
  *
  * @param {Object} state - The current state of the app.
@@ -317,18 +439,48 @@ export function getRoomName(state: Object): string {
 }
 
 /**
- * Returns the result of getWiFiStats from the global NS or does nothing
- * (returns empty result).
- * Fixes a concurrency problem where we need to pass a function when creating
- * a JitsiConference, but that method is added to the context later.
+ * Get an obfuscated room name or create and persist it if it doesn't exists.
  *
- * @returns {Promise}
- * @private
+ * @param {IReduxState} state - The current state of the app.
+ * @param {Function} dispatch - The Redux dispatch function.
+ * @returns {string} - Obfuscated room name.
  */
-function getWiFiStatsMethod() {
-    const gloabalNS = getJitsiMeetGlobalNS();
+export function getOrCreateObfuscatedRoomName(state: Object, dispatch: Function) {
+    let { obfuscatedRoom } = getConferenceState(state);
+    const { obfuscatedRoomSource } = getConferenceState(state);
+    const room = getRoomName(state);
 
-    return gloabalNS.getWiFiStats ? gloabalNS.getWiFiStats() : Promise.resolve('{}');
+    if (!room) {
+        return;
+    }
+
+    // On native mobile the store doesn't clear when joining a new conference so we might have the obfuscatedRoom
+    // stored even though a different room was joined.
+    // Check if the obfuscatedRoom was already computed for the current room.
+    if (!obfuscatedRoom || (obfuscatedRoomSource !== room)) {
+        obfuscatedRoom = sha512(room);
+        dispatch(setObfuscatedRoom(obfuscatedRoom, room));
+    }
+
+    return obfuscatedRoom;
+}
+
+/**
+ * Analytics may require an obfuscated room name, this functions decides based on a config if the normal or
+ * obfuscated room name should be returned.
+ *
+ * @param {IReduxState} state - The current state of the app.
+ * @param {Function} dispatch - The Redux dispatch function.
+ * @returns {string} - Analytics room name.
+ */
+export function getAnalyticsRoomName(state: Object, dispatch: Function) {
+    const { analysis: { obfuscateRoomName = false } = {} } = state['features/base/config'];
+
+    if (obfuscateRoomName) {
+        return getOrCreateObfuscatedRoomName(state, dispatch);
+    }
+
+    return getRoomName(state);
 }
 
 /**
@@ -430,32 +582,32 @@ export function sendLocalParticipant(
         hatOn,
         features,
         name
-    } = getLocalParticipant(stateful);
+    } = getLocalParticipant(stateful) ?? {};
 
-    avatarURL && conference.sendCommand(AVATAR_URL_COMMAND, {
+    avatarURL && conference?.sendCommand(AVATAR_URL_COMMAND, {
         value: avatarURL
     });
-    email && conference.sendCommand(EMAIL_COMMAND, {
+    email && conference?.sendCommand(EMAIL_COMMAND, {
         attributes: { xmlns: `http://vmeeting.io/protocol/email` },
         value: email
     });
 
     if (hatOn !== undefined) {
-        conference.sendCommand(HAT_COMMAND, {
+        conference?.sendCommand(HAT_COMMAND, {
             value: hatOn
         });
     }
 
     // code block for sending birthDate info about local participant
-    birthDate && conference.sendCommand(BIRTHDATE_COMMAND, {
+    birthDate && conference?.sendCommand(BIRTHDATE_COMMAND, {
         value: birthDate
     });
 
     if (features && features['screen-sharing'] === 'true') {
-        conference.setLocalParticipantProperty('features_screen-sharing', true);
+        conference?.setLocalParticipantProperty('features_screen-sharing', true);
     }
 
-    conference.setDisplayName(name);
+    conference?.setDisplayName(name);
 }
 
 /**

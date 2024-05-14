@@ -1,41 +1,19 @@
 // @flow
 
-import { openDialog } from '../../base/dialog';
-import { IconCrown } from '../../base/icons';
-import {
-    getLocalParticipant,
-    getParticipantById,
-    isParticipantModerator,
-    PARTICIPANT_ROLE
-} from '../../base/participants';
-import { AbstractButton, type AbstractButtonProps } from '../../base/toolbox/components';
+import { openDialog } from '../../base/dialog/actions';
+import { IconModerator } from '../../base/icons/svg';
+import { PARTICIPANT_ROLE } from '../../base/participants/constants';
+import { getLocalParticipant, getParticipantById, isParticipantModerator } from '../../base/participants/functions';
+import AbstractButton from '../../base/toolbox/components/AbstractButton';
 
-import { GrantModeratorDialog } from '../components';
-
-export type Props = AbstractButtonProps & {
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function,
-
-    /**
-     * The ID of the participant for whom to grant moderator status.
-     */
-    participantID: string,
-
-    /**
-     * The function to be used to translate i18n labels.
-     */
-    t: Function
-};
+import { GrantModeratorDialog } from './';
 
 /**
  * An abstract remote video menu button which kicks the remote participant.
  */
-export default class AbstractGrantModeratorButton extends AbstractButton<Props, *> {
+export default class AbstractGrantModeratorButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.grantModerator';
-    icon = IconCrown;
+    icon = IconModerator;
     label = 'videothumbnail.grantModerator';
 
     /**

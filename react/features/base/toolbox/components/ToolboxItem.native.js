@@ -1,17 +1,14 @@
-// @flow
-
 import React from 'react';
 import { Text, TouchableHighlight, View } from 'react-native';
 
-import { Icon } from '../../icons';
+import Icon from '../../icons/components/Icon';
 
 import AbstractToolboxItem from './AbstractToolboxItem';
-import type { Props } from './AbstractToolboxItem';
 
 /**
  * Native implementation of {@code AbstractToolboxItem}.
  */
-export default class ToolboxItem extends AbstractToolboxItem<Props> {
+export default class ToolboxItem extends AbstractToolboxItem {
     /**
      * Renders the {@code Icon} part of this {@code ToolboxItem}.
      *
@@ -21,11 +18,11 @@ export default class ToolboxItem extends AbstractToolboxItem<Props> {
     _renderIcon() {
         const { styles } = this.props;
 
-        return this.props.icon ? (
+        return (
             <Icon
                 src = { this.props.icon }
-                style = { styles && styles.iconStyle } />
-        ) : null;
+                style = { styles?.iconStyle } />
+        );
     }
 
     /**
@@ -49,7 +46,7 @@ export default class ToolboxItem extends AbstractToolboxItem<Props> {
 
         // XXX When using a wrapper View, apply the style to it instead of
         // applying it to the TouchableHighlight.
-        let style = styles && styles.style;
+        let style = styles?.style;
 
         if (showLabel) {
             // XXX TouchableHighlight requires 1 child. If there's a need to
@@ -58,7 +55,7 @@ export default class ToolboxItem extends AbstractToolboxItem<Props> {
             children = (
                 <View style = { style }>
                     { children }
-                    <Text style = { styles && styles.labelStyle }>
+                    <Text style = { styles?.labelStyle }>
                         { this.label }
                     </Text>
                     { elementAfter }
@@ -74,11 +71,11 @@ export default class ToolboxItem extends AbstractToolboxItem<Props> {
             <TouchableHighlight
                 accessibilityLabel = { this.accessibilityLabel }
                 accessibilityRole = 'button'
-                accessibilityState = {{ 'selected': toggled }}
+                accessibilityState = {{ 'selected': Boolean(toggled) }}
                 disabled = { disabled }
                 onPress = { onClick }
                 style = { style }
-                underlayColor = { styles && styles.underlayColor } >
+                underlayColor = { styles?.underlayColor } >
                 { children }
             </TouchableHighlight>
         );

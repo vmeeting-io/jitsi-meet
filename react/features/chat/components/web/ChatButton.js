@@ -1,69 +1,29 @@
 // @flow
 
 import React from 'react';
+import { connect } from 'react-redux';
 
-import { translate } from '../../../base/i18n';
-import { IconChat } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
+import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconMessage } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import { closeOverflowMenuIfOpen } from '../../../toolbox/actions.web';
+import { toggleChat } from '../../actions.web';
 
 import ChatCounter from './ChatCounter';
 
 /**
- * The type of the React {@code Component} props of {@link ChatButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * Whether or not the chat feature is currently displayed.
-     */
-     _chatOpen: boolean,
-};
-
-/**
  * Implementation of a button for accessing chat pane.
  */
-class ChatButton extends AbstractButton<Props, *> {
-    accessibilityLabel = 'toolbar.accessibilityLabel.chat';
-    icon = IconChat;
+class ChatButton extends AbstractButton {
+    accessibilityLabel = 'toolbar.accessibilityLabel.openChat';
+    toggledAccessibilityLabel = 'toolbar.accessibilityLabel.closeChat';
+    icon = IconMessage;
     label = 'toolbar.openChat';
     toggledLabel = 'toolbar.closeChat';
-
-    /**
-     * Retrieves tooltip dynamically.
-     */
-    get tooltip() {
-        if (this._isToggled()) {
-            return 'toolbar.closeChat';
-        }
-
-        return 'toolbar.openChat';
-    }
-
-    /**
-     * Required by linter due to AbstractButton overwritten prop being writable.
-     *
-     * @param {string} _value - The value.
-     */
-    set tooltip(_value) {
-        // Unused.
-    }
-
-    /**
-     * Handles clicking / pressing the button, and opens the appropriate dialog.
-     *
-     * @protected
-     * @returns {void}
-     */
-    _handleClick() {
-        const { handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
-    }
+    tooltip = 'toolbar.openChat';
+    toggledTooltip = 'toolbar.closeChat';
 
     /**
      * Indicates whether this button is in toggled state or not.
@@ -83,16 +43,33 @@ class ChatButton extends AbstractButton<Props, *> {
      * @protected
      * @returns {boReact$Nodeolean}
      */
-    render(): React$Node {
-        const { showLabel } = this.props;
-
+    render() {
         return (
             <div
-                className = {`toolbar-button-with-badge${showLabel ? ' show-label' : ''}`}
+                className = 'toolbar-button-with-badge'
                 key = 'chatcontainer'>
                 {super.render()}
+                <ChatCounter />
             </div>
         );
+    }
+
+    /**
+     * Handles clicking the button, and toggles the chat.
+     *
+     * @private
+     * @returns {void}
+     */
+    _handleClick() {
+        const { dispatch } = this.props;
+
+        sendAnalytics(createToolbarEvent(
+            'toggle.chat',
+            {
+                enable: !this.props._chatOpen
+            }));
+        dispatch(closeOverflowMenuIfOpen());
+        dispatch(toggleChat());
     }
 }
 

@@ -1,60 +1,24 @@
-// @flow
-
-import { openDialog } from '../../../base/dialog';
-import { IconLiveStreaming } from '../../../base/icons';
-import {
-    getLocalParticipant,
-    isLocalParticipantModerator
-} from '../../../base/participants';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { isRecording, isStreaming } from '../../functions';
-import { isInBreakoutRoom } from '../../../breakout-rooms';
+import { IconSites } from '../../../base/icons/svg';
+import { MEET_FEATURES } from '../../../base/jwt/constants';
+import { isJwtFeatureEnabled } from '../../../base/jwt/functions';
+import { JitsiRecordingConstants } from '../../../base/lib-jitsi-meet';
+import { isLocalParticipantModerator } from '../../../base/participants/functions';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import { isInBreakoutRoom } from '../../../breakout-rooms/functions';
 import { maybeShowPremiumFeatureDialog } from '../../../jaas/actions';
-import { FEATURES } from '../../../jaas/constants';
+import { isRecorderTranscriptionsRunning } from '../../../transcribing/functions';
+import { getActiveSession, isCloudRecordingRunning } from '../../functions';
 
-import {
-    StartLiveStreamDialog,
-    StopLiveStreamDialog
-} from './_';
+import { getLiveStreaming } from './functions';
 
-/**
- * The type of the React {@code Component} props of
- * {@link AbstractLiveStreamButton}.
- */
-export type Props = AbstractButtonProps & {
-
-    /**
-     * True if there is a running active live stream, false otherwise.
-     */
-    _isLiveStreamRunning: boolean,
-
-    /**
-     * True if the button needs to be disabled.
-     */
-    _disabled: Boolean,
-
-    /**
-     * The tooltip to display when hovering over the button.
-     */
-    _tooltip: ?String,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function,
-
-    /**
-     * The i18n translate function.
-     */
-    t: Function
-};
 
 /**
  * An abstract class of a button for starting and stopping live streaming.
  */
-export default class AbstractLiveStreamButton<P: Props> extends AbstractButton<P, *> {
-    accessibilityLabel = 'dialog.accessibilityLabel.liveStreaming';
-    icon = IconLiveStreaming;
+export default class AbstractLiveStreamButton extends AbstractButton {
+    accessibilityLabel = 'dialog.startLiveStreaming';
+    toggledAccessibilityLabel = 'dialog.stopLiveStreaming';
+    icon = IconSites;
     label = 'dialog.startLiveStreaming';
     toggledLabel = 'dialog.stopLiveStreaming';
 
@@ -65,7 +29,18 @@ export default class AbstractLiveStreamButton<P: Props> extends AbstractButton<P
      * @returns {string}
      */
     _getTooltip() {
-        return this.props._tooltip || '';
+        return this.props._tooltip ?? '';
+    }
+
+    /**
+     * Helper function to be implemented by subclasses, which should be used
+     * to handle the live stream button being clicked / pressed.
+     *
+     * @protected
+     * @returns {void}
+     */
+    _onHandleClick() {
+        // To be implemented by subclass.
     }
 
     /**
@@ -76,20 +51,12 @@ export default class AbstractLiveStreamButton<P: Props> extends AbstractButton<P
      * @returns {void}
      */
     async _handleClick() {
-        const { _isLiveStreamRunning, dispatch, handleClick } = this.props;
+        const { dispatch } = this.props;
 
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
-
-        const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(FEATURES.RECORDING));
+        const dialogShown = await dispatch(maybeShowPremiumFeatureDialog(MEET_FEATURES.RECORDING));
 
         if (!dialogShown) {
-            dispatch(openDialog(
-                _isLiveStreamRunning ? StopLiveStreamDialog : StartLiveStreamDialog
-            ));
+            this._onHandleClick();
         }
     }
 
@@ -120,7 +87,7 @@ export default class AbstractLiveStreamButton<P: Props> extends AbstractButton<P
  * {@code AbstractLiveStreamButton} component.
  *
  * @param {Object} state - The Redux state.
- * @param {Props} ownProps - The own props of the Component.
+ * @param {IProps} ownProps - The own props of the Component.
  * @private
  * @returns {{
  *     _disabled: boolean,
@@ -128,41 +95,30 @@ export default class AbstractLiveStreamButton<P: Props> extends AbstractButton<P
  *     visible: boolean
  * }}
  */
-export function _mapStateToProps(state: Object, ownProps: Props) {
+export function _mapStateToProps(state, ownProps) {
     let { visible } = ownProps;
 
     // A button can be disabled/enabled only if enableFeaturesBasedOnToken
     // is on or if the recording is running.
-    let _disabled;
+    let _disabled = false;
     let _tooltip = '';
 
     if (typeof visible === 'undefined') {
         // If the containing component provides the visible prop, that is one
-        // above all, but if not, the button should be autonomus and decide on
+        // above all, but if not, the button should be autonomous and decide on
         // its own to be visible or not.
         const isModerator = isLocalParticipantModerator(state);
-        const {
-            enableFeaturesBasedOnToken,
-            liveStreamingEnabled
-        } = state['features/base/config'];
-        const { features = {} } = getLocalParticipant(state);
+        const liveStreaming = getLiveStreaming(state);
 
-        visible = isModerator && liveStreamingEnabled;
-
-        if (enableFeaturesBasedOnToken) {
-            visible = visible && String(features.livestreaming) === 'true';
-            _disabled = String(features.livestreaming) === 'disabled';
-
-            if (!visible && !_disabled) {
-                _disabled = true;
-                visible = true;
-                _tooltip = 'dialog.liveStreamingDisabledTooltip';
-            }
+        if (isModerator) {
+            visible = liveStreaming.enabled ? isJwtFeatureEnabled(state, 'livestreaming', true) : false;
+        } else {
+            visible = false;
         }
     }
 
     // disable the button if the recording is running.
-    if (isRecording(state)) {
+    if (visible && (isCloudRecordingRunning(state) || isRecorderTranscriptionsRunning(state))) {
         _disabled = true;
         _tooltip = 'dialog.liveStreamingDisabledBecauseOfActiveRecordingTooltip';
     }
@@ -175,7 +131,7 @@ export function _mapStateToProps(state: Object, ownProps: Props) {
 
     return {
         _disabled,
-        _isLiveStreamRunning: isStreaming(state),
+        _isLiveStreamRunning: Boolean(getActiveSession(state, JitsiRecordingConstants.mode.STREAM)),
         _tooltip,
         visible
     };

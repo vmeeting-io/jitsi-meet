@@ -1,52 +1,47 @@
-// @flow
+import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 
-import React from 'react';
+import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { openDialog } from '../../../base/dialog/actions';
+import { IconMicSlash } from '../../../base/icons/svg';
+import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 
-import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { translate } from '../../../base/i18n';
-import { IconMuteEveryoneElse } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import AbstractMuteEveryoneElseButton, {
-    type Props
-} from '../AbstractMuteEveryoneElseButton';
+import MuteEveryoneDialog from './MuteEveryoneDialog';
 
 /**
  * Implements a React {@link Component} which displays a button for audio muting
  * every participant in the conference except the one with the given
  * participantID.
+ *
+ * @returns {JSX.Element}
  */
-class MuteEveryoneElseButton extends AbstractMuteEveryoneElseButton {
-    /**
-     * Instantiates a new {@code Component}.
-     *
-     * @inheritdoc
-     */
-    constructor(props: Props) {
-        super(props);
+const MuteEveryoneElseButton = ({
+    notifyClick,
+    notifyMode,
+    participantID
+}) => {
+    const { t } = useTranslation();
+    const dispatch = useDispatch();
 
-        this._handleClick = this._handleClick.bind(this);
-    }
+    const handleClick = useCallback(() => {
+        notifyClick?.();
+        if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
+            return;
+        }
+        sendAnalytics(createToolbarEvent('mute.everyoneelse.pressed'));
+        dispatch(openDialog(MuteEveryoneDialog, { exclude: [ participantID ] }));
+    }, [ dispatch, notifyMode, notifyClick, participantID, sendAnalytics ]);
 
-    /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
-    render() {
-        const { t } = this.props;
+    return (
+        <ContextMenuItem
+            accessibilityLabel = { t('toolbar.accessibilityLabel.muteEveryoneElse') }
+            icon = { IconMicSlash }
+            onClick = { handleClick }
+            text = { t('videothumbnail.domuteOthers') } />
+    );
+};
 
-        return (
-            <ContextMenuItem
-                accessibilityLabel = { t('toolbar.accessibilityLabel.muteEveryoneElse') }
-                icon = { IconMuteEveryoneElse }
-                // eslint-disable-next-line react/jsx-handler-names
-                onClick = { this._handleClick }
-                text = { t('videothumbnail.domuteOthers') } />
-        );
-    }
-
-    _handleClick: () => void;
-}
-
-export default translate(connect()(MuteEveryoneElseButton));
+export default MuteEveryoneElseButton;

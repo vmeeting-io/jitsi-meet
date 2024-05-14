@@ -1,7 +1,8 @@
 // @flow
 
-import { MEDIA_TYPE, type MediaType } from '../base/media/constants';
+import { MEDIA_TYPE } from '../base/media/constants';
 
+export const ASKED_TO_UNMUTE_NOTIFICATION_ID = 'asked-to-unmute';
 export const ASKED_TO_UNMUTE_SOUND_ID = 'ASKED_TO_UNMUTE_SOUND';
 
 export const AUDIO_MODERATION_NOTIFICATION_ID = 'audio-moderation';

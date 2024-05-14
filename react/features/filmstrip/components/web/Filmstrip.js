@@ -1,226 +1,51 @@
-/* @flow */
-
-import { withStyles } from '@material-ui/styles';
 import clsx from 'clsx';
-import { difference } from 'lodash';
+import _ from 'lodash';
 import React, { PureComponent } from 'react';
-import { FixedSizeList, FixedSizeGrid } from 'react-window';
-import type { Dispatch } from 'redux';
+import { connect } from 'react-redux';
+import { FixedSizeGrid, FixedSizeList } from 'react-window';
+import { withStyles } from 'tss-react/mui';
 
-import {
-    createShortcutEvent,
-    createToolbarEvent,
-    sendAnalytics
-} from '../../../analytics';
-import { getToolbarButtons } from '../../../base/config';
+import { ACTION_SHORTCUT_TRIGGERED, createShortcutEvent, createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
 import { isMobileBrowser } from '../../../base/environment/utils';
-import { translate } from '../../../base/i18n';
-import { Icon, IconMenuDown, IconMenuUp } from '../../../base/icons';
-import { getLocalParticipant, getPinnedTiles } from '../../../base/participants';
-import { connect } from '../../../base/redux';
+import { translate } from '../../../base/i18n/functions';
+import Icon from '../../../base/icons/components/Icon';
+import { IconArrowDown, IconArrowUp } from '../../../base/icons/svg';
+import { getHideSelfView } from '../../../base/settings/functions.any';
+import { registerShortcut, unregisterShortcut } from '../../../keyboard-shortcuts/actions';
 import { showToolbox } from '../../../toolbox/actions.web';
 import { isButtonEnabled, isToolboxVisible } from '../../../toolbox/functions.web';
-import { LAYOUTS, getCurrentLayout } from '../../../video-layout';
-import { setFilmstripVisible, setVisibleRemoteParticipants } from '../../actions';
+import { LAYOUTS } from '../../../video-layout/constants';
+import { getCurrentLayout } from '../../../video-layout/functions.web';
+import {
+    setFilmstripVisible,
+    setTopPanelVisible,
+    setUserFilmstripHeight,
+    setUserFilmstripWidth,
+    setUserIsResizing,
+    setVisibleRemoteParticipants
+} from '../../actions';
 import {
     ASPECT_RATIO_BREAKPOINT,
+    DEFAULT_FILMSTRIP_WIDTH,
+    FILMSTRIP_TYPE,
+    MIN_STAGE_VIEW_HEIGHT,
+    MIN_STAGE_VIEW_WIDTH,
     TILE_HORIZONTAL_MARGIN,
     TILE_VERTICAL_MARGIN,
-    TOOLBAR_HEIGHT,
-    TOOLBAR_HEIGHT_MOBILE
+    TOP_FILMSTRIP_HEIGHT
 } from '../../constants';
-import { shouldRemoteVideosBeVisible } from '../../functions';
+import {
+    getVerticalViewMaxWidth,
+    isStageFilmstripTopPanel,
+    shouldRemoteVideosBeVisible
+} from '../../functions';
+import { isFilmstripDisabled } from '../../functions.web';
 
 import AudioTracksContainer from './AudioTracksContainer';
 import Thumbnail from './Thumbnail';
 import ThumbnailWrapper from './ThumbnailWrapper';
-
-declare var APP: Object;
-declare var interfaceConfig: Object;
-
-/**
- * The type of the React {@code Component} props of {@link Filmstrip}.
- */
-type Props = {
-
-    /**
-     * Additional CSS class names top add to the root.
-     */
-    _className: string,
-
-    /**
-     * The current layout of the filmstrip.
-     */
-    _currentLayout: string,
-
-    /**
-     * The number of columns in tile view.
-     */
-    _columns: number,
-
-    /**
-     * The width of the filmstrip.
-     */
-    _filmstripWidth: number,
-
-    /**
-     * The height of the filmstrip.
-     */
-    _filmstripHeight: number,
-
-    /**
-     * Whether this is a recorder or not.
-     */
-    _iAmRecorder: boolean,
-
-    /**
-     * Whether the filmstrip button is enabled.
-     */
-    _isFilmstripButtonEnabled: boolean,
-
-    /**
-     * Whether or not the current layout is vertical filmstrip.
-     */
-    _isVerticalFilmstrip: boolean,
-
-    /**
-     * The participants in the call.
-     */
-    _remoteParticipants: Array<Object>,
-
-    /**
-     * The length of the remote participants array.
-     */
-    _remoteParticipantsLength: number,
-
-    /**
-     * The number of rows in tile view.
-     */
-    _rows: number,
-
-    /**
-     * The height of the thumbnail.
-     */
-    _thumbnailHeight: number,
-
-    /**
-     * The width of the thumbnail.
-     */
-    _thumbnailWidth: number,
-
-    /**
-     * Flag that indicates whether the thumbnails will be reordered.
-     */
-    _thumbnailsReordered: Boolean,
-
-    /**
-     * Additional CSS class names to add to the container of all the thumbnails.
-     */
-    _videosClassName: string,
-
-    /**
-     * Whether or not the filmstrip videos should currently be displayed.
-     */
-    _visible: boolean,
-
-    /**
-     * Whether or not the toolbox is displayed.
-     */
-    _isToolboxVisible: Boolean,
-
-    /**
-     * An object containing the CSS classes.
-     */
-    classes: Object,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Dispatch<any>,
-
-    /**
-     * Invoked to obtain translated strings.
-     */
-    t: Function
-};
-
-/**
- * Creates the styles for the component.
- *
- * @param {Object} theme - The current theme.
- * @returns {Object}
- */
- const styles = theme => {
-    return {
-        toggleFilmstripContainer: {
-            display: 'flex',
-            flexWrap: 'nowrap',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgba(0, 0, 0, .6)',
-            width: '32px',
-            height: '24px',
-            position: 'absolute',
-            borderRadius: '4px',
-            top: 'calc(-24px - 2px)',
-            left: 'calc(50% - 16px)',
-            opacity: 0,
-            transition: 'opacity .3s'
-        },
-
-        toggleFilmstripButton: {
-            fontSize: '14px',
-            lineHeight: 1.2,
-            textAlign: 'center',
-            background: 'transparent',
-            height: 'auto',
-            width: '100%',
-            padding: 0,
-            margin: 0,
-            border: 'none',
-
-            '-webkit-appearance': 'none',
-
-            '& svg': {
-                fill: theme.palette.icon02
-            }
-        },
-
-        toggleVerticalFilmstripContainer: {
-            transform: 'rotate(-90deg)',
-            left: 'calc(-24px - 2px - 5px)',
-            top: 'calc(50% - 16px)'
-        },
-
-        filmstrip: {
-            transition: 'background .2s ease-in-out, right 1s, bottom 1s, height .3s ease-in',
-            right: 0,
-            bottom: 0,
-
-            '&:hover': {
-                backgroundColor: 'rgba(0, 0, 0, .6)',
-
-                '& .toggleFilmstripContainer': {
-                    opacity: 1
-                }
-            },
-
-            '.horizontal-filmstrip &.hidden': {
-                bottom: '-50px',
-
-                '&:hover': {
-                    backgroundColor: 'transparent'
-                }
-            },
-
-            '&.hidden': {
-                '& .toggleFilmstripContainer': {
-                    opacity: 1
-                }
-            }
-        }
-    };
-};
+import { styles } from './styles';
 
 /**
  * Implements a React {@link Component} which represents the filmstrip on
@@ -228,7 +53,9 @@ type Props = {
  *
  * @augments Component
  */
-class Filmstrip extends PureComponent <Props> {
+class Filmstrip extends PureComponent {
+
+    _throttledResize;
 
     /**
      * Initializes a new {@code Filmstrip} instance.
@@ -236,8 +63,14 @@ class Filmstrip extends PureComponent <Props> {
      * @param {Object} props - The read-only properties with which the new
      * instance is to be initialized.
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
+
+        this.state = {
+            isMouseDown: false,
+            mousePosition: null,
+            dragFilmstripWidth: null
+        };
 
         // Bind event handlers so they are only bound once for every instance.
         this._onShortcutToggleFilmstrip = this._onShortcutToggleFilmstrip.bind(this);
@@ -248,6 +81,17 @@ class Filmstrip extends PureComponent <Props> {
         this._onGridItemsRendered = this._onGridItemsRendered.bind(this);
         this._onListItemsRendered = this._onListItemsRendered.bind(this);
         this._onToggleButtonTouch = this._onToggleButtonTouch.bind(this);
+        this._onDragHandleMouseDown = this._onDragHandleMouseDown.bind(this);
+        this._onDragMouseUp = this._onDragMouseUp.bind(this);
+        this._onFilmstripResize = this._onFilmstripResize.bind(this);
+
+        this._throttledResize = _.throttle(
+            this._onFilmstripResize,
+            50,
+            {
+                leading: true,
+                trailing: false
+            });
     }
 
     /**
@@ -256,12 +100,16 @@ class Filmstrip extends PureComponent <Props> {
      * @inheritdoc
      */
     componentDidMount() {
-        APP.keyboardshortcut.registerShortcut(
-            'F',
-            'filmstripPopover',
-            this._onShortcutToggleFilmstrip,
-            'keyboardShortcuts.toggleFilmstrip'
-        );
+        this.props.dispatch(registerShortcut({
+            character: 'F',
+            helpDescription: 'keyboardShortcuts.toggleFilmstrip',
+            handler: this._onShortcutToggleFilmstrip
+        }));
+
+        document.addEventListener('mouseup', this._onDragMouseUp);
+
+        // @ts-ignore
+        document.addEventListener('mousemove', this._throttledResize);
     }
 
     /**
@@ -270,7 +118,12 @@ class Filmstrip extends PureComponent <Props> {
      * @inheritdoc
      */
     componentWillUnmount() {
-        APP.keyboardshortcut.unregisterShortcut('F');
+        this.props.dispatch(unregisterShortcut('F'));
+
+        document.removeEventListener('mouseup', this._onDragMouseUp);
+
+        // @ts-ignore
+        document.removeEventListener('mousemove', this._throttledResize);
     }
 
     /**
@@ -281,54 +134,214 @@ class Filmstrip extends PureComponent <Props> {
      */
     render() {
         const filmstripStyle = { };
-        const { _currentLayout, classes, _visible } = this.props;
+        const {
+            _currentLayout,
+            _disableSelfView,
+            _filmstripDisabled,
+            _localScreenShareId,
+            _mainFilmstripVisible,
+            _resizableFilmstrip,
+            _topPanelFilmstrip,
+            _topPanelMaxHeight,
+            _topPanelVisible,
+            _verticalViewBackground,
+            _verticalViewGrid,
+            _verticalViewMaxWidth,
+            filmstripType,
+            t
+        } = this.props;
+        const classes = withStyles.getClasses(this.props);
+        const { isMouseDown } = this.state;
         const tileViewActive = _currentLayout === LAYOUTS.TILE_VIEW;
 
-        switch (_currentLayout) {
-        case LAYOUTS.VERTICAL_FILMSTRIP_VIEW:
-            // Adding 18px for the 2px margins, 2px borders on the left and right and 5px padding on the left and right.
-            // Also adding 7px for the scrollbar.
-            filmstripStyle.maxWidth = (interfaceConfig.FILM_STRIP_MAX_HEIGHT || 120) + 25;
+        if (_currentLayout === LAYOUTS.STAGE_FILMSTRIP_VIEW && filmstripType === FILMSTRIP_TYPE.STAGE) {
+            if (_topPanelFilmstrip) {
+                filmstripStyle.maxHeight = `${_topPanelMaxHeight}px`;
+                filmstripStyle.zIndex = 1;
 
-            if (!_visible) {
-                filmstripStyle.right = `-${filmstripStyle.maxWidth + 2}px`;
+                if (!_topPanelVisible) {
+                    filmstripStyle.top = `-${_topPanelMaxHeight}px`;
+                }
             }
-            break;
+            if (_mainFilmstripVisible) {
+                filmstripStyle.maxWidth = `calc(100% - ${_verticalViewMaxWidth}px)`;
+            }
+        } else if (_currentLayout === LAYOUTS.STAGE_FILMSTRIP_VIEW && filmstripType === FILMSTRIP_TYPE.SCREENSHARE) {
+            if (_mainFilmstripVisible) {
+                filmstripStyle.maxWidth = `calc(100% - ${_verticalViewMaxWidth}px)`;
+            }
+            if (_topPanelVisible) {
+                filmstripStyle.maxHeight = `calc(100% - ${_topPanelMaxHeight}px)`;
+            }
+            filmstripStyle.bottom = 0;
+            filmstripStyle.top = 'auto';
+        } else if (_currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW
+            || (_currentLayout === LAYOUTS.STAGE_FILMSTRIP_VIEW && filmstripType === FILMSTRIP_TYPE.MAIN)) {
+            filmstripStyle.maxWidth = _verticalViewMaxWidth;
+            if (!_mainFilmstripVisible) {
+                filmstripStyle.right = `-${filmstripStyle.maxWidth}px`;
+            }
         }
 
         let toolbar = null;
 
-        if (!this.props._iAmRecorder && this.props._isFilmstripButtonEnabled && _currentLayout !== LAYOUTS.TILE_VIEW) {
+        if (!this.props._iAmRecorder && this.props._isFilmstripButtonEnabled
+            && _currentLayout !== LAYOUTS.TILE_VIEW
+            && ((filmstripType === FILMSTRIP_TYPE.MAIN && !_filmstripDisabled)
+                || (filmstripType === FILMSTRIP_TYPE.STAGE && _topPanelFilmstrip))) {
             toolbar = this._renderToggleButton();
         }
+
+        const filmstrip = (<>
+            <div
+                className = { clsx(this.props._videosClassName,
+                    !tileViewActive && (filmstripType === FILMSTRIP_TYPE.MAIN
+                    || (filmstripType === FILMSTRIP_TYPE.STAGE && _topPanelFilmstrip))
+                    && !_resizableFilmstrip && 'filmstrip-hover',
+                    _verticalViewGrid && 'vertical-view-grid') }
+                id = 'remoteVideos'>
+                {!_disableSelfView && !_verticalViewGrid && (
+                    <div
+                        className = 'filmstrip__videos'
+                        id = 'filmstripLocalVideo'>
+                        {
+                            !tileViewActive && filmstripType === FILMSTRIP_TYPE.MAIN
+                            && <div id = 'filmstripLocalVideoThumbnail'>
+                                <Thumbnail
+                                    filmstripType = { FILMSTRIP_TYPE.MAIN }
+                                    key = 'local' />
+                            </div>
+                        }
+                    </div>
+                )}
+                {_localScreenShareId && !_disableSelfView && !_verticalViewGrid && (
+                    <div
+                        className = 'filmstrip__videos'
+                        id = 'filmstripLocalScreenShare'>
+                        <div id = 'filmstripLocalScreenShareThumbnail'>
+                            {
+                                !tileViewActive && filmstripType === FILMSTRIP_TYPE.MAIN && <Thumbnail
+                                    key = 'localScreenShare'
+                                    participantID = { _localScreenShareId } />
+                            }
+                        </div>
+                    </div>
+                )}
+                {
+                    this._renderRemoteParticipants()
+                }
+            </div>
+        </>);
 
         return (
             <div
                 className = { clsx('filmstrip',
                     this.props._className,
-                    classes.filmstrip) }
+                    classes.filmstrip,
+                    _verticalViewGrid && 'no-vertical-padding',
+                    _verticalViewBackground && classes.filmstripBackground) }
                 style = { filmstripStyle }>
-
+                <span
+                    aria-level = { 1 }
+                    className = 'sr-only'
+                    role = 'heading'>
+                    { t('filmstrip.accessibilityLabel.heading') }
+                </span>
                 { toolbar }
-                <div
-                    className = { this.props._videosClassName }
-                    id = 'remoteVideos'>
-                    {!tileViewActive && (
+                {_resizableFilmstrip
+                    ? <div
+                        className = { clsx('resizable-filmstrip', classes.resizableFilmstripContainer,
+                            _topPanelFilmstrip && 'top-panel-filmstrip') }>
                         <div
-                            className = 'filmstrip__videos'
-                            id = 'filmstripLocalVideo'>
-                            <div id = 'filmstripLocalVideoThumbnail'>
-                                <Thumbnail key = 'local' />
-                            </div>
+                            className = { clsx('dragHandleContainer',
+                                classes.dragHandleContainer,
+                                isMouseDown && 'visible',
+                                _topPanelFilmstrip && 'top-panel')
+                            }
+                            onMouseDown = { this._onDragHandleMouseDown }>
+                            <div className = { clsx(classes.dragHandle, 'dragHandle') } />
                         </div>
-                    )}
-                    {
-                        this._renderRemoteParticipants()
-                    }
-                </div>
+                        {filmstrip}
+                    </div>
+                    : filmstrip
+                }
                 <AudioTracksContainer />
             </div>
         );
+    }
+
+    /**
+     * Handles mouse down on the drag handle.
+     *
+     * @param {MouseEvent} e - The mouse down event.
+     * @returns {void}
+     */
+    _onDragHandleMouseDown(e) {
+        const { _topPanelFilmstrip, _topPanelHeight, _verticalFilmstripWidth } = this.props;
+
+        this.setState({
+            isMouseDown: true,
+            mousePosition: _topPanelFilmstrip ? e.clientY : e.clientX,
+            dragFilmstripWidth: _verticalFilmstripWidth || DEFAULT_FILMSTRIP_WIDTH,
+            dragFilmstripHeight: _topPanelHeight || TOP_FILMSTRIP_HEIGHT
+        });
+        this.props.dispatch(setUserIsResizing(true));
+    }
+
+    /**
+     * Drag handle mouse up handler.
+     *
+     * @returns {void}
+     */
+    _onDragMouseUp() {
+        if (this.state.isMouseDown) {
+            this.setState({
+                isMouseDown: false
+            });
+            this.props.dispatch(setUserIsResizing(false));
+        }
+    }
+
+    /**
+     * Handles drag handle mouse move.
+     *
+     * @param {MouseEvent} e - The mousemove event.
+     * @returns {void}
+     */
+    _onFilmstripResize(e) {
+        if (this.state.isMouseDown) {
+            const {
+                dispatch,
+                _verticalFilmstripWidth,
+                _maxFilmstripWidth,
+                _topPanelHeight,
+                _maxTopPanelHeight,
+                _topPanelFilmstrip
+            } = this.props;
+            const { dragFilmstripWidth, dragFilmstripHeight, mousePosition } = this.state;
+
+            if (_topPanelFilmstrip) {
+                const diff = e.clientY - (mousePosition ?? 0);
+                const height = Math.max(
+                    Math.min((dragFilmstripHeight ?? 0) + diff, _maxTopPanelHeight),
+                    TOP_FILMSTRIP_HEIGHT
+                );
+
+                if (height !== _topPanelHeight) {
+                    dispatch(setUserFilmstripHeight(height));
+                }
+            } else {
+                const diff = (mousePosition ?? 0) - e.clientX;
+                const width = Math.max(
+                    Math.min((dragFilmstripWidth ?? 0) + diff, _maxFilmstripWidth),
+                    DEFAULT_FILMSTRIP_WIDTH
+                );
+
+                if (width !== _verticalFilmstripWidth) {
+                    dispatch(setUserFilmstripWidth(width));
+                }
+            }
+        }
     }
 
     /**
@@ -339,18 +352,18 @@ class Filmstrip extends PureComponent <Props> {
      * @returns {Object}
      */
     _calculateIndices(startIndex, stopIndex) {
-        const { _currentLayout, _iAmRecorder, _pinnedTiles, _thumbnailsReordered } = this.props;
+        const { _currentLayout, _iAmRecorder, _disableSelfView } = this.props;
         let start = startIndex;
         let stop = stopIndex;
 
-        // if (_pinnedTiles.length == 0 && _thumbnailsReordered) {
-        //     // In tile view, the indices needs to be offset by 1 because the first thumbnail is that of the local
-        //     // endpoint. The remote participants start from index 1.
-        //     if (!_iAmRecorder && _currentLayout === LAYOUTS.TILE_VIEW) {
-        //         start = Math.max(startIndex - 1, 0);
-        //         stop = stopIndex - 1;
-        //     }
-        // }
+        if (!_disableSelfView) {
+            // In tile view, the indices needs to be offset by 1 because the first thumbnail is that of the local
+            // endpoint. The remote participants start from index 1.
+            if (!_iAmRecorder && _currentLayout === LAYOUTS.TILE_VIEW) {
+                start = Math.max(startIndex - 1, 0);
+                stop = stopIndex - 1;
+            }
+        }
 
         return {
             startIndex: start,
@@ -358,20 +371,16 @@ class Filmstrip extends PureComponent <Props> {
         };
     }
 
-    _onTabIn: () => void;
-
     /**
      * Toggle the toolbar visibility when tabbing into it.
      *
      * @returns {void}
      */
     _onTabIn() {
-        if (!this.props._isToolboxVisible && this.props._visible) {
+        if (!this.props._isToolboxVisible && this.props._mainFilmstripVisible) {
             this.props.dispatch(showToolbox());
         }
     }
-
-    _listItemKey: number => string;
 
     /**
      * The key to be used for every ThumbnailWrapper element in stage view.
@@ -389,8 +398,6 @@ class Filmstrip extends PureComponent <Props> {
         return _remoteParticipants[index];
     }
 
-    _gridItemKey: Object => string;
-
     /**
      * The key to be used for every ThumbnailWrapper element in tile views.
      *
@@ -399,26 +406,28 @@ class Filmstrip extends PureComponent <Props> {
      */
     _gridItemKey({ columnIndex, rowIndex }) {
         const {
+            _disableSelfView,
             _columns,
             _iAmRecorder,
-            _localIndex,
             _remoteParticipants,
-            _remoteParticipantsLength,
+            _remoteParticipantsLength
         } = this.props;
         const index = (rowIndex * _columns) + columnIndex;
 
-        if (index > _remoteParticipantsLength) {
+        // When the thumbnails are reordered, local participant is inserted at index 0.
+        const localIndex = _disableSelfView ? _remoteParticipantsLength : 0;
+        const remoteIndex = !_iAmRecorder && !_disableSelfView ? index - 1 : index;
+
+        if (index > _remoteParticipantsLength - (_iAmRecorder ? 1 : 0)) {
             return `empty-${index}`;
         }
 
-        if (!_iAmRecorder && index === _localIndex) {
+        if (!_iAmRecorder && index === localIndex) {
             return 'local';
         }
 
-        return _remoteParticipants[index];
+        return _remoteParticipants[remoteIndex];
     }
-
-    _onListItemsRendered: Object => void;
 
     /**
      * Handles items rendered changes in stage view.
@@ -432,8 +441,6 @@ class Filmstrip extends PureComponent <Props> {
 
         dispatch(setVisibleRemoteParticipants(startIndex, stopIndex));
     }
-
-    _onGridItemsRendered: Object => void;
 
     /**
      * Handles items rendered changes in tile view.
@@ -466,10 +473,15 @@ class Filmstrip extends PureComponent <Props> {
             _currentLayout,
             _filmstripHeight,
             _filmstripWidth,
+            _hasScroll,
+            _isVerticalFilmstrip,
             _remoteParticipantsLength,
+            _resizableFilmstrip,
             _rows,
             _thumbnailHeight,
-            _thumbnailWidth
+            _thumbnailWidth,
+            _verticalViewGrid,
+            filmstripType
         } = this.props;
 
         if (!_thumbnailWidth || isNaN(_thumbnailWidth) || !_thumbnailHeight
@@ -478,7 +490,7 @@ class Filmstrip extends PureComponent <Props> {
             return null;
         }
 
-        if (_currentLayout === LAYOUTS.TILE_VIEW) {
+        if (_currentLayout === LAYOUTS.TILE_VIEW || _verticalViewGrid || filmstripType !== FILMSTRIP_TYPE.MAIN) {
             return (
                 <FixedSizeGrid
                     className = 'filmstrip__videos remote-videos'
@@ -487,6 +499,7 @@ class Filmstrip extends PureComponent <Props> {
                     height = { _filmstripHeight }
                     initialScrollLeft = { 0 }
                     initialScrollTop = { 0 }
+                    itemData = {{ filmstripType }}
                     itemKey = { this._gridItemKey }
                     onItemsRendered = { this._onGridItemsRendered }
                     overscanRowCount = { 1 }
@@ -503,7 +516,7 @@ class Filmstrip extends PureComponent <Props> {
 
         const props = {
             itemCount: _remoteParticipantsLength,
-            className: 'filmstrip__videos remote-videos',
+            className: `filmstrip__videos remote-videos ${_resizableFilmstrip ? '' : 'height-transition'}`,
             height: _filmstripHeight,
             itemKey: this._listItemKey,
             itemSize: 0,
@@ -517,19 +530,17 @@ class Filmstrip extends PureComponent <Props> {
 
         if (_currentLayout === LAYOUTS.HORIZONTAL_FILMSTRIP_VIEW) {
             const itemSize = _thumbnailWidth + TILE_HORIZONTAL_MARGIN;
-            const isNotOverflowing = (_remoteParticipantsLength * itemSize) <= _filmstripWidth;
+            const isNotOverflowing = !_hasScroll;
 
             props.itemSize = itemSize;
-
-            // $FlowFixMe
             props.layout = 'horizontal';
             if (isNotOverflowing) {
                 props.className += ' is-not-overflowing';
             }
 
-        } else if (_currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW) {
+        } else if (_isVerticalFilmstrip) {
             const itemSize = _thumbnailHeight + TILE_VERTICAL_MARGIN;
-            const isNotOverflowing = (_remoteParticipantsLength * itemSize) <= _filmstripHeight;
+            const isNotOverflowing = !_hasScroll;
 
             if (isNotOverflowing) {
                 props.className += ' is-not-overflowing';
@@ -554,10 +565,12 @@ class Filmstrip extends PureComponent <Props> {
      * @returns {void}
      */
     _doToggleFilmstrip() {
-        this.props.dispatch(setFilmstripVisible(!this.props._visible));
-    }
+        const { dispatch, _mainFilmstripVisible, _topPanelFilmstrip, _topPanelVisible } = this.props;
 
-    _onShortcutToggleFilmstrip: () => void;
+        _topPanelFilmstrip
+            ? dispatch(setTopPanelVisible(!_topPanelVisible))
+            : dispatch(setFilmstripVisible(!_mainFilmstripVisible));
+    }
 
     /**
      * Creates an analytics keyboard shortcut event and dispatches an action for
@@ -569,14 +582,13 @@ class Filmstrip extends PureComponent <Props> {
     _onShortcutToggleFilmstrip() {
         sendAnalytics(createShortcutEvent(
             'toggle.filmstrip',
+            ACTION_SHORTCUT_TRIGGERED,
             {
-                enable: this.props._visible
+                enable: this.props._mainFilmstripVisible
             }));
 
         this._doToggleFilmstrip();
     }
-
-    _onToolbarToggleFilmstrip: () => void;
 
     /**
      * Creates an analytics toolbar event and dispatches an action for opening
@@ -589,13 +601,11 @@ class Filmstrip extends PureComponent <Props> {
         sendAnalytics(createToolbarEvent(
             'toggle.filmstrip.button',
             {
-                enable: this.props._visible
+                enable: this.props._mainFilmstripVisible
             }));
 
         this._doToggleFilmstrip();
     }
-
-    _onToggleButtonTouch: (SyntheticEvent<HTMLButtonElement>) => void;
 
     /**
      * Handler for touch start event of the 'toggle button'.
@@ -604,7 +614,7 @@ class Filmstrip extends PureComponent <Props> {
      * @param {Object} e - The synthetic event.
      * @returns {void}
      */
-    _onToggleButtonTouch(e: SyntheticEvent<HTMLButtonElement>) {
+    _onToggleButtonTouch(e) {
         // Don't propagate the touchStart event so the toolbar doesn't get toggled.
         e.stopPropagation();
         this._onToolbarToggleFilmstrip();
@@ -618,19 +628,28 @@ class Filmstrip extends PureComponent <Props> {
      * @returns {ReactElement}
      */
     _renderToggleButton() {
-        const icon = this.props._visible ? IconMenuDown : IconMenuUp;
-        const { t, classes, _isVerticalFilmstrip, _hideFilmstrip } = this.props;
+        const {
+            t,
+            _isVerticalFilmstrip,
+            _mainFilmstripVisible,
+            _topPanelFilmstrip,
+            _topPanelVisible
+        } = this.props;
+        const classes = withStyles.getClasses(this.props);
+        const icon = (_topPanelFilmstrip ? _topPanelVisible : _mainFilmstripVisible) ? IconArrowDown : IconArrowUp;
         const actions = isMobileBrowser()
             ? { onTouchStart: this._onToggleButtonTouch }
             : { onClick: this._onToolbarToggleFilmstrip };
 
-        return !_hideFilmstrip && (
+        return (
             <div
                 className = { clsx(classes.toggleFilmstripContainer,
                     _isVerticalFilmstrip && classes.toggleVerticalFilmstripContainer,
+                    _topPanelFilmstrip && classes.toggleTopPanelContainer,
+                    _topPanelFilmstrip && !_topPanelVisible && classes.toggleTopPanelContainerHidden,
                     'toggleFilmstripContainer') }>
                 <button
-                    aria-expanded = { this.props._visible }
+                    aria-expanded = { this.props._mainFilmstripVisible }
                     aria-label = { t('toolbar.accessibilityLabel.toggleFilmstrip') }
                     className = { classes.toggleFilmstripButton }
                     id = 'toggleFilmstripButton'
@@ -639,6 +658,7 @@ class Filmstrip extends PureComponent <Props> {
                     { ...actions }>
                     <Icon
                         aria-label = { t('toolbar.accessibilityLabel.toggleFilmstrip') }
+                        size = { 24 }
                         src = { icon } />
                 </button>
             </div>
@@ -650,111 +670,68 @@ class Filmstrip extends PureComponent <Props> {
  * Maps (parts of) the Redux state to the associated {@code Filmstrip}'s props.
  *
  * @param {Object} state - The Redux state.
+ * @param {Object} ownProps - The own props of the component.
  * @private
- * @returns {Props}
+ * @returns {IProps}
  */
-function _mapStateToProps(state) {
-    const toolbarButtons = getToolbarButtons(state);
-    const { testing = {}, iAmRecorder, hideLocalVideo, hideRemoteVideos } = state['features/base/config'];
-    const enableThumbnailReordering = testing.enableThumbnailReordering ?? true;
-    let { visible, remoteParticipants } = state['features/filmstrip'];
-    const reduceHeight = state['features/toolbox'].visible && toolbarButtons.length;
+function _mapStateToProps(state, ownProps) {
+    const { _hasScroll = false, filmstripType, _topPanelFilmstrip, _remoteParticipants } = ownProps;
+    const { toolbarButtons } = state['features/toolbox'];
+    const { iAmRecorder } = state['features/base/config'];
+    const { topPanelHeight, topPanelVisible, visible, width: verticalFilmstripWidth } = state['features/filmstrip'];
+    const { localScreenShare } = state['features/base/participants'];
+    const reduceHeight = state['features/toolbox'].visible && toolbarButtons?.length;
     const remoteVideosVisible = shouldRemoteVideosBeVisible(state);
     const { isOpen: shiftRight } = state['features/chat'];
-    const {
-        gridDimensions = {},
-        filmstripHeight,
-        filmstripWidth,
-        thumbnailSize: tileViewThumbnailSize
-    } = state['features/filmstrip'].tileViewDimensions;
-    const _currentLayout = getCurrentLayout(state);
-    const localParticipantId = getLocalParticipant(state)?.id;
-    const pinnedTiles = getPinnedTiles(state);
-
-    const { clientHeight, clientWidth } = state['features/base/responsive-ui'];
-    const availableSpace = clientHeight - filmstripHeight;
-    let filmstripPadding = 0;
-
-    if (availableSpace > 0) {
-        const paddingValue = TOOLBAR_HEIGHT_MOBILE - availableSpace;
-
-        if (paddingValue > 0) {
-            filmstripPadding = paddingValue;
-        }
-    } else {
-        filmstripPadding = TOOLBAR_HEIGHT_MOBILE;
-    }
+    const disableSelfView = getHideSelfView(state);
+    const { clientWidth, clientHeight } = state['features/base/responsive-ui'];
+    const filmstripDisabled = isFilmstripDisabled(state);
 
     const collapseTileView = reduceHeight
         && isMobileBrowser()
         && clientWidth <= ASPECT_RATIO_BREAKPOINT;
 
-    const shouldReduceHeight = reduceHeight && (
-        isMobileBrowser() || _currentLayout !== LAYOUTS.VERTICAL_FILMSTRIP_VIEW);
+    const shouldReduceHeight = reduceHeight && isMobileBrowser();
+    const _topPanelVisible = isStageFilmstripTopPanel(state) && topPanelVisible;
 
-    const videosClassName = `filmstrip__videos${visible ? '' : ' hidden'}`;
-    const className = `${remoteVideosVisible ? '' : 'hide-videos'} ${
+    const notDisabled = visible && !filmstripDisabled;
+    let isVisible = notDisabled || filmstripType !== FILMSTRIP_TYPE.MAIN;
+
+    if (_topPanelFilmstrip) {
+        isVisible = _topPanelVisible;
+    }
+    const videosClassName = `filmstrip__videos${isVisible ? '' : ' hidden'}${_hasScroll ? ' has-scroll' : ''}`;
+    const className = `${remoteVideosVisible || ownProps._verticalViewGrid ? '' : 'hide-videos'} ${
         shouldReduceHeight ? 'reduce-height' : ''
-    } ${shiftRight ? 'shift-right' : ''} ${collapseTileView ? 'collapse' : ''} ${visible ? '' : 'hidden'}`.trim();
-    let _thumbnailSize, remoteFilmstripHeight, remoteFilmstripWidth;
+    } ${shiftRight ? 'shift-right' : ''} ${collapseTileView ? 'collapse' : ''} ${isVisible ? '' : 'hidden'}`.trim();
 
-    let localIndex = pinnedTiles.indexOf(localParticipantId);
-    if (localIndex < 0) {
-        localIndex = pinnedTiles.length;
-    }
-
-    switch (_currentLayout) {
-    case LAYOUTS.TILE_VIEW:
-        _thumbnailSize = tileViewThumbnailSize;
-        remoteFilmstripHeight = filmstripHeight - (collapseTileView && filmstripPadding > 0 ? filmstripPadding : 0);
-        remoteFilmstripWidth = filmstripWidth;
-        let newRemoteParticipants = [ ...pinnedTiles ];
-        if (localIndex >= pinnedTiles.length) {
-            newRemoteParticipants.push(localParticipantId);
-        }
-        newRemoteParticipants.push(...difference(remoteParticipants, pinnedTiles));
-        remoteParticipants = newRemoteParticipants;
-        break;
-    case LAYOUTS.VERTICAL_FILMSTRIP_VIEW: {
-        const { remote, remoteVideosContainer } = state['features/filmstrip'].verticalViewDimensions;
-
-        _thumbnailSize = remote;
-        remoteFilmstripHeight = remoteVideosContainer?.height - (shouldReduceHeight ? TOOLBAR_HEIGHT : 0);
-        remoteFilmstripWidth = remoteVideosContainer?.width;
-        break;
-    }
-    case LAYOUTS.HORIZONTAL_FILMSTRIP_VIEW: {
-        const { remote, remoteVideosContainer } = state['features/filmstrip'].horizontalViewDimensions;
-
-        _thumbnailSize = remote;
-        remoteFilmstripHeight = remoteVideosContainer?.height;
-        remoteFilmstripWidth = remoteVideosContainer?.width;
-        break;
-    }
-    }
+    const _currentLayout = getCurrentLayout(state);
+    const _isVerticalFilmstrip = _currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW
+        || (filmstripType === FILMSTRIP_TYPE.MAIN && _currentLayout === LAYOUTS.STAGE_FILMSTRIP_VIEW);
 
     return {
         _className: className,
-        _columns: gridDimensions.columns,
+        _chatOpen: state['features/chat'].isOpen,
         _currentLayout,
-        _filmstripHeight: remoteFilmstripHeight,
-        _filmstripWidth: remoteFilmstripWidth,
-        _hideFilmstrip: Boolean(hideLocalVideo && hideRemoteVideos),
+        _disableSelfView: disableSelfView,
+        _filmstripDisabled: filmstripDisabled,
+        _hasScroll,
         _iAmRecorder: Boolean(iAmRecorder),
         _isFilmstripButtonEnabled: isButtonEnabled('filmstrip', state),
-        _localIndex: localIndex,
-        _pinnedTiles: pinnedTiles,
-        _remoteParticipantsLength: remoteParticipants.length,
-        _remoteParticipants: remoteParticipants,
-        _rows: gridDimensions.rows,
-        _thumbnailWidth: _thumbnailSize?.width,
-        _thumbnailHeight: _thumbnailSize?.height,
-        _thumbnailsReordered: enableThumbnailReordering,
-        _videosClassName: videosClassName + (Boolean(hideLocalVideo) ? ' hide' : ''),
-        _visible: visible,
         _isToolboxVisible: isToolboxVisible(state),
-        _isVerticalFilmstrip: _currentLayout === LAYOUTS.VERTICAL_FILMSTRIP_VIEW
+        _isVerticalFilmstrip,
+        _localScreenShareId: localScreenShare?.id,
+        _mainFilmstripVisible: notDisabled,
+        _maxFilmstripWidth: clientWidth - MIN_STAGE_VIEW_WIDTH,
+        _maxTopPanelHeight: clientHeight - MIN_STAGE_VIEW_HEIGHT,
+        _remoteParticipantsLength: _remoteParticipants?.length ?? 0,
+        _topPanelHeight: topPanelHeight.current,
+        _topPanelMaxHeight: topPanelHeight.current || TOP_FILMSTRIP_HEIGHT,
+        _topPanelVisible,
+        _verticalFilmstripWidth: verticalFilmstripWidth.current,
+        _verticalViewMaxWidth: getVerticalViewMaxWidth(state),
+        _videosClassName: videosClassName
     };
 }
 
-export default withStyles(styles)(translate(connect(_mapStateToProps)(Filmstrip)));
+export default withStyles(translate(connect(_mapStateToProps)(Filmstrip)), styles);

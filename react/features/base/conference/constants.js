@@ -51,8 +51,17 @@ export const STATUS_COMMAND = 'status';
 
 export const LEAVING_TIMESTAMP = 'leaving-timestamp'; 
 
-export const TRIGGER_READY_TO_CLOSE_REASONS = [
-    'The meeting has been terminated'
-];
+export const TRIGGER_READY_TO_CLOSE_REASONS = {
+    'dialog.sessTerminatedReason': 'The meeting has been terminated',
+    'lobby.lobbyClosed': 'Lobby room closed.'
+};
+
+/**
+ * Conference leave reasons.
+ */
+export const CONFERENCE_LEAVE_REASONS = {
+    SWITCH_ROOM: 'switch_room',
+    UNRECOVERABLE_ERROR: 'unrecoverable_error'
+};
 
 export const WHITEBOARD_COMMAND = 'etherpad';

@@ -2,7 +2,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 
-import { ReducerRegistry } from '../base/redux';
+import ReducerRegistry from '../base/redux/ReducerRegistry';
 
 import {
     ADD_MESSAGE,
@@ -10,25 +10,29 @@ import {
     CLOSE_CHAT,
     EDIT_MESSAGE,
     OPEN_CHAT,
+    REMOVE_LOBBY_CHAT_PARTICIPANT,
     FILE_UPLOADED_PERCENTAGE_STATUS,
-    SET_PRIVATE_MESSAGE_RECIPIENT,
-    SET_IS_POLL_TAB_FOCUSED,
-    SET_IS_STT_TAB_FOCUSED
+    SET_CHAT_TAB_FOCUSED,
+    SET_LOBBY_CHAT_ACTIVE_STATE,
+    SET_LOBBY_CHAT_RECIPIENT,
+    SET_PRIVATE_MESSAGE_RECIPIENT
 } from './actionTypes';
+import { CHAT_TABS, MESSAGE_TYPE_LOCAL } from './constants';
 
 const DEFAULT_STATE = {
     fileName: '',
     fileSize: 0,
     fileUploadPercentage: 0,
     isOpen: false,
-    isPollsTabFocused: false,
-    isSTTTabFocused: false,
     lastReadMessage: undefined,
     lastReadPoll: undefined,
     messages: [],
     nbUnreadMessages: 0,
     privateMessageRecipient: undefined,
+    tabFocused: CHAT_TABS.CHAT,
     uploading: false,
+    lobbyMessageRecipient: undefined,
+    isLobbyChatActive: false
 };
 
 ReducerRegistry.register('features/chat', (state = DEFAULT_STATE, action) => {
@@ -43,6 +47,7 @@ ReducerRegistry.register('features/chat', (state = DEFAULT_STATE, action) => {
             messageType: action.messageType,
             message: action.message,
             privateMessage: action.privateMessage,
+            lobbyChat: action.lobbyChat,
             recipient: action.recipient,
             timestamp: action.timestamp
         };
@@ -62,7 +67,7 @@ ReducerRegistry.register('features/chat', (state = DEFAULT_STATE, action) => {
             ...state,
             lastReadMessage:
                 action.hasRead ? newMessage : state.lastReadMessage,
-            nbUnreadMessages: state.isPollsTabFocused ? state.nbUnreadMessages + 1 : state.nbUnreadMessages,
+            nbUnreadMessages: state.nbUnreadMessages + (action.messageType === MESSAGE_TYPE_LOCAL ? 0 : 1),
             messages
         };
     }
@@ -127,23 +132,48 @@ ReducerRegistry.register('features/chat', (state = DEFAULT_STATE, action) => {
             isOpen: false,
             lastReadMessage: state.messages[
                 navigator.product === 'ReactNative' ? 0 : state.messages.length - 1],
-            privateMessageRecipient: action.participant
+            privateMessageRecipient: action.participant,
+            isLobbyChatActive: false
         };
 
-    case SET_IS_POLL_TAB_FOCUSED: {
+    case SET_CHAT_TAB_FOCUSED: {
         return {
             ...state,
-            isPollsTabFocused: action.isPollsTabFocused,
+            tabFocused: action.tabFocused,
             nbUnreadMessages: 0
-        }; }
-    case SET_IS_STT_TAB_FOCUSED: {
-        return {
-            ...state,
-            isSTTTabFocused: action.isSTTTabFocused,
-            nbUnreadMessages: 0
-        }; }
+        };
     }
 
+    case SET_LOBBY_CHAT_RECIPIENT:
+        return {
+            ...state,
+            isLobbyChatActive: true,
+            lobbyMessageRecipient: action.participant,
+            privateMessageRecipient: undefined,
+            isOpen: action.open
+        };
+    case SET_LOBBY_CHAT_ACTIVE_STATE:
+        return {
+            ...state,
+            isLobbyChatActive: action.payload,
+            isOpen: action.payload || state.isOpen,
+            privateMessageRecipient: undefined
+        };
+    case REMOVE_LOBBY_CHAT_PARTICIPANT:
+        return {
+            ...state,
+            messages: state.messages.filter(m => {
+                if (action.removeLobbyChatMessages) {
+                    return !m.lobbyChat;
+                }
+
+                return true;
+            }),
+            isOpen: state.isOpen && state.isLobbyChatActive ? false : state.isOpen,
+            isLobbyChatActive: false,
+            lobbyMessageRecipient: undefined
+        };
+    }
 
     return state;
 });

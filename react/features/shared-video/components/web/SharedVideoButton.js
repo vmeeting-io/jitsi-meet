@@ -1,65 +1,25 @@
 // @flow
+import { connect } from 'react-redux';
 
-import type { Dispatch } from 'redux';
-import { openDialog } from '../../../base/dialog';
-
-import { translate } from '../../../base/i18n';
-import { IconShareVideo } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import {
-    AbstractButton,
-    type AbstractButtonProps
-} from '../../../base/toolbox/components';
+import { openDialog } from '../../../base/dialog/actions';
+import { translate } from '../../../base/i18n/functions';
+import { IconPlay } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
 import ShareDocumentWarningDialog from '../../../whiteboard/components/ShareDocumentWarningDialog';
 import { toggleSharedVideo } from '../../actions.any';
 import { isSharingStatus } from '../../functions';
 
-type Props = AbstractButtonProps & {
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Dispatch<any>,
-
-    /**
-     * Whether or not the button is disabled.
-     */
-    _isDisabled: boolean,
-
-    /**
-     * Whether or not the local participant is sharing a video.
-     */
-    _sharingVideo: boolean
-};
-
 /**
  * Implements an {@link AbstractButton} to open the user documentation in a new window.
  */
-class SharedVideoButton extends AbstractButton<Props, *> {
+class SharedVideoButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.sharedvideo';
-    icon = IconShareVideo;
+    toggledAccessibilityLabel = 'toolbar.accessibilityLabel.stopSharedVideo';
+    icon = IconPlay;
     label = 'toolbar.sharedvideo';
     toggledLabel = 'toolbar.stopSharedVideo';
-
-    /**
-     * Dynamically retrieves tooltip based on sharing state.
-     */
-    get tooltip() {
-        if (this._isToggled()) {
-            return 'toolbar.stopSharedVideo';
-        }
-
-        return 'toolbar.sharedvideo';
-    }
-
-    /**
-     * Required by linter due to AbstractButton overwritten prop being writable.
-     *
-     * @param {string} _value - The icon value.
-     */
-    set tooltip(_value) {
-        // Unused.
-    }
+    tooltip = 'toolbar.sharedvideo';
+    toggledTooltip = 'toolbar.stopSharedVideo';
 
     /**
      * Handles clicking / pressing the button, and opens a new dialog.
@@ -68,13 +28,7 @@ class SharedVideoButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { _documentSharing, dispatch, handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
+        const { _documentSharing, dispatch } = this.props;
 
         if (_documentSharing) {
             dispatch(openDialog(ShareDocumentWarningDialog));

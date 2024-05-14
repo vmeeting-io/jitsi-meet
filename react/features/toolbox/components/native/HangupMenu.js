@@ -2,13 +2,13 @@
 
 import { once } from 'lodash';
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 import { createToolbarEvent, sendAnalytics } from '../../../analytics';
 import { appNavigate } from '../../../app/actions';
 
 import { ColorSchemeRegistry } from '../../../base/color-scheme';
 import { BottomSheet, hideDialog, isDialogOpen } from '../../../base/dialog';
 import { grantModerator, PARTICIPANT_ROLE } from '../../../base/participants';
-import { connect } from '../../../base/redux';
 import { StyleType } from '../../../base/styles';
 import HangupAllButton from './HangupAllButton';
 import HangupMeButton from './HangupMeButton';
@@ -222,7 +222,7 @@ function _mapStateToProps(state) {
 
     let moderator = 0;
     const items = participants.filter(p => {
-        if (!p.local && !p.isFakeParticipant) {
+        if (!p.local && !p.fakeParticipant) {
             if (!moderator && p.role === PARTICIPANT_ROLE.MODERATOR) {
                 moderator = p.id;
             }

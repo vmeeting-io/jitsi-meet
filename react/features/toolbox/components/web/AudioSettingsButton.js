@@ -1,76 +1,36 @@
-// @flow
-
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import { isMobileBrowser } from '../../../base/environment/utils';
-import { translate } from '../../../base/i18n';
-import { IconArrowUp } from '../../../base/icons';
+import { translate } from '../../../base/i18n/functions';
+import { IconArrowUp } from '../../../base/icons/svg';
 import JitsiMeetJS from '../../../base/lib-jitsi-meet/_';
-import { connect } from '../../../base/redux';
-import { ToolboxButtonWithIcon } from '../../../base/toolbox/components';
-import { AudioSettingsPopup, toggleAudioSettings } from '../../../settings';
+import { IGUMPendingState } from '../../../base/media/types';
+import ToolboxButtonWithIcon from '../../../base/toolbox/components/web/ToolboxButtonWithIcon';
+import { toggleAudioSettings } from '../../../settings/actions';
+import AudioSettingsPopup from '../../../settings/components/web/audio/AudioSettingsPopup';
 import { getAudioSettingsVisibility } from '../../../settings/functions';
 import { isAudioSettingsButtonDisabled } from '../../functions';
-import AudioMuteButton from '../AudioMuteButton';
 
-type Props = {
-
-    /**
-     * External handler for click action.
-     */
-    handleClick: Function,
-
-    /**
-     * Indicates whether audio permissions have been granted or denied.
-     */
-    hasPermissions: boolean,
-
-    /**
-     * Click handler for the small icon. Opens audio options.
-     */
-    onAudioOptionsClick: Function,
-
-    /**
-     * If the button should be disabled.
-     */
-    isDisabled: boolean,
-
-    /**
-     * Used for translation.
-     */
-    t: Function,
-
-    /**
-     * Flag controlling the visibility of the button.
-     * AudioSettings popup is disabled on mobile browsers.
-     */
-    visible: boolean,
-
-    /**
-     * Defines is popup is open.
-     */
-    isOpen: boolean,
-};
+import AudioMuteButton from './AudioMuteButton';
 
 /**
  * Button used for audio & audio settings.
  *
  * @returns {ReactElement}
  */
-class AudioSettingsButton extends Component<Props> {
+class AudioSettingsButton extends Component {
     /**
      * Initializes a new {@code AudioSettingsButton} instance.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this._onEscClick = this._onEscClick.bind(this);
         this._onClick = this._onClick.bind(this);
     }
-
-    _onEscClick: (KeyboardEvent) => void;
 
     /**
      * Click handler for the more actions entries.
@@ -78,7 +38,7 @@ class AudioSettingsButton extends Component<Props> {
      * @param {KeyboardEvent} event - Esc key click to close the popup.
      * @returns {void}
      */
-    _onEscClick(event) {
+    _onEscClick(event: React.KeyboardEvent) {
         if (event.key === 'Escape' && this.props.isOpen) {
             event.preventDefault();
             event.stopPropagation();
@@ -86,22 +46,18 @@ class AudioSettingsButton extends Component<Props> {
         }
     }
 
-    _onClick: () => void;
-
     /**
      * Click handler for the more actions entries.
      *
+     * @param {MouseEvent} e - Mouse event.
      * @returns {void}
      */
-    _onClick() {
-        const { handleClick, onAudioOptionsClick } = this.props;
+    _onClick(e?: React.MouseEvent) {
+        const { onAudioOptionsClick, isOpen } = this.props;
 
-        if (handleClick) {
-            handleClick();
-
-            return;
+        if (isOpen) {
+            e?.stopPropagation();
         }
-
         onAudioOptionsClick();
     }
 
@@ -111,7 +67,7 @@ class AudioSettingsButton extends Component<Props> {
      * @inheritdoc
      */
     render() {
-        const { handleClick, hasPermissions, isDisabled, visible, isOpen, t } = this.props;
+        const { gumPending, hasPermissions, isDisabled, visible, isOpen, buttonKey, notifyMode, t } = this.props;
         const settingsDisabled = !hasPermissions
             || isDisabled
             || !JitsiMeetJS.mediaDevices.isMultipleAudioInputSupported();
@@ -123,16 +79,22 @@ class AudioSettingsButton extends Component<Props> {
                     ariaExpanded = { isOpen }
                     ariaHasPopup = { true }
                     ariaLabel = { t('toolbar.audioSettings') }
+                    buttonKey = { buttonKey }
                     icon = { IconArrowUp }
-                    iconDisabled = { settingsDisabled }
+                    iconDisabled = { settingsDisabled || gumPending !== IGUMPendingState.NONE }
                     iconId = 'audio-settings-button'
                     iconTooltip = { t('toolbar.audioSettings') }
+                    notifyMode = { notifyMode }
                     onIconClick = { this._onClick }
                     onIconKeyDown = { this._onEscClick }>
-                    <AudioMuteButton handleClick = { handleClick } />
+                    <AudioMuteButton
+                        buttonKey = { buttonKey }
+                        notifyMode = { notifyMode } />
                 </ToolboxButtonWithIcon>
             </AudioSettingsPopup>
-        ) : <AudioMuteButton handleClick = { handleClick } />;
+        ) : <AudioMuteButton
+            buttonKey = { buttonKey }
+            notifyMode = { notifyMode } />;
     }
 }
 
@@ -143,13 +105,16 @@ class AudioSettingsButton extends Component<Props> {
  * @returns {Object}
  */
 function mapStateToProps(state) {
-    const { permissions = {} } = state['features/base/devices'];
+    const { permissions = { audio: false } } = state['features/base/devices'];
+    const { isNarrowLayout } = state['features/base/responsive-ui'];
+    const { gumPending } = state['features/base/media'].audio;
 
     return {
+        gumPending,
         hasPermissions: permissions.audio,
-        isDisabled: isAudioSettingsButtonDisabled(state),
-        isOpen: getAudioSettingsVisibility(state),
-        visible: !isMobileBrowser()
+        isDisabled: Boolean(isAudioSettingsButtonDisabled(state)),
+        isOpen: Boolean(getAudioSettingsVisibility(state)),
+        visible: !isMobileBrowser() && !isNarrowLayout
     };
 }
 

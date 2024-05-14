@@ -3,9 +3,9 @@
 import type { PanResponderInstance } from 'PanResponder';
 import React, { Component } from 'react';
 import { PanResponder, PixelRatio, View } from 'react-native';
+import { connect } from 'react-redux';
 import { type Dispatch } from 'redux';
 
-import { connect } from '../../../redux';
 import { storeVideoTransform } from '../../actions';
 
 import styles from './styles';

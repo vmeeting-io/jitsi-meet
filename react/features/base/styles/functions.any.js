@@ -1,11 +1,3 @@
-/* @flow */
-import Platform from '../react/Platform';
-
-import { ColorPalette } from './components';
-
-declare type StyleSheet = Object;
-export type StyleType = StyleSheet | Array<StyleSheet>;
-
 /**
  * RegExp pattern for long HEX color format.
  */
@@ -44,7 +36,7 @@ const _WELL_KNOWN_NUMBER_PROPERTIES = [ 'height', 'width' ];
  * @param {Styletype} st - The complex style type.
  * @returns {Object}
  */
-export function styleTypeToObject(st: StyleType): Object {
+export function styleTypeToObject(st) {
     if (!st) {
         return {};
     }
@@ -70,8 +62,8 @@ export function styleTypeToObject(st: StyleType): Object {
  * @private
  * @returns {StyleType} - The merged styles.
  */
-export function combineStyles(a: StyleType, b: StyleType): StyleType {
-    const result: Array<StyleSheet> = [];
+export function combineStyles(a, b) {
+    const result = [];
 
     if (a) {
         if (Array.isArray(a)) {
@@ -101,38 +93,21 @@ export function combineStyles(a: StyleType, b: StyleType): StyleType {
  * (often platform-independent) styles.
  * @returns {StyleSheet}
  */
-export function createStyleSheet(
-        styles: StyleSheet, overrides: StyleSheet = {}): StyleSheet {
+export function createStyleSheet(styles, overrides = {}) {
     const combinedStyles = {};
 
     for (const k of Object.keys(styles)) {
         combinedStyles[k]
             = _shimStyles({
+                // @ts-ignore
                 ...styles[k],
+
+                // @ts-ignore
                 ...overrides[k]
             });
     }
 
     return combinedStyles;
-}
-
-/**
- * Works around a bug in react-native or react-native-webrtc on Android which
- * causes Views overlaying RTCView to be clipped. Even though we (may) display
- * multiple RTCViews, it is enough to apply the fix only to a View with a
- * bounding rectangle containing all RTCviews and their overlaying Views.
- *
- * @param {StyleSheet} styles - An object which represents a stylesheet.
- * @public
- * @returns {StyleSheet}
- */
-export function fixAndroidViewClipping<T: StyleSheet>(styles: T): T {
-    if (Platform.OS === 'android') {
-        styles.borderColor = ColorPalette.appBackground;
-        styles.borderWidth = 1;
-    }
-
-    return styles;
 }
 
 /**
@@ -146,7 +121,7 @@ export function fixAndroidViewClipping<T: StyleSheet>(styles: T): T {
  * @param {number} alpha - The alpha value to apply.
  * @returns {string}
  */
-export function getRGBAFormat(color: string, alpha: number): string {
+export function getRGBAFormat(color, alpha) {
     let match = color.match(HEX_LONG_COLOR_FORMAT);
 
     if (match) {
@@ -176,7 +151,7 @@ export function getRGBAFormat(color: string, alpha: number): string {
  * @param {string} color - The color in rgb, rgba or hex format.
  * @returns {boolean}
  */
-export function isDarkColor(color: string): boolean {
+export function isDarkColor(color) {
     const rgb = _getRGBObjectFormat(color);
 
     return ((_getColorLuminance(rgb.r) * 0.2126)
@@ -190,7 +165,7 @@ export function isDarkColor(color: string): boolean {
  * @param {number} alpha - The alpha value to convert.
  * @returns {string}
  */
-function _getAlphaInHex(alpha: number): string {
+function _getAlphaInHex(alpha) {
     return Number(Math.round(255 * alpha)).toString(16)
         .padStart(2, '0');
 }
@@ -204,7 +179,7 @@ function _getAlphaInHex(alpha: number): string {
  * for.
  * @returns {number}
  */
-function _getColorLuminance(c: number): number {
+function _getColorLuminance(c) {
     return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
 }
 
@@ -220,7 +195,7 @@ function _getColorLuminance(c: number): number {
  *     b: number
  * }}
  */
-function _getRGBObjectFormat(color: string): {r: number, g: number, b: number} {
+function _getRGBObjectFormat(color) {
     let match = color.match(HEX_LONG_COLOR_FORMAT);
 
     if (match) {
@@ -265,7 +240,7 @@ function _getRGBObjectFormat(color: string): {r: number, g: number, b: number} {
  * @private
  * @returns {StyleSheet}
  */
-function _shimStyles<T: StyleSheet>(styles: T): T {
+function _shimStyles(styles) {
     // Certain style properties may not be numbers on Web but must be numbers on
     // React Native. For example, height and width may be expressed in percent
     // on Web but React Native will not understand them and we will get errors
@@ -281,6 +256,7 @@ function _shimStyles<T: StyleSheet>(styles: T): T {
             if (Number.isNaN(numberV)) {
                 delete styles[k];
             } else {
+                // @ts-ignore
                 styles[k] = numberV;
             }
         }

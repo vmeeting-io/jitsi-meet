@@ -1,24 +1,21 @@
-// @flow
-
-import { Platform } from 'react-native';
-import * as watch from 'react-native-watch-connectivity';
+import { NativeModules, Platform } from 'react-native';
+import { updateApplicationContext, watchEvents } from 'react-native-watch-connectivity';
 
 import { appNavigate } from '../../app/actions';
-import { APP_WILL_MOUNT } from '../../base/app';
-import { CONFERENCE_JOINED } from '../../base/conference';
-import { getCurrentConferenceUrl } from '../../base/connection';
-import { setAudioMuted } from '../../base/media';
-import {
-    MiddlewareRegistry,
-    StateListenerRegistry,
-    toState
-} from '../../base/redux';
+import { APP_WILL_MOUNT } from '../../base/app/actionTypes';
+import { CONFERENCE_JOINED } from '../../base/conference/actionTypes';
+import { getCurrentConferenceUrl } from '../../base/connection/functions';
+import { setAudioMuted } from '../../base/media/actions';
+import MiddlewareRegistry from '../../base/redux/MiddlewareRegistry';
+import StateListenerRegistry from '../../base/redux/StateListenerRegistry';
+import { toState } from '../../base/redux/functions';
 
 import { setConferenceTimestamp, setSessionId, setWatchReachable } from './actions';
 import { CMD_HANG_UP, CMD_JOIN_CONFERENCE, CMD_SET_MUTED, MAX_RECENT_URLS } from './constants';
 import logger from './logger';
 
-const watchOSEnabled = Platform.OS === 'ios';
+const { AppInfo } = NativeModules;
+const watchOSEnabled = Platform.OS === 'ios' && !AppInfo.isLiteSDK;
 
 // Handles the recent URLs state sent to the watch
 watchOSEnabled && StateListenerRegistry.register(
@@ -70,18 +67,12 @@ watchOSEnabled && MiddlewareRegistry.register(store => next => action => {
  * @returns {void}
  */
 function _appWillMount({ dispatch, getState }) {
-    watch.subscribeToWatchReachability((error, reachable) => {
+    watchEvents.addListener('reachability', reachable => {
         dispatch(setWatchReachable(reachable));
         _updateApplicationContext(getState);
     });
 
-    watch.subscribeToMessages((error, message) => {
-        if (error) {
-            logger.error('watch.subscribeToMessages error:', error);
-
-            return;
-        }
-
+    watchEvents.addListener('message', message => {
         const {
             command,
             sessionID
@@ -103,7 +94,7 @@ function _appWillMount({ dispatch, getState }) {
             }
             break;
         case CMD_JOIN_CONFERENCE: {
-            const newConferenceURL = message.data;
+            const newConferenceURL: any = message.data;
             const oldConferenceURL = getCurrentConferenceUrl(getState());
 
             if (oldConferenceURL !== newConferenceURL) {
@@ -185,7 +176,7 @@ function _updateApplicationContext(stateful) {
     }
 
     try {
-        watch.updateApplicationContext({
+        updateApplicationContext({
             conferenceTimestamp,
             conferenceURL: getCurrentConferenceUrl(state),
             micMuted: _isAudioMuted(state),

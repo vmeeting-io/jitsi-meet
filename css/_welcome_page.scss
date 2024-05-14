@@ -75,62 +75,43 @@ body.welcome-page {
                 }
             }
 
-            .menu-container {
-                background-color: white;
+            .buttons-container {
+                display: inline-flex;
             }
 
-            .menu-item {
-                min-width: 100px;
-                min-height: 40px;
-                text-align: left;
-                background: white;
-                fill: white;
-                color: $welcomePageButtonTextColor;
-                font-weight: normal;
-                
-                &:hover {
-                    background: rgba(0,0,0,.1);
-                }
-
-                .badge {
-                    margin-left: 5px;
-                    display : inline-flex;
-                }
-            }
-
-            .menu-item {
-                &.mobile {
-                    display: flex;
-    
-                    @include media-breakpoint-up(md) {
-                        display: none;
-                        min-height: 0;
-                        max-height: 0;
-                    }
-                }
-            }
-
-            button, .button {
-                color: $welcomePageButtonTextColor !important;
+            button {
+                color: #5f6368!important;
                 height: 40px;
                 line-height: 40px;
-                background: none;
+                background: 0;
+                padding: 0 15px;
 
                 &:hover {
-                    color: $welcomePageButtonTextColor !important;
                     background: rgba(0,0,0,.1);
                 }
             }
 
-            .primary.button {
-                border: 1px solid #d2d2d2;
-                background: none;
+            // button, .button {
+            //     color: $welcomePageButtonTextColor !important;
+            //     height: 40px;
+            //     line-height: 40px;
+            //     background: none;
+
+            //     &:hover {
+            //         color: $welcomePageButtonTextColor !important;
+            //         background: rgba(0,0,0,.1);
+            //     }
+            // }
+
+            // .primary.button {
+            //     border: 1px solid #d2d2d2;
+            //     background: none;
                 
-                &:hover {
-                    color: $welcomePageButtonTextColor !important;
-                    background: rgba(0,0,0,.1);
-                }
-            }
+            //     &:hover {
+            //         color: $welcomePageButtonTextColor !important;
+            //         background: rgba(0,0,0,.1);
+            //     }
+            // }
 
             .cLrmQm button {
                 padding-right: 0;

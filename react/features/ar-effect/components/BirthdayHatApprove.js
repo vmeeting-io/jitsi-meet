@@ -1,10 +1,10 @@
 // @flow
 
 import React from 'react';
+import { connect } from 'react-redux';
 import { THIRD_PARTY_PREJOIN_BUTTONS } from '../../base/config/constants';
 
-import { translate } from '../../base/i18n';
-import { connect } from '../../base/redux';
+import { translate } from '../../base/i18n/functions';
 import AbstractBirthdayHatApprove, {
     mapStateToProps as abstractMapStateToProps,
     type Props as AbstractProps

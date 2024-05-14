@@ -1,19 +1,13 @@
-// @flow
-
-import { translate } from '../../base/i18n';
-import { ExpandedLabel, type Props as AbstractProps } from '../../base/label';
+import { translate } from '../../base/i18n/functions';
+import ExpandedLabel from '../../base/label/components/native/ExpandedLabel';
 
 import { AUD_LABEL_COLOR } from './styles';
-
-type Props = AbstractProps & {
-    t: Function
-}
 
 /**
  * A react {@code Component} that implements an expanded label as tooltip-like
  * component to explain the meaning of the {@code VideoQualityLabel}.
  */
-class VideoQualityExpandedLabel extends ExpandedLabel<Props> {
+class VideoQualityExpandedLabel extends ExpandedLabel {
     /**
      * Returns the color this expanded label should be rendered with.
      *

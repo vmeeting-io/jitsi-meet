@@ -1,10 +1,9 @@
 // @flow
 
-import { isWindows } from '../base/environment';
+import { isWindows } from '../base/environment/environment';
 import { isMobileBrowser } from '../base/environment/utils';
 import { browser } from '../base/lib-jitsi-meet';
-import { VIDEO_TYPE } from '../base/media';
-import { getLocalVideoTrack } from '../base/tracks';
+import { getLocalDesktopTrack } from '../base/tracks/functions';
 
 /**
  * Is the current screen sharing session audio only.
@@ -33,7 +32,7 @@ export function isScreenAudioShared(state: Object) {
  * @returns {boolean}
  */
 export function isScreenAudioSupported() {
-    return (!isMobileBrowser() && browser.isChrome()) || (browser.isElectron() && isWindows());
+    return (!isMobileBrowser() && browser.isChromiumBased()) || (browser.isElectron() && isWindows());
 }
 
 /**
@@ -53,8 +52,8 @@ export function isScreenMediaShared(state: Object) {
  * @returns {boolean}
  */
 export function isScreenVideoShared(state: Object) {
-    const localVideo = getLocalVideoTrack(state['features/base/tracks']);
+    const tracks = state['features/base/tracks'];
+    const localScreenshare = getLocalDesktopTrack(tracks);
 
-    // $FlowFixMe - No support for optional chain method calls in flow atm.
-    return localVideo?.jitsiTrack?.getVideoType() === VIDEO_TYPE.DESKTOP;
+    return localScreenshare?.jitsiTrack && !localScreenshare.jitsiTrack.isMuted();
 }

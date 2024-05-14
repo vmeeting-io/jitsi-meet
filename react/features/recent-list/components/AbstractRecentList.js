@@ -3,17 +3,11 @@
 import React from 'react';
 import type { Dispatch } from 'redux';
 
-import {
-    createRecentClickedEvent,
-    createRecentSelectedEvent,
-    sendAnalytics
-} from '../../analytics';
+import { createRecentClickedEvent, createRecentSelectedEvent } from '../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../analytics/functions';
 import { appNavigate } from '../../app/actions';
-import {
-    AbstractPageWithState,
-    Container,
-    Text
-} from '../../base/react';
+import AbstractPage from '../../base/react/components/AbstractPage';
+import { Container, Text } from '../../base/react/components/index';
 
 import styles from './styles';
 
@@ -37,7 +31,7 @@ type Props = {
  * An abstract component for the recent list.
  *
  */
-export default class AbstractRecentList<P: Props, S: State> extends AbstractPageWithState<P, S> {
+export default class AbstractRecentList<P: Props, S: State> extends AbstractPage<P, S> {
     /**
      * Initializes a new {@code RecentList} instance.
      *
@@ -85,24 +79,6 @@ export default class AbstractRecentList<P: Props, S: State> extends AbstractPage
                     id = { descriptionId }
                     style = { styles.emptyListText }>
                     { t('welcomepage.recentListEmpty') }
-                </Text>
-            </Container>
-        );
-    }
-
-    _getRenderListLoadingComponent: () => React$Node;
-
-    _getRenderListLoadingComponent() {
-        const { t } = this.props;
-
-        return (
-            <Container
-                className = 'meetings-list-empty'
-                style = { styles.emptyListContainer }>
-                <Text
-                    className = 'description'
-                    style = { styles.emptyListText }>
-                    { t('welcomepage.dbListLoading') }
                 </Text>
             </Container>
         );

@@ -1,57 +1,54 @@
-/* @flow */
+import React, { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
 
-import React from 'react';
+import { openDialog } from '../../../base/dialog/actions';
+import { IconModerator } from '../../../base/icons/svg';
+import { PARTICIPANT_ROLE } from '../../../base/participants/constants';
+import { getLocalParticipant, getParticipantById, isParticipantModerator } from '../../../base/participants/functions';
+import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 
-import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { translate } from '../../../base/i18n';
-import { IconCrown } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import AbstractGrantModeratorButton, {
-    _mapStateToProps,
-    type Props
-} from '../AbstractGrantModeratorButton';
+import GrantModeratorDialog from './GrantModeratorDialog';
 
 /**
  * Implements a React {@link Component} which displays a button for granting
  * moderator to a participant.
+ *
+ * @returns {JSX.Element|null}
  */
-class GrantModeratorButton extends AbstractGrantModeratorButton {
-    /**
-     * Instantiates a new {@code GrantModeratorButton}.
-     *
-     * @inheritdoc
-     */
-    constructor(props: Props) {
-        super(props);
+const GrantModeratorButton = ({
+    notifyClick,
+    notifyMode,
+    participantID
+}) => {
+    const { t } = useTranslation();
+    const dispatch = useDispatch();
+    const localParticipant = useSelector(getLocalParticipant);
+    const targetParticipant = useSelector((state) => getParticipantById(state, participantID));
+    const visible = useMemo(() => Boolean(localParticipant?.role === PARTICIPANT_ROLE.MODERATOR)
+        && !isParticipantModerator(targetParticipant), [ isParticipantModerator, localParticipant, targetParticipant ]);
 
-        this._handleClick = this._handleClick.bind(this);
-    }
-
-    /**
-     * Implements React's {@link Component#render()}.
-     *
-     * @inheritdoc
-     * @returns {ReactElement}
-     */
-    render() {
-        const { t, visible } = this.props;
-
-        if (!visible) {
-            return null;
+    const handleClick = useCallback(() => {
+        notifyClick?.();
+        if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
+            return;
         }
+        dispatch(openDialog(GrantModeratorDialog, { participantID }));
+    }, [ dispatch, notifyClick, notifyMode, participantID ]);
 
-        return (
-            <ContextMenuItem
-                accessibilityLabel = { t('toolbar.accessibilityLabel.grantModerator') }
-                className = 'grantmoderatorlink'
-                icon = { IconCrown }
-                // eslint-disable-next-line react/jsx-handler-names
-                onClick = { this._handleClick }
-                text = { t('videothumbnail.grantModerator') } />
-        );
+    if (!visible) {
+        return null;
     }
 
-    _handleClick: () => void;
-}
+    return (
+        <ContextMenuItem
+            accessibilityLabel = { t('toolbar.accessibilityLabel.grantModerator') }
+            className = 'grantmoderatorlink'
+            icon = { IconModerator }
+            onClick = { handleClick }
+            text = { t('videothumbnail.grantModerator') } />
+    );
+};
 
-export default translate(connect(_mapStateToProps)(GrantModeratorButton));
+export default GrantModeratorButton;

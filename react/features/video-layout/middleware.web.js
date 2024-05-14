@@ -1,17 +1,13 @@
 // @flow
 
 import VideoLayout from '../../../modules/UI/videolayout/VideoLayout.js';
-import { CONFERENCE_WILL_LEAVE } from '../base/conference';
-import { MEDIA_TYPE } from '../base/media';
-import {
-    getLocalParticipant,
-    PARTICIPANT_JOINED,
-    PARTICIPANT_UPDATED
-} from '../base/participants';
-import { MiddlewareRegistry } from '../base/redux';
-import { TRACK_ADDED, TRACK_REMOVED, TRACK_STOPPED } from '../base/tracks';
-import { SET_FILMSTRIP_VISIBLE } from '../filmstrip';
-import { PARTICIPANTS_PANE_CLOSE, PARTICIPANTS_PANE_OPEN } from '../participants-pane/actionTypes.js';
+import { CONFERENCE_WILL_INIT, CONFERENCE_WILL_LEAVE } from '../base/conference/actionTypes';
+import { MEDIA_TYPE } from '../base/media/constants';
+import { PARTICIPANT_JOINED } from '../base/participants/actionTypes';
+import { getLocalParticipant } from '../base/participants/functions';
+import MiddlewareRegistry from '../base/redux/MiddlewareRegistry';
+import { TRACK_ADDED, TRACK_REMOVED, TRACK_STOPPED } from '../base/tracks/actionTypes';
+import { PARTICIPANTS_PANE_CLOSE, PARTICIPANTS_PANE_OPEN } from '../participants-pane/actionTypes';
 
 import './middleware.any';
 
@@ -30,6 +26,11 @@ MiddlewareRegistry.register(store => next => action => {
     const result = next(action);
 
     switch (action.type) {
+    case CONFERENCE_WILL_INIT:
+        // Reset VideoLayout. It's destroyed on CONFERENCE_WILL_LEAVE so re-initialize it.
+        VideoLayout.initLargeVideo();
+        VideoLayout.resizeVideoArea();
+        break;
     case CONFERENCE_WILL_LEAVE:
         VideoLayout.reset();
         break;
@@ -40,21 +41,8 @@ MiddlewareRegistry.register(store => next => action => {
         }
         break;
 
-    case PARTICIPANT_UPDATED: {
-        // Look for actions that triggered a change to connectionStatus. This is
-        // done instead of changing the connection status change action to be
-        // explicit in order to minimize changes to other code.
-        if (typeof action.participant.connectionStatus !== 'undefined') {
-            VideoLayout.onParticipantConnectionStatusChanged(
-                action.participant.id,
-                action.participant.connectionStatus);
-        }
-        break;
-    }
-
     case PARTICIPANTS_PANE_CLOSE:
     case PARTICIPANTS_PANE_OPEN:
-    case SET_FILMSTRIP_VISIBLE:
         VideoLayout.resizeVideoArea();
         break;
 
@@ -80,6 +68,6 @@ MiddlewareRegistry.register(store => next => action => {
 
         break;
     }
-    
+
     return result;
 });

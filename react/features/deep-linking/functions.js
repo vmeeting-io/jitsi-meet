@@ -1,30 +1,30 @@
 /* global APP, interfaceConfig */
 
 import { isMobileBrowser } from '../base/environment/utils';
-import { Platform } from '../base/react';
-import { URI_PROTOCOL_PATTERN } from '../base/util';
+import { browser } from '../base/lib-jitsi-meet';
+import Platform from '../base/react/Platform';
+import { URI_PROTOCOL_PATTERN } from '../base/util/uri';
 import { isVpaasMeeting } from '../jaas/functions';
 
-import {
-    DeepLinkingDesktopPage,
-    DeepLinkingMobilePage,
-    NoMobileApp
-} from './components';
+import DeepLinkingDesktopPage from './components/DeepLinkingDesktopPage';
+import DeepLinkingMobilePage from './components/DeepLinkingMobilePage';
+import NoMobileApp from './components/NoMobileApp';
 import { _openDesktopApp } from './openDesktopApp';
 
 /**
  * Generates a deep linking URL based on the current window URL.
  *
+ * @param {Object} state - Object containing current redux state.
+ *
  * @returns {string} - The generated URL.
  */
-export function generateDeepLinkingURL() {
+export function generateDeepLinkingURL(state) {
     // If the user installed the app while this Component was displayed
     // (e.g. the user clicked the Download the App button), then we would
     // like to open the current URL in the mobile app. The only way to do it
     // appears to be a link with an app-specific scheme, not a Universal
     // Link.
 
-    const appScheme = interfaceConfig.APP_SCHEME || 'org.postech.vmeeting';
     const { SSO_AUTH_KEYS } = interfaceConfig;
     let { origin, pathname, search } = window.location;
     const params = new URLSearchParams(search);
@@ -41,14 +41,18 @@ export function generateDeepLinkingURL() {
     const href = `${origin}${pathname}${search}`;
     const regex = new RegExp(URI_PROTOCOL_PATTERN, 'gi');
 
+    // @ts-ignore
+    const mobileConfig = state['features/base/config'].deeplinking?.[Platform.OS] || {};
+
+    const { appScheme, appPackage } = mobileConfig;
+
     // Android: use an intent link, custom schemes don't work in all browsers.
     // https://developer.chrome.com/multidevice/android/intents
     if (Platform.OS === 'android') {
         // https://meet.jit.si/foo -> meet.jit.si/foo
         const url = href.replace(regex, '').substr(2);
-        const pkg = interfaceConfig.ANDROID_APP_PACKAGE || 'org.postech.vmeeting';
 
-        return `intent://${url}#Intent;scheme=${pkg};package=${pkg};end`;
+        return `intent://${url}#Intent;scheme=${appScheme};package=${appPackage};end`;
     }
 
     // iOS: Replace the protocol part with the app scheme.
@@ -65,12 +69,16 @@ export function generateDeepLinkingURL() {
 export function getDeepLinkingPage(state) {
     const { room } = state['features/base/conference'];
     const { launchInWeb } = state['features/deep-linking'];
-    const appScheme = typeof interfaceConfig !== 'undefined' && interfaceConfig.APP_SCHEME;
+    const deeplinking = state['features/base/config'].deeplinking || {};
+
+    // @ts-ignore
+    const { appScheme } = deeplinking?.[Platform.OS] || {};
 
     // Show only if we are about to join a conference.
     if (launchInWeb
             || !room
-            || state['features/base/config'].disableDeepLinking
+            || state['features/base/config'].deeplinking?.disabled
+            || browser.isElectron()
             || (isVpaasMeeting(state) && (!appScheme || appScheme === 'com.8x8.meet'))) {
         return Promise.resolve();
     }

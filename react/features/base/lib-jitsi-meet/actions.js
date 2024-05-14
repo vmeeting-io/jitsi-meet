@@ -1,7 +1,6 @@
 /* @flow */
 
 import { jitsiLocalStorage } from '@jitsi/js-utils';
-import type { Dispatch } from 'redux';
 
 import { isOnline } from '../net-info/selectors';
 
@@ -13,9 +12,8 @@ import {
     LIB_WILL_DISPOSE,
     LIB_WILL_INIT
 } from './actionTypes';
-import { isAnalyticsEnabled } from './functions';
-
-declare var APP: Object;
+import { isAnalyticsEnabled } from './functions.any';
+import logger from './logger';
 
 /**
  * Disposes (of) lib-jitsi-meet.
@@ -23,7 +21,7 @@ declare var APP: Object;
  * @returns {Function}
  */
 export function disposeLib() {
-    return (dispatch: Dispatch<any>) => {
+    return (dispatch) => {
         dispatch({ type: LIB_WILL_DISPOSE });
 
         // TODO Currently, lib-jitsi-meet doesn't have the functionality to
@@ -39,7 +37,7 @@ export function disposeLib() {
  * @returns {Function}
  */
 export function initLib() {
-    return (dispatch: Dispatch<any>, getState: Function): void => {
+    return (dispatch, getState) => {
         const state = getState();
         const config = state['features/base/config'];
 
@@ -58,6 +56,9 @@ export function initLib() {
             JitsiMeetJS.setNetworkInfo({
                 isOnline: isOnline(state)
             });
+
+            logger.info(`lib-jitsi-meet version:${JitsiMeetJS.version}`);
+
             dispatch({ type: LIB_DID_INIT });
         } catch (error) {
             dispatch(libInitError(error));
@@ -74,7 +75,7 @@ export function initLib() {
  *     error: Error
  * }}
  */
-export function libInitError(error: Error) {
+export function libInitError(error) {
     return {
         type: LIB_INIT_ERROR,
         error

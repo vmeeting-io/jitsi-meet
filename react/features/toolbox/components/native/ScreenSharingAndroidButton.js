@@ -1,42 +1,20 @@
 // @flow
+import { connect } from 'react-redux';
 
-import {
-    ANDROID_SCREENSHARING_ENABLED,
-    getFeatureFlag
-} from '../../../base/flags';
-import { translate } from '../../../base/i18n';
-import { IconShareDesktop } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { toggleScreensharing, isLocalVideoTrackDesktop } from '../../../base/tracks';
-
-/**
- * The type of the React {@code Component} props of {@link ScreenSharingAndroidButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * True if the button needs to be disabled.
-     */
-    _disabled: boolean,
-
-    /**
-     * Whether video is currently muted or not.
-     */
-    _screensharing: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
+import { ANDROID_SCREENSHARING_ENABLED } from '../../../base/flags/constants';
+import { getFeatureFlag } from '../../../base/flags/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconScreenshare } from '../../../base/icons/svg';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import { toggleScreensharing } from '../../../base/tracks/actions';
+import { isLocalVideoTrackDesktop } from '../../../base/tracks/functions';
 
 /**
  * An implementation of a button for toggling screen sharing.
  */
-class ScreenSharingAndroidButton extends AbstractButton<Props, *> {
+class ScreenSharingAndroidButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.shareYourScreen';
-    icon = IconShareDesktop;
+    icon = IconScreenshare;
     label = 'toolbar.startScreenSharing';
     toggledLabel = 'toolbar.stopScreenSharing';
 

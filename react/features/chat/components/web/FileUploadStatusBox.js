@@ -3,8 +3,8 @@
 import React, { Component } from 'react';
 import moment from 'moment';
 
-import { translate } from '../../../base/i18n';
-import { processFileSize, truncateDateTimeStamp } from '../../../base/util';
+import { translate } from '../../../base/i18n/functions';
+import { processFileSize, truncateDateTimeStamp } from '../../../base/util/helpers';
 import Progress from '../../../../components/Progress';
 
 /**

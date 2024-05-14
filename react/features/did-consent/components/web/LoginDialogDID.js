@@ -1,10 +1,10 @@
 // @flow
 
 import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
 
-import Dialog from '../../../base/dialog/components/web/Dialog';
-import { translate, translateToHTML } from '../../../base/i18n';
-import { connect } from '../../../base/redux';
+import Dialog from '../../../base/ui/components/web/Dialog';
+import { translate, translateToHTML } from '../../../base/i18n/functions';
 import { sendConsentDisagreeNotification } from '../../functions';
 
 const AUTH_PAGE_BASE = window._env_.VMEETING_FRONT_BASE;

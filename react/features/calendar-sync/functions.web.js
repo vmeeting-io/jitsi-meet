@@ -1,12 +1,10 @@
-// @flow
-
-import { toState } from '../base/redux';
+import { toState } from '../base/redux/functions';
 
 import {
     clearCalendarIntegration,
     setCalendarError,
     setLoadingCalendarEvents
-} from './actions';
+} from './actions.web';
 export * from './functions.any';
 import {
     CALENDAR_TYPE,
@@ -14,7 +12,7 @@ import {
     FETCH_END_DAYS,
     FETCH_START_DAYS
 } from './constants';
-import { _updateCalendarEntries } from './functions';
+import { _updateCalendarEntries } from './functions.web';
 import logger from './logger';
 import { googleCalendarApi } from './web/googleCalendar';
 import { microsoftCalendarApi } from './web/microsoftCalendar';
@@ -27,7 +25,7 @@ import { microsoftCalendarApi } from './web/microsoftCalendar';
  * @returns {boolean} If the app has enabled the calendar feature, {@code true};
  * otherwise, {@code false}.
  */
-export function isCalendarEnabled(stateful: Function | Object) {
+export function isCalendarEnabled(stateful) {
     const {
         enableCalendarIntegration,
         googleApiApplicationClientID,
@@ -37,26 +35,24 @@ export function isCalendarEnabled(stateful: Function | Object) {
     return Boolean(enableCalendarIntegration && (googleApiApplicationClientID || microsoftApiApplicationClientID));
 }
 
-/* eslint-disable no-unused-vars */
 /**
  * Reads the user's calendar and updates the stored entries if need be.
  *
  * @param {Object} store - The redux store.
- * @param {boolean} maybePromptForPermission - Flag to tell the app if it should
+ * @param {boolean} _maybePromptForPermission - Flag to tell the app if it should
  * prompt for a calendar permission if it wasn't granted yet.
- * @param {boolean|undefined} forcePermission - Whether to force to re-ask for
+ * @param {boolean|undefined} _forcePermission - Whether to force to re-ask for
  * the permission or not.
  * @private
  * @returns {void}
  */
 export function _fetchCalendarEntries(
-        store: Object,
-        maybePromptForPermission: boolean,
-        forcePermission: ?boolean) {
-    /* eslint-enable no-unused-vars */
+        store,
+        _maybePromptForPermission,
+        _forcePermission) {
     const { dispatch, getState } = store;
 
-    const { integrationType } = getState()['features/calendar-sync'];
+    const { integrationType = '' } = getState()['features/calendar-sync'];
     const integration = _getCalendarIntegration(integrationType);
 
     if (!integration) {
@@ -69,7 +65,7 @@ export function _fetchCalendarEntries(
 
     dispatch(integration.load())
         .then(() => dispatch(integration._isSignedIn()))
-        .then(signedIn => {
+        .then((signedIn: boolean) => {
             if (signedIn) {
                 return Promise.resolve();
             }
@@ -80,13 +76,13 @@ export function _fetchCalendarEntries(
         })
         .then(() => dispatch(integration.getCalendarEntries(
             FETCH_START_DAYS, FETCH_END_DAYS)))
-        .then(events => _updateCalendarEntries.call({
+        .then((events: Object[]) => _updateCalendarEntries.call({
             dispatch,
             getState
         }, events))
         .then(() => {
             dispatch(setCalendarError());
-        }, error => {
+        }, (error: any) => {
             logger.error('Error fetching calendar.', error);
 
             if (error.error === ERRORS.AUTH_FAILED) {

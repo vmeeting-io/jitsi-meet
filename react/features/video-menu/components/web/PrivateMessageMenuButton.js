@@ -1,27 +1,15 @@
-// @flow
-
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import ContextMenuItem from '../../../base/components/context-menu/ContextMenuItem';
-import { translate } from '../../../base/i18n';
-import { IconMessage } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { openChat } from '../../../chat/';
-import {
-    _mapStateToProps as _abstractMapStateToProps,
-    type Props as AbstractProps
-} from '../../../chat/components/web/PrivateMessageButton';
+import { CHAT_ENABLED } from '../../../base/flags/constants';
+import { getFeatureFlag } from '../../../base/flags/functions';
+import { translate } from '../../../base/i18n/functions';
+import { IconMessage } from '../../../base/icons/svg';
+import { getParticipantById } from '../../../base/participants/functions';
+import ContextMenuItem from '../../../base/ui/components/web/ContextMenuItem';
+import { openChat } from '../../../chat/actions.web';
 import { isButtonEnabled } from '../../../toolbox/functions.web';
-
-declare var interfaceConfig: Object;
-
-type Props = AbstractProps & {
-
-    /**
-     * True if the private chat functionality is disabled, hence the button is not visible.
-     */
-    _hidden: boolean
-};
+import { NOTIFY_CLICK_MODE } from '../../../toolbox/types';
 
 /**
  * A custom implementation of the PrivateMessageButton specialized for
@@ -29,13 +17,13 @@ type Props = AbstractProps & {
  * the {@code AbstractButton} component for the remote video menu, we can get rid
  * of this component and use the generic button in the chat feature.
  */
-class PrivateMessageMenuButton extends Component<Props> {
+class PrivateMessageMenuButton extends Component {
     /**
      * Instantiates a new Component instance.
      *
      * @inheritdoc
      */
-    constructor(props: Props) {
+    constructor(props) {
         super(props);
 
         this._onClick = this._onClick.bind(this);
@@ -48,7 +36,7 @@ class PrivateMessageMenuButton extends Component<Props> {
      * @returns {ReactElement}
      */
     render() {
-        const { t, _hidden } = this.props;
+        const { _hidden, t } = this.props;
 
         if (_hidden) {
             return null;
@@ -63,16 +51,19 @@ class PrivateMessageMenuButton extends Component<Props> {
         );
     }
 
-    _onClick: () => void;
-
     /**
      * Callback to be invoked on pressing the button.
      *
+     * @param {React.MouseEvent|undefined} e - The click event.
      * @returns {void}
      */
     _onClick() {
-        const { dispatch, _participant } = this.props;
+        const { _participant, dispatch, notifyClick, notifyMode } = this.props;
 
+        notifyClick?.();
+        if (notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
+            return;
+        }
         dispatch(openChat(_participant));
     }
 }
@@ -81,12 +72,16 @@ class PrivateMessageMenuButton extends Component<Props> {
  * Maps part of the Redux store to the props of this component.
  *
  * @param {Object} state - The Redux state.
- * @param {Props} ownProps - The own props of the component.
- * @returns {Props}
+ * @param {IProps} ownProps - The own props of the component.
+ * @returns {IProps}
  */
-function _mapStateToProps(state: Object, ownProps: Props): $Shape<Props> {
+function _mapStateToProps(state, ownProps) {
+    const enabled = getFeatureFlag(state, CHAT_ENABLED, true);
+    const { visible = enabled } = ownProps;
+
     return {
-        ..._abstractMapStateToProps(state, ownProps),
+        _participant: getParticipantById(state, ownProps.participantID),
+        visible,
         _hidden: typeof interfaceConfig !== 'undefined'
             && (interfaceConfig.DISABLE_PRIVATE_MESSAGES || !isButtonEnabled('chat', state))
     };

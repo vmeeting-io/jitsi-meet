@@ -1,10 +1,12 @@
 /* @flow */
 
 import React, { Component } from 'react';
-import { translate } from '../../../base/i18n';
-import { Icon, IconPaperClip } from '../../../base/icons';
-import { connect } from '../../../base/redux';
-import { Tooltip } from '../../../base/tooltip';
+import { connect } from 'react-redux';
+
+import { translate } from '../../../base/i18n/functions';
+import Icon from '../../../base/icons/components/Icon';
+import { IconPaperClip } from '../../../base/icons/svg';
+import Tooltip from '../../../base/tooltip/components/Tooltip';
 import { uploadFile } from '../../functions';
 
 

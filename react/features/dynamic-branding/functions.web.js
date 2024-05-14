@@ -1,8 +1,7 @@
-// @flow
+import { Theme } from '@mui/material';
+import { adaptV4Theme, createTheme } from '@mui/material/styles';
 
-import { createMuiTheme } from '@material-ui/core/styles';
-
-import { font, colors, colorMap, spacing, shape, typography, breakpoints } from '../base/ui/Tokens';
+import { breakpoints, colorMap, colors, font, shape, spacing, typography } from '../base/ui/Tokens';
 import { createColorTokens } from '../base/ui/utils';
 
 /**
@@ -11,7 +10,7 @@ import { createColorTokens } from '../base/ui/utils';
  * @param {Object} customTheme - The branded custom theme.
  * @returns {Object} - The MUI theme.
  */
-export function createMuiBrandingTheme(customTheme: Object) {
+export function createMuiBrandingTheme(customTheme: Theme) {
     const {
         palette: customPalette,
         shape: customShape,
@@ -49,26 +48,21 @@ export function createMuiBrandingTheme(customTheme: Object) {
 
     let newSpacing = [ ...spacing ];
 
-    if (customSpacing && customSpacing.length) {
+    if (customSpacing?.length) {
         newSpacing = customSpacing;
     }
 
-    return createMuiTheme({
-        props: {
-            // disable ripple effect on buttons globally
-            MuiButtonBase: {
-                disableRipple: true
-            }
-        },
-
-        // use token spacing array
-        spacing: newSpacing
-    }, {
+    return createTheme(adaptV4Theme({
+        spacing: newSpacing,
         palette: newPalette,
         shape: newShape,
+
+        // @ts-ignore
         typography: newTypography,
+
+        // @ts-ignore
         breakpoints: newBreakpoints
-    });
+    }));
 }
 
 /**
@@ -79,12 +73,13 @@ export function createMuiBrandingTheme(customTheme: Object) {
 * @param {Object} obj2 - The object to compare to and take values from.
 * @returns {void}
 */
-function overwriteRecurrsive(obj1: Object, obj2: Object) {
+function overwriteRecurrsive(obj1, obj2) {
     Object.keys(obj2).forEach(key => {
         if (obj1.hasOwnProperty(key)) {
             if (typeof obj1[key] === 'object') {
                 overwriteRecurrsive(obj1[key], obj2[key]);
             } else {
+                // @ts-ignore
                 obj1[key] = obj2[key];
             }
         }

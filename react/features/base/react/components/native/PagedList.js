@@ -2,9 +2,9 @@
 
 import React, { Component } from 'react';
 import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { connect } from 'react-redux';
 
 import { Icon } from '../../../icons';
-import { connect } from '../../../redux';
 
 import styles from './styles';
 

@@ -1,25 +1,18 @@
 // @flow
 
-import { getParticipantCountWithFake } from '../base/participants';
-import { StateListenerRegistry } from '../base/redux';
-import { getTileViewGridDimensions, shouldDisplayTileView } from '../video-layout';
+import { getCurrentConference } from '../base/conference/functions';
+import StateListenerRegistry from '../base/redux/StateListenerRegistry';
+import { shouldDisplayTileView } from '../video-layout/functions.native';
 
-import { setTileViewDimensions } from './actions';
+import { setRemoteParticipants, setTileViewDimensions } from './actions.native';
+import { getTileViewParticipantCount } from './functions.native';
 import './subscriber.any';
 
 /**
  * Listens for changes in the number of participants to calculate the dimensions of the tile view grid and the tiles.
  */
 StateListenerRegistry.register(
-    /* selector */ state => {
-        const participantCount = getParticipantCountWithFake(state);
-
-        if (participantCount < 6) { // the dimensions are updated only when the participant count is lower than 6.
-            return participantCount;
-        }
-
-        return 5; // make sure we don't update the dimensions.
-    },
+    /* selector */ state => getTileViewParticipantCount(state),
     /* listener */ (_, store) => {
         const state = store.getState();
 
@@ -34,9 +27,18 @@ StateListenerRegistry.register(
 StateListenerRegistry.register(
     /* selector */ state => shouldDisplayTileView(state),
     /* listener */ (isTileView, store) => {
-        const state = store.getState();
-
         if (isTileView) {
-            store.dispatch(setTileViewDimensions(getTileViewGridDimensions(state)));
+            store.dispatch(setTileViewDimensions());
+        }
+    });
+
+/**
+ * Listens for changes in the current conference and clears remote participants from this feature.
+ */
+StateListenerRegistry.register(
+    state => getCurrentConference(state),
+    (conference, { dispatch }, previousConference) => {
+        if (conference !== previousConference) {
+            dispatch(setRemoteParticipants([]));
         }
     });

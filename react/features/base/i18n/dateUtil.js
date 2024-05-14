@@ -1,11 +1,12 @@
 // @flow
 
 import moment from 'moment';
+import momentDurationFormatSetup from 'moment-duration-format';
 
 import i18next from './i18next';
 
 // allows for moment durations to be formatted
-import 'moment-duration-format';
+momentDurationFormatSetup(moment);
 
 // MomentJS uses static language bundle loading, so in order to support dynamic
 // language selection in the app we need to load all bundles that we support in
@@ -72,7 +73,7 @@ require('moment/locale/zh-tw');
  * @returns {Object}
  */
 export function getLocalizedDateFormatter(dateOrTimeStamp: Date | number) {
-    return moment(dateOrTimeStamp).locale(getSupportedLocale());
+    return moment(dateOrTimeStamp).locale(_getSupportedLocale());
 }
 
 /**
@@ -106,7 +107,7 @@ export function getLocalizedDurationFormatter(duration: number) {
  *
  * @returns {string}
  */
-export function getSupportedLocale() {
+function _getSupportedLocale() {
     const i18nLocale = i18next.language;
     let supportedLocale;
 

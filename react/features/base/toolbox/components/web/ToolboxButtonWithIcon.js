@@ -1,72 +1,8 @@
-// @flow
-
 import React from 'react';
 
-import { Icon } from '../../../icons';
-import { Tooltip } from '../../../tooltip';
-
-type Props = {
-
-    /**
-     * The decorated component (ToolboxButton).
-     */
-    children: React$Node,
-
-    /**
-     * Icon of the button.
-     */
-    icon: Function,
-
-    /**
-     * Flag used for disabling the small icon.
-     */
-    iconDisabled: boolean,
-
-    /**
-     * Click handler for the small icon.
-     */
-    onIconClick: Function,
-
-    /**
-     * The tooltip used for the icon.
-     */
-    iconTooltip: string,
-
-    /**
-     * Additional styles.
-     */
-    styles?: Object,
-
-    /**
-     * Aria label for the Icon.
-     */
-    ariaLabel?: string,
-
-    /**
-     * Whether the element has a popup.
-     */
-    ariaHasPopup?: boolean,
-
-    /**
-     * Whether the element popup is expanded.
-     */
-    ariaExpanded?: boolean,
-
-    /**
-     * The id of the element this button icon controls.
-     */
-    ariaControls?: string,
-
-    /**
-     * Keydown handler for icon.
-     */
-    onIconKeyDown?: Function,
-
-    /**
-     * The ID of the icon button.
-     */
-    iconId: string
-};
+import { NOTIFY_CLICK_MODE } from '../../../../toolbox/types';
+import Icon from '../../../icons/components/Icon';
+import Tooltip from '../../../tooltip/components/Tooltip';
 
 /**
  * Displays the `ToolboxButtonWithIcon` component.
@@ -74,12 +10,14 @@ type Props = {
  * @param {Object} props - Component's props.
  * @returns {ReactElement}
  */
-export default function ToolboxButtonWithIcon(props: Props) {
+export default function ToolboxButtonWithIcon(props) {
     const {
         children,
         icon,
         iconDisabled,
         iconTooltip,
+        buttonKey,
+        notifyMode,
         onIconClick,
         onIconKeyDown,
         styles,
@@ -91,13 +29,24 @@ export default function ToolboxButtonWithIcon(props: Props) {
     } = props;
 
     const iconProps = {};
+    let className = '';
 
     if (iconDisabled) {
-        iconProps.className
+        className
             = 'settings-button-small-icon settings-button-small-icon--disabled';
     } else {
-        iconProps.className = 'settings-button-small-icon';
-        iconProps.onClick = onIconClick;
+        className = 'settings-button-small-icon';
+        iconProps.onClick = (e?: React.MouseEvent) => {
+            if (typeof APP !== 'undefined' && notifyMode) {
+                APP.API.notifyToolbarButtonClicked(
+                    buttonKey, notifyMode === NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY
+                );
+            }
+
+            if (notifyMode !== NOTIFY_CLICK_MODE.PREVENT_AND_NOTIFY) {
+                onIconClick(e);
+            }
+        };
         iconProps.onKeyDown = onIconKeyDown;
         iconProps.role = 'button';
         iconProps.tabIndex = 0;
@@ -110,18 +59,19 @@ export default function ToolboxButtonWithIcon(props: Props) {
     return (
         <div
             className = 'settings-button-container'
-            styles = { styles }>
+            style = { styles }>
             {children}
 
             <div>
                 <Tooltip
+                    containerClassName = { className }
                     content = { iconTooltip }
                     position = 'top'>
                     <Icon
                         { ...iconProps }
                         ariaHasPopup = { ariaHasPopup }
                         ariaLabel = { ariaLabel }
-                        size = { 9 }
+                        size = { 16 }
                         src = { icon } />
                 </Tooltip>
             </div>

@@ -1,24 +1,8 @@
-// @flow
-
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import { Avatar } from '../../../base/avatar';
-import { translate } from '../../../base/i18n';
-import { getLocalParticipant } from '../../../base/participants';
-import { connect } from '../../../base/redux';
-
-/**
- * The type of the React {@code Component} props of
- * {@link ProfileButtonAvatar}.
- */
-type Props = {
-
-    /**
-     * The redux representation of the local participant.
-     */
-    _localParticipant: Object,
-
-};
+import Avatar from '../../../base/avatar/components/Avatar';
+import { getLocalParticipant } from '../../../base/participants/functions';
 
 /**
  * A React {@code Component} for displaying a profile avatar as an
@@ -26,7 +10,7 @@ type Props = {
  *
  * @augments Component
  */
-class ProfileButtonAvatar extends Component<Props> {
+class ProfileButtonAvatar extends Component {
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -38,7 +22,7 @@ class ProfileButtonAvatar extends Component<Props> {
 
         return (
             <Avatar
-                participantId = { _localParticipant.id }
+                participantId = { _localParticipant?.id }
                 size = { 20 } />
         );
     }
@@ -60,4 +44,4 @@ function _mapStateToProps(state) {
     };
 }
 
-export default translate(connect(_mapStateToProps)(ProfileButtonAvatar));
+export default connect(_mapStateToProps)(ProfileButtonAvatar);

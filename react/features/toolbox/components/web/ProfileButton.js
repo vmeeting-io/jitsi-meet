@@ -1,53 +1,28 @@
-// @flow
+import { connect } from 'react-redux';
 
-import { createToolbarEvent, sendAnalytics } from '../../../analytics';
-import { translate } from '../../../base/i18n';
-import { getLocalParticipant } from '../../../base/participants';
-import { connect } from '../../../base/redux';
-import { AbstractButton, type AbstractButtonProps } from '../../../base/toolbox/components';
-import { openSettingsDialog, SETTINGS_TABS } from '../../../settings';
+import { createToolbarEvent } from '../../../analytics/AnalyticsEvents';
+import { sendAnalytics } from '../../../analytics/functions';
+import { translate } from '../../../base/i18n/functions';
+import { getLocalParticipant } from '../../../base/participants/functions';
+import AbstractButton from '../../../base/toolbox/components/AbstractButton';
+import { openSettingsDialog } from '../../../settings/actions';
+import { SETTINGS_TABS } from '../../../settings/constants';
 
 import ProfileButtonAvatar from './ProfileButtonAvatar';
 
 /**
- * The type of the React {@code Component} props of {@link ProfileButton}.
- */
-type Props = AbstractButtonProps & {
-
-    /**
-     * Default displayed name for local participant.
-     */
-    _defaultLocalDisplayName: string,
-
-    /**
-     * The redux representation of the local participant.
-     */
-     _localParticipant: Object,
-
-     /**
-      * Whether the button support clicking or not.
-      */
-     _unclickable: boolean,
-
-    /**
-     * The redux {@code dispatch} function.
-     */
-    dispatch: Function
-};
-
-declare var interfaceConfig: Object;
-
-/**
  * Implementation of a button for opening profile dialog.
  */
-class ProfileButton extends AbstractButton<Props, *> {
+class ProfileButton extends AbstractButton {
     accessibilityLabel = 'toolbar.accessibilityLabel.profile';
     icon = ProfileButtonAvatar;
 
     /**
      * Retrieves the label.
+     *
+     * @returns {string}
      */
-    get label() {
+    _getLabel() {
         const {
             _defaultLocalDisplayName,
             _localParticipant
@@ -64,28 +39,12 @@ class ProfileButton extends AbstractButton<Props, *> {
     }
 
     /**
-     * Required by linter due to AbstractButton overwritten prop being writable.
-     *
-     * @param {string} _value - The value.
-     */
-    set label(_value) {
-        // Unused.
-    }
-
-    /**
      * Retrieves the tooltip.
-     */
-    get tooltip() {
-        return this.label;
-    }
-
-    /**
-     * Required by linter due to AbstractButton overwritten prop being writable.
      *
-     * @param {string} _value - The value.
+     * @returns {string}
      */
-    set tooltip(_value) {
-        // Unused.
+    _getTooltip() {
+        return this._getLabel();
     }
 
     /**
@@ -95,13 +54,7 @@ class ProfileButton extends AbstractButton<Props, *> {
      * @returns {void}
      */
     _handleClick() {
-        const { dispatch, _unclickable, handleClick } = this.props;
-
-        if (handleClick) {
-            handleClick();
-
-            return;
-        }
+        const { dispatch, _unclickable } = this.props;
 
         if (!_unclickable) {
             sendAnalytics(createToolbarEvent('profile'));
@@ -126,11 +79,11 @@ class ProfileButton extends AbstractButton<Props, *> {
  * @param {Object} state - Redux state.
  * @returns {Object}
  */
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     const { defaultLocalDisplayName } = state['features/base/config'];
 
     return {
-        _defaultLocalDisplayName: defaultLocalDisplayName,
+        _defaultLocalDisplayName: defaultLocalDisplayName ?? '',
         _localParticipant: getLocalParticipant(state),
         _unclickable: !interfaceConfig.SETTINGS_SECTIONS.includes('profile'),
         customClass: 'profile-button-avatar'

@@ -26,10 +26,11 @@ export class TimerLabel extends Component {
         super(props);
 
         this.state = {
-            className: 'custom-label',
-            timerOffGif: false,
             timerValue: getLocalizedDurationFormatter(0),
+            className: 'custom-label'
         };
+
+        let interval;
     }
     
     componentWillUnmount() {
@@ -37,31 +38,30 @@ export class TimerLabel extends Component {
     }
 
     componentWillMount() {
-        const { dispatch } = this.props;
-
-        this.interval = setInterval(() => {
+        this.interval = setInterval(()=>{
             const dt = new Date();
-            const delta = this.props._timerEndTime - dt.getTime();
-
-            if (delta < 0) {
-                dispatch(playSound(TIMER_OFF_SOUND_ID));
+            const delta = this.props.timerEndTime - dt.getTime();
+            if (delta<0){
+                APP.store.dispatch(playSound(TIMER_OFF_SOUND_ID));                
                 // Display for timer for 10 seconds and complete the timer.
                 // Display gif and audio.
-                setTimeout(() => {
-                    dispatch(notifyTimerStopped("TIMER_OFF"));
-                    this.setState({ timerOffGif: false });
-                }, 10000);
+                setTimeout(()=>{
+                    notifyTimerStopped("TIMER_OFF");
+                    this.props.displayTimerOffGif(false);
+                },10000);
                 
+                this.props.displayTimerOffGif(true);
+
                 this.setState({
-                    className: 'custom-label-red',
-                    timerOffGif: true,
                     timerValue: getLocalizedDurationFormatter(0),
+                    className: 'custom-label-red'
                 });
                 clearInterval(this.interval);
-            } else {
+                
+            }else{
                 this.setState({ timerValue: getLocalizedDurationFormatter(delta) });
             }
-        }, 500);
+        },500);
     }
     
     /**
@@ -71,29 +71,26 @@ export class TimerLabel extends Component {
      * @returns {ReactElement}
      */
     render() {
-        const { _timerStarted, visible } = this.props;
-        let components = [];
+        const { t } = this.props;
 
-        if (_timerStarted) {
-            components.push(
-                <div
-                    className = {`timer-label${visible ? ' visible' : ''}`}
-                    key = 'timer-label'>
-                    <Label
-                        className = { this.state.className }
-                        icon = { IconStopWatch }
-                        id = 'timerLabel'
-                        text = { "Timer " + this.state.timerValue } />
-                </div>
-            );
-        }
-        if (this.state.timerOffGif) {
-            components.push(<TimerOffGif key = 'timer-off-gif' />);
-        }
-
-        return components;
+        return (
+            <>
+                <Tooltip
+                    position = { 'bottom' }>
+                    <div className = 'timer-label' >
+                        <Label
+                            className = { this.state.className}
+                            icon = { IconStopWatch }
+                            id = 'timerLabel'
+                            text = { "Timer " + this.state.timerValue } />
+                    </div>
+                </Tooltip>
+                
+            </>
+        );
     }
 }
 
-export default connect(_abstractMapStateToProps)(TimerLabel);
+
+export default translate(connect(_abstractMapStateToProps)(TimerLabel));
 

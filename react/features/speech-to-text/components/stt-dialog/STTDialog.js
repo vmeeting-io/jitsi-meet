@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { connect } from 'react-redux';
+import { makeStyles } from 'tss-react/mui';
 
 import { getAuthUrl } from '../../../../api/url';
 import { translate } from '../../../base/i18n/functions';
@@ -17,7 +18,7 @@ import Switch from '../../../base/ui/components/web/Switch';
 
 import { availableTransLanguageList } from './translationCode';
 
-import { 
+import {
     toggleSTTTranslation,
     changeSTTTargetLanguage,
     changeSTTTargetTransLanguage,
@@ -46,6 +47,18 @@ type Props = {
     dispatch: function,
 };
 
+const useStyles = makeStyles()(theme => {
+    return {
+        targetLanguage: {
+            width: '100%',
+        },
+
+        fontSize: {
+            width: '100%',
+        }
+    };
+});
+
 /**
  * Component that renders the stt options dialog.
  *
@@ -66,6 +79,7 @@ function STTDialog({
     t,
     dispatch
 }: Props) {
+    const { classes } = useStyles();
     const [enabled, setEnabled] = useState(_sttEnabled);
     const [targetLanguage, setTargetLanguage] = useState(_targetLanguage || i18next.language);
     const [subtitleVisible, setSubtitleVisible] = useState(_subtitleVisible);
@@ -77,7 +91,7 @@ function STTDialog({
         const targetValue = !enabled;
         setEnabled(targetValue);
         const reqConfig = {
-            headers: { Authorization: `Bearer ${window._env_.VMEETING_API_TOKEN}`}
+            headers: { Authorization: `Bearer ${window._env_.VMEETING_API_TOKEN}` }
         };
         axios.patch(`${_apiBase}/conferences/${_roomInfo._id}`, {
             stt_enabled: targetValue
@@ -129,130 +143,132 @@ function STTDialog({
         { value: 'large', label: t('stt.font_large') }
     ];
 
-    const transLanguageItems = availableTransLanguageList.map(({translationCode, name, name_ko}) => ({
+    const transLanguageItems = availableTransLanguageList.map(({ translationCode, name, name_ko }) => ({
         value: translationCode,
-        label: i18next.language === 'ko'? name_ko : name
+        label: i18next.language === 'ko' ? name_ko : name
     }));
 
     return (
         <Dialog
-            hideCancelButton = { true }
-            submitDisabled = { true }
-            titleKey = 'stt.header'
-            width = { i18next.language === 'ko'? 'small' : 450 }>
-            <div className = 'stt-dialog'>
-                <div className = 'stt-section'>
+            ok={{ hidden: true }}
+            cancel={{ hidden: true }}
+            titleKey='stt.header'
+            width={i18next.language === 'ko' ? 'small' : 450}>
+            <div className='stt-dialog'>
+                <div className='stt-section'>
                     <p
-                        className = 'description'
-                        role = 'banner'>
-                        { _isLocalModerator? t('stt.featureDesc') : t('stt.featureDescP') }
+                        className='description'
+                        role='banner'>
+                        {_isLocalModerator ? t('stt.featureDesc') : t('stt.featureDescP')}
                     </p>
-                    <div className = 'control-row'>
-                        <label htmlFor = 'stt-enable-section-switch'>
-                            { t('stt.toggleLabel') }
+                    <div className='control-row'>
+                        <label htmlFor='stt-enable-section-switch'>
+                            {t('stt.toggleLabel')}
                         </label>
                         <Switch
-                            id = 'stt-enable-section-switch'
-                            onValueChange = { onToggleEnable }
-                            value = { enabled } 
-                            disabled={!_isLocalModerator || (_sttEnabled && !_sttOn)}/>
+                            id='stt-enable-section-switch'
+                            onChange={onToggleEnable}
+                            checked={enabled}
+                            disabled={!_isLocalModerator || (_sttEnabled && !_sttOn)} />
                     </div>
-                    { !_isLocalModerator &&
-                            <p
-                            className = 'description'
-                            role = 'banner'>
-                            {t('stt.modDesc') }
-                            </p>
+                    {!_isLocalModerator &&
+                        <p
+                            className='description'
+                            role='banner'>
+                            {t('stt.modDesc')}
+                        </p>
                     }
                 </div>
                 {
-                    _sttEnabled?
-                        _sttOn? 
-                        <div className = 'stt-section'>
-                            <div className = 'control-row-sub'>
-                                <div className = 'stt-target-language'>
-                                    <Select
-                                        label = { t('stt.currentTargetLanguage') }
-                                        onChange = { onChangeTargetLanguage }
-                                        options = { languageItems }
-                                        value = { targetLanguage } />
-                                </div>
-                            </div>
-                            <div className = 'separator-line' />
-                            <div>
-                                <div className = 'control-row'>
-                                    <label htmlFor = 'stt-subtitle-visibility'>
-                                        { t('stt.subtitleVisibility') }
-                                    </label>
-                                    <Switch
-                                        id = 'stt-subtitle-visible-section-switch'
-                                        onValueChange = { onToggleSubtitleVisibility }
-                                        value = { subtitleVisible }/>
-                                </div>
-                                <div className= 'description'>
-                                    { t('stt.visibilityDesc') }
-                                </div>
-                            </div>
-                            <div>
-                                <div className = 'control-row'>
-                                    <div className = 'stt-font-size'>
+                    _sttEnabled ?
+                        _sttOn ?
+                            <div className='stt-section'>
+                                <div className='control-row-sub'>
+                                    <div className={classes.targetLanguage}>
                                         <Select
-                                            label = { t('stt.fontSize') }
-                                            onChange = { onChangeFontSize }
-                                            options = { fontSizeItems }
-                                            value = { fontSize } />
+                                            label={t('stt.currentTargetLanguage')}
+                                            onChange={onChangeTargetLanguage}
+                                            options={languageItems}
+                                            containerStyle={{ flexDirection: 'row', justifyContent: 'space-between' }}
+                                            value={targetLanguage} />
                                     </div>
                                 </div>
-                                <div className= 'description'>
-                                    { t('stt.fontSizeDesc') }
-                                </div>
-                            </div>
-                            <div className = 'separator-line' />
-                            <div>
-                                <div className = 'control-row'>
-                                    <label htmlFor = 'stt-translation-section-switch'>
-                                        { t('stt.toggleTranslation') }
-                                    </label>
-                                    <Switch
-                                        id = 'stt-translation-section-switch'
-                                        onValueChange = { onToggleTranslation }
-                                        value = { translationEnabled }/>
-                                </div>
-                                <div className= 'description'>
-                                    { t('stt.transDesc') }
-                                </div>
-                            </div>
-                            { translationEnabled &&
-                                <div className = 'control-row-sub'>
-                                    <div className = 'stt-trans-language'>
-                                        <Select
-                                            label = { t('stt.currentTransLanguage') }
-                                            onChange = { onChangeTargetTransLanguage }
-                                            options = { transLanguageItems }
-                                            value = { targetTransLanguage } />
+                                <div className='separator-line' />
+                                <div>
+                                    <div className='control-row'>
+                                        <label htmlFor='stt-subtitle-visibility'>
+                                            {t('stt.subtitleVisibility')}
+                                        </label>
+                                        <Switch
+                                            id='stt-subtitle-visible-section-switch'
+                                            onValueChange={onToggleSubtitleVisibility}
+                                            value={subtitleVisible} />
+                                    </div>
+                                    <div className='description'>
+                                        {t('stt.visibilityDesc')}
                                     </div>
                                 </div>
-                            }
-                        </div> :
-                        _sttEnabled?
-                            (_shouldRetry?
-                            <div className = 'stt-retry-button-container'>
-                                <div className = 'stt-retry-button' onClick={onRetry}>
-                                    <Icon size = { 48 } src = { IconRefresh } />
+                                <div>
+                                    <div className='control-row'>
+                                        <div className={classes.fontSize}>
+                                            <Select
+                                                label={t('stt.fontSize')}
+                                                onChange={onChangeFontSize}
+                                                options={fontSizeItems}
+                                                containerStyle={{ flexDirection: 'row', justifyContent: 'space-between' }}
+                                                value={fontSize} />
+                                        </div>
+                                    </div>
+                                    <div className='description'>
+                                        {t('stt.fontSizeDesc')}
+                                    </div>
                                 </div>
-                                <span className='stt-retry-desp'>
-                                    {t('stt.retryDesc1')}
-                                </span>
-                                <span className='stt-retry-desp'>
-                                    {t('stt.retryDesc2')}
-                                </span>
-                            </div>:
-                            <div className = 'stt-spinner'>
-                                <Spinner
-                                    isCompleting = { false }
-                                    size = 'medium' />
-                            </div>) : null
-                     : null
+                                <div className='separator-line' />
+                                <div>
+                                    <div className='control-row'>
+                                        <label htmlFor='stt-translation-section-switch'>
+                                            {t('stt.toggleTranslation')}
+                                        </label>
+                                        <Switch
+                                            id='stt-translation-section-switch'
+                                            onValueChange={onToggleTranslation}
+                                            value={translationEnabled} />
+                                    </div>
+                                    <div className='description'>
+                                        {t('stt.transDesc')}
+                                    </div>
+                                </div>
+                                {translationEnabled &&
+                                    <div className='control-row-sub'>
+                                        <div className='stt-trans-language'>
+                                            <Select
+                                                label={t('stt.currentTransLanguage')}
+                                                onChange={onChangeTargetTransLanguage}
+                                                options={transLanguageItems}
+                                                value={targetTransLanguage} />
+                                        </div>
+                                    </div>
+                                }
+                            </div> :
+                            _sttEnabled ?
+                                (_shouldRetry ?
+                                    <div className='stt-retry-button-container'>
+                                        <div className='stt-retry-button' onClick={onRetry}>
+                                            <Icon size={48} src={IconRefresh} />
+                                        </div>
+                                        <span className='stt-retry-desp'>
+                                            {t('stt.retryDesc1')}
+                                        </span>
+                                        <span className='stt-retry-desp'>
+                                            {t('stt.retryDesc2')}
+                                        </span>
+                                    </div> :
+                                    <div className='stt-spinner'>
+                                        <Spinner
+                                            isCompleting={false}
+                                            size='medium' />
+                                    </div>) : null
+                        : null
                 }
             </div>
         </Dialog>
@@ -282,13 +298,13 @@ function mapStateToProps(state) {
     const isModerator = isLocalParticipantModerator(state);
 
     const shouldRetry = _sttEnabled && _wsServer && _retryCheck;
-    const defaultSize = _subtitleSize? _subtitleSize : state['features/base/config'].stt.subtitleSize;
+    const defaultSize = _subtitleSize ? _subtitleSize : state['features/base/config'].stt.subtitleSize;
 
     return {
         _sttEnabled: _sttEnabled,
         _translationEnabled: _translationEnabled,
         _isLocalModerator: isModerator,
-        _sttOn: _recorder? true : false,
+        _sttOn: _recorder ? true : false,
         _targetLanguage: _targetLanguage,
         _targetTransLanguage: _targetTransLanguage,
         _subtitleSize: defaultSize,

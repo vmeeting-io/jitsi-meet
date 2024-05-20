@@ -46,6 +46,8 @@ const useStyles = makeStyles()(theme => {
             transition: 'width .16s ease-in-out',
             width: `${CHAT_SIZE}px`,
             zIndex: 300,
+            display: 'flex',
+            flexDirection: 'column',
 
             '@media (max-width: 580px)': {
                 height: '100dvh',
@@ -95,7 +97,11 @@ const useStyles = makeStyles()(theme => {
 
         pollsPanel: {
             // extract header + tabs height
-            height: 'calc(100% - 110px)'
+            flexGrow: 1
+        },
+
+        sttPanel: {
+            flexGrow: 1
         },
 
         searchContainer: {
@@ -266,6 +272,7 @@ const Chat = ({
                     { renderTabs() }
                     <div
                         area-labelledby = 'polls-tab'
+                        className={classes.pollsPanel}
                         id = 'polls-panel'
                         role = 'tabpanel'>
                         <PollsPane />
@@ -279,12 +286,8 @@ const Chat = ({
             return (
                 <>
                     { renderTabs() }
-                    <div
-                        area-labelledby = 'stt-tab'
-                        id = 'stt-panel'
-                        role = 'tabpanel'>
-                    </div>
                     <STTMessageContainer
+                        className={classes.sttPanel}
                         messages = { _STTmessages }
                         // ref = { STTmessageContainerRef }
                     />
@@ -597,7 +600,7 @@ function _mapStateToProps(state, _ownProps) {
     const _localParticipant = getLocalParticipant(state);
     const chatModerationEnabled = isEnabledFromState('chat', state);
     const { use_file_chat, use_stt } = state['features/base/conference'].site;
-    const { _sttHistory } = state['features/stt'];
+    const { _sttHistory, _sttEnabled } = state['features/stt'];
     const fileUploadInProgress = Boolean(fileName !== undefined
         && fileUploadPercentage > 0
         && fileUploadPercentage < 100);
@@ -612,7 +615,7 @@ function _mapStateToProps(state, _ownProps) {
         _isModal: window.innerWidth <= SMALL_WIDTH_THRESHOLD,
         _isOpen: isOpen,
         _isPollsEnabled: !arePollsDisabled(state),
-        _isSTTEnabled: Boolean(use_stt),
+        _isSTTEnabled: Boolean(use_stt) && Boolean(_sttEnabled),
         _messages: messages,
         _STTmessages: _sttHistory,
         _showChatInput: !chatModerationEnabled || _localParticipant?.role === PARTICIPANT_ROLE.MODERATOR,

@@ -60,6 +60,7 @@ export default class STTMessageContainer extends AbstractSTTMessageContainer<Pro
      * @inheritdoc
      */
     render() {
+        const { className } = this.props;
         const groupedMessages = this._getMessagesGroupedBySender();
         const messages = groupedMessages.map((group, index) => {
             const messageType = group[0] && group[0].messageType;
@@ -73,15 +74,17 @@ export default class STTMessageContainer extends AbstractSTTMessageContainer<Pro
         });
 
         return (
-            <div
-                aria-labelledby = 'chat-header'
-                id = 'chatconversation'
-                onScroll = { this._onChatScroll }
-                ref = { this._messageListRef }
-                role = 'log'
-                tabIndex = { 0 }>
-                { messages }
-                <div ref = { this._messagesListEndRef } />
+            <div id = 'chat-conversation-container' className={className}>
+                <div
+                    aria-labelledby = 'chat-header'
+                    id = 'chatconversation'
+                    onScroll = { this._onChatScroll }
+                    ref = { this._messageListRef }
+                    role = 'log'
+                    tabIndex = { 0 }>
+                    { messages }
+                    <div ref = { this._messagesListEndRef } />
+                </div>
             </div>
         );
     }

@@ -91,6 +91,7 @@ const useStyles = makeStyles()(theme => {
 
 const Select = ({
     bottomLabel,
+    containerStyle = {},
     className,
     disabled,
     error,
@@ -103,7 +104,7 @@ const Select = ({
     const isMobile = isMobileBrowser();
 
     return (
-        <div className = { classes.container }>
+        <div className = { classes.container } style={{ ...containerStyle }}>
             {label && <label
                 className = { cx(classes.label, isMobile && 'is-mobile') }
                 htmlFor = { id } >

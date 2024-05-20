@@ -7,7 +7,7 @@ const useStyles = makeStyles()(theme => {
             display: 'flex',
             position: 'absolute',
             flexDirection: 'column',
-            top: 105,
+            top: 110,
             bottom: 0,
             flex: 1
         }

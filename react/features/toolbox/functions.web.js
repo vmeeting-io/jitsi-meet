@@ -366,6 +366,7 @@ export function getAllToolboxButtons(_customToolbarButtons) {
         desktop,
         chat,
         raisehand,
+        reactions,
         participants,
         tileview,
         toggleCamera,

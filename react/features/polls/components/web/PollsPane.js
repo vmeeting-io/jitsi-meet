@@ -11,7 +11,7 @@ import PollsList from './PollsList';
 const useStyles = makeStyles()(() => {
     return {
         container: {
-            height: 'calc(100% - 110px)',
+            height: '100%',
             position: 'relative'
         },
         listContainer: {

@@ -310,6 +310,10 @@ const Prejoin = ({
      * @returns {void}
      */
     const setName = (displayName) => {
+        if (displayName.trim().length) {
+            setShowErrorOnField(false);
+        }
+
         dispatchUpdateSettings({
             displayName
         });

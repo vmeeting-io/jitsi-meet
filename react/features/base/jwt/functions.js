@@ -154,7 +154,7 @@ export function validateJwt(jwt: string) {
             errors.push({ key: JWT_VALIDATION_ERRORS.CONTEXT_NOT_FOUND });
         } else if (context.features) {
             const { features } = context;
-const meetFeatures = Object.values(MEET_FEATURES);
+            const meetFeatures = Object.values(MEET_FEATURES);
 
             Object.keys(features).forEach(feature => {
                 if (meetFeatures.includes(feature)) {

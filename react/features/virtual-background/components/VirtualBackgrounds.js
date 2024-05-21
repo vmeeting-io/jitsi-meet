@@ -1,11 +1,11 @@
 // @ts-ignore
-import { jitsiLocalStorage } from '@jitsi/js-utils/jitsi-local-storage';
 // eslint-disable-next-line lines-around-comment
 // @ts-ignore
 import React, { useCallback, useEffect, useState } from 'react';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
 
+import tokenLocalStorage from '../../../api/tokenLocalStorage';
 import { backgrounds } from '../../../api/backgrounds';
 import { translate } from '../../base/i18n/functions';
 import Icon from '../../base/icons/components/Icon';
@@ -150,13 +150,14 @@ function VirtualBackgrounds({
     const [ previewIsLoaded, setPreviewIsLoaded ] = useState(false);
     const [ storedImages, setStoredImages ] = useState([]);
     const [ loading, setLoading ] = useState(false);
+    const token = useSelector(state => tokenLocalStorage.getItem(state));
 
     // load images from server
     useEffect(() => {
         async function loadRemoteImages() {
             setLoading(true);
             try {
-                const resp = await backgrounds().pagination(false).get();
+                const resp = await backgrounds(token || 'guest').pagination(false).get();
                 setStoredImages([...resp.data.docs]);
             } finally {
                 setLoading(false);
@@ -164,7 +165,7 @@ function VirtualBackgrounds({
         }
 
         loadRemoteImages();
-    }, []);
+    }, [token]);
 
     const deleteStoredImage = useCallback(e => {
         const imageId = e.currentTarget.getAttribute('data-imageid');
@@ -416,11 +417,12 @@ function VirtualBackgrounds({
                             </Tooltip>
                         ))}
                         {storedImages.map((image, index) => (
-                            <div
-                                className = { classes.storedImageContainer }
-                                key = { image.id }>
+                            <Tooltip
+                                content = { image.filename ?? '' }
+                                key = { image.id }
+                                position = { 'top' }>
                                 <img
-                                    alt = { t('virtualBackground.uploadedImage', { index: index + 1 }) }
+                                    alt = { image.filename }
                                     aria-checked = { isThumbnailSelected(image.id) }
                                     className = { cx(classes.thumbnail,
                                         getSelectedThumbnailClass(image.id)) }
@@ -442,7 +444,7 @@ function VirtualBackgrounds({
                                     size = { 16 }
                                     src = { IconCloseLarge }
                                     tabIndex = { 0 } />
-                            </div>
+                            </Tooltip>
                         ))}
                     </div>
                 </div>
@@ -462,10 +464,11 @@ function VirtualBackgrounds({
 function _mapStateToProps(state) {
     const dynamicBrandingImages = state['features/dynamic-branding'].virtualBackgrounds;
     const hasBrandingImages = Boolean(dynamicBrandingImages.length);
+    const token = tokenLocalStorage.getItem(state);
 
     return {
         _images: (hasBrandingImages && dynamicBrandingImages) || IMAGES,
-        _showUploadButton: !state['features/base/config'].disableAddingBackgroundImages
+        _showUploadButton: token && !state['features/base/config'].disableAddingBackgroundImages
     };
 }
 

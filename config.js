@@ -1020,7 +1020,6 @@ var config = {
     //     ]
     // },
 
-    // },
     // e2ee: {
     //   labels,
     //   externallyManagedKey: false

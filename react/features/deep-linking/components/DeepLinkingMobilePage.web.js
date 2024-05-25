@@ -7,6 +7,7 @@ import { makeStyles } from 'tss-react/mui';
 import { createDeepLinkingPageEvent } from '../../analytics/AnalyticsEvents';
 import { sendAnalytics } from '../../analytics/functions';
 import { isSupportedMobileBrowser } from '../../base/environment/environment';
+import { isMobileBrowser } from '../../base/environment/utils';
 import { translate } from '../../base/i18n/functions';
 import Platform from '../../base/react/Platform.web';
 import { withPixelLineHeight } from '../../base/styles/functions.web';
@@ -174,8 +175,27 @@ const DeepLinkingMobilePage = ({ t }) => {
         sendAnalytics(
             createDeepLinkingPageEvent(
                 'displayed', 'DeepLinkingMobile', { isMobileBrowser: true }));
+
+        if (isMobileBrowser()) { // mobile
+            const launchWebApp
+                = typeof interfaceConfig === 'object'
+                    && interfaceConfig.MOBILE_APP_PROMO === 'web';
+
+            if (launchWebApp) {
+                dispatch(openWebApp());
+            }
+        }
     }, []);
 
+    if (isMobileBrowser()) { // mobile
+        const launchWebApp
+            = typeof interfaceConfig === 'object'
+                && interfaceConfig.MOBILE_APP_PROMO === 'web';
+
+        if (launchWebApp) {
+            return null;
+        }
+    }
 
     return (
         <div className = { styles.container }>

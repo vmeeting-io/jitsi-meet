@@ -1044,9 +1044,71 @@ var config = {
     // use only.
     // _desktopSharingSourceDevice: 'sample-id-or-label',
 
+    // DEPRECATED! Use deeplinking.disabled instead.
     // If true, any checks to handoff to another application will be prevented
     // and instead the app will continue to display in the current browser.
     // disableDeepLinking: false,
+
+    // The deeplinking config.
+    // For information about the properties of
+    // deeplinking.[ios/android].dynamicLink check:
+    // https://firebase.google.com/docs/dynamic-links/create-manually
+    // deeplinking: {
+    //
+    //     // The desktop deeplinking config, disabled by default.
+    //     desktop: {
+    //         appName: 'Jitsi Meet',
+    //         appScheme: 'jitsi-meet,
+    //         download: {
+    //             linux:
+    //               'https://github.com/jitsi/jitsi-meet-electron/releases/latest/download/jitsi-meet-x86_64.AppImage',
+    //             macos: 'https://github.com/jitsi/jitsi-meet-electron/releases/latest/download/jitsi-meet.dmg',
+    //             windows: 'https://github.com/jitsi/jitsi-meet-electron/releases/latest/download/jitsi-meet.exe'
+    //         },
+    //         enabled: false
+    //     },
+    //     // If true, any checks to handoff to another application will be prevented
+    //     // and instead the app will continue to display in the current browser.
+    //     disabled: false,
+
+    //     // whether to hide the logo on the deep linking pages.
+    //     hideLogo: false,
+
+    //     // The ios deeplinking config.
+    //     ios: {
+    //         appName: 'Jitsi Meet',
+    //         // Specify mobile app scheme for opening the app from the mobile browser.
+    //         appScheme: 'org.jitsi.meet',
+    //         // Custom URL for downloading ios mobile app.
+    //         downloadLink: 'https://itunes.apple.com/us/app/jitsi-meet/id1165103905',
+    //         dynamicLink: {
+    //             apn: 'org.jitsi.meet',
+    //             appCode: 'w2atb',
+    //             customDomain: undefined,
+    //             ibi: 'com.atlassian.JitsiMeet.ios',
+    //             isi: '1165103905'
+    //         }
+    //     },
+
+    //     // The android deeplinking config.
+    //     android: {
+    //         appName: 'Jitsi Meet',
+    //         // Specify mobile app scheme for opening the app from the mobile browser.
+    //         appScheme: 'org.jitsi.meet',
+    //         // Custom URL for downloading android mobile app.
+    //         downloadLink: 'https://play.google.com/store/apps/details?id=org.jitsi.meet',
+    //         // Android app package name.
+    //         appPackage: 'org.jitsi.meet',
+    //         fDroidUrl: 'https://f-droid.org/en/packages/org.jitsi.meet/',
+    //         dynamicLink: {
+    //             apn: 'org.jitsi.meet',
+    //             appCode: 'w2atb',
+    //             customDomain: undefined,
+    //             ibi: 'com.atlassian.JitsiMeet.ios',
+    //             isi: '1165103905'
+    //         }
+    //     }
+    // },
 
     // A property to disable the right click context menu for localVideo
     // the menu has option to flip the locally seen video for local presentations

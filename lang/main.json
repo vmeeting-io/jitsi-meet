@@ -1643,6 +1643,7 @@
         "apply": "Apply",
         "backgroundEffectError": "Failed to apply background effect.",
         "blur": "Blur",
+        "confirmDeleteImage": "Are you sure to delete this image?",
         "deleteImage": "Delete image",
         "desktopShare": "Desktop share",
         "desktopShareError": "Could not create desktop share",

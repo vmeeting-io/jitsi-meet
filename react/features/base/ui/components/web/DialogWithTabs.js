@@ -293,6 +293,7 @@ const DialogWithTabs = ({
     return (
         <BaseDialog
             className = { cx(classes.dialog, className) }
+            disableBackdropClose = { true }
             onClose = { onClose }
             size = 'large'
             titleKey = { titleKey }>

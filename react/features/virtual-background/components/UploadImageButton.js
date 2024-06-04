@@ -1,14 +1,15 @@
-import React, { useCallback, useRef } from 'react';
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import React, { useCallback, useRef, useState } from 'react';
 import { makeStyles } from 'tss-react/mui';
-import { v4 as uuidv4 } from 'uuid';
 
 import { translate } from '../../base/i18n/functions';
 import Icon from '../../base/icons/components/Icon';
 import { IconPlus } from '../../base/icons/svg';
 import { withPixelLineHeight } from '../../base/styles/functions.web';
 import { VIRTUAL_BACKGROUND_TYPE } from '../constants';
-import { resizeImage } from '../functions';
 import logger from '../logger';
+import { backgrounds } from '../../../api/backgrounds';
+import { getRemoteImageUrl } from '../functions';
 
 const useStyles = makeStyles()(theme => {
     return {
@@ -18,7 +19,8 @@ const useStyles = makeStyles()(theme => {
             marginBottom: theme.spacing(3),
             cursor: 'pointer',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            gap: 10
         },
 
         addBackground: {
@@ -42,7 +44,6 @@ const useStyles = makeStyles()(theme => {
  * @returns {React$Node}
  */
 function UploadImageButton({
-    setLoading,
     setOptions,
     setStoredImages,
     showLabel,
@@ -50,6 +51,7 @@ function UploadImageButton({
     t
 }) {
     const { classes } = useStyles();
+    const [loading, setLoading] = useState(false);
     const uploadImageButton = useRef(null);
     const uploadImageKeyPress = useCallback(e => {
         if (uploadImageButton.current && (e.key === ' ' || e.key === 'Enter')) {
@@ -58,36 +60,40 @@ function UploadImageButton({
         }
     }, [ uploadImageButton.current ]);
 
-
     const uploadImage = useCallback(async e => {
-        const reader = new FileReader();
         const imageFile = e.target.files;
+        const form = new FormData();
 
-        reader.readAsDataURL(imageFile[0]);
-        reader.onload = async () => {
-            const url = await resizeImage(reader.result);
-            const uuId = uuidv4();
+        setLoading(true);
+        form.append(imageFile[0].name, imageFile[0]);
+        e.target.value = '';
 
+        try {
+            const resp = await backgrounds().create(form);
+            const image = resp.data.docs[resp.data.docs.length - 1];
             setStoredImages([
                 ...storedImages,
-                {
-                    id: uuId,
-                    src: url
-                }
+                image
             ]);
             setOptions({
                 backgroundEffectEnabled: true,
                 backgroundType: VIRTUAL_BACKGROUND_TYPE.IMAGE,
-                selectedThumbnail: uuId,
-                virtualSource: url
-            });
-        };
-        logger.info('New virtual background image uploaded!');
-
-        reader.onerror = () => {
-            setLoading(false);
+                selectedThumbnail: image.id,
+                virtualSource: getRemoteImageUrl(image)
+            })
+            logger.info('New virtual background image uploaded!');
+            setTimeout(() => {
+                const el = document.querySelector(`img[data-imageid='${image.id}']`);
+                console.log('el:', `img[data-imageid='${image.id}']`, el);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 300);
+        } catch {
             logger.error('Failed to upload virtual image!');
-        };
+        } finally {
+            setLoading(false);
+        }
     }, [ storedImages ]);
 
     return (
@@ -97,10 +103,7 @@ function UploadImageButton({
                 htmlFor = 'file-upload'
                 onKeyPress = { uploadImageKeyPress }
                 tabIndex = { 0 } >
-                <Icon
-                    className = { classes.addBackground }
-                    size = { 24 }
-                    src = { IconPlus } />
+                { loading ? <LoadingOutlined /> : <PlusOutlined /> }
                 {t('virtualBackground.addBackground')}
             </label>}
 

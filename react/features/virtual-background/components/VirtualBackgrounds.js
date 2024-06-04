@@ -1,19 +1,20 @@
 // @ts-ignore
 // eslint-disable-next-line lines-around-comment
 // @ts-ignore
+import { DeleteOutlined } from '@ant-design/icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import { connect, useSelector } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
+import { Modal } from 'antd';
 
 import tokenLocalStorage from '../../../api/tokenLocalStorage';
 import { backgrounds } from '../../../api/backgrounds';
 import { translate } from '../../base/i18n/functions';
 import Icon from '../../base/icons/components/Icon';
-import { IconCloseLarge } from '../../base/icons/svg';
 import { withPixelLineHeight } from '../../base/styles/functions.web';
 import Tooltip from '../../base/tooltip/components/Tooltip';
 import Spinner from '../../base/ui/components/web/Spinner';
-import { BACKGROUNDS_LIMIT, IMAGES, VIRTUAL_BACKGROUND_TYPE } from '../constants';
+import { IMAGES, VIRTUAL_BACKGROUND_TYPE } from '../constants';
 import { getRemoteImageUrl, toDataURL } from '../functions';
 import logger from '../logger';
 
@@ -127,7 +128,8 @@ const useStyles = makeStyles()(theme => {
             },
 
             [[ '&:hover', '&:focus' ]]: {
-                display: 'block'
+                display: 'block',
+                background: 'rgba(0, 0, 0, 0.2)'
             }
         }
     };
@@ -168,20 +170,27 @@ function VirtualBackgrounds({
     }, [token]);
 
     const deleteStoredImage = useCallback(e => {
+        e.defaultPrevented = true;
+
         const imageId = e.currentTarget.getAttribute('data-imageid');
         const image = storedImages.find(img => img.id === imageId);
 
-        if (!image || image.id === options.selectedThumbnail) {
-            onOptionsChange({
-                backgroundEffectEnabled: false,
-                selectedThumbnail: 'none'
-            });
-        }
-        if (image) {
-            setStoredImages(storedImages.filter(item => item.id !== imageId));
-            backgrounds().id(imageId).delete();
-        }
-    }, [ storedImages ]);
+        Modal.confirm({
+            title: t('virtualBackground.confirmDeleteImage'),
+            onOk: () => {
+                if (!image || image.id === options.selectedThumbnail) {
+                    onOptionsChange({
+                        backgroundEffectEnabled: false,
+                        selectedThumbnail: 'none'
+                    });
+                }
+                if (image) {
+                    setStoredImages(storedImages.filter(item => item.id !== imageId));
+                    backgrounds(token).id(imageId).delete();
+                }
+            }
+        });
+    }, [ storedImages, options, token ]);
 
     const deleteStoredImageKeyPress = useCallback(e => {
         if (e.key === ' ' || e.key === 'Enter') {
@@ -421,29 +430,30 @@ function VirtualBackgrounds({
                                 content = { image.filename ?? '' }
                                 key = { image.id }
                                 position = { 'top' }>
-                                <img
-                                    alt = { image.filename }
-                                    aria-checked = { isThumbnailSelected(image.id) }
-                                    className = { cx(classes.thumbnail,
-                                        getSelectedThumbnailClass(image.id)) }
-                                    data-imageid = { image.id }
-                                    onClick = { setUploadedImageBackground }
-                                    onError = { onError }
-                                    onKeyPress = { setUploadedImageBackgroundKeyPress }
-                                    role = 'radio'
-                                    src = { getRemoteImageUrl(image, 'ld') }
-                                    tabIndex = { 0 } />
-
-                                <Icon
-                                    ariaLabel = { t('virtualBackground.deleteImage') }
-                                    className = { cx(classes.deleteImageIcon, 'delete-image-icon') }
-                                    data-imageid = { image.id }
-                                    onClick = { deleteStoredImage }
-                                    onKeyPress = { deleteStoredImageKeyPress }
-                                    role = 'button'
-                                    size = { 16 }
-                                    src = { IconCloseLarge }
-                                    tabIndex = { 0 } />
+                                <div className = { classes.storedImageContainer }>
+                                    <img
+                                        alt = { image.filename }
+                                        aria-checked = { isThumbnailSelected(image.id) }
+                                        className = { cx(classes.thumbnail,
+                                            getSelectedThumbnailClass(image.id)) }
+                                        data-imageid = { image.id }
+                                        onClick = { setUploadedImageBackground }
+                                        onError = { onError }
+                                        onKeyPress = { setUploadedImageBackgroundKeyPress }
+                                        role = 'radio'
+                                        src = { getRemoteImageUrl(image, 'ld') }
+                                        tabIndex = { 0 } />
+                                    { !image.isPublic && (<Icon
+                                        ariaLabel = { t('virtualBackground.deleteImage') }
+                                        className = { cx(classes.deleteImageIcon, 'delete-image-icon') }
+                                        data-imageid = { image.id }
+                                        onClick = { deleteStoredImage }
+                                        onKeyPress = { deleteStoredImageKeyPress }
+                                        role = 'button'
+                                        size = { 16 }
+                                        src = { DeleteOutlined }
+                                        tabIndex = { 0 } />)}
+                                </div>
                             </Tooltip>
                         ))}
                     </div>

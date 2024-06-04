@@ -62,84 +62,52 @@ MiddlewareRegistry.register(store => next => action => {
 });
 
 function _setWSServer({ dispatch, getState }, action) {
-    let preSoc, wsSoc, recorder, targetLanguage = undefined;
+    let ws, recorder, targetLanguage = undefined;
     const state = getState();
     const { conference } = state['features/base/conference'];
+    const { stt } = state['features/base/config'];
+
     if (!conference){
         setTimeout(() => _setWSServer({dispatch, getState}, action), RETRY_AFTER_MS);
         return;
     }
 
-    if(action.enabled){
+    if (action.enabled) {
         const roomId = conference.getMeetingUniqueId();
         const pId = getLocalParticipant(state).id;
 
         if(!roomId || !pId)
             return;
     
-        const wsURL = window._env_.STT_WS_SERVER;
-        const sttApiAccount = window._env_.STT_API_ACCOUNT;
-        const sttApiPwd = window._env_.STT_API_PWD
+        const wsURL = stt.ws_server.trim() + '/' + roomId;
 
         const currentAudioTrack = getLocalJitsiAudioTrack(state);
         const targetStream = currentAudioTrack? currentAudioTrack.stream : null;
         targetLanguage = action.targetLanguage || (i18next.language === 'ko'? 'ko' : 'en');
 
-        preSoc = new WebSocket(wsURL);
-        preSoc.onopen = function () {
-            let data = {
-                'rsn': roomId,
-                'ssn': pId,
-                'config': {
-                    'auth': sttApiAccount,
-                    'pass': sttApiPwd,
-                    'el': targetLanguage
-                }
-            };
-            preSoc.send(JSON.stringify(data));
-            preSoc.onmessage = function (event) {
-                const response = JSON.parse(event.data);
-                //console.log('RESPONSE: ', response);
-                if (response['code'] === 'EngineInfo'){
-                    const connectUrl = response.data.connectionEngineURL;
-                    const setData = response.data.setData;
-                    const configData = response.data.configData;
-                    
-                    wsSoc = new WebSocket(connectUrl);
-                    wsSoc.onopen = function() {
-                        dispatch(updateWSServer(wsSoc, targetLanguage));
-                        wsSoc.send(setData);
-                        wsSoc.send(configData);
-                        activateWS(wsSoc, targetStream, pId, dispatch, getState);
-                    }
-                    wsSoc.onclose = function (e) {
-                        if(e.code != 1000)
-                            dispatch(updateRetryCheck(true));
-                    }
-                }
-            }
+        ws = new WebSocket(wsURL);
+        ws.binaryType = 'blob';
+        ws.onopen = function () {
+            dispatch(updateWSServer(ws, targetLanguage));
+            activateWS(ws, targetStream, pId, dispatch, getState);
         }
-        preSoc.onclose = function (e) {
-            if(e.code != 1000)
-                dispatch(updateRetryCheck(true));
-        }
-    }
-    else {
+    } else {
         recorder = state['features/stt']._recorder;
         if(recorder && typeof recorder.destroy !== "undefined")
             recorder.destroy();
         recorder = undefined;
 
-        wsSoc = state['features/stt']._wsServer;
-        if(wsSoc)
-            wsSoc.close(1000);
-        wsSoc = undefined;
+        ws = state['features/stt']._wsServer;
+        if(ws)
+            ws.close(1000);
+        ws = undefined;
 
         dispatch(toggleSTTTranslation(false));
         dispatch(updateRecorder(recorder));
-        dispatch(updateWSServer(wsSoc, targetLanguage));
+        dispatch(updateWSServer(ws, targetLanguage));
     }
-    if(action.enabled && !action.targetLanguage){
+
+    if (action.enabled && !action.targetLanguage) {
         dispatch(showNotification({
             titleKey: 'stt.notifications.title',
             descriptionKey: 'stt.notifications.enabled',
@@ -157,65 +125,87 @@ function _destorySTT(dispatch, getState){
         recorder.destroy();
     recorder = undefined;
 
-    let wsSoc = state['features/stt']._wsServer;
-    if(wsSoc)
-        wsSoc.close(1000);
-    wsSoc = undefined;
+    let ws = state['features/stt']._wsServer;
+    if(ws)
+        ws.close(1000);
+    ws = undefined;
 
-    dispatch(updateWSServer(wsSoc));
+    dispatch(updateWSServer(ws));
     dispatch(updateRecorder(recorder));
 }
 
-function activateWS(soc, stream, pId, dispatch, getState) {
-    const { conference } = getState()['features/base/conference'];
-    soc.onmessage = function (event) {
-        const resultSTT = JSON.parse(event.data);
-        //console.log('RESULT: ', resultSTT);
-        if (resultSTT['code'] === 'EngineActivate') {
-            // 엔진이 준비되면 실행
-            if(!stream){
-                const recorder = 'update-later';
-                dispatch(updateRecorder(recorder));
+function preparePayload(data, clientId, lang) {
+    let str = clientId + "|" + lang
+    if (str.length < 60) {
+        str = str.padEnd(60, " ")
+    }
+    let utf8Encode = new TextEncoder()
+    let buffer = utf8Encode.encode(str)
+
+    let headerArr = new Uint16Array(buffer.buffer)
+
+    const payload = []
+
+    headerArr.forEach(i => payload.push(i))
+    data.forEach(i => payload.push(i))
+
+    return Uint16Array.from(payload)
+}
+
+function convertFloat32To16BitPCM(input) {
+    const output = new Int16Array(input.length)
+    for (let i = 0; i < input.length; i++) {
+        const s = Math.max(-1, Math.min(1, input[i]))
+        output[i] = s < 0 ? s * 0x8000 : s * 0x7fff
+    }
+    return output
+}
+
+function activateWS(ws, stream, pId, dispatch, getState) {
+    const state = getState();
+    const { conference } = state['features/base/conference'];
+    const { _recorder, _targetLanguage } = state['features/stt'];
+
+    const recorder = RecordRTC(stream, {
+        type: 'audio',
+        recorderType: RecordRTC.StereoAudioRecorder,
+        timeSlice: 500,
+        desiredSampRate: 16000,
+        numberOfAudioChannels: 1,
+        ondataavailable: function (blob) {
+            // console.log(blob);
+            try {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const audio = convertFloat32To16BitPCM(new Int16Array(reader.result));
+                    const payload = preparePayload(audio, pId, 'ko');
+                    ws.send(payload);
+                };
+                reader.readAsArrayBuffer(blob);
             }
-            else {
-                try {
-                    const recorder = RecordRTC(stream, {
-                        type: 'audio',
-                        recorderType: RecordRTC.StereoAudioRecorder,
-                        timeSlice: 100,
-                        desiredSampRate: 16000,
-                        numberOfAudioChannels: 1,
-                        ondataavailable: function (blob) {
-                            try{
-                                const reader = new FileReader();
-                                reader.addEventListener('loadend', () => {
-                                    soc.send(reader.result);
-                                });
-                                reader.readAsArrayBuffer(blob);
-                            }
-                            catch (e) {
-                                dispatch(updateRetryCheck(true));
-                            }
-                        },
-                    });
-                    recorder.startRecording();
-                    dispatch(updateRecorder(recorder));
-                }
-                catch (e){
-                    dispatch(updateRetryCheck(true));
-                }
+            catch (e) {
+                dispatch(updateRetryCheck(true));
             }
-        }
-        else if (resultSTT['code'] === 'STTResult'){
-            if(!resultSTT.data.result)
-                return;
+        },
+    });
+    recorder.startRecording();
+    dispatch(updateRecorder(recorder));
+
+    ws.onmessage = function (event) {
+        const msg = JSON.parse(event.data);
+        console.log('RESPONSE: ', msg);
+        if (msg.type === 'interim') {
+            console.log('interim:', msg.text);
+        } else {
+            console.log('final:', msg.text);
+
             // for me
             createSTTMessage(dispatch, getState, {
                 participantId: pId,
-                text: resultSTT.data.result,
-                isComplete: resultSTT.data.complete,
+                text: msg.text,
+                isComplete: msg.type !== 'interim',
                 isTranslated: false,
-                sentenceId: pId + resultSTT.data.st
+                sentenceId: pId + msg.ts
             });
 
             const lang = getState()['features/stt']._targetLanguage === 'ko'? 'ko' : 'en';
@@ -224,11 +214,11 @@ function activateWS(soc, stream, pId, dispatch, getState) {
                 conference.sendEndpointMessage('', {
                     type: JSON_TYPE_STT_RESULT,
                     participantId: pId,
-                    text: resultSTT.data.result,
-                    isComplete: resultSTT.data.complete,
+                    text: msg.text,
+                    isComplete: msg.type !== 'interim',
                     lang: lang,
-                    st: resultSTT.data.st,
-                    et: resultSTT.data.et
+                    st: msg.st,
+                    et: msg.et
                 });
             }
         }
@@ -309,7 +299,7 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
 
     if (!(json
         && json.type === JSON_TYPE_STT_RESULT)) {
-    return next(action);
+        return next(action);
     }
     //console.log('MESSAGE: ', json);
     json.isTranslated = false;

@@ -26,6 +26,7 @@ import {
     changeSubtitleVisibility,
     retryRequest
 } from '../../actions';
+import { conferences } from '../../../../api/conferences';
 
 type Props = {
     _conference: Object,
@@ -87,15 +88,9 @@ function STTDialog({
     const [translationEnabled, setTranslationEnabled] = useState(_translationEnabled || false);
     const [targetTransLanguage, setTargetTransLanguage] = useState(_targetTransLanguage || i18next.language);
 
-    const onToggleEnable = () => {
-        const targetValue = !enabled;
-        setEnabled(targetValue);
-        const reqConfig = {
-            headers: { Authorization: `Bearer ${window._env_.VMEETING_API_TOKEN}` }
-        };
-        axios.patch(`${_apiBase}/conferences/${_roomInfo._id}`, {
-            stt_enabled: targetValue
-        }, reqConfig);
+    const onToggleEnable = (value) => {
+        setEnabled(value);
+        conferences().id(_roomInfo._id).update({ stt_enabled: value });
     }
 
     const onChangeTargetLanguage = (e) => {
@@ -104,10 +99,9 @@ function STTDialog({
         dispatch(changeSTTTargetLanguage(target));
     }
 
-    const onToggleSubtitleVisibility = () => {
-        const targetValue = !subtitleVisible;
-        setSubtitleVisible(targetValue);
-        dispatch(changeSubtitleVisibility(targetValue));
+    const onToggleSubtitleVisibility = (value) => {
+        setSubtitleVisible(value);
+        dispatch(changeSubtitleVisibility(value));
     }
 
     const onChangeFontSize = (e) => {
@@ -116,10 +110,9 @@ function STTDialog({
         dispatch(changeSubtitleFontSize(target));
     }
 
-    const onToggleTranslation = () => {
-        const targetValue = !translationEnabled;
-        setTranslationEnabled(targetValue);
-        dispatch(toggleSTTTranslation(targetValue));
+    const onToggleTranslation = (value) => {
+        setTranslationEnabled(value);
+        dispatch(toggleSTTTranslation(value));
     }
 
     const onChangeTargetTransLanguage = (e) => {

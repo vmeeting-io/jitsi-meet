@@ -139,17 +139,17 @@ function preparePayload(data, clientId, lang) {
     if (str.length < 60) {
         str = str.padEnd(60, " ")
     }
-    let utf8Encode = new TextEncoder()
-    let buffer = utf8Encode.encode(str)
+    let utf8Encode = new TextEncoder();
+    let buffer = utf8Encode.encode(str);
 
-    let headerArr = new Uint16Array(buffer.buffer)
+    const header = new Uint16Array(buffer.buffer);
+    const payload = new Int16Array(data);
 
-    const payload = []
+    const result = new Uint16Array(header.length + payload.length);
+    result.set(header);
+    result.set(payload, header.length);
 
-    headerArr.forEach(i => payload.push(i))
-    data.forEach(i => payload.push(i))
-
-    return Uint16Array.from(payload)
+    return result;
 }
 
 function convertFloat32To16BitPCM(input) {
@@ -164,7 +164,7 @@ function convertFloat32To16BitPCM(input) {
 function activateWS(ws, stream, pId, dispatch, getState) {
     const state = getState();
     const { conference } = state['features/base/conference'];
-    const { _recorder, _targetLanguage } = state['features/stt'];
+    const { _targetLanguage } = state['features/stt'];
 
     const recorder = RecordRTC(stream, {
         type: 'audio',
@@ -173,12 +173,10 @@ function activateWS(ws, stream, pId, dispatch, getState) {
         desiredSampRate: 16000,
         numberOfAudioChannels: 1,
         ondataavailable: function (blob) {
-            // console.log(blob);
             try {
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                    const audio = convertFloat32To16BitPCM(new Int16Array(reader.result));
-                    const payload = preparePayload(audio, pId, 'ko');
+                    const payload = preparePayload(reader.result, pId, _targetLanguage);
                     ws.send(payload);
                 };
                 reader.readAsArrayBuffer(blob);

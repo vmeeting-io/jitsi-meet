@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-
+import org.gradle.internal.os.OperatingSystem
 // Crashlytics integration is done as part of Firebase now, so it gets
 // automagically activated with google-services.json
 if (googleServicesEnabled) {
@@ -157,7 +157,11 @@ gradle.projectsEvaluated {
                 workingDir androidRoot
 
                 // Run the packager
-                commandLine("scripts/run-packager.sh")
+                if (OperatingSystem.current() == OperatingSystem.WINDOWS) {
+                    commandLine("scripts/run-packager.bat")
+                } else {
+                    commandLine("scripts/run-packager.sh")
+                }
             }
 
             // Set up dev mode

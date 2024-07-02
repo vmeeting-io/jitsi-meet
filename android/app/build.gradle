@@ -23,7 +23,7 @@ android {
 
 
     defaultConfig {
-        applicationId 'org.jitsi.meet'
+        applicationId 'org.postech.vmeeting'
         versionCode vcode
         versionName project.appVersion
 

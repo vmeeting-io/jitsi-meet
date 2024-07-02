@@ -67,7 +67,10 @@ class WaitForOwnerDialog extends PureComponent {
                         this.props._alternativeCancelText ? 'dialog.WaitingForHostButton' : 'dialog.Cancel' }}
                 disableBackdropClose = { true }
                 hideCloseButton = { true }
-                ok = {{ translationKey: 'dialog.IamHost' }}
+                ok = {{
+                    translationKey: 'dialog.IamHost',
+                    hidden: Boolean(_user)
+                }}
                 onCancel = { this._onCancelWaitForOwner }
                 onSubmit = { this._onIAmHost }
                 titleKey = { t('dialog.WaitingForHostTitle') }>

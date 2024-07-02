@@ -31,7 +31,7 @@ export function cancelLogin() {
  * @returns {Function}
  */
 export function cancelWaitForOwner() {
-    return (dispatch: Function) => {
+    return (dispatch, getState) => {
         const { authRequired } = getState()['features/base/conference'];
 
         authRequired && dispatch(maybeRedirectToWelcomePage());

@@ -210,7 +210,12 @@ export function _connectInternal(id?: string, password?: string) {
         const state = getState();
         const options = constructOptions(state);
         const { locationURL } = state['features/base/connection'];
-        const { jwt } = state['features/base/jwt'];
+        const { isHost } = state['features/base/conference'].roomInfo || {};
+        let { jwt } = state['features/base/jwt'];
+
+        if (!isHost) {
+            jwt = '';
+        }
 
         const connection = new JitsiMeetJS.JitsiConnection(options.appId, jwt, options);
 

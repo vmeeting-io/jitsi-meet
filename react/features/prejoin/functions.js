@@ -50,7 +50,7 @@ export function isDisplayNameRequired(state: Object): boolean {
  * @returns {boolean}
  */
 export function isPrejoinEnabledInConfig(state: Object): boolean {
-    return state['features/base/config'].prejoinConfig?.enabled ?? true;
+    return state['features/base/config'].prejoinConfig?.enabled;
 }
 
 /**
@@ -164,9 +164,17 @@ export function isJoinByPhoneDialogVisible(state: Object): boolean {
  * @returns {boolean}
  */
 export function isPrejoinPageVisible(state: Object): boolean {
+    const { isHost } = state['features/base/conference']?.roomInfo || {};
+    const {
+        chatOnlyGuestEnabled,
+        passwordRequired
+    } = state['features/base/config'];
+
     return Boolean(navigator.product !== 'ReactNative'
         && !state['features/base/config']?.iAmRecorder
-        && isPrejoinEnabledInConfig(state)
+        && (isPrejoinEnabledInConfig(state) ||
+            (isHost && chatOnlyGuestEnabled) ||
+            (isHost && passwordRequired))
         && state['features/prejoin']?.showPrejoin
         && !(state['features/base/config'].enableForcedReload && state['features/prejoin'].skipPrejoinOnReload));
 }

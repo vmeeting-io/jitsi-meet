@@ -506,6 +506,7 @@ const Prejoin = ({
 
                 {passwordRequired && <Input
                     accessibilityLabel = { t('dialog.enterPassword') }
+                    className = { classes.input }
                     id = 'premeeting-password-input'
                     onChange = { setPassword }
                     placeHolder = { t('lobby.enterPasswordButton') }
@@ -521,7 +522,7 @@ const Prejoin = ({
                         content = { hasExtraJoinButtons && <div className = { classes.dropdownButtons }>
                             {extraButtonsToRender.map(({ key, ...rest }) => (
                                 <Button
-                                    disabled = { joiningInProgress || showErrorOnField }
+                                    disabled = { joiningInProgress }
                                     fullWidth = { true }
                                     key = { key }
                                     type = { BUTTON_TYPES.SECONDARY }
@@ -538,8 +539,7 @@ const Prejoin = ({
                             ariaLabel = { t('prejoin.joinMeeting') }
                             ariaPressed = { showJoinByPhoneButtons }
                             disabled = { joiningInProgress
-                                || (showUnsafeRoomWarning && !unsafeRoomConsent)
-                                || showErrorOnField }
+                                || (showUnsafeRoomWarning && !unsafeRoomConsent) }
                             hasOptions = { hasExtraJoinButtons }
                             onClick = { onJoinButtonClick }
                             onKeyPress = { onJoinKeyPress }

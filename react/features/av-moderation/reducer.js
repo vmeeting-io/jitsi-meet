@@ -99,6 +99,13 @@ function _updatePendingParticipant(kind: string, participant, state: Object = {}
 ReducerRegistry.register('features/av-moderation', (state = initialState, action) => {
 
     switch (action.type) {
+    case INIT_MODERATION: {
+        return {
+            ...state,
+            moderationEnabled: action.moderations
+        }
+    }
+
     case DISABLE_MODERATION: {
         return {
             ...state,

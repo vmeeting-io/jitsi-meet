@@ -88,7 +88,7 @@
     "js-sha512": "0.8.0",
     "jwt-decode": "2.2.0",
     "kalidokit": "github:tu-nv/kalidokit",
-    "lib-jitsi-meet": "github:vmeeting-io/lib-jitsi-meet#2443fc9453d912fffdcbc632a4499461be08ee75",
+    "lib-jitsi-meet": "github:vmeeting-io/lib-jitsi-meet#bfd555decb621ff4101dadf9229411b1272a701b",
     "lodash": "4.17.21",
     "mark.js": "^8.11.1",
     "moment": "2.29.4",

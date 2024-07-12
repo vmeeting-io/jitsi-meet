@@ -1,4 +1,13 @@
 /**
+ * The type of (redux) action which signals that A/V Moderation had been initialized.
+ *
+ * {
+ *     type: INIT_MODERATION
+ * }
+ */
+export const INIT_MODERATION = 'INIT_MODERATION';
+
+/**
  * The type of (redux) action which signals that A/V Moderation had been disabled.
  *
  * {

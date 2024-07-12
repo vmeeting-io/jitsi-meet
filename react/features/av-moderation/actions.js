@@ -62,6 +62,21 @@ export const rejectParticipant = (id: string, kind: string) => (dispatch: Functi
 };
 
 /**
+ * Init moderation
+ * 
+ * @param {Object} moderations - The moderation object.
+ * @returns {{
+ *      type: INIT_MODERATION
+ * }}
+ */
+export const initModeration = (moderations: Object) => {
+    return {
+        type: INIT_MODERATION,
+        moderations
+    };
+};
+
+/**
  * Audio or video moderation is disabled.
  *
  * @param {string} kind - The moderation kind that was disabled.

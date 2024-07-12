@@ -230,7 +230,7 @@ export function getConferenceOptions(stateful: Function | Object) {
     const { tenant } = state['features/base/jwt'];
     const { roomInfo } = state['features/base/conference'];
     const { email, name: nick, presence } = getLocalParticipant(state) ?? {};
-    const options = { ...config };
+    const options = { roomInfo, ...config };
 
     if (tenant) {
         options.siteID = tenant;

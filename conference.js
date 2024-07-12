@@ -19,6 +19,7 @@ import { sendAnalytics } from './react/features/analytics/functions';
 import { arApprovalDialog } from './react/features/ar-effect/actions';
 import { enableARHat } from './react/features/ar-effect/functions';
 import BirthdayHatApprove from './react/features/ar-effect/components/BirthdayHatApprove';
+import { initModeration } from './react/features/av-moderation/actions';
 import {
     maybeRedirectToWelcomePage,
     redirectToStaticPage,
@@ -1283,7 +1284,8 @@ export default {
     },
 
     _createRoom(localTracks) {
-        room = APP.connection.initJitsiConference(APP.conference.roomName, this._getConferenceOptions());
+        const options = this._getConferenceOptions();
+        room = APP.connection.initJitsiConference(APP.conference.roomName, options);
 
         // Filter out the tracks that are muted (except on Safari).
         let tracks = localTracks;
@@ -1309,6 +1311,11 @@ export default {
         this._room = room; // FIXME do not use this
 
         APP.store.dispatch(_conferenceWillJoin(room));
+
+        // init moderations
+        if (options.roomInfo?.moderations) {
+            APP.store.dispatch(initModeration(options.roomInfo?.moderations));
+        }
 
         sendLocalParticipant(APP.store, room);
 

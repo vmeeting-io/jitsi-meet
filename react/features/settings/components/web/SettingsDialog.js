@@ -57,6 +57,7 @@ const useStyles = makeStyles()(() => {
     return {
         settingsDialog: {
             display: 'flex',
+            flexDirection: 'column',
             width: '100%'
         }
     };

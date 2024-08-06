@@ -1198,7 +1198,7 @@
         "incomingMessage": "수신 메시지",
         "language": "언어",
         "loggedIn": "{{name}}으로 로그인 함",
-        "maxStageParticipants": "Maximum number of participants who can be pinned to the main stage (EXPERIMENTAL)",
+        "maxStageParticipants": "메인 화면에 고정할 수 있는 최대 참가자 수(베타)",
         "microphones": "마이크",
         "moderator": "방장",
         "moderatorOptions": "방장 기능",

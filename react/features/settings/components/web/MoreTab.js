@@ -182,6 +182,7 @@ class MoreTab extends AbstractDialogTab {
         return (
             <Select
                 id = 'more-maxStageParticipants-select'
+                containerStyle={{ marginBottom: '24px' }}
                 label = { t('settings.maxStageParticipants') }
                 onChange = { this._onMaxStageParticipantsSelect }
                 options = { maxParticipantsItems }
@@ -213,6 +214,7 @@ class MoreTab extends AbstractDialogTab {
         return (
             <Select
                 id = 'more-language-select'
+                containerStyle={{ marginBottom: '24px' }}
                 label = { t('settings.language') }
                 onChange = { this._onLanguageItemSelect }
                 options = { languageItems }

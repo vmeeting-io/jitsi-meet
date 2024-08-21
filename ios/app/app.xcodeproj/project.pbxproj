@@ -18,7 +18,6 @@
 		0BEA5C391F7B8F73000D0AB4 /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BEA5C381F7B8F73000D0AB4 /* ExtensionDelegate.swift */; };
 		0BEA5C3B1F7B8F73000D0AB4 /* ComplicationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BEA5C3A1F7B8F73000D0AB4 /* ComplicationController.swift */; };
 		0BEA5C3D1F7B8F73000D0AB4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0BEA5C3C1F7B8F73000D0AB4 /* Assets.xcassets */; };
-		0BEA5C411F7B8F73000D0AB4 /* JitsiMeetCompanion.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 0BEA5C251F7B8F73000D0AB4 /* JitsiMeetCompanion.app */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
@@ -27,7 +26,6 @@
 		4E90F9402632D1AB001102D4 /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E90F93F2632D1AB001102D4 /* Atomic.swift */; };
 		4EB06024260E026600F524C5 /* ReplayKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EC49B8625BED71300E76218 /* ReplayKit.framework */; };
 		4EB06027260E026600F524C5 /* SampleHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB06026260E026600F524C5 /* SampleHandler.swift */; };
-		4EB0602B260E026600F524C5 /* JitsiMeetBroadcastExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 4EB06023260E026600F524C5 /* JitsiMeetBroadcastExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4EB0603C260E09D000F524C5 /* SocketConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB06039260E09D000F524C5 /* SocketConnection.swift */; };
 		4EB0603D260E09D000F524C5 /* DarwinNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB0603A260E09D000F524C5 /* DarwinNotificationCenter.swift */; };
 		4EB0603E260E09D000F524C5 /* SampleUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB0603B260E09D000F524C5 /* SampleUploader.swift */; };
@@ -49,20 +47,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 0BEA5C301F7B8F73000D0AB4;
 			remoteInfo = "JitsiMeetCompanion Extension";
-		};
-		0BEA5C3F1F7B8F73000D0AB4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0BEA5C241F7B8F73000D0AB4;
-			remoteInfo = JitsiMeetCompanion;
-		};
-		4EB06029260E026600F524C5 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 4EB06022260E026600F524C5;
-			remoteInfo = "JitsiMeetBroadcast Extension";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -97,7 +81,6 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
 			dstSubfolderSpec = 16;
 			files = (
-				0BEA5C411F7B8F73000D0AB4 /* JitsiMeetCompanion.app in Embed Watch Content */,
 			);
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -108,7 +91,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				4EB0602B260E026600F524C5 /* JitsiMeetBroadcastExtension.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -134,7 +116,7 @@
 		0BEA5C3A1F7B8F73000D0AB4 /* ComplicationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComplicationController.swift; sourceTree = "<group>"; };
 		0BEA5C3C1F7B8F73000D0AB4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0BEA5C3E1F7B8F73000D0AB4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* jitsi-meet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "jitsi-meet.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* vmeeting.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vmeeting.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		13B07FB21A68108700A75B9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
@@ -303,7 +285,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* jitsi-meet.app */,
+				13B07F961A680F5B00A75B9A /* vmeeting.app */,
 				0BEA5C251F7B8F73000D0AB4 /* JitsiMeetCompanion.app */,
 				0BEA5C311F7B8F73000D0AB4 /* JitsiMeetCompanion Extension.appex */,
 				4EB06023260E026600F524C5 /* JitsiMeetBroadcastExtension.appex */,
@@ -359,9 +341,9 @@
 			productReference = 0BEA5C311F7B8F73000D0AB4 /* JitsiMeetCompanion Extension.appex */;
 			productType = "com.apple.product-type.watchkit2-extension";
 		};
-		13B07F861A680F5B00A75B9A /* JitsiMeet */ = {
+		13B07F861A680F5B00A75B9A /* Vmeeting */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "JitsiMeet" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Vmeeting" */;
 			buildPhases = (
 				69BC5020DBE393B56BD76636 /* [CP] Check Pods Manifest.lock */,
 				0BBA83C41EC9F7600075A103 /* Run React packager */,
@@ -379,12 +361,10 @@
 			buildRules = (
 			);
 			dependencies = (
-				0BEA5C401F7B8F73000D0AB4 /* PBXTargetDependency */,
-				4EB0602A260E026600F524C5 /* PBXTargetDependency */,
 			);
-			name = JitsiMeet;
+			name = Vmeeting;
 			productName = "Jitsi Meet";
-			productReference = 13B07F961A680F5B00A75B9A /* jitsi-meet.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* vmeeting.app */;
 			productType = "com.apple.product-type.application";
 		};
 		4EB06022260E026600F524C5 /* JitsiMeetBroadcastExtension */ = {
@@ -416,12 +396,10 @@
 				TargetAttributes = {
 					0BEA5C241F7B8F73000D0AB4 = {
 						CreatedOnToolsVersion = 9.0;
-						DevelopmentTeam = FC967L3QRG;
 						ProvisioningStyle = Automatic;
 					};
 					0BEA5C301F7B8F73000D0AB4 = {
 						CreatedOnToolsVersion = 9.0;
-						DevelopmentTeam = FC967L3QRG;
 						ProvisioningStyle = Automatic;
 					};
 					13B07F861A680F5B00A75B9A = {
@@ -452,7 +430,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* JitsiMeet */,
+				13B07F861A680F5B00A75B9A /* Vmeeting */,
 				0BEA5C241F7B8F73000D0AB4 /* JitsiMeetCompanion */,
 				0BEA5C301F7B8F73000D0AB4 /* JitsiMeetCompanion Extension */,
 				4EB06022260E026600F524C5 /* JitsiMeetBroadcastExtension */,
@@ -505,7 +483,7 @@
 			files = (
 			);
 			inputPaths = (
-				"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH",
+				$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH,
 			);
 			name = "Adjust ATS";
 			outputPaths = (
@@ -538,7 +516,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$PROJECT_DIR/app.entitlements",
+				$PROJECT_DIR/app.entitlements,
 			);
 			name = "Update App Entitlements";
 			outputFileListPaths = (
@@ -580,7 +558,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH",
+				$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH,
 			);
 			name = "Setup Google reverse URL handler";
 			outputFileListPaths = (
@@ -600,7 +578,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH",
+				$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH,
 			);
 			name = "Setup Dropbox";
 			outputFileListPaths = (
@@ -659,16 +637,6 @@
 			target = 0BEA5C301F7B8F73000D0AB4 /* JitsiMeetCompanion Extension */;
 			targetProxy = 0BEA5C331F7B8F73000D0AB4 /* PBXContainerItemProxy */;
 		};
-		0BEA5C401F7B8F73000D0AB4 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0BEA5C241F7B8F73000D0AB4 /* JitsiMeetCompanion */;
-			targetProxy = 0BEA5C3F1F7B8F73000D0AB4 /* PBXContainerItemProxy */;
-		};
-		4EB0602A260E026600F524C5 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 4EB06022260E026600F524C5 /* JitsiMeetBroadcastExtension */;
-			targetProxy = 4EB06029260E026600F524C5 /* PBXContainerItemProxy */;
-		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -709,11 +677,11 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = FC967L3QRG;
+				DEVELOPMENT_TEAM = 628662D3Q5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				IBSC_MODULE = JitsiMeetCompanion_Extension;
 				INFOPLIST_FILE = watchos/app/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = org.jitsi.meet.watchkit;
+				PRODUCT_BUNDLE_IDENTIFIER = org.postech.vmeeting.watchkit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -744,11 +712,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = FC967L3QRG;
+				DEVELOPMENT_TEAM = 628662D3Q5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				IBSC_MODULE = JitsiMeetCompanion_Extension;
 				INFOPLIST_FILE = watchos/app/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = org.jitsi.meet.watchkit;
+				PRODUCT_BUNDLE_IDENTIFIER = org.postech.vmeeting.watchkit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -777,7 +745,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = FC967L3QRG;
+				DEVELOPMENT_TEAM = 628662D3Q5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = watchos/extension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -785,7 +753,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.jitsi.meet.watchkit.extension;
+				PRODUCT_BUNDLE_IDENTIFIER = org.postech.vmeeting.watchkit.extension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -815,7 +783,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = FC967L3QRG;
+				DEVELOPMENT_TEAM = 628662D3Q5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = watchos/extension/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -823,7 +791,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.jitsi.meet.watchkit.extension;
+				PRODUCT_BUNDLE_IDENTIFIER = org.postech.vmeeting.watchkit.extension;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -840,15 +808,14 @@
 			baseConfigurationReference = 756FCE06C08D9B947653C98A /* Pods-JitsiMeet.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconDebug;
 				CODE_SIGN_ENTITLEMENTS = app.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
-				DEVELOPMENT_TEAM = FC967L3QRG;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				DEVELOPMENT_TEAM = 628662D3Q5;
 				INFOPLIST_FILE = src/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -859,9 +826,14 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.jitsi.meet;
-				PRODUCT_NAME = "jitsi-meet";
+				PRODUCT_BUNDLE_IDENTIFIER = org.postech.vmeeting;
+				PRODUCT_NAME = vmeeting;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -869,15 +841,15 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3E0F4ED943C0B12BE77F6B45 /* Pods-JitsiMeet.release.xcconfig */;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIconRelease;
 				CODE_SIGN_ENTITLEMENTS = app.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FC967L3QRG;
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				DEVELOPMENT_TEAM = 628662D3Q5;
 				INFOPLIST_FILE = src/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -888,9 +860,14 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.jitsi.meet;
-				PRODUCT_NAME = "jitsi-meet";
+				PRODUCT_BUNDLE_IDENTIFIER = org.postech.vmeeting;
+				PRODUCT_NAME = vmeeting;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -908,7 +885,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = FC967L3QRG;
+				DEVELOPMENT_TEAM = 628662D3Q5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "broadcast-extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
@@ -919,7 +896,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.jitsi.meet.broadcast.extension;
+				PRODUCT_BUNDLE_IDENTIFIER = org.postech.vmeeting.broadcast.extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -944,7 +921,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = FC967L3QRG;
+				DEVELOPMENT_TEAM = 628662D3Q5;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "broadcast-extension/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
@@ -954,7 +931,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = org.jitsi.meet.broadcast.extension;
+				PRODUCT_BUNDLE_IDENTIFIER = org.postech.vmeeting.broadcast.extension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -1079,6 +1056,7 @@
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "$(inherited)";
 				OTHER_CPLUSPLUSFLAGS = "$(inherited)";
 				OTHER_LDFLAGS = "$(inherited)";
@@ -1111,7 +1089,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "JitsiMeet" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Vmeeting" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,

@@ -298,7 +298,8 @@ const Chat = ({
 
         return (
             <>
-                { renderTabs() }
+                {/* [daisy] 채팅 기능 삭제 */}
+                {/* { renderTabs() } */}
                 <DragAndDrop
                     disabled = { !_isFileDownloadEnabled }
                     dropString = { t('chat.dropFiles') }
@@ -391,7 +392,8 @@ const Chat = ({
     
         return (
             <Tabs
-                accessibilityLabel = { t(_isPollsEnabled ? 'chat.titleWithPolls' : 'chat.title') }
+                // [daisy] 채팅 기능 삭제
+                // accessibilityLabel = { t(_isPollsEnabled ? 'chat.titleWithPolls' : 'chat.title') }
                 onChange = { onChangeTab }
                 selected = { _tabFocused }
                 tabs = { tabs } />

@@ -10,12 +10,14 @@ export const _CONFIG_STORE_PREFIX = 'config.js';
 /**
  * The toolbar buttons to show on premeeting screens.
  */
-export const PREMEETING_BUTTONS = [ 'microphone', 'camera', 'select-background', 'invite', 'settings' ];
+// [Daisy] 배경 제거
+export const PREMEETING_BUTTONS = [ 'microphone', 'camera', 'invite', 'settings' ];
 
 /**
   * The toolbar buttons to show on 3rdParty prejoin screen.
   */
-export const THIRD_PARTY_PREJOIN_BUTTONS = [ 'microphone', 'camera', 'select-background' ];
+// [Daisy] 배경 제거
+export const THIRD_PARTY_PREJOIN_BUTTONS = [ 'microphone', 'camera' ];
 
 export const DEFAULT_METAS = {
   title: '브이미팅',

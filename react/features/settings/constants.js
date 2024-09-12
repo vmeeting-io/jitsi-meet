@@ -7,7 +7,8 @@ export const SETTINGS_TABS = {
     PROFILE: 'profile_tab',
     SHORTCUTS: 'shortcuts_tab',
     VIDEO: 'video_tab',
-    VIRTUAL_BACKGROUND: 'virtual-background_tab'
+    // [Daisy] 설정 - 배경 제거
+    // VIRTUAL_BACKGROUND: 'virtual-background_tab'
 };
 
 /**

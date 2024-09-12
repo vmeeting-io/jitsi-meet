@@ -73,8 +73,9 @@ function ChatHeader({
                 ? (
                     <span
                         aria-level = { 1 }
-                        role = 'heading'>
-                        { t(isPollsEnabled ? 'chat.titleWithPolls' : 'chat.title') }
+                        role='heading'>
+                        {/* [daisy] 채팅 기능 삭제 */}
+                        {/* { t(isPollsEnabled ? 'chat.titleWithPolls' : 'chat.title') } */}
                     </span>
                 ) : renderSearch() }
             <div className = { classes.toolContainer }>

@@ -165,7 +165,8 @@ function _mapStateToProps(state, ownProps) {
             icon: IconVideo
         });
     }
-
+    /*
+    [Daisy] 설정 - 배경 제거
     if (virtualBackgroundSupported && !_iAmVisitor && enableVirtualBackground) {
         tabs.push({
             name: SETTINGS_TABS.VIRTUAL_BACKGROUND,
@@ -190,6 +191,7 @@ function _mapStateToProps(state, ownProps) {
             icon: IconImage
         });
     }
+    */
 
     if ((showSoundsSettings || showNotificationsSettings) && !_iAmVisitor) {
         tabs.push({

@@ -33,7 +33,7 @@ import { overwriteConfig } from '../config/actions';
 import { CONNECTION_ESTABLISHED, CONNECTION_FAILED } from '../connection/actionTypes';
 import { connect, connectionDisconnected, disconnect } from '../connection/actions';
 import { validateJwt } from '../jwt/functions';
-import { JitsiConferenceErrors, JitsiConferenceEvents, JitsiConnectionErrors } from '../lib-jitsi-meet';
+import { JitsiConferenceErrors, JitsiConferenceEvents, JitsiConnectionErrors, JitsiRecordingConstants } from '../lib-jitsi-meet';
 import { PARTICIPANT_UPDATED, PIN_PARTICIPANT } from '../participants/actionTypes';
 import { PARTICIPANT_ROLE } from '../participants/constants';
 import {
@@ -45,7 +45,7 @@ import MiddlewareRegistry from '../redux/MiddlewareRegistry';
 import StateListenerRegistry from '../redux/StateListenerRegistry';
 import { TRACK_ADDED, TRACK_REMOVED } from '../tracks/actionTypes';
 import { getLocalTracks } from '../tracks/functions.any';
-
+import { isRecordingRunning } from '../../recording/functions';
 import {
     CONFERENCE_FAILED,
     CONFERENCE_JOINED,
@@ -514,7 +514,32 @@ function _conferenceUniqueIdSet(store, next, action) {
             });
     }
 
+    _startAutoRecording(store, action);
     return result;
+}
+
+function _startAutoRecording(store, action) {
+    const state = store.getState();
+    const { roomInfo } = state['features/base/conference'];
+    const { autoRecord } = state['features/base/config'];
+    const { conference } = state['features/base/conference'];
+
+    if (conference && roomInfo.isHost && !isRecordingRunning(state) && autoRecord) {
+        const recorder_user = state['features/base/jwt'].user;
+        conference.startRecording({
+            mode: JitsiRecordingConstants.mode.FILE,
+            appData: JSON.stringify({
+                'file_recording_metadata': {
+                    'share': true,
+                    'meetingId': action.meetingId,
+                    'recorder_identity': {
+                        'email': recorder_user.email,
+                        'name': recorder_user.name,
+                    }
+                }
+            })
+        });
+    }
 }
 
 /**

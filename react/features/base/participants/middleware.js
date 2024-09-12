@@ -122,7 +122,7 @@ MiddlewareRegistry.register(store => next => action => {
             const { id, pinned } = participant;
             const { isHost } = state['features/base/conference'].roomInfo || {};
             const { autoPinEnabled, autoRecord } = state['features/base/config'];
-            
+
             // 내가 방장이면 자동 PIN이 되도록...
             if (isHost && !pinned && autoPinEnabled) {
                 store.dispatch(pinParticipant(id));
@@ -141,7 +141,7 @@ MiddlewareRegistry.register(store => next => action => {
                     titleKey: 'notify.birthDayAlert'
                 }, NOTIFICATION_TIMEOUT_TYPE.MEDIUM));
             }
-
+            /*
             if (conference && isHost && !isRecordingRunning(state) && autoRecord) {
                 const recorder_user = state['features/base/jwt'].user;
                 conference.startRecording({
@@ -157,6 +157,7 @@ MiddlewareRegistry.register(store => next => action => {
                     })
                 });
             }
+            */
         }
         break;
 
@@ -338,7 +339,7 @@ MiddlewareRegistry.register(store => next => action => {
             const state = store.getState();
             const participant = action.participant;
             const hasBirthday = isTodayParticipantBirthday(participant)(state);
-    
+
             if(hasBirthday) {
                 // there is no need to propagate this notification to XMPP since all participants are already checking each individual participant joined.
                 store.dispatch(showNotification({
@@ -851,7 +852,7 @@ function _raiseHandUpdated({ dispatch, getState }, conference, participantId, ne
     let shouldDisplayAllowAction = false;
 
     if (isModerator) {
-        shouldDisplayAllowAction = 
+        shouldDisplayAllowAction =
             (isForceMuted(participant, MEDIA_TYPE.AUDIO, state) && (
                 (!raisedHandType || raisedHandType === MEDIA_TYPE.AUDIO) && isParticipantAudioMuted(participant, state)
             ))

@@ -1385,7 +1385,7 @@ var config = {
     // waitOnlyGuestEnabled: true,
     // hideLocalVideo: true,
     // hideRemoteVideos: true,
-    // autoRecord: true,
+    autoRecord: true,
     // followMeEnabled: false,
     // disableGrantModerator: false,
     // disablePrivateMessage: true,
@@ -1603,7 +1603,7 @@ var config = {
     //         collectionInterval?: number;
     //         logGetStats?: boolean;
     // },
-    
+
     isOnpromise: false,
 
     stt: {

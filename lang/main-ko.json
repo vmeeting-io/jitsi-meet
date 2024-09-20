@@ -1657,6 +1657,7 @@
         "none": "없음",
         "pleaseWait": "로딩 중...",
         "removeBackground": "배경 삭제",
+        "setCameraPermission": "카메라 권한 설정을 해주세요.",
         "slightBlur": "조금 흐리게",
         "title": "배경",
         "uploadedImage": "업로드 이미지 {{index}}",

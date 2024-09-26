@@ -129,7 +129,7 @@ var interfaceConfig = {
     OPTIMAL_BROWSERS: [ 'chrome', 'chromium', 'firefox', 'nwjs', 'electron', 'safari' ],
 
     POLICY_LOGO: null,
-    PROVIDER_NAME: '케이에듀텍',
+    PROVIDER_NAME: 'SELVAS AI',
 
     /**
      * If true, will display recent list

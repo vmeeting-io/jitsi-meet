@@ -1333,6 +1333,7 @@ var config = {
      websocketKeepAliveUrl
      */
 
+    /*
     thirdPartyAuth: {
     //     postech: {
     //         label: false,
@@ -1355,6 +1356,7 @@ var config = {
             url: '/auth/api/complete/kakao/login',
         },
     },
+    */
 
     presenter: {
         startEnabled: true, // default: true

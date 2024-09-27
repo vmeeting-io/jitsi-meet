@@ -179,6 +179,7 @@ function STTDialog({
                         </p>
                     }
                 </div>
+                {/*
                 {
                     _sttEnabled ?
                         _sttOn ?
@@ -270,6 +271,7 @@ function STTDialog({
                                     </div>) : null
                         : null
                 }
+                */}
             </div>
         </Dialog>
     );

@@ -73,13 +73,14 @@ function _setWSServer({ dispatch, getState }, action) {
     if(action.enabled){
         const roomId = conference.getMeetingUniqueId();
         const pId = getLocalParticipant(state).id;
+        const displayName = getParticipantDisplayName(state, pId);
 
         if(!roomId || !pId)
             return;
     
         const wsURL = window._env_.STT_WS_SERVER;
-        const sttApiAccount = window._env_.STT_API_ACCOUNT;
-        const sttApiPwd = window._env_.STT_API_PWD
+        // const sttApiAccount = window._env_.STT_API_ACCOUNT;
+        // const sttApiPwd = window._env_.STT_API_PWD
 
         const currentAudioTrack = getLocalJitsiAudioTrack(state);
         const targetStream = currentAudioTrack? currentAudioTrack.stream : null;
@@ -90,11 +91,12 @@ function _setWSServer({ dispatch, getState }, action) {
             let data = {
                 'rsn': roomId,
                 'ssn': pId,
-                'config': {
-                    'auth': sttApiAccount,
-                    'pass': sttApiPwd,
-                    'el': targetLanguage
-                }
+                'displayName': displayName,
+                // 'config': {
+                //     'auth': sttApiAccount,
+                //     'pass': sttApiPwd,
+                //     'el': targetLanguage
+                // }
             };
             preSoc.send(JSON.stringify(data));
             preSoc.onmessage = function (event) {
@@ -102,14 +104,15 @@ function _setWSServer({ dispatch, getState }, action) {
                 //console.log('RESPONSE: ', response);
                 if (response['code'] === 'EngineInfo'){
                     const connectUrl = response.data.connectionEngineURL;
-                    const setData = response.data.setData;
-                    const configData = response.data.configData;
-                    
+                    // const setData = response.data.setData;
+                    // const configData = response.data.configData;
+
                     wsSoc = new WebSocket(connectUrl);
                     wsSoc.onopen = function() {
                         dispatch(updateWSServer(wsSoc, targetLanguage));
-                        wsSoc.send(setData);
-                        wsSoc.send(configData);
+                        // wsSoc.send(setData);
+                        // wsSoc.send(configData);
+                        wsSoc.send(JSON.stringify(data));
                         activateWS(wsSoc, targetStream, pId, dispatch, getState);
                     }
                     wsSoc.onclose = function (e) {
@@ -183,7 +186,7 @@ function activateWS(soc, stream, pId, dispatch, getState) {
                         type: 'audio',
                         recorderType: RecordRTC.StereoAudioRecorder,
                         timeSlice: 100,
-                        desiredSampRate: 16000,
+                        desiredSampRate: 8000,
                         numberOfAudioChannels: 1,
                         ondataavailable: function (blob) {
                             try{

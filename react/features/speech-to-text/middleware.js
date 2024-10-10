@@ -185,7 +185,7 @@ function activateWS(soc, stream, pId, dispatch, getState) {
                     const recorder = RecordRTC(stream, {
                         type: 'audio',
                         recorderType: RecordRTC.StereoAudioRecorder,
-                        timeSlice: 100,
+                        timeSlice: 200,
                         desiredSampRate: 8000,
                         numberOfAudioChannels: 1,
                         ondataavailable: function (blob) {
@@ -308,27 +308,27 @@ function createSTTMessage(dispatch, getState, json) {
 }
 
 function _endpointMessageReceived({ dispatch, getState }, next, action) {
-    const { json } = action;
+    const { data } = action;
 
-    if (!(json
-        && json.type === JSON_TYPE_STT_RESULT)) {
+    if (!(data
+        && data.type === JSON_TYPE_STT_RESULT)) {
     return next(action);
     }
-    //console.log('MESSAGE: ', json);
-    json.isTranslated = false;
-    json.sentenceId = json.participantId + json.st;
-    createSTTMessage(dispatch, getState, json);
+
+    data.isTranslated = false;
+    data.sentenceId = data.participantId + data.st;
+    createSTTMessage(dispatch, getState, data);
 
     // 번역 기능이 켜져있고 isComplete가 True이고, 현재 나와 언어가 다른 경우
-    if(getState()['features/stt']._translationEnabled && json.isComplete && json.lang !== getState()['features/stt']._targetTransLanguage){
+    if(getState()['features/stt']._translationEnabled && data.isComplete && data.lang !== getState()['features/stt']._targetTransLanguage){
         const param_data = {};
         param_data.service = window._env_.STT_API_SERVICE_NAME;
-        param_data.SourceLanguage = json.lang;
-        param_data.SourceContent = json.text;
+        param_data.SourceLanguage = data.lang;
+        param_data.SourceContent = data.text;
         param_data.TargetLanguage = getState()['features/stt']._targetTransLanguage;
-        param_data.ssn = json.participantId;
-        param_data.st = json.st;
-        param_data.et = json.et;
+        param_data.ssn = data.participantId;
+        param_data.st = data.st;
+        param_data.et = data.et;
         const st_param_data = JSON.stringify(param_data);
         //console.log(st_param_data);
 
@@ -339,9 +339,9 @@ function _endpointMessageReceived({ dispatch, getState }, next, action) {
             .then(resultData => {
                 const translatedJson = {};
                 translatedJson.text = resultData.data.result;
-                translatedJson.participantId = json.participantId;
+                translatedJson.participantId = data.participantId;
                 translatedJson.isTranslated = true;
-                translatedJson.sentenceId = json.participantId + json.st;
+                translatedJson.sentenceId = data.participantId + data.st;
                 createSTTMessage(dispatch, getState, translatedJson);
             });
         } catch(e){

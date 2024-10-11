@@ -492,7 +492,7 @@ class WelcomePage extends AbstractWelcomePage {
                             className = 'watermark'
                             defaultJitsiLogoURL = { _defaultLogoUrl || DEFAULT_WELCOME_PAGE_LOGO_URL } />
                         <div className = 'toolbars'>
-                            { !_isNarowLayout && (
+                            {/* { !_isNarowLayout && (
                                 <div className = 'button desktop'>
                                     <Dropdown
                                         key = 'user-menu-desktop'
@@ -504,7 +504,7 @@ class WelcomePage extends AbstractWelcomePage {
                                         </Button>
                                     </Dropdown>
                                 </div>
-                            )}
+                            )} */}
 
                             <div className = 'buttons-container'>
                                 { buttons }

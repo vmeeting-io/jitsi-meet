@@ -64,6 +64,12 @@ MiddlewareRegistry.register(store => next => action => {
 function _setWSServer({ dispatch, getState }, action) {
     let preSoc, wsSoc, recorder, targetLanguage = undefined;
     const state = getState();
+
+    if (config.iAmRecorder) {
+      return;
+    }
+
+    const { iAmRecorder } = getState()['features/base/config'];
     const { conference } = state['features/base/conference'];
     if (!conference){
         setTimeout(() => _setWSServer({dispatch, getState}, action), RETRY_AFTER_MS);

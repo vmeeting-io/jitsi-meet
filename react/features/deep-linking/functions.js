@@ -83,6 +83,7 @@ export function getDeepLinkingPage(state) {
         return Promise.resolve();
     }
 
+    /*
     if (isMobileBrowser()) { // mobile
         const mobileAppPromo
             = typeof interfaceConfig === 'object'
@@ -92,7 +93,7 @@ export function getDeepLinkingPage(state) {
             typeof mobileAppPromo === 'undefined' || Boolean(mobileAppPromo)
                 ? DeepLinkingMobilePage : NoMobileApp);
     }
-
+    */
     return _openDesktopApp(state).then(
         // eslint-disable-next-line no-confusing-arrow
         result => result ? DeepLinkingDesktopPage : undefined);

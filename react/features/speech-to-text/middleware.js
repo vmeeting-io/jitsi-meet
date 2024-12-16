@@ -198,7 +198,9 @@ function activateWS(soc, stream, pId, dispatch, getState) {
                             try{
                                 const reader = new FileReader();
                                 reader.addEventListener('loadend', () => {
-                                    soc.send(reader.result);
+                                    const wavArrayBuffer = reader.result;
+                                    const pcmRawData = convertWAVtoPCM(wavArrayBuffer);
+                                    soc.send(pcmRawData);
                                 });
                                 reader.readAsArrayBuffer(blob);
                             }
@@ -242,6 +244,16 @@ function activateWS(soc, stream, pId, dispatch, getState) {
             }
         }
     }
+}
+
+/**
+ * WAV 파일에서 PCM 데이터를 추출하는 함수
+ * @param {ArrayBuffer} wavArrayBuffer - WAV 데이터 ArrayBuffer
+ * @returns {ArrayBuffer} PCM 데이터 ArrayBuffer
+ */
+function convertWAVtoPCM(wavArrayBuffer) {
+    const wavHeaderSize = 44; // WAV 헤더는 44바이트
+    return wavArrayBuffer.slice(wavHeaderSize); // 헤더를 제외한 나머지 데이터를 반환
 }
 
 function createSTTMessage(dispatch, getState, json) {

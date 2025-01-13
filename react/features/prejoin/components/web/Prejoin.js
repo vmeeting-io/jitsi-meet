@@ -4,6 +4,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { connect, useDispatch } from 'react-redux';
 import { makeStyles } from 'tss-react/mui';
+import { Button as AntButton, Dropdown } from 'antd';
+import styled from 'styled-components';
+import { map, sortBy } from 'lodash';
+import timezones from './timezones.json';
 
 import { conferences } from '../../../../api/conferences';
 
@@ -28,6 +32,9 @@ import { BUTTON_TYPES } from '../../../base/ui/constants.any';
 import isInsecureRoomName from '../../../base/util/isInsecureRoomName';
 import { openDisplayNamePrompt } from '../../../display-name/actions';
 import { isUnsafeRoomWarningEnabled } from '../../../prejoin/functions';
+import { setTimezone } from '../../../timezone/actions';
+import Icon from '../../../base/icons/components/Icon';
+
 import {
     joinConference as joinConferenceAction,
     joinConferenceWithoutAudio as joinConferenceWithoutAudioAction,
@@ -43,6 +50,7 @@ import {
 import { hasDisplayName } from '../../utils';
 
 import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
+import Text from './Text';
 
 type Props = {
 
@@ -145,12 +153,14 @@ type Props = {
 const useStyles = makeStyles()(theme => {
     return {
         inputContainer: {
-            width: '100%'
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            gap: theme.spacing(3)
         },
 
         input: {
             width: '100%',
-            marginBottom: theme.spacing(3),
 
             '& input': {
                 textAlign: 'center'
@@ -210,9 +220,49 @@ const useStyles = makeStyles()(theme => {
                 top: 0,
                 width: 'calc(100% - 32px)'
             }
+        },
+
+        dropdownOverlay: {
+            maxHeight: 300,
+            backgroundColor: theme.palette.action02,
+            color: theme.palette.text04,
+            overflow: 'hidden',
+            overflowY: 'auto',
+            width: 265,
+            backgroundColor: '#E0E0E0',
+            borderRadius: theme.shape.borderRadius,
+        },
+
+        icon: {
+            position: 'absolute',
+            right: 6,
+            top: 8
         }
     };
 });
+
+const StyledButton = styled(AntButton)`
+    position: relative;
+    width: 100%;
+    background-color: #0056E0;
+    color: white;
+    border-radius: 6px;
+    height: 38px;
+    border: none;
+
+    &:hover {
+        background-color: #246FE5;
+        color: white;
+    }
+`;
+
+const Flex = styled.div`
+    display: flex;
+    flex-direction: ${props => props.direction || 'row'};
+    align-items: ${props => props.align || 'start'};
+    justify-content: ${props => props.justify || 'start'};
+    gap: ${props => props.gap || '0px'};
+`;
 
 const Prejoin = ({
     authUser,
@@ -235,6 +285,8 @@ const Prejoin = ({
     showErrorOnJoin,
     showRecordingWarning,
     showUnsafeRoomWarning,
+    timezone,
+    useTimezone,
     unsafeRoomConsent,
     updateSettings: dispatchUpdateSettings,
     videoTrack
@@ -245,18 +297,39 @@ const Prejoin = ({
     const [ showErrorOnField, setShowErrorOnField ] = useState(false);
     const [ showJoinByPhoneButtons, setShowJoinByPhoneButtons ] = useState(false);
     const [ inputPassword, setInputPassword ] = useState('');
+    const [ timezoneItems, setTimezoneItems ] = useState([]);
+    const [ selectedTimezone, setSelectedTimezone ] = useState();
 
     const { classes } = useStyles();
-    const { t } = useTranslation();
+    const { t, ready } = useTranslation();
     const dispatch = useDispatch();
 
     useEffect(() => {
+        if (!ready) return;
+
         window.addEventListener('beforeunload', beforeUnloadHandler);
+
+        if (useTimezone) {
+            const timezoneItems = map(sortBy(timezones, tz => t(tz.country, { ns: 'country', keySeparator: '#' })), tz => ({
+                key: `${tz.country}_${tz.utc}`,
+                label: (
+                    <Flex direction = 'column'>
+                        <Text ellipsis style={{ maxWidth: 265 }}>{`${tz.utc} ${t(tz.country, { ns: 'country', keySeparator: '#' })}`}</Text>
+                        <Text ellipsis size={12} lineHeight={1} color='#aaa' style={{ maxWidth: 265 }}>{t(tz.description, { ns: 'timezone-cities', keySeparator: '#' })}</Text>
+                    </Flex>
+                ),
+            }));
+            setTimezoneItems(timezoneItems);
+            if (timezone) {
+                const tz = timezones.find(tz => tz.country === timezone.country && tz.description === timezone.description);
+                setSelectedTimezone(tz);
+            }
+        }
 
         return () => {
             window.removeEventListener('beforeunload', beforeUnloadHandler);
         }
-    }, [])
+    }, [t, ready])
 
     // should remove conference
     const beforeUnloadHandler = () => {
@@ -461,6 +534,12 @@ const Prejoin = ({
         }
     }
 
+    const onClickTimezone = ({ key }) => {
+        const [ country, utc ] = key.split('_');
+        const tz = timezones.find(tz => tz.country === country && tz.utc === utc);
+        dispatch(setTimezone(tz));
+    }
+
     const extraJoinButtons = getExtraJoinButtons();
     let extraButtonsToRender = Object.values(extraJoinButtons).filter((val: Object) =>
         !(prejoinConfig?.hideExtraJoinButtons || []).includes(val.key)
@@ -516,6 +595,26 @@ const Prejoin = ({
                 {showErrorOnField && <div
                     className = { classes.error }
                     data-testid = 'prejoin.errorMessage'>{t(showErrorOnField)}</div>}
+
+                {useTimezone && (
+                    <div className = { classes.dropdownContainer }>
+                        <Dropdown
+                            menu = {{ items: timezoneItems, onClick: onClickTimezone, selectedKeys: selectedTimezone ? [`${selectedTimezone.country}_${selectedTimezone.utc}`] : [] }}
+                            trigger = {['click']}
+                            overlayClassName = { classes.dropdownOverlay }
+                        >
+                            <StyledButton>
+                                <Text ellipsis style={{ maxWidth: 240 }}>
+                                    { timezone ? `${timezone.utc} ${t(timezone.country, { ns: 'country', keySeparator: '#' })}` : '타임존' }
+                                </Text>
+                                <Icon
+                                    className = { classes.icon }
+                                    size = { 24 }
+                                    src = { IconArrowDown } />
+                            </StyledButton>
+                        </Dropdown>
+                    </div>
+                )}
 
                 <div className = { classes.dropdownContainer }>
                     <Popover
@@ -577,6 +676,8 @@ function mapStateToProps(state): Object {
     const { room } = state['features/base/conference'];
     const { unsafeRoomConsent } = state['features/base/premeeting'];
     const { showPrejoinWarning: showRecordingWarning } = state['features/base/config'].recordings ?? {};
+    const { user } = state['features/base/jwt'];
+    const { useTimezone } = state['features/base/config'];
 
     return {
         authUser: state['features/base/jwt'].user ?? {},
@@ -595,6 +696,8 @@ function mapStateToProps(state): Object {
         showErrorOnJoin,
         showRecordingWarning: Boolean(showRecordingWarning),
         showUnsafeRoomWarning: isInsecureRoomName(room) && isUnsafeRoomWarningEnabled(state),
+        timezone: user?.timezone,
+        useTimezone,
         unsafeRoomConsent,
         videoTrack: getLocalJitsiVideoTrack(state)
     };

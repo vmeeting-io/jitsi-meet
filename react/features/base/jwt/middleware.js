@@ -256,7 +256,7 @@ function _undoOverwriteLocalParticipant(
  *     hidden-from-recorder: ?boolean
  * }}
  */
-function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, isSiteStaff, background, birthDate, phoneNumber, hiddenFromRecorder }) { 
+function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, isSiteStaff, background, birthDate, phoneNumber, hiddenFromRecorder, timezone }) { 
     // we added additional functional parameter birthDate which is received from context object in _setJWT function
     const participant = {};
 
@@ -301,6 +301,10 @@ function _user2participant({ avatar, avatarUrl, email, email_verified, id, name,
 
     if (hiddenFromRecorder === 'true' || hiddenFromRecorder === true) {
         participant.hiddenFromRecorder = true;
+    }
+
+    if (timezone) {
+        participant.timezone = timezone;
     }
 
     return Object.keys(participant).length ? participant : undefined;

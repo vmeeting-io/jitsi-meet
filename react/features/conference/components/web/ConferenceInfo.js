@@ -11,6 +11,7 @@ import { isToolboxVisible } from '../../../toolbox/functions.web';
 import VideoQualityLabel from '../../../video-quality/components/VideoQualityLabel.web';
 import VisitorsCountLabel from '../../../visitors/components/web/VisitorsCountLabel';
 import ConferenceTimer from '../ConferenceTimer';
+import Timezone from '../Timezone';
 import { getConferenceInfo } from '../functions.web';
 
 import ConferenceInfoContainer from './ConferenceInfoContainer';
@@ -159,6 +160,12 @@ class ConferenceInfo extends Component {
         );
     }
 
+    _renderTimezone() {
+        if (!this.props._useTimezone) return null;
+
+        return <Timezone useTimezone = { this.props._useTimezone } timezone = { this.props._timezone } />;
+    }
+
     /**
      * Implements React's {@link Component#render()}.
      *
@@ -172,6 +179,7 @@ class ConferenceInfo extends Component {
                 onFocus = { this._onTabIn }>
                 { this._renderAlwaysVisible() }
                 { this._renderAutoHide() }
+                { this._renderTimezone()}
             </div>
         );
     }
@@ -191,7 +199,9 @@ class ConferenceInfo extends Component {
 function _mapStateToProps(state) {
     return {
         _visible: isToolboxVisible(state),
-        _conferenceInfo: getConferenceInfo(state)
+        _conferenceInfo: getConferenceInfo(state),
+        _useTimezone: state['features/base/config'].useTimezone,
+        _timezone: state['features/base/jwt'].user?.timezone,
     };
 }
 

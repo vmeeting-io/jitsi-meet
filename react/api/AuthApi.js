@@ -50,3 +50,7 @@ export function passwordResetConfirm(form, stateful) {
 export function updatePassword(form, stateful) {
     return axios.patch(`${getAuthAPIURL(stateful)}/password-reset-confirm`, form);
 }
+
+export function updateTimezone(form, stateful) {
+    return axios.post(`${API_ROOT}/timezone`, form);
+}

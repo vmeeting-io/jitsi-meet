@@ -70,6 +70,8 @@ const options = {
         loadPath: (lng, ns) => {
             switch (ns[0]) {
             case 'countries':
+            case 'country':
+            case 'timezone-cities':
             case 'main':
             case 'vmeeting':
                 return 'lang/{{ns}}-{{lng}}.json';
@@ -84,7 +86,7 @@ const options = {
         escapeValue: false // not needed for react as it escapes by default
     },
     load: 'languageOnly',
-    ns: [ 'main', 'languages', 'countries', 'translation-languages', 'vmeeting' ],
+    ns: [ 'main', 'languages', 'countries', 'translation-languages', 'vmeeting', 'country', 'timezone-cities' ],
     react: {
         // re-render when a new resource bundle is added
         bindI18nStore: 'added',

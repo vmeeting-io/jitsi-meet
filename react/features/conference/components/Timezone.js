@@ -34,7 +34,7 @@ const useStyles = makeStyles()(theme => {
  *
  * @returns {ReactElement}
  */
-export default function Timezone({ useTimezone, timezone }) {
+export default function Timezone({ iAmRecorder, useTimezone }) {
     const { classes } = useStyles();
     const interval = useRef();
     const [ timeText, setTimeText ] = useState('');
@@ -46,11 +46,11 @@ export default function Timezone({ useTimezone, timezone }) {
      * @returns {void}
      */
     const startTimer = useCallback(() => {
-        if (!interval.current && timezone) {
+        if (!interval.current) {
             interval.current = window.setInterval(() => {
                 const gmtTime = moment().utcOffset(0, false).locale('en').format('hh:mm A');
                 const currentTime = moment().utcOffset(0, false).utcOffset(timezoneOffset).locale('en').format('hh:mm A');
-                const text = `${currentTime} (GMT: ${gmtTime})`;
+                const text = iAmRecorder ? `(GMT: ${gmtTime})` : `${currentTime} (GMT: ${gmtTime})`;
                 if (text !== timeText) {
                     setTimeText(text);
                 }
@@ -76,12 +76,8 @@ export default function Timezone({ useTimezone, timezone }) {
         startTimer();
 
         return () => stopTimer();
-    }, [ timezone, useTimezone ]);
+    }, [ useTimezone ]);
 
-
-    if (!useTimezone || !timezone) {
-        return null;
-    }
 
     return (
         <span className = { classes.timer }>{ timeText }</span>

@@ -163,7 +163,7 @@ class ConferenceInfo extends Component {
     _renderTimezone() {
         if (!this.props._useTimezone) return null;
 
-        return <Timezone useTimezone = { this.props._useTimezone } timezone = { this.props._timezone } />;
+        return <Timezone useTimezone = { this.props._useTimezone } iAmRecorder = { this.props._iAmRecorder } />;
     }
 
     /**
@@ -201,7 +201,7 @@ function _mapStateToProps(state) {
         _visible: isToolboxVisible(state),
         _conferenceInfo: getConferenceInfo(state),
         _useTimezone: state['features/base/config'].useTimezone,
-        _timezone: state['features/base/jwt'].user?.timezone,
+        _iAmRecorder: state['features/base/config'].iAmRecorder,
     };
 }
 

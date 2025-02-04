@@ -83,8 +83,9 @@ function _setWSServer({ dispatch, getState }, action) {
 
         if(!roomId || !pId)
             return;
-    
-        const wsURL = window._env_.STT_WS_SERVER;
+
+        // const wsURL = window._env_.STT_WS_SERVER;
+        const wsURL = `wss://${location.host}/stt-gateway/ws/pre`;
         // const sttApiAccount = window._env_.STT_API_ACCOUNT;
         // const sttApiPwd = window._env_.STT_API_PWD
 
@@ -113,7 +114,8 @@ function _setWSServer({ dispatch, getState }, action) {
                     // const setData = response.data.setData;
                     // const configData = response.data.configData;
 
-                    wsSoc = new WebSocket(connectUrl);
+                    // wsSoc = new WebSocket(connectUrl);
+                    wsSoc = new WebSocket(`wss://${location.host}${connectUrl}`);
                     wsSoc.onopen = function() {
                         dispatch(updateWSServer(wsSoc, targetLanguage));
                         // wsSoc.send(setData);

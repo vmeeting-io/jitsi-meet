@@ -56,7 +56,7 @@ export default function Timezone({ iAmRecorder, useTimezone }) {
                 }
             }, 1000);
         }
-    }, [ timezoneOffset, interval ]);
+    }, [ timezoneOffset, interval, iAmRecorder, timeText ]);
 
     /**
      * Stop conference timer.
@@ -76,7 +76,7 @@ export default function Timezone({ iAmRecorder, useTimezone }) {
         startTimer();
 
         return () => stopTimer();
-    }, [ useTimezone ]);
+    }, [ useTimezone, startTimer, stopTimer ]);
 
 
     return (

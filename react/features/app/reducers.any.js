@@ -59,5 +59,6 @@ import '../video-quality/reducer';
 import '../videosipgw/reducer';
 import '../visitors/reducer';
 import '../whiteboard/reducer';
+import '../timezone/reducer';
 // import '../face-detect/reducer';
 // import '../did-consent/reducer';

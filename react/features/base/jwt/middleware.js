@@ -13,6 +13,7 @@ import { MiddlewareRegistry } from '../redux';
 
 import { SET_JWT } from './actionTypes';
 import { setJWT } from './actions';
+import { setTimezone } from '../../timezone/actions';
 import { parseJWTFromURLParams } from './functions';
 import logger from './logger';
 
@@ -172,6 +173,10 @@ function _setJWT(store, next, action) {
                     // eslint-disable-next-line max-depth
                     if (context.user && context.user.role === 'visitor') {
                         action.preferVisitor = true;
+                    }
+
+                    if (context.user && context.user.timezone) {
+                        store.dispatch(setTimezone(context.user.timezone));
                     }
                 } else if (jwtPayload.name || jwtPayload.picture || jwtPayload.email) {
                     // there are some tokens (firebase) having picture and name on the main level.

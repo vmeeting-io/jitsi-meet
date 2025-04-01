@@ -1,14 +1,8 @@
-import { updateTimezone } from '../../api/AuthApi';
-import { setJWT } from '../base/jwt/actions';
+import { SET_TIMEZONE } from './actionTypes';
 
 export function setTimezone(timezone) {
-    return async function(dispatch, getState) {
-        try {
-            const state = getState();
-            const { data: token } = await updateTimezone(timezone, state);
-            dispatch(setJWT(token));
-        } catch (error) {
-            console.error(error);
-        }
+    return {
+        type: SET_TIMEZONE,
+        timezone
     };
 }

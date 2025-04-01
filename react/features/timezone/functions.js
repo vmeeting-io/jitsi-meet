@@ -6,7 +6,6 @@ export function getTimezoneOffset(stateful) {
     const { user } = state['features/base/jwt'];
 
     if (!user?.timezone) {
-        console.warn('No timezone found');
         return moment().utcOffset();
     }
 

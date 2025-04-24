@@ -646,7 +646,7 @@ var config = {
     // hideDisplayName: false
 
     // Default language for the user interface.
-    // defaultLanguage: 'en',
+    defaultLanguage: 'ko',
 
     // Disables profile and the edit of all fields from the profile settings (display name and email)
     // disableProfile: false,

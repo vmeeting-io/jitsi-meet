@@ -6,7 +6,7 @@ import I18nextXHRBackend, { HttpBackendOptions } from 'i18next-http-backend';
 import _ from 'lodash';
 
 import LANGUAGES_RESOURCES from '../../../../lang/languages.json';
-import MAIN_RESOURCES from '../../../../lang/main.json';
+import MAIN_RESOURCES from '../../../../lang/main-ko.json';
 import TRANSLATION_LANGUAGES_RESOURCES from '../../../../lang/translation-languages.json';
 
 import { I18NEXT_INITIALIZED, LANGUAGE_CHANGED } from './actionTypes';
@@ -50,7 +50,7 @@ export const TRANSLATION_LANGUAGES: Array<string> = Object.keys(TRANSLATION_LANG
  * @public
  * @type {string} The default language.
  */
-export const DEFAULT_LANGUAGE = 'en';
+export const DEFAULT_LANGUAGE = 'ko';
 
 /**
  * The available/supported translation languages head. (Languages displayed on the top ).

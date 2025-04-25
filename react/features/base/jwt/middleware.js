@@ -109,10 +109,10 @@ function _setConfigOrLocationURL({ dispatch, getState }, next, action) {
     const result = next(action);
 
     const { locationURL } = getState()['features/base/connection'];
-    
+
     dispatch(
         setJWT(locationURL ? parseJWTFromURLParams(locationURL) : undefined));
-    
+
     return result;
 }
 
@@ -130,6 +130,9 @@ function _setConfigOrLocationURL({ dispatch, getState }, next, action) {
  * @returns {Object} The new state that is the result of the reduction of the
  * specified {@code action}.
  */
+
+let axiosInterceptorId = null
+
 function _setJWT(store, next, action) {
     // eslint-disable-next-line no-unused-vars
     const { jwt, type, ...actionPayload } = action;
@@ -164,7 +167,11 @@ function _setJWT(store, next, action) {
                         store, { ...newUser,
                             features: context.features });
 
-                    axios.interceptors.request.use(function(config) {
+                    if (axiosInterceptorId !== null) {
+                        axios.interceptors.request.eject(axiosInterceptorId)
+                    }
+
+                    axiosInterceptorId = axios.interceptors.request.use(function(config) {
                         config.headers.Authorization = `Bearer ${jwt}`;
                         return config;
                     });
@@ -256,7 +263,7 @@ function _undoOverwriteLocalParticipant(
  *     hidden-from-recorder: ?boolean
  * }}
  */
-function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, isSiteStaff, background, birthDate, phoneNumber, hiddenFromRecorder }) { 
+function _user2participant({ avatar, avatarUrl, email, email_verified, id, name, username, isAdmin, isSiteStaff, background, birthDate, phoneNumber, hiddenFromRecorder }) {
     // we added additional functional parameter birthDate which is received from context object in _setJWT function
     const participant = {};
 

@@ -7,6 +7,7 @@ import { makeStyles } from 'tss-react/mui';
 import { Button as AntButton, Dropdown } from 'antd';
 import styled from 'styled-components';
 import { map, sortBy } from 'lodash';
+import moment from 'moment';
 import timezones from './timezones.json';
 
 import { conferences } from '../../../../api/conferences';
@@ -32,8 +33,10 @@ import { BUTTON_TYPES } from '../../../base/ui/constants.any';
 import isInsecureRoomName from '../../../base/util/isInsecureRoomName';
 import { openDisplayNamePrompt } from '../../../display-name/actions';
 import { isUnsafeRoomWarningEnabled } from '../../../prejoin/functions';
-import { setTimezone } from '../../../timezone/actions';
 import Icon from '../../../base/icons/components/Icon';
+import { updateTimezone } from '../../../../api/AuthApi';
+import { setJWT } from '../../../base/jwt/actions';
+import { setTimezone } from '../../../timezone/actions';
 
 import {
     joinConference as joinConferenceAction,
@@ -299,6 +302,7 @@ const Prejoin = ({
     const [ inputPassword, setInputPassword ] = useState('');
     const [ timezoneItems, setTimezoneItems ] = useState([]);
     const [ selectedTimezone, setSelectedTimezone ] = useState();
+    const [ dropdownVisible, setDropdownVisible ] = useState(false);
 
     const { classes } = useStyles();
     const { t, ready } = useTranslation();
@@ -323,13 +327,49 @@ const Prejoin = ({
             if (timezone) {
                 const tz = timezones.find(tz => tz.country === timezone.country && tz.description === timezone.description);
                 setSelectedTimezone(tz);
+            } else {
+                const pcTimezoneOffset = moment().utcOffset();
+                const tz = timezones.filter(tz => {
+                    const parsed = /^\(GMT(.)(\d+):(\d+)\)$/.exec(tz.utc);
+                    if (!parsed) {
+                        return false;
+                    }
+                
+                    const [ _, sign, hour, minute ] = parsed;
+                    const offset = (sign === '+' ? 1 : -1) * (parseInt(hour) * 60 + parseInt(minute));
+                    return offset === pcTimezoneOffset;
+                });
+
+                if (tz.length === 1) {
+                    // UTC 타임존이 하나일 경우, 바로 설정
+                    dispatch(setTimezone(tz[0]));
+                } else {
+                    // 여러개일 경우, 도시 정보를 검색하여 타임존 설정
+                    let timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    const city = timeZone.split('/').pop();
+                    const pattern = new RegExp(city, 'i');
+                    timeZone = tz.find(tz => pattern.test(tz.description));
+                    if (timeZone) {
+                        dispatch(setTimezone(timeZone));
+                    } else {
+                        dispatch(setTimezone(tz[0]));
+                    }
+                }
             }
         }
 
         return () => {
             window.removeEventListener('beforeunload', beforeUnloadHandler);
         }
-    }, [t, ready])
+    }, [t, ready, timezone])
+
+    useEffect(() => {
+        if (dropdownVisible) {
+            const selectedItem = document.querySelector(`.ant-dropdown-menu-item-selected`);
+            console.log('selectedItem', selectedItem);
+            selectedItem?.scrollIntoView({ block: 'nearest', inline: 'center' });
+        }
+    }, [dropdownVisible]);
 
     // should remove conference
     const beforeUnloadHandler = () => {
@@ -534,10 +574,21 @@ const Prejoin = ({
         }
     }
 
-    const onClickTimezone = ({ key }) => {
+    const onClickTimezone = async ({ key }) => {
         const [ country, utc ] = key.split('_');
         const tz = timezones.find(tz => tz.country === country && tz.utc === utc);
-        dispatch(setTimezone(tz));
+        if (tz) {
+            if (authUser) {
+                const { data: token } = await updateTimezone(tz);
+                dispatch(setJWT(token));
+            } else {
+                dispatch(setTimezone(tz));
+            }
+        }
+    }
+
+    const onDropdownOpenChange = (open) => {
+        setDropdownVisible(open);
     }
 
     const extraJoinButtons = getExtraJoinButtons();
@@ -602,6 +653,7 @@ const Prejoin = ({
                             menu = {{ items: timezoneItems, onClick: onClickTimezone, selectedKeys: selectedTimezone ? [`${selectedTimezone.country}_${selectedTimezone.utc}`] : [] }}
                             trigger = {['click']}
                             overlayClassName = { classes.dropdownOverlay }
+                            onOpenChange = { onDropdownOpenChange }
                         >
                             <StyledButton>
                                 <Text ellipsis style={{ maxWidth: 240 }}>
@@ -676,7 +728,7 @@ function mapStateToProps(state): Object {
     const { room } = state['features/base/conference'];
     const { unsafeRoomConsent } = state['features/base/premeeting'];
     const { showPrejoinWarning: showRecordingWarning } = state['features/base/config'].recordings ?? {};
-    const { user } = state['features/base/jwt'];
+    const { timezone } = state['features/timezone'];
     const { useTimezone } = state['features/base/config'];
 
     return {
@@ -696,7 +748,7 @@ function mapStateToProps(state): Object {
         showErrorOnJoin,
         showRecordingWarning: Boolean(showRecordingWarning),
         showUnsafeRoomWarning: isInsecureRoomName(room) && isUnsafeRoomWarningEnabled(state),
-        timezone: user?.timezone,
+        timezone,
         useTimezone,
         unsafeRoomConsent,
         videoTrack: getLocalJitsiVideoTrack(state)

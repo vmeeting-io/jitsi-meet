@@ -199,9 +199,9 @@ class MoreTab extends AbstractDialogTab {
     _renderLanguageSelect() {
         const {
             currentLanguage,
-            languages,
             t
         } = this.props;
+        const languages = ['en', 'ko']
 
         const languageItems
             = languages.map((language: string) => {

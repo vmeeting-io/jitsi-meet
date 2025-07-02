@@ -51,6 +51,6 @@ export function updatePassword(form, stateful) {
     return axios.patch(`${getAuthAPIURL(stateful)}/password-reset-confirm`, form);
 }
 
-export function updateTimezone(form, stateful) {
+export function updateTimezone(form) {
     return axios.post(`${API_ROOT}/timezone`, form);
 }

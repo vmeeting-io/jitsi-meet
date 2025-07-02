@@ -599,7 +599,7 @@
     },
     "footer": {
         "contactUs": "Contact Us",
-        "copyright": "Copyright@2023 {{provider}}. ALL RIGHTS RESERVED.",
+        "copyright": "Copyright@{{year}} {{provider}}. ALL RIGHTS RESERVED.",
         "privacy": "Privacy Policy",
         "tos": "Terms of Service"
     },

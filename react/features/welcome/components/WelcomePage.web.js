@@ -328,36 +328,43 @@ class WelcomePage extends AbstractWelcomePage {
         const avatarColor = getAvatarColor(getInitials(_user?.name), 0.9);
         const siteName = _jwt.siteName || DEFAULT_TENANT;
 
-        const features = (
-            <Menu>
-                { _features?.learnMore && (
-                    <Menu.Item
-                        className = 'menu-item'
-                        key = "learnMore"
-                        onClick = {this._getSiteLink}>
-                        <Space>
-                            {t('toolbar.features.learnMore')}
-                        </Space>
-                    </Menu.Item>
-                )}
-                { _features?.download && (
-                    <Menu.Item
-                        className = 'menu-item'
-                        key = "downloadManual"
-                        onClick = {this._getManualDownloadLink}>
-                        <Space>
-                            {t('toolbar.features.downloadManual')}
-                        </Space>
-                    </Menu.Item>
-                )}
+        const featuresItems = [];
+        if (_features?.learnMore) {
+            featuresItems.push(
+                <Menu.Item
+                    className = 'menu-item'
+                    key = "learnMore"
+                    onClick = {this._getSiteLink}>
+                    <Space>
+                        {t('toolbar.features.learnMore')}
+                    </Space>
+                </Menu.Item>
+            );
+        }
+        if (_features?.download) {
+            featuresItems.push(
+                <Menu.Item
+                    className = 'menu-item'
+                    key = "downloadManual"
+                    onClick = {this._getManualDownloadLink}>
+                    <Space>
+                        {t('toolbar.features.downloadManual')}
+                    </Space>
+                </Menu.Item>
+            );
+        }
+        if (!interfaceConfig.HIDE_CONTACT_US) {
+            featuresItems.push(
                 <Menu.Item
                     className = 'menu-item'
                     key = "support"
-                    onClick = {() => {location.href = "mailto:vmeeting-info@kedutech.kr"}}>
+                    onClick = {() => {location.href = interfaceConfig.SUPPORT_URL}}>
                     {t('toolbar.features.support')}
                 </Menu.Item>
-           </Menu>
-        );
+            );
+        }
+
+        const features = featuresItems.length > 0 ? <Menu>{featuresItems}</Menu> : null;
 
         const menu = (
             <Menu onClick = {this._handleMenu}>
@@ -381,11 +388,11 @@ class WelcomePage extends AbstractWelcomePage {
                         </Space>
                     </Menu.Item>
                 )}
-                { _isNarowLayout && (
+                { _isNarowLayout && interfaceConfig.DISPLAY_CONTACT_US && (
                     <Menu.Item
                         className = 'menu-item'
                         key = "support"
-                        onClick = {() => {location.href = "mailto:vmeeting-info@kedutech.kr"}}>
+                        onClick = {() => {location.href = interfaceConfig.SUPPORT_URL}}>
                         {t('toolbar.features.support')}
                     </Menu.Item>
                 )}
@@ -492,7 +499,7 @@ class WelcomePage extends AbstractWelcomePage {
                             className = 'watermark'
                             defaultJitsiLogoURL = { _defaultLogoUrl || DEFAULT_WELCOME_PAGE_LOGO_URL } />
                         <div className = 'toolbars'>
-                            { !_isNarowLayout && (
+                            { !_isNarowLayout && features && (
                                 <div className = 'button desktop'>
                                     <Dropdown
                                         key = 'user-menu-desktop'
@@ -631,16 +638,16 @@ class WelcomePage extends AbstractWelcomePage {
                     <div className = 'footer'>
                         <div className = 'container'>
                             <div className = 'copyright'>
-                                {t('footer.copyright', { provider: interfaceConfig.PROVIDER_NAME || '(주)케이에듀텍' })}
+                                {t('footer.copyright', { year: interfaceConfig.COPYRIGHT_YEAR || '2025', provider: interfaceConfig.PROVIDER_NAME || '(주)케이에듀텍' })}
                             </div>
                             <div className = 'nav'>
-                                <a href = { `${AUTH_PAGE_BASE}/tos` }>{t('footer.tos')}</a>
-                                <a href = { `${AUTH_PAGE_BASE}/privacy` }>{t('footer.privacy')}</a>
-                                <a
+                                {!interfaceConfig.HIDE_TOC && <a href = { `${AUTH_PAGE_BASE}/tos` }>{t('footer.tos')}</a>}
+                                {!interfaceConfig.HIDE_PRIVACY && <a href = { `${AUTH_PAGE_BASE}/privacy` }>{t('footer.privacy')}</a>}
+                                {!interfaceConfig.HIDE_CONTACT_US && <a
                                     alt = { t('footer.contactUs') }
                                     href = { interfaceConfig.SUPPORT_URL }>
                                     {t('footer.contactUs')}
-                                </a>
+                                </a>}
                             </div>
                         </div>
                     </div>

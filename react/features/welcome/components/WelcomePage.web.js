@@ -640,6 +640,11 @@ class WelcomePage extends AbstractWelcomePage {
                             <div className = 'copyright'>
                                 {t('footer.copyright', { year: interfaceConfig.COPYRIGHT_YEAR || '2025', provider: interfaceConfig.PROVIDER_NAME || '(주)케이에듀텍' })}
                             </div>
+                            {interfaceConfig.ADDITIONAL_FOOTER && (
+                                <div className = 'additional-footer'>
+                                    {interfaceConfig.ADDITIONAL_FOOTER}
+                                </div>
+                            )}
                             <div className = 'nav'>
                                 {!interfaceConfig.HIDE_TOC && <a href = { `${AUTH_PAGE_BASE}/tos` }>{t('footer.tos')}</a>}
                                 {!interfaceConfig.HIDE_PRIVACY && <a href = { `${AUTH_PAGE_BASE}/privacy` }>{t('footer.privacy')}</a>}

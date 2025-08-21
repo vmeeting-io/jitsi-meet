@@ -11,6 +11,7 @@ echo "window._env_ = {" >> ./env-config.js
 
 WHITELIST="
   ENABLE_REDUX_LOG
+  ENABLE_TELEGRAF
   DEFAULT_SITE_ID
   JWT_TOKEN_VERSION
   NODE_ENV

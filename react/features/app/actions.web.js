@@ -170,13 +170,6 @@ export function appNavigate(uri: ?string) {
         dispatch(setConfig(config, locationURL));
 
         const willAuthenticateURL = getLocationURL(getState());
-        const apiBase = getAuthUrl(getState());
-        if (params.token && tokenLocalStorage.validateToken(null, params.token)) {
-            dispatch(setJWT(params.token));
-        } else {
-            // Load current logged in user
-            dispatch(loadCurrentUser());
-        }
 
         const resp = await sites().siteId(tenant).get();
         const site = resp.data.docs[0];
@@ -186,6 +179,17 @@ export function appNavigate(uri: ?string) {
         const pathname = locationURL.pathname;
         const { sso_key: ssoKey } = site;
         const ssoValue = params[ssoKey];
+        const apiBase = getAuthUrl(getState());
+        if (params.token && tokenLocalStorage.validateToken(null, params.token)) {
+            await dispatch(setJWT(params.token));
+            if (ssoValue) {
+                jitsiLocalStorage.setItem(ssoKey, ssoValue);
+            }
+        } else {
+            // Load current logged in user
+            dispatch(loadCurrentUser());
+        }
+
         if (pathname === '/' && ssoKey) {
             const args = omit(qs.parse(locationURL.search), [ssoKey]);
             locationURL.search = size(args) > 0 ? `?${qs.stringify(args)}` : '';

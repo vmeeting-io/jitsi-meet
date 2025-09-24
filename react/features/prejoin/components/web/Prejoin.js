@@ -44,6 +44,37 @@ import { hasDisplayName } from '../../utils';
 
 import JoinByPhoneDialog from './dialogs/JoinByPhoneDialog';
 
+import { setCameraFacingMode } from '../../../base/media/actions';
+import { CAMERA_FACING_MODE } from '../../../base/media/constants';
+import { toggleCamera } from '../../../base/tracks/actions.web';
+import { isSupportedMobileBrowser } from '../../../base/environment/environment';
+
+
+// 실제 열린 비디오 트랙의 facingMode를 추출하는 헬퍼
+function getActualFacingMode(jitsiLocalVideoTrack) {
+  try {
+    if (jitsiLocalVideoTrack?.getCameraFacingMode) {
+        // lib-jitsi-meet의 JitsiLocalTrack API가 제공되면 우선 사용
+          return jitsiLocalVideoTrack.getCameraFacingMode();
+      }
+    const nativeTrack =
+        jitsiLocalVideoTrack?.getTrack?.()
+        || jitsiLocalVideoTrack?.stream?.getVideoTracks?.()[0];
+
+      const settings = nativeTrack?.getSettings?.();
+    const constraints = nativeTrack?.getConstraints?.();
+
+      return settings?.facingMode
+        || (typeof constraints?.facingMode === 'string'
+          ? constraints.facingMode
+            : constraints?.facingMode?.exact
+              || constraints?.facingMode?.ideal);
+  } catch (e) {
+    return undefined;
+  }
+}
+
+
 type Props = {
 
     /**
@@ -237,7 +268,8 @@ const Prejoin = ({
     showUnsafeRoomWarning,
     unsafeRoomConsent,
     updateSettings: dispatchUpdateSettings,
-    videoTrack
+    videoTrack,
+    cameraFacingMode
 }) => {
     const showDisplayNameField = useMemo(
         () => isDisplayNameVisible && !readOnlyName,
@@ -249,6 +281,49 @@ const Prejoin = ({
     const { classes } = useStyles();
     const { t } = useTranslation();
     const dispatch = useDispatch();
+
+    // 2) 비디오 트랙이 전면으로 생성된 경우: 즉시 후면으로 토글
+   useEffect(() => {
+     if (!isSupportedMobileBrowser()) {
+       return;
+     }
+     if (!videoTrack) {
+       console.log(`Prejoin: videoTrack not ready; skip`);
+       return;
+     }
+
+     let cancelled = false;
+
+     const ensureBackCamera = (attempt = 0) => {
+       if (cancelled) {
+         return;
+       }
+
+       const actualFacing = (getActualFacingMode(videoTrack) || '').toString().toLowerCase();
+
+       if (actualFacing === 'user') {
+         console.log('Prejoin: actual facing is user; toggling to environment');
+         dispatch(toggleCamera());
+         return;
+       }
+
+       if (!actualFacing && attempt === 0) {
+         console.log('Prejoin: facingMode unknown; retry once after delay');
+         setTimeout(() => ensureBackCamera(1), 250);
+         return;
+       }
+
+       console.log(`Prejoin: not toggling; actualFacing=${actualFacing || 'unknown'}`);
+     };
+
+     ensureBackCamera(0);
+
+     return () => {
+       cancelled = true;
+     };
+   }, [dispatch, videoTrack]);
+
+
 
     useEffect(() => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -605,7 +680,8 @@ function mapStateToProps(state): Object {
         showRecordingWarning: Boolean(showRecordingWarning),
         showUnsafeRoomWarning: isInsecureRoomName(room) && isUnsafeRoomWarningEnabled(state),
         unsafeRoomConsent,
-        videoTrack: getLocalJitsiVideoTrack(state)
+        videoTrack: getLocalJitsiVideoTrack(state),
+        cameraFacingMode: state['features/base/media']?.video?.facingMode
     };
 }
 

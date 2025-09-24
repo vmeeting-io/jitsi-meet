@@ -156,7 +156,7 @@ export const _VIDEO_INITIAL_MEDIA_STATE = {
     available: true,
     gumPending: IGUMPendingState.NONE,
     unmuteBlocked: false,
-    facingMode: CAMERA_FACING_MODE.USER,
+    facingMode: CAMERA_FACING_MODE.ENVIRONMENT,
     muted: 0,
 
     /**

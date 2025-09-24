@@ -12,6 +12,8 @@ import { initPrejoin } from '../../actions.web';
 
 import PrejoinThirdParty from './PrejoinThirdParty';
 
+import { CAMERA_FACING_MODE } from '../../../base/media/constants';
+
 /**
  * Wrapper application for prejoin.
  *
@@ -50,6 +52,7 @@ export default class PrejoinApp extends BaseApp {
             prejoinConfig: {
                 enabled: true
             },
+            cameraFacingMode: CAMERA_FACING_MODE.ENVIRONMENT,
             startWithAudioMuted,
             startWithVideoMuted
         }, locationURL));

@@ -251,6 +251,15 @@ const Prejoin = ({
     const dispatch = useDispatch();
 
     useEffect(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryName = urlParams.get('name');
+
+      if (queryName) {
+        dispatchUpdateSettings({displayName: queryName});
+      }
+    }, []);
+
+    useEffect(() => {
         window.addEventListener('beforeunload', beforeUnloadHandler);
 
         return () => {

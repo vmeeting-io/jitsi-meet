@@ -296,7 +296,7 @@ function _setRoom({ dispatch, getState }, next, action) {
  * @private
  * @returns {void}
  */
-function _syncTrackMutedState({ getState }, track) {
+function _syncTrackMutedState({ dispatch, getState }, track) {
     const state = getState()['features/base/media'];
     const mediaType = track.mediaType;
     const muted = Boolean(state[mediaType].muted);

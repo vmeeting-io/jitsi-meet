@@ -73,7 +73,7 @@ export function getBaseUrl(w: Object = window) {
 
     const { protocol, host } = w.location;
 
-    return `${protocol}//${host}`;
+    return `${protocol}//${host}/`;
 }
 
 /**

@@ -124,7 +124,7 @@ $(LANGUAGES):
 	fi;
 
 .NOTPARALLEL:
-dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-olm deploy-tf-wasm deploy-excalidraw-dev deploy-face-landmarks deploy-face-detect-models $(LANGUAGES)
+dev: deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-models deploy-lib-jitsi-meet deploy-olm deploy-tf-wasm deploy-excalidraw-dev deploy-face-landmarks deploy-face-detect-models $(LANGUAGES)
 	if [ ! -d $(DEV_COUNTRIES_DIR) ] ; \
 	then \
 		mkdir $(DEV_COUNTRIES_DIR); \
@@ -133,7 +133,6 @@ dev: deploy-init deploy-css deploy-rnnoise-binary deploy-tflite deploy-meet-mode
 
 dev-start: deploy-lib-jitsi-meet
 	./cssmon.sh ./css &
-	$(MAKE) deploy-css
 	$(WEBPACK_DEV_SERVER)
 
 source-package:

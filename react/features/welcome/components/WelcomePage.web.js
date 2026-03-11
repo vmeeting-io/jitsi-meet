@@ -396,11 +396,11 @@ class WelcomePage extends AbstractWelcomePage {
                         {t('toolbar.features.support')}
                     </Menu.Item>
                 )}
-                {_user?.isAdmin && _isNarowLayout && 
+                {_user?.role === 'admin' && _isNarowLayout && 
                     <Menu.Item className='menu-item mobile' key="admin">
                         {t('welcomepage.adminConsole')}
                     </Menu.Item>}
-                {_user?.isSiteStaff &&
+                {_user?.role === 'site_staff' &&
                     <Menu.Item className='menu-item' key="sitemanage">
                         {t('welcomepage.siteManage')}
                     </Menu.Item>}
@@ -427,7 +427,7 @@ class WelcomePage extends AbstractWelcomePage {
         );
 
         if (_user) {
-            if (_user.isAdmin) {
+            if (['admin', 'partner_staff'].includes(_user.role)) {
                 buttons.push(
                     <Button
                         key = 'adminConsole'

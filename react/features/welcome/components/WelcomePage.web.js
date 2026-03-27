@@ -416,9 +416,11 @@ class WelcomePage extends AbstractWelcomePage {
                     <Badge size='small' count={_user.email_verified ? 0 : 1} />}
                 </Space>
                 </Menu.Item>
-                <Menu.Item className='menu-item' key="logout">
-                    {t('toolbar.logout')}
-                </Menu.Item>
+                { !interfaceConfig.HIDE_LOGOUT && (
+                    <Menu.Item className='menu-item' key="logout">
+                        {t('toolbar.logout')}
+                    </Menu.Item>
+                )}
                 { _isNarowLayout && <hr className = 'divider mobile' /> }
                 { _isNarowLayout && (
                     <Menu.Item className = 'menu-item mobile' onClick = { this._onOpenSettings }>

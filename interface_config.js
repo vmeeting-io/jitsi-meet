@@ -78,10 +78,11 @@ var interfaceConfig = {
     DISPLAY_WELCOME_PAGE_CONTENT: false,
     DISPLAY_WELCOME_PAGE_TOOLBAR_ADDITIONAL_CONTENT: false,
 
-    // 이용약관, 개인정보처리방침, 문의하기 표시 여부
+    // 이용약관, 개인정보처리방침, 문의하기, 로그아웃 표시 여부
     HIDE_TOC: false,
     HIDE_PRIVACY: false,
     HIDE_CONTACT_US: false,
+    HIDE_LOGOUT: false,
 
     // COPYRIGHT_YEAR
     COPYRIGHT_YEAR: '2025',

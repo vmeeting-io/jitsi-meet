@@ -214,7 +214,7 @@ export function appNavigate(uri: ?string) {
         const { tenant: userTenant, user, jwt } = getState()['features/base/jwt'];
         const pattern = /\/(?<site_id>[^\/]+)\/(?<conf_name>[^\/]+)$/;
         const matched = pathname.match(pattern);
-        if (!user && matched && ssoValue) {
+        if (matched && ssoValue) {
             try {
                 let { partnerCode, ...options } = params;
 

@@ -3,7 +3,7 @@ import React from 'react';
 
 import { DownOutlined } from '@ant-design/icons';
 import { jitsiLocalStorage } from '@jitsi/js-utils';
-import { Alert, Badge, Button, Dropdown, Menu, Space } from 'antd';
+import { Alert, Badge, Button, Dropdown, Menu, Space, Typography } from 'antd';
 import axios from 'axios';
 import { connect } from 'react-redux';
 
@@ -25,6 +25,8 @@ import { openSettingsDialog } from '../../settings/actions';
 import { AbstractWelcomePage, _mapStateToProps } from './AbstractWelcomePage';
 import Tabs from './Tabs';
 //import alarmImg from '../../../../resources/img/appstore-badge.png';
+
+const { Text } = Typography;
 
 /**
  * The pattern used to validate room name.
@@ -423,6 +425,13 @@ class WelcomePage extends AbstractWelcomePage {
                         { t('toolbar.Settings') }
                     </Menu.Item>
                 )}
+                <Menu.Divider />
+                <Menu.Item className='menu-item' key="version">
+                    <Space>
+                        <Text>{t('toolbar.version')}</Text>
+                        <Text disabled style={{ fontSize: '12px' }}>{window._env_.VMEETING_TAG}</Text>
+                    </Space>
+                </Menu.Item>
             </Menu>
         );
 
@@ -442,7 +451,8 @@ class WelcomePage extends AbstractWelcomePage {
                 <div key = 'user-menu-mobile' className = 'button mobile'>
                     <Dropdown
                         className = 'user-container'
-                        overlay = {menu}>
+                        overlay = {menu}
+                        trigger = {['click']}>
                         <Button type="text">
                             <Space>
                                 { _user.avatarURL ? (
@@ -504,7 +514,7 @@ class WelcomePage extends AbstractWelcomePage {
                                     <Dropdown
                                         key = 'user-menu-desktop'
                                         overlay = {features}
-                                        triggerType = 'button'>
+                                        trigger={['click']}>
                                         <Button type="text">
                                             {t('toolbar.features.title')}
                                             <DownOutlined />

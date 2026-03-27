@@ -1326,6 +1326,7 @@
     "toggleTopPanelLabel": "상단 패널 토글",
     "toolbar": {
         "Settings": "설정",
+        "version": "버전",
         "accessibilityLabel": {
             "Settings": "설정 토글",
             "audioOnly": "음성전용 모드 토글",

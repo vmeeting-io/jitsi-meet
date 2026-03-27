@@ -1329,6 +1329,7 @@
     "toggleTopPanelLabel": "Toggle top panel",
     "toolbar": {
         "Settings": "Settings",
+        "version": "Version",
         "accessibilityLabel": {
             "Settings": "Open settings",
             "audioOnly": "Toggle audio only",

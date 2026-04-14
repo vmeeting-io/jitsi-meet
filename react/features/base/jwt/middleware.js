@@ -158,6 +158,7 @@ function _setJWT(store, next, action) {
                     action.server = context.server;
                     action.tenant = context.tenant || sub || undefined;
                     action.siteName = context.siteName;
+                    action.partner = context.partner;
                     action.user = user;
 
                     const newUser = user ? { ...user } : {};

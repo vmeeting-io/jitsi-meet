@@ -3,6 +3,8 @@ import { sendAnalytics } from '../analytics/functions';
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from '../base/app/actionTypes';
 import { CONFERENCE_JOIN_IN_PROGRESS } from '../base/conference/actionTypes';
 import { getCurrentConference } from '../base/conference/functions';
+import { setRoomInfo } from '../base/conference/actions';
+import { conferences } from '../../api/conferences';
 import JitsiMeetJS, {
     JitsiConferenceEvents,
     JitsiRecordingConstants
@@ -23,7 +25,12 @@ import { hideNotification, showErrorNotification, showNotification } from '../no
 import { NOTIFICATION_TIMEOUT_TYPE } from '../notifications/constants';
 import { isRecorderTranscriptionsRunning } from '../transcribing/functions';
 
-import { RECORDING_SESSION_UPDATED, START_LOCAL_RECORDING, STOP_LOCAL_RECORDING } from './actionTypes';
+import {
+    RECORDING_SESSION_UPDATED,
+    SET_MEETING_MINUTES_STATE,
+    START_LOCAL_RECORDING,
+    STOP_LOCAL_RECORDING
+} from './actionTypes';
 import {
     clearRecordingSessions,
     hidePendingRecordingNotification,
@@ -285,6 +292,11 @@ MiddlewareRegistry.register(({ dispatch, getState }) => next => async action => 
         }
         break;
     }
+    case SET_MEETING_MINUTES_STATE: {
+        const { enabled } = action;
+        _updateMeetingMinutesState(getState(), dispatch, enabled);
+        break;
+    }
     case PARTICIPANT_UPDATED: {
         const { id, role } = action.participant;
         const state = getState();
@@ -368,4 +380,22 @@ function _showRecordingErrorNotification(recorderSession, dispatch) {
     if (typeof APP !== 'undefined') {
         APP.API.notifyRecordingStatusChanged(false, mode, error);
     }
+}
+
+function _updateMeetingMinutesState(state, dispatch, enabled) {
+    const { roomInfo } = state['features/base/conference'];
+    if (!roomInfo) {
+        return;
+    }
+
+    conferences()
+        .id(roomInfo._id)
+        .update({ meeting_minutes_enabled: enabled })
+        .then(resp => {
+            console.log('conference updated:', resp.data);
+            dispatch(setRoomInfo(resp.data));
+        })
+        .catch(err => {
+            console.error('update error: toggle whiteboard is failed.', err);
+        });
 }

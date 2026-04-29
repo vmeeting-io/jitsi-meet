@@ -123,6 +123,12 @@ export function _mapStateToProps(state, ownProps) {
         _tooltip = 'dialog.liveStreamingDisabledBecauseOfActiveRecordingTooltip';
     }
 
+    const { enableMeetingMinutes } = state['features/recording'];
+    if (enableMeetingMinutes) {
+        _disabled = true;
+        visible = false;
+    }
+
     // disable the button if we are in a breakout room.
     if (isInBreakoutRoom(state)) {
         _disabled = true;

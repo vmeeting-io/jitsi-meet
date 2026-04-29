@@ -94,3 +94,13 @@ export const STOP_LOCAL_RECORDING = 'STOP_LOCAL_RECORDING';
  * }
  */
 export const SET_START_RECORDING_NOTIFICATION_SHOWN = 'SET_START_RECORDING_NOTIFICATION_SHOWN';
+
+/**
+ * Sets the enable state of the meeting minutes.
+ *
+ * {
+ *     type: SET_MEETING_MINUTES_STATE,
+ *     enabled: boolean
+ * }
+ */
+export const SET_MEETING_MINUTES_STATE = 'SET_MEETING_MINUTES_STATE';

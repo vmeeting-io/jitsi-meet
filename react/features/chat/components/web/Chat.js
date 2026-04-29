@@ -135,14 +135,12 @@ const Chat = ({
     _isModal,
     _isOpen,
     _isPollsEnabled,
-    _isSTTEnabled,
     _isUploading,
     _messages,
     _nbUnreadMessages,
     _nbUnreadPolls,
     _showChatInput,
     _showNamePrompt,
-    _STTmessages,
     _tabFocused,
     dispatch,
     t
@@ -154,26 +152,6 @@ const Chat = ({
     const [searchResultIndex, setSearchResultIndex] = useState(-1);
     const [currentIdx, setCurrentIdx] = useState(-1);
     const searchInputRef = useRef();
-
-    // const messageContainerRef = useRef();
-    // const STTmessageContainerRef = useRef();
-
-    // useEffect(() => {
-    //     scrollMessageContainerToBottom(true);
-    //     scrollSTTMessageContainerToBottom(true);
-    //     document.addEventListener('keypress', handleKeyPress);
-    //     document.addEventListener('keydown', handleKeyDown);
-
-    //     return () => {
-    //         document.removeEventListener('keypress', handleKeyPress);
-    //         document.removeEventListener('keydown', handleKeyDown);
-    //     }
-    // }, []);
-
-    // useEffect(() => {
-    //     scrollMessageContainerToBottom(false);
-    //     scrollSTTMessageContainerToBottom(false);
-    // }, [ _messages, _STTmessages, _isOpen ])
 
     const handleKeyPressOnSearch = ev => {
         if (!showSearch) return;
@@ -282,20 +260,6 @@ const Chat = ({
             );
         }
 
-        if (_tabFocused === CHAT_TABS.STT) {
-            return (
-                <>
-                    { renderTabs() }
-                    <STTMessageContainer
-                        className={classes.sttPanel}
-                        messages = { _STTmessages }
-                        // ref = { STTmessageContainerRef }
-                    />
-                    <KeyboardAvoider />
-                </>
-            );
-        }
-
         return (
             <>
                 { renderTabs() }
@@ -359,7 +323,7 @@ const Chat = ({
      * @returns {ReactElement}
      */
     function renderTabs() {
-        if (!_isPollsEnabled && !_isSTTEnabled) {
+        if (!_isPollsEnabled) {
             return null;
         }
 
@@ -372,15 +336,6 @@ const Chat = ({
             label: t('chat.tabs.chat')
         }];
         
-        if (_isSTTEnabled) {
-            tabs.push({
-                accessibilityLabel: t('chat.tabs.stt'),
-                id: CHAT_TABS.STT,
-                controlsId: `${CHAT_TABS.STT}-panel`,
-                label: t('chat.tabs.stt')
-            })
-        }
-
         tabs.push({
             accessibilityLabel: t('chat.tabs.polls'),
             countBadge: _nbUnreadPolls > 0 ? _nbUnreadPolls : undefined,
@@ -577,7 +532,6 @@ const Chat = ({
  *     _isModal: boolean,
  *     _isOpen: boolean,
  *     _isPollsEnabled: boolean,
- *     _isSTTEnabled: boolean,
  *     _messages: Array<Object>,
  *     _nbUnreadMessages: number,
  *     _nbUnreadPolls: number,
@@ -599,8 +553,7 @@ function _mapStateToProps(state, _ownProps) {
     const { nbUnreadPolls } = state['features/polls'];
     const _localParticipant = getLocalParticipant(state);
     const chatModerationEnabled = isEnabledFromState('chat', state);
-    const { use_file_chat, use_stt } = state['features/base/conference'].site;
-    const { _sttHistory, _sttEnabled } = state['features/stt'];
+    const { use_file_chat } = state['features/base/conference'].site;
     const fileUploadInProgress = Boolean(fileName !== undefined
         && fileUploadPercentage > 0
         && fileUploadPercentage < 100);
@@ -615,9 +568,7 @@ function _mapStateToProps(state, _ownProps) {
         _isModal: window.innerWidth <= SMALL_WIDTH_THRESHOLD,
         _isOpen: isOpen,
         _isPollsEnabled: !arePollsDisabled(state),
-        _isSTTEnabled: Boolean(use_stt) && Boolean(_sttEnabled),
         _messages: messages,
-        _STTmessages: _sttHistory,
         _showChatInput: !chatModerationEnabled || _localParticipant?.role === PARTICIPANT_ROLE.MODERATOR,
         _nbUnreadMessages: nbUnreadMessages,
         _nbUnreadPolls: nbUnreadPolls,

@@ -21,6 +21,16 @@
             }
         }
 
+        .meeting-minutes-title {
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+
+            &-no-space {
+                margin-left: 0;
+            }
+        }
+
         &.space-top {
             margin-top: 10px;
         }

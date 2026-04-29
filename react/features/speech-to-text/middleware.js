@@ -82,7 +82,7 @@ function _setWSServer({ dispatch, getState }, action) {
         const sttApiPwd = window._env_.STT_API_PWD
 
         const currentAudioTrack = getLocalJitsiAudioTrack(state);
-        const targetStream = currentAudioTrack? currentAudioTrack.stream : null;
+        const targetStream = currentAudioTrack ? currentAudioTrack.stream : null;
         targetLanguage = action.targetLanguage || (i18next.language === 'ko'? 'ko' : 'en');
 
         preSoc = new WebSocket(wsURL);
@@ -218,9 +218,9 @@ function activateWS(soc, stream, pId, dispatch, getState) {
                 sentenceId: pId + resultSTT.data.st
             });
 
-            const lang = getState()['features/stt']._targetLanguage === 'ko'? 'ko' : 'en';
+            const lang = getState()['features/stt']._targetLanguage === 'ko' ? 'ko' : 'en';
             // for others
-            if (conference.getParticipantCount(getState()) > 1){
+            if (conference.getParticipantCount(getState()) > 1) {
                 conference.sendEndpointMessage('', {
                     type: JSON_TYPE_STT_RESULT,
                     participantId: pId,

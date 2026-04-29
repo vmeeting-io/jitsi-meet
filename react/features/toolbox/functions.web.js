@@ -12,6 +12,7 @@ import RaiseHandContainerButton from '../reactions/components/web/RaiseHandConta
 import ReactionsMenuButton from '../reactions/components/web/ReactionsMenuButton';
 import LiveStreamButton from '../recording/components/LiveStream/web/LiveStreamButton';
 import RecordButton from '../recording/components/Recording/web/RecordButton';
+import MeetingMinutesButton from '../recording/components/Recording/web/MeetingMinutesButton';
 import ShareAudioButton from '../screen-share/components/web/ShareAudioButton';
 import { isScreenMediaShared } from '../screen-share/functions';
 import STTDialogButton from '../speech-to-text/components/STTDialogButton';
@@ -285,6 +286,12 @@ export function getAllToolboxButtons(_customToolbarButtons) {
         group: 2
     };
 
+    const meetingMinutes = {
+        key: 'meeting-minutes',
+        Content: MeetingMinutesButton,
+        group: 2
+    };
+
     const livestreaming = {
         key: 'livestreaming',
         Content: LiveStreamButton,
@@ -373,8 +380,9 @@ export function getAllToolboxButtons(_customToolbarButtons) {
         fullscreen,
         security,
         cc,
-        stt,
+        // stt,
         recording,
+        meetingMinutes,
         livestreaming,
         shareVideo,
         shareAudio,

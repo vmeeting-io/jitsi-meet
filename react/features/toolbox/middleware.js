@@ -173,7 +173,7 @@ function _getToolbarButtons(state) {
     const { toolbarButtons, customToolbarButtons } = state['features/base/config'];
     const customButtons = customToolbarButtons?.map(({ id }) => id);
     const { whiteboard } = state['features/base/conference'].roomInfo || {};
-    const { use_recording, use_stt } = state['features/base/conference'].site || {};
+    const { use_recording, use_meeting_minutes } = state['features/base/conference'].site || {};
 
     let buttons = Array.isArray(toolbarButtons) ? toolbarButtons : TOOLBAR_BUTTONS;
 
@@ -187,7 +187,7 @@ function _getToolbarButtons(state) {
 
     buttons = whiteboard?.use_yn ? without(buttons, 'desktop') : without(buttons, 'share');
     buttons = !use_recording ? without(buttons, 'recording', 'livestreaming') : buttons;
-    buttons = !use_stt ? without(buttons, 'stt') : buttons;
+    buttons = !use_meeting_minutes ? without(buttons, 'meeting-minutes') : buttons;
 
     return buttons;
 }

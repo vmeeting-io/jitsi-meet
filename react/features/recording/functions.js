@@ -277,6 +277,12 @@ export function getRecordButtonProps(state) {
         tooltip = 'dialog.recordingDisabledBecauseOfActiveLiveStreamingTooltip';
     }
 
+    const { enableMeetingMinutes } = state['features/recording'];
+    if (enableMeetingMinutes) {
+        disabled = true;
+        visible = false;
+    }
+
     // disable the button if we are in a breakout room.
     if (isInBreakoutRoom(state)) {
         disabled = true;
@@ -413,4 +419,67 @@ export function registerRecordingAudioFiles(dispatch, shouldUnregister?: boolean
     dispatch(registerSound(
         RECORDING_ON_SOUND_ID,
         getSoundFileSrc(RECORDING_ON_SOUND_FILE, language)));
+}
+
+/**
+ * Returns the recording button props.
+ *
+ * @param {Object} state - The redux state to search in.
+ *
+ * @returns {{
+*    disabled: boolean,
+*    tooltip: string,
+*    visible: boolean
+* }}
+*/
+export function getMeetingMinutesButtonProps(state) {
+   let visible;
+
+   // a button can be disabled/enabled if enableFeaturesBasedOnToken
+   // is on or if the livestreaming is running.
+   let disabled = false;
+   let tooltip = '';
+
+   // If the containing component provides the visible prop, that is one
+   // above all, but if not, the button should be autonomus and decide on
+   // its own to be visible or not.
+   const isModerator = isLocalParticipantModerator(state);
+   const {
+       recordingService,
+       localRecording
+   } = state['features/base/config'];
+   const localRecordingEnabled = !localRecording?.disable && supportsLocalRecording();
+
+   const dropboxEnabled = isDropboxEnabled(state);
+   const recordingEnabled = recordingService?.enabled || dropboxEnabled;
+
+   if (localRecordingEnabled) {
+       visible = true;
+   } else if (isModerator) {
+       visible = recordingEnabled ? isJwtFeatureEnabled(state, 'recording', true) : false;
+   }
+
+   // disable the button if the livestreaming is running.
+   if (visible && getActiveSession(state, JitsiRecordingConstants.mode.STREAM)) {
+       disabled = true;
+       tooltip = 'dialog.recordingDisabledBecauseOfActiveLiveStreamingTooltip';
+   }
+
+   const { enableMeetingMinutes } = state['features/recording'];
+   if (!enableMeetingMinutes && (isCloudRecordingRunning(state) || isStreamingRunning(state))) {
+       disabled = true;
+       visible = false;
+   }
+
+   // disable the button if we are in a breakout room.
+   if (isInBreakoutRoom(state)) {
+       disabled = true;
+       visible = false;
+   }
+
+   return {
+       disabled,
+       tooltip,
+       visible
+   };
 }

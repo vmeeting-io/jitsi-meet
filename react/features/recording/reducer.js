@@ -4,6 +4,7 @@ import {
     CLEAR_RECORDING_SESSIONS,
     RECORDING_SESSION_UPDATED,
     SET_MEETING_HIGHLIGHT_BUTTON_STATE,
+    SET_MEETING_MINUTES_STATE,
     SET_PENDING_RECORDING_NOTIFICATION_UID,
     SET_SELECTED_RECORDING_SERVICE,
     SET_START_RECORDING_NOTIFICATION_SHOWN,
@@ -12,6 +13,7 @@ import {
 
 const DEFAULT_STATE = {
     disableHighlightMeetingMoment: false,
+    enableMeetingMinutes: false,
     pendingNotificationUids: {},
     selectedRecordingService: '',
     sessionDatas: []
@@ -54,6 +56,12 @@ ReducerRegistry.register(STORE_NAME,
                 pendingNotificationUids
             };
         }
+
+        case SET_MEETING_MINUTES_STATE:
+            return {
+                ...state,
+                enableMeetingMinutes: action.enabled
+            };
 
         case SET_SELECTED_RECORDING_SERVICE: {
             return {

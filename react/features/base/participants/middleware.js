@@ -87,6 +87,7 @@ import logger from './logger';
 import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
 import { setTileViewMaxColumns } from '../../settings/actions';
 import { COMMAND_CLEAR_RAISED_HANDS } from '../../participants-pane/constants';
+import { setMeetingMinutesState } from '../../recording/actions';
 
 import './subscriber';
 
@@ -120,7 +121,7 @@ MiddlewareRegistry.register(store => next => action => {
         const participant = getLocalParticipant(state);
         if (typeof APP !== 'undefined' && participant) {
             const { id, pinned } = participant;
-            const { isHost } = state['features/base/conference'].roomInfo || {};
+            const { isHost, meeting_minutes_enabled } = state['features/base/conference'].roomInfo || {};
             const { autoPinEnabled, autoRecord } = state['features/base/config'];
             
             // 내가 방장이면 자동 PIN이 되도록...
@@ -156,6 +157,10 @@ MiddlewareRegistry.register(store => next => action => {
                         }
                     })
                 });
+            }
+
+            if (conference && meeting_minutes_enabled) {
+                store.dispatch(setMeetingMinutesState(true));
             }
         }
         break;

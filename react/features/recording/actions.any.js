@@ -25,7 +25,6 @@ import {
     CLEAR_RECORDING_SESSIONS,
     RECORDING_SESSION_UPDATED,
     SET_MEETING_HIGHLIGHT_BUTTON_STATE,
-    SET_MEETING_MINUTES_STATE,
     SET_PENDING_RECORDING_NOTIFICATION_UID,
     SET_SELECTED_RECORDING_SERVICE,
     SET_START_RECORDING_NOTIFICATION_SHOWN,
@@ -72,22 +71,6 @@ export function clearRecordingSessions() {
 export function setStartRecordingNotificationShown() {
     return {
         type: SET_START_RECORDING_NOTIFICATION_SHOWN
-    };
-}
-
-/**
- * Sets the enable state of the meeting minutes.
- *
- * @param {boolean} enabled - The enabled state value.
- * @returns {{
- *     type: SET_MEETING_MINUTES_STATE,
- *     enabled: boolean
- * }}
- */
-export function setMeetingMinutesState(enabled: boolean) {
-    return {
-        type: SET_MEETING_MINUTES_STATE,
-        enabled
     };
 }
 

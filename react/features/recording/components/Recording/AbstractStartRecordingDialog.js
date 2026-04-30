@@ -33,7 +33,8 @@ class AbstractStartRecordingDialog extends Component {
         this._onLocalRecordingSelfChange = this._onLocalRecordingSelfChange.bind(this);
         this._onTranscriptionChange = this._onTranscriptionChange.bind(this);
         this._onRecordAudioAndVideoChange = this._onRecordAudioAndVideoChange.bind(this);
-
+        this._onMeetingMinutesSummaryChange = this._onMeetingMinutesSummaryChange.bind(this);
+        
         let selectedRecordingService = '';
 
         // TODO: Potentially check if we need to handle changes of
@@ -58,7 +59,8 @@ class AbstractStartRecordingDialog extends Component {
             shouldRecordTranscription: this.props._autoTranscribeOnRecord,
             spaceLeft: undefined,
             selectedRecordingService,
-            localRecordingOnlySelf: false
+            localRecordingOnlySelf: false,
+            enableMeetingMinutesSummary: false
         };
     }
 
@@ -204,6 +206,18 @@ class AbstractStartRecordingDialog extends Component {
     }
 
     /**
+     * Handles meeting minutes summary switch change.
+     *
+     * @param {boolean} value - The new value.
+     * @returns {void}
+     */
+    _onMeetingMinutesSummaryChange(value: boolean) {
+        this.setState({
+            enableMeetingMinutesSummary: value
+        });
+    }
+
+    /**
      * Starts a file recording session.
      *
      * @private
@@ -256,7 +270,8 @@ class AbstractStartRecordingDialog extends Component {
                         'recorder_identity': {
                             'email': _recorder_user.email,
                             'name': _recorder_user.name,
-                        }
+                        },
+                        'enable_meeting_minutes': this.state.enableMeetingMinutesSummary
                     }
                 });
                 attributes.type = RECORDING_TYPES.JITSI_REC_SERVICE;

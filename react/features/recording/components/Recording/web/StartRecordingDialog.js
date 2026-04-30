@@ -68,11 +68,12 @@ class StartRecordingDialog extends AbstractStartRecordingDialog {
             shouldRecordAudioAndVideo,
             shouldRecordTranscription,
             spaceLeft,
-            userName
+            userName,
+            enableMeetingMinutesSummary
         } = this.state;
         const {
             _fileRecordingsServiceEnabled,
-            _fileRecordingsServiceSharingEnabled
+            _fileRecordingsServiceSharingEnabled,
         } = this.props;
 
         return (
@@ -84,6 +85,7 @@ class StartRecordingDialog extends AbstractStartRecordingDialog {
                 onSubmit = { this._onSubmit }
                 titleKey = 'dialog.startRecording'>
                 <StartRecordingDialogContent
+                    enableMeetingMinutesSummary = { enableMeetingMinutesSummary }
                     fileRecordingsServiceEnabled = { _fileRecordingsServiceEnabled }
                     fileRecordingsServiceSharingEnabled = { _fileRecordingsServiceSharingEnabled }
                     integrationsEnabled = { this._areIntegrationsEnabled() }
@@ -95,6 +97,7 @@ class StartRecordingDialog extends AbstractStartRecordingDialog {
                     onRecordAudioAndVideoChange = { this._onRecordAudioAndVideoChange }
                     onSharingSettingChanged = { this._onSharingSettingChanged }
                     onTranscriptionChange = { this._onTranscriptionChange }
+                    onMeetingMinutesSummaryChange = { this._onMeetingMinutesSummaryChange }
                     selectedRecordingService = { selectedRecordingService }
                     sharingSetting = { sharingEnabled }
                     shouldRecordAudioAndVideo = { shouldRecordAudioAndVideo }

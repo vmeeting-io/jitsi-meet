@@ -34,6 +34,7 @@ class AbstractStartRecordingDialogContent extends Component {
         this._onTranscriptionSwitchChange = this._onTranscriptionSwitchChange.bind(this);
         this._onRecordAudioAndVideoSwitchChange = this._onRecordAudioAndVideoSwitchChange.bind(this);
         this._onToggleShowOptions = this._onToggleShowOptions.bind(this);
+        this._onMeetingMinutesSummarySwitchChange = this._onMeetingMinutesSummarySwitchChange.bind(this);
 
         this.state = {
             showAdvancedOptions: true
@@ -224,6 +225,16 @@ class AbstractStartRecordingDialogContent extends Component {
     }
 
     /**
+     * Handler for meeting minutes summary switch change.
+     *
+     * @param {boolean} value - The new value.
+     * @returns {void}
+     */
+    _onMeetingMinutesSummarySwitchChange(value: boolean | undefined) {
+        this.props.onMeetingMinutesSummaryChange(value);
+    }
+
+    /**
      * Sings in a user.
      *
      * @returns {void}
@@ -252,6 +263,7 @@ class AbstractStartRecordingDialogContent extends Component {
  */
 export function mapStateToProps(state) {
     const { localRecording, recordingService } = state['features/base/config'];
+    const { use_meeting_minutes } = state['features/base/conference'].site || {};
     const _localRecordingAvailable
         = !localRecording?.disable && supportsLocalRecording();
 
@@ -265,7 +277,8 @@ export function mapStateToProps(state) {
         _localRecordingEnabled: !localRecording?.disable,
         _localRecordingSelfEnabled: !localRecording?.disableSelfRecording,
         _localRecordingNoNotification: !localRecording?.notifyAllParticipants,
-        _styles: ColorSchemeRegistry.get(state, 'StartRecordingDialogContent')
+        _styles: ColorSchemeRegistry.get(state, 'StartRecordingDialogContent'),
+        _use_meeting_minutes: use_meeting_minutes
     };
 }
 

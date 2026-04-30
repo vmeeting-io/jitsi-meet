@@ -59,9 +59,12 @@ class StartRecordingDialogContent extends AbstractStartRecordingDialogContent {
      * @returns {React$Component}
      */
     _renderAdvancedOptions() {
-        const { selectedRecordingService } = this.props;
-
-        if (selectedRecordingService !== RECORDING_TYPES.JITSI_REC_SERVICE || !this._canStartTranscribing()) {
+        const { selectedRecordingService, _use_meeting_minutes, _canStartTranscribing, enableMeetingMinutesSummary } = this.props;
+        
+        if (
+            selectedRecordingService !== RECORDING_TYPES.JITSI_REC_SERVICE ||
+            (!_use_meeting_minutes && !_canStartTranscribing)
+        ) {
             return null;
         }
 
@@ -84,7 +87,7 @@ class StartRecordingDialogContent extends AbstractStartRecordingDialogContent {
                         size = { 24 }
                         src = { showAdvancedOptions ? IconArrowDown : IconArrowRight } />
                 </div>
-                {showAdvancedOptions && (
+                {showAdvancedOptions && _canStartTranscribing && (
                     <>
                         <div className = 'recording-header space-top'>
                             <label
@@ -111,6 +114,20 @@ class StartRecordingDialogContent extends AbstractStartRecordingDialogContent {
                                 onChange = { this._onRecordAudioAndVideoSwitchChange } />
                         </div>
                     </>
+                )}
+                {showAdvancedOptions && (
+                    <div className = 'recording-header space-top'>
+                        <label
+                            className = 'recording-title'
+                            htmlFor = 'recording-switch-meeting-minutes'>
+                            { t('recording.enableMeetingMinutesSummary') }
+                        </label>
+                        <Switch
+                            checked = { enableMeetingMinutesSummary }
+                            className = 'recording-switch'
+                            id = 'recording-switch-meeting-minutes'
+                            onChange = { this._onMeetingMinutesSummarySwitchChange } />
+                    </div>
                 )}
             </>
         );
@@ -416,29 +433,27 @@ class StartRecordingDialogContent extends AbstractStartRecordingDialogContent {
 
         return (
             <>
-                <Container>
+                <Container
+                    className = 'recording-header recording-header-line'>
                     <Container
-                        className = 'recording-header recording-header-line'>
-                        <Container
-                            className = 'recording-icon-container'>
-                            <Image
-                                alt = ''
-                                className = 'recording-icon'
-                                src = { LOCAL_RECORDING } />
-                        </Container>
-                        <label
-                            className = 'recording-title'
-                            htmlFor = 'recording-switch-local'>
-                            { t('recording.saveLocalRecording') }
-                        </label>
-                        <Switch
-                            checked = { selectedRecordingService
-                                === RECORDING_TYPES.LOCAL }
-                            className = 'recording-switch'
-                            disabled = { isValidating || !this.props.shouldRecordAudioAndVideo }
-                            id = 'recording-switch-local'
-                            onChange = { this._onLocalRecordingSwitchChange } />
+                        className = 'recording-icon-container'>
+                        <Image
+                            alt = ''
+                            className = 'recording-icon'
+                            src = { LOCAL_RECORDING } />
                     </Container>
+                    <label
+                        className = 'recording-title'
+                        htmlFor = 'recording-switch-local'>
+                        { t('recording.saveLocalRecording') }
+                    </label>
+                    <Switch
+                        checked = { selectedRecordingService
+                            === RECORDING_TYPES.LOCAL }
+                        className = 'recording-switch'
+                        disabled = { isValidating || !this.props.shouldRecordAudioAndVideo }
+                        id = 'recording-switch-local'
+                        onChange = { this._onLocalRecordingSwitchChange } />
                 </Container>
                 {selectedRecordingService === RECORDING_TYPES.LOCAL && (
                     <>

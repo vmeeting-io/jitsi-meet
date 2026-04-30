@@ -8,13 +8,14 @@
         flex: 0;
         flex-direction: row;
         justify-content: space-between;
+        gap: 16px;
 
         .recording-title {
             display: inline-flex;
             align-items: center;
             font-size: 14px;
-            margin-left: 16px;
-            max-width: 70%;
+            // margin-left: 16px;
+            // max-width: 70%;
 
             &-no-space {
                 margin-left: 0;
@@ -89,14 +90,20 @@
         background-color: #FFFFFF;
         border-radius: 4px;
         height: 40px;
-        width: 40px;
+        min-width: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .jitsi-content-recording-icon-container-without-switch {
         background-color: #FFFFFF;
         border-radius: 4px;
         height: 40px;
-        width: 46px;
+        min-width: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .recording-icon {
@@ -107,7 +114,7 @@
 
     .content-recording-icon {
         height: 18px;
-        margin: 10px 0 0 10px;
+        // margin: 10px 0 0 10px;
         object-fit: contain;
         width: 18px;
     }
@@ -142,6 +149,7 @@
 
     .recording-switch {
         margin-left: auto;
+        min-width: 40px;
     }
 
     .authorization-panel {

@@ -87,7 +87,6 @@ import logger from './logger';
 import { PARTICIPANT_JOINED_FILE, PARTICIPANT_LEFT_FILE } from './sounds';
 import { setTileViewMaxColumns } from '../../settings/actions';
 import { COMMAND_CLEAR_RAISED_HANDS } from '../../participants-pane/constants';
-import { setMeetingMinutesState } from '../../recording/actions';
 
 import './subscriber';
 
@@ -157,10 +156,6 @@ MiddlewareRegistry.register(store => next => action => {
                         }
                     })
                 });
-            }
-
-            if (conference && meeting_minutes_enabled) {
-                store.dispatch(setMeetingMinutesState(true));
             }
         }
         break;

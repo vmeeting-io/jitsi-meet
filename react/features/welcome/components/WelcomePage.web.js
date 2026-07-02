@@ -314,7 +314,7 @@ class WelcomePage extends AbstractWelcomePage {
             _defaultLogoUrl,
             _disableIntroVideo,
             _features,
-            _isNarowLayout,
+            _isNarrowLayout,
             _moderatedRoomServiceUrl,
             _jwt,
             _user,
@@ -370,7 +370,7 @@ class WelcomePage extends AbstractWelcomePage {
 
         const menu = (
             <Menu onClick = {this._handleMenu}>
-                { _features?.learnMore && _isNarowLayout && (
+                { _features?.learnMore && _isNarrowLayout && (
                     <Menu.Item
                         className = 'menu-item'
                         key = "learnMore"
@@ -380,7 +380,7 @@ class WelcomePage extends AbstractWelcomePage {
                         </Space>
                     </Menu.Item>
                 )}
-                { _features?.download && _isNarowLayout && (
+                { _features?.download && _isNarrowLayout && (
                     <Menu.Item
                         className = 'menu-item'
                         key = "downloadManual"
@@ -390,7 +390,7 @@ class WelcomePage extends AbstractWelcomePage {
                         </Space>
                     </Menu.Item>
                 )}
-                { _isNarowLayout && interfaceConfig.DISPLAY_CONTACT_US && (
+                { _isNarrowLayout && interfaceConfig.DISPLAY_CONTACT_US && (
                     <Menu.Item
                         className = 'menu-item'
                         key = "support"
@@ -398,7 +398,7 @@ class WelcomePage extends AbstractWelcomePage {
                         {t('toolbar.features.support')}
                     </Menu.Item>
                 )}
-                {_user?.role === 'admin' && _isNarowLayout && 
+                {_user?.role === 'admin' && _isNarrowLayout && 
                     <Menu.Item className='menu-item mobile' key="admin">
                         {t('welcomepage.adminConsole')}
                     </Menu.Item>}
@@ -421,8 +421,8 @@ class WelcomePage extends AbstractWelcomePage {
                         {t('toolbar.logout')}
                     </Menu.Item>
                 )}
-                { _isNarowLayout && <hr className = 'divider mobile' /> }
-                { _isNarowLayout && (
+                { _isNarrowLayout && <hr className = 'divider mobile' /> }
+                { _isNarrowLayout && (
                     <Menu.Item className = 'menu-item mobile' onClick = { this._onOpenSettings }>
                         { t('toolbar.Settings') }
                     </Menu.Item>
@@ -438,7 +438,7 @@ class WelcomePage extends AbstractWelcomePage {
         );
 
         if (_user) {
-            if (['admin', 'partner_staff'].includes(_user.role)) {
+            if (['admin', 'partner_staff'].includes(_user.role) && !_isNarrowLayout) {
                 buttons.push(
                     <Button
                         key = 'adminConsole'
@@ -511,7 +511,7 @@ class WelcomePage extends AbstractWelcomePage {
                             className = 'watermark'
                             defaultJitsiLogoURL = { _defaultLogoUrl || DEFAULT_WELCOME_PAGE_LOGO_URL } />
                         <div className = 'toolbars'>
-                            { !_isNarowLayout && features && (
+                            { !_isNarrowLayout && features && (
                                 <div className = 'button desktop'>
                                     <Dropdown
                                         key = 'user-menu-desktop'
@@ -527,7 +527,7 @@ class WelcomePage extends AbstractWelcomePage {
 
                             <div className = 'buttons-container'>
                                 { buttons }
-                                { !_isNarowLayout && (
+                                { !_isNarrowLayout && (
                                     <Button
                                         className = {_user ? 'button desktop' : 'button'}
                                         onClick = { this._onOpenSettings }

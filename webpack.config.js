@@ -80,6 +80,14 @@ function getBundleAnalyzerPlugin(analyzeBundle, name) {
  * target, undefined; otherwise, the path to the local file to be served.
  */
 function devServerProxyBypass({ path }) {
+    // Tenant rooms request /{tenant}/css/... — serve the unprefixed local file.
+    const tenantStatic = path.match(
+        /^\/[^/]+\/((?:css|doc|fonts|images|lang|sounds|static|libs|connection_optimization|\.well-known)\/.*)$/
+    );
+    if (tenantStatic) {
+        path = `/${tenantStatic[1]}`;
+    }
+
     if (path.startsWith('/css/')
         || path.startsWith('/doc/')
         || path.startsWith('/fonts/')
@@ -289,6 +297,17 @@ function getConfig(options = {}) {
  * @returns {Object} the dev server configuration.
  */
 function getDevServerConfig() {
+    // Prefer an explicit host for the proxy Host header (PUBLIC_URL), so
+    // targets like https://nginx:8443 still get the external hostname.
+    const proxyHost = process.env.WEBPACK_DEV_SERVER_PROXY_HOST
+        || (() => {
+            try {
+                return new URL(devServerProxyTarget).host;
+            } catch (e) {
+                return undefined;
+            }
+        })();
+
     return {
         client: {
             overlay: {
@@ -301,14 +320,29 @@ function getDevServerConfig() {
         host: '0.0.0.0',
         port: 8088,
         hot: true,
+        setupMiddlewares: (middlewares, devServer) => {
+            if (!devServer) {
+                throw new Error('webpack-dev-server is not defined');
+            }
+
+            // Dev runs webpack only (no services.d/web). SSI + /config live here.
+            const { createSsiMiddleware } = require('./ssi');
+            middlewares.unshift({
+                name: 'jitsi-ssi',
+                middleware: createSsiMiddleware({
+                    root: process.cwd(),
+                    configDir: process.env.WEB_CONFIG_DIR || '/config'
+                })
+            });
+
+            return middlewares;
+        },
         proxy: {
             '/': {
                 bypass: devServerProxyBypass,
                 secure: false,
                 target: devServerProxyTarget,
-                headers: {
-                    'Host': new URL(devServerProxyTarget).host
-                }
+                headers: proxyHost ? { Host: proxyHost } : {}
             }
         },
         static: {
